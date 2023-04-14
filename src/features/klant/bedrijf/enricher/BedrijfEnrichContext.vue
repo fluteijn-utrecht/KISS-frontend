@@ -93,7 +93,7 @@ const create = async () => {
 
 const result: EnrichedBedrijf = reactive({
   bedrijfsnaam,
-  kvknummer: mapServiceData(handelsregisterData, (h) => h?.kvknummer ?? ""),
+  kvkNummer: mapServiceData(handelsregisterData, (h) => h?.kvkNummer ?? ""),
   postcodeHuisnummer: mapServiceData(handelsregisterData, (h) =>
     [h?.postcode, h?.huisnummer].join(" ")
   ),

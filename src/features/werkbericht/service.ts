@@ -46,7 +46,7 @@ function parseWerkbericht(
 ): Werkbericht {
   if (
     typeof jsonObject?.embedded?.title?.rendered !== "string" ||
-    typeof jsonObject?.embedded?.acf?.publication_content !== "string" ||
+    typeof jsonObject?.embedded?.acf?.publicationContent !== "string" ||
     typeof jsonObject?.date !== "string"
   ) {
     throw new Error(
@@ -55,10 +55,10 @@ function parseWerkbericht(
     );
   }
 
-  const berichtTypeId = jsonObject?.embedded?.acf?.publication_type;
+  const berichtTypeId = jsonObject?.embedded?.acf?.publicationType;
   const berichtTypeName = getBerichtTypeNameById(berichtTypeId) ?? "onbekend";
 
-  const skillIds = jsonObject?.embedded?.acf?.publication_skill;
+  const skillIds = jsonObject?.embedded?.acf?.publicationSkill;
   const skillNames = Array.isArray(skillIds)
     ? skillIds.map(
         (x) => (typeof x === "number" && getSkillNameById(x)) || "onbekend"
@@ -66,12 +66,11 @@ function parseWerkbericht(
     : ["onbekend"];
 
   const dateCreated = parseDateStrWithTimezone(jsonObject.date);
-  const dateModified = parseDateStrWithTimezone(
-    jsonObject["x-commongateway-metadata"].dateModified
-  );
+  const dateModified = parseDateStrWithTimezone(jsonObject.modified);
+
   const dateLatest = maxDate([dateCreated, dateModified]);
 
-  let dateRead = jsonObject["x-commongateway-metadata"]?.dateRead;
+  let dateRead = jsonObject["_self"]?.dateRead;
 
   if (
     dateRead &&
@@ -86,12 +85,12 @@ function parseWerkbericht(
     id: jsonObject.id,
     read: !!dateRead,
     title: jsonObject.embedded.title.rendered,
-    content: jsonObject.embedded.acf.publication_content,
+    content: jsonObject.embedded.acf.publicationContent,
     date: dateLatest,
     type: berichtTypeName,
     skills: skillNames,
-    url: jsonObject["x-commongateway-metadata"]?.self,
-    featured: jsonObject.embedded.acf.publication_featured,
+    url: jsonObject["_self"]?.self,
+    featured: jsonObject.embedded.acf.publicationFeatured,
   };
 }
 
@@ -159,23 +158,26 @@ export function useWerkberichten(
 
     const { typeId, search, page, skillIds } = parameters.value;
 
-    const params: [string, string][] = [
-      ["extend[]", "x-commongateway-metadata.dateRead"],
-    ];
+    const params: [string, string][] = [["extend[]", "_self.dateRead"]];
 
-    params.push(["limit", "10"]);
-    params.push(["order[modified]", "desc"]);
-    params.push(["extend[]", "x-commongateway-metadata.dateModified"]);
-    params.push(["extend[]", "x-commongateway-metadata.self"]);
+    params.push(["_limit", "10"]);
+    params.push(["_order[modified]", "desc"]);
+    params.push(["extend[]", "_self.self"]);
     params.push(["extend[]", "acf"]);
-    params.push(["acf.publication_end_date[after]", "now"]);
+    params.push(["embedded.acf.publicationEndDate[after]", "now"]);
 
     if (typeId) {
-      params.push(["acf.publication_type", typeId.toString()]);
+      params.push([
+        "embedded.acf.publicationType[int_compare]",
+        typeId.toString(),
+      ]);
     }
 
     if (search) {
-      params.push(["search", search]);
+      params.push([
+        "_search[embedded.title.rendered,embedded.acf.publicationContent]",
+        search,
+      ]);
     }
 
     if (page) {
@@ -184,7 +186,10 @@ export function useWerkberichten(
 
     if (skillIds?.length) {
       skillIds.forEach((skillId) => {
-        params.push(["acf.publication_skill[]", skillId.toString()]);
+        params.push([
+          "embedded.acf.publicationSkill[int_compare][]",
+          skillId.toString(),
+        ]);
       });
     }
     return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
@@ -211,10 +216,10 @@ export function useWerkberichten(
       throw new Error("expected a list, input: " + JSON.stringify(berichten));
 
     const featuredBerichten = berichten.filter(
-      (bericht) => bericht.embedded.acf.publication_featured
+      (bericht) => bericht.embedded.acf.publicationFeatured
     );
     const regularBerichten = berichten.filter(
-      (bericht) => !bericht.embedded.acf.publication_featured
+      (bericht) => !bericht.embedded.acf.publicationFeatured
     );
     const sortedBerichten = [...featuredBerichten, ...regularBerichten];
 
@@ -242,17 +247,16 @@ export function useFeaturedWerkberichtenCount() {
 
     if (!json.results.length) return 0;
 
-    return json.results.filter(
-      (result: any) => !result["x-commongateway-metadata"].dateRead
-    ).length;
+    return json.results.filter((result: any) => !result["_self"].dateRead)
+      .length;
   }
 
   function getUrl() {
     const params: [string, string][] = [
-      ["acf.publication_featured", "true"],
-      ["fields[]", "x-commongateway-metadata.dateRead"],
-      ["extend[]", "x-commongateway-metadata.dateRead"],
-      ["acf.publication_end_date[after]", "now"],
+      ["embedded.acf.publicationFeatured[bool_compare]", "true"],
+      ["fields[]", "_self.dateRead"],
+      ["extend[]", "_self.dateRead"],
+      ["embedded.acf.publicationEndDate[after]", "now"],
     ];
 
     return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
@@ -274,7 +278,7 @@ export async function readBericht(id: string): Promise<boolean> {
 
 export async function unreadBericht(id: string): Promise<boolean> {
   const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",

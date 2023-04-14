@@ -15,16 +15,13 @@
           <dd>{{ telefoonnummers }}</dd>
         </dl>
       </section>
-      <section v-if="medewerkerRaw?.calendar?.availabilities">
+      <section v-if="availabilities">
         <utrecht-heading :level="headingLevel + 1">Agenda</utrecht-heading>
         <table class="availability">
           <thead>
             <tr>
               <th></th>
-              <th
-                v-for="(_, day) in medewerkerRaw?.calendar?.availabilities"
-                :key="day"
-              >
+              <th v-for="(_, day) in availabilities" :key="day">
                 {{ day }}
               </th>
             </tr>
@@ -33,7 +30,7 @@
             <tr>
               <th scope="row">ochtend</th>
               <td
-                v-for="(value, day) in medewerkerRaw?.calendar?.availabilities"
+                v-for="(value, day) in availabilities"
                 :key="day"
                 :class="[value.ochtend ? 'groen' : 'rood']"
               >
@@ -43,7 +40,7 @@
             <tr>
               <th scope="row">middag</th>
               <td
-                v-for="(value, day) in medewerkerRaw?.calendar?.availabilities"
+                v-for="(value, day) in availabilities"
                 :key="day"
                 :class="[value.middag ? 'groen' : 'rood']"
               >
@@ -101,6 +98,23 @@ const currentFeedbackSection: CurrentFeedbackSection = {
   label: props.title,
   id: props.medewerkerRaw?.user,
 };
+
+const availabilities = computed(() => {
+  if (!props.medewerkerRaw?.availabilities) return null;
+
+  const days = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag"];
+
+  let availabilities = {};
+
+  days.forEach((day) => {
+    availabilities = {
+      ...availabilities,
+      [day]: props.medewerkerRaw.availabilities[day],
+    };
+  });
+
+  return availabilities as any;
+});
 
 const telefoonnummers = computed(() =>
   props.medewerkerRaw?.contact?.telefoonnummers

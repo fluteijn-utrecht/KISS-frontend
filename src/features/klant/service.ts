@@ -37,9 +37,9 @@ type QueryDictionary = {
 };
 
 const queryDictionary: QueryDictionary = {
-  email: (search) => [["emails.email", `%${search}%`]],
+  email: (search) => [["embedded.emails.email[like]", search]],
   telefoonnummer: (search) => [
-    ["telefoonnummers.telefoonnummer", `%${search}%`],
+    ["embedded.telefoonnummers.telefoonnummer[like]", search],
   ],
 };
 
@@ -73,8 +73,8 @@ function getKlantSearchUrl<K extends KlantSearchField>(
 
   const url = new URL(klantRootUrl);
   setExtend(url);
-  url.searchParams.set("order[achternaam]", "asc");
-  url.searchParams.set("page", page?.toString() ?? "1");
+  url.searchParams.set("_order[achternaam]", "asc");
+  url.searchParams.set("_page", page?.toString() ?? "1");
   url.searchParams.append("subjectType", KlantType.Persoon);
 
   getQueryParams(search).forEach((tuple) => {
@@ -135,7 +135,7 @@ function getKlantBsnUrl(bsn?: string) {
   if (!bsn) return "";
   const url = new URL(klantRootUrl);
   setExtend(url);
-  url.searchParams.set("subjectIdentificatie.inpBsn", bsn);
+  url.searchParams.set("embedded.subjectIdentificatie.inpBsn", bsn);
   return url.toString();
 }
 
@@ -168,17 +168,18 @@ function updateContactgegevens({
   return fetchLoggedIn(url + "?fields[]=klantnummer&fields[]=bronorganisatie")
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(({ klantnummer, bronorganisatie }) =>
+    .then((klant) =>
       fetchLoggedIn(url, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          telefoonnummers,
-          emails,
-          klantnummer,
-          bronorganisatie,
+          ...klant,
+          embedded: {
+            telefoonnummers,
+            emails,
+          },
         }),
       })
     )
@@ -269,7 +270,7 @@ const getKlantByVestigingsnummerUrl = (vestigingsnummer: string) => {
   const url = new URL(klantRootUrl);
   url.searchParams.set("extend[]", "all");
   url.searchParams.set(
-    "subjectIdentificatie.vestigingsNummer",
+    "embedded.subjectIdentificatie.vestigingsNummer",
     vestigingsnummer
   );
   url.searchParams.set("subjectType", KlantType.Bedrijf);

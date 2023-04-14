@@ -5,7 +5,7 @@
       <dt>Bedrijfsnaam</dt>
       <dd>{{ bedrijf.bedrijfsnaam }}</dd>
       <dt>KvK-nummer</dt>
-      <dd>{{ bedrijf.kvknummer }}</dd>
+      <dd>{{ bedrijf.kvkNummer }}</dd>
       <dt>Vestigingsnummer</dt>
       <dd>
         {{ bedrijf.vestigingsnummer }}

@@ -131,7 +131,7 @@ gatewayui:
     redirectUrl: vault
 
 dex:
-  enabled: false
+  enabled: true
   config:
     connectors:
       #Example for openldap configuration below, override for use with other connectors
@@ -188,7 +188,7 @@ dex:
             pathType: ImplementationSpecific
 
 openldap:
-  enabled: false
+  enabled: true
   adminPassword: OpenLDAPPassword
   customLdifFiles:
     config-kiss.ldif: |

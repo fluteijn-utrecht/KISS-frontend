@@ -66,7 +66,7 @@ const mapZaakDetails = (zaak: any) => {
     streefDatum: streefDatum,
     indienDatum: zaak.publicatiedatum && new Date(zaak.publicatiedatum),
     registratieDatum: zaak.registratiedatum && new Date(zaak.registratiedatum),
-    self: zaak["x-commongateway-metadata"].self,
+    self: zaak["_self"].self,
     documenten: mapDocumenten(zaak?.embedded?.zaakinformatieobjecten),
     omschrijving: zaak.omschrijving,
   } as ZaakDetails;
@@ -76,7 +76,7 @@ const zaaksysteemBaseUri = `${window.gatewayBaseUri}/api/zaken`;
 
 function addExtends(url: URL) {
   url.searchParams.set("extend[]", "all");
-  url.searchParams.append("extend[]", "x-commongateway-metadata.self");
+  url.searchParams.append("extend[]", "embedded._self.self");
 }
 
 const overviewFetcher = (url: string): Promise<Paginated<ZaakDetails>> =>
@@ -96,7 +96,10 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
     if (!bsn.value) return "";
     const url = new URL(zaaksysteemBaseUri);
     addExtends(url);
-    url.searchParams.set("rollen.betrokkeneIdentificatie.inpBsn", bsn.value);
+    url.searchParams.set(
+      "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
+      bsn.value
+    );
     return url.toString();
   };
 
@@ -141,16 +144,12 @@ export async function updateToelichting(
 ): Promise<void> {
   const url = getZaakUrl(zaak.id);
   const res = await fetchLoggedIn(url, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      bronorganisatie: zaak.bronorganisatie,
-      startdatum: zaak.startdatum && formatIsoDate(zaak.startdatum),
-      verantwoordelijkeOrganisatie: zaak.verantwoordelijkeOrganisatie,
-      zaaktype: zaak.zaaktype,
       toelichting: toelichting,
     }),
   });
@@ -184,7 +183,7 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
     const url = new URL(zaaksysteemBaseUri);
     addExtends(url);
     url.searchParams.set(
-      "rollen.betrokkeneIdentificatie.vestigingsNummer",
+      "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
       vestigingsnummer.value
     );
     return url.toString();

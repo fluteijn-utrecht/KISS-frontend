@@ -17,7 +17,7 @@
                 formatDateOnly(contactmoment.registratiedatum)
               }}</span>
               <span aria-describedby="medewerker-header">{{
-                contactmoment["x-commongateway-metadata"].owner
+                contactmoment["_self"].owner
               }}</span>
               <span aria-describedby="kanaal-header">{{
                 contactmoment.kanaal

@@ -118,11 +118,11 @@ type SearchFields = KlantSearchField | PersoonSearchField;
 const labels: {
   readonly [K in SearchFields]: string;
 } = {
+  geboortedatum: "Geboortedatum",
+  postcodeHuisnummer: "Postcode + huisnummer",
   email: "E-mailadres",
   telefoonnummer: "Telefoonnummer",
   bsn: "BSN",
-  geboortedatum: "Geboortedatum",
-  postcodeHuisnummer: "Postcode + huisnummer",
 };
 
 const store = ensureState({
@@ -130,7 +130,7 @@ const store = ensureState({
   stateFactory() {
     return {
       currentSearch: "",
-      field: "email" as SearchFields,
+      field: "geboortedatum" as SearchFields,
       klantSearchQuery: undefined as KlantSearch<KlantSearchField> | undefined,
       persoonSearchQuery: undefined as
         | PersoonQuery<PersoonSearchField>

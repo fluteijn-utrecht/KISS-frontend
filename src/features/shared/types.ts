@@ -9,7 +9,7 @@ export interface ContactmomentViewModel {
   tekst: string;
   zaken: ContactmomentZaak[];
   contactverzoeken: ContactmomentContactverzoek[];
-  "x-commongateway-metadata": {
+  _self: {
     owner: string;
   };
   primaireVraag?: string;

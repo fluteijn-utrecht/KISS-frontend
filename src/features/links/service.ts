@@ -8,7 +8,7 @@ import type { Link } from "./types";
 
 const linksUrl = (function () {
   const url = new URL(window.gatewayBaseUri + "/api/kiss/links");
-  url.searchParams.set("order[category]", "asc");
+  url.searchParams.set("_order[category]", "asc");
   return url.toString();
 })();
 
@@ -38,7 +38,7 @@ async function fetchAllLinks(url: string) {
     (_, k) => k + 2
   ).map((no) => {
     const newUrl = new URL(url);
-    newUrl.searchParams.set("page", no.toString());
+    newUrl.searchParams.set("_page", no.toString());
     return fetchLinks(newUrl.toString());
   });
 

@@ -2,7 +2,7 @@ import type { ServiceData } from "@/services";
 
 export interface Bedrijf {
   _typeOfKlant: "bedrijf";
-  kvknummer: string;
+  kvkNummer: string;
   vestigingsnummer: string;
   bedrijfsnaam: string;
   postcode: string;
@@ -17,7 +17,7 @@ export interface Bedrijf {
 
 export interface EnrichedBedrijf {
   bedrijfsnaam: ServiceData<string>;
-  kvknummer: ServiceData<string>;
+  kvkNummer: ServiceData<string>;
   postcodeHuisnummer: ServiceData<string>;
   email: ServiceData<string>;
   telefoonnummer: ServiceData<string>;

@@ -168,6 +168,9 @@ export function useSuggestions(input: Ref<string>) {
   function fetchSuggestions() {
     return fetchLoggedIn(suggestionUrl, {
       method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
       body: JSON.stringify({
         query: input.value,
         size: 10,

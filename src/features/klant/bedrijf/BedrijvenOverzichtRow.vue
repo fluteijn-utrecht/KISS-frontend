@@ -7,9 +7,9 @@
       }}</template>
     </th>
     <td>
-      <div class="skeleton" v-if="result.kvknummer.loading" />
-      <template v-if="result.kvknummer.success">{{
-        result.kvknummer.data
+      <div class="skeleton" v-if="result.kvkNummer.loading" />
+      <template v-if="result.kvkNummer.success">{{
+        result.kvkNummer.data
       }}</template>
     </td>
     <td>
