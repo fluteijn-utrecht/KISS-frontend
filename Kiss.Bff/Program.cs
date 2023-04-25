@@ -3,58 +3,56 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
-	.ReadFrom.Configuration(builder.Configuration)
-	.CreateBootstrapLogger();
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateBootstrapLogger();
 
 Log.Information("Starting up");
 
 try
 {
-	// Add services to the container.
+    builder.WebHost.ConfigureKestrel(x =>
+    {
+        x.AddServerHeader = false;
+    });
 
-	builder.Services.AddControllers();
-	builder.Services.AddHsts(x =>
-	{
-		x.MaxAge = TimeSpan.FromDays(7 * 26);
-		x.IncludeSubDomains = true;
-		x.Preload = true;
-	});
+    // Add services to the container.
 
-	builder.Host.UseSerilog((ctx, services, lc) => lc
-		.ReadFrom.Configuration(builder.Configuration)
-		.Enrich.FromLogContext());
+    builder.Services.AddControllers();
 
-	var app = builder.Build();
+    builder.Host.UseSerilog((ctx, services, lc) => lc
+        .ReadFrom.Configuration(builder.Configuration)
+        .Enrich.FromLogContext());
 
-	// Configure the HTTP request pipeline.
+    var app = builder.Build();
 
-	app.UseHttpsRedirection();
+    // Configure the HTTP request pipeline.
 
-	app.UseSerilogRequestLogging();
+    app.UseHttpsRedirection();
 
-	if (!app.Environment.IsDevelopment())
-	{
-		app.UseHsts();
-		app.UseExceptionHandler("/Error");
-	}
+    app.UseSerilogRequestLogging();
 
-	app.UseAuthorization();
+    app.UseKissStaticFiles();
+    app.UseKissSecurityHeaders();
 
-	app.MapControllers();
 
-	app.Run();
+    app.UseAuthorization();
+
+    app.MapControllers();
+    app.MapFallbackToIndexHtml();
+
+    app.Run();
 }
 catch (Exception ex)
 {
-	var type = ex.GetType().Name;
-	if (type.Equals("StopTheHostException", StringComparison.Ordinal))
-	{
-		throw;
-	}
-	Log.Fatal(ex, "Unhandled exception");
+    var type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal))
+    {
+        throw;
+    }
+    Log.Fatal(ex, "Unhandled exception");
 }
 finally
 {
-	Log.Information("Shut down complete");
-	Log.CloseAndFlush();
+    Log.Information("Shut down complete");
+    Log.CloseAndFlush();
 }
