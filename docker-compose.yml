@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  kiss.bff:
+    image: ${DOCKER_REGISTRY-}kissbff
+    build:
+      context: .
+      dockerfile: Kiss.Bff/Dockerfile
