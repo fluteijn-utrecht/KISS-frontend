@@ -2,6 +2,14 @@
 
 This template should help get you started developing with Vue 3 in Vite.
 
+## Run from Visual Studio 2022
+1. Make sure you've installed Docker Desktop (preferably with WSL2 if using windows)
+2. Make a copy of .env.local.example, rename it .env.local and fill in the required secrets
+3. Open KISS-frontend.sln in Visual Studio 2022
+4. Right-click the solution in the Solution Explorer and pick Configure Startup Projects
+5. Select Multiple startup projects, and set the Action to Start for docker-compose and KISS-frontend
+6. Startup the solution and wait for both the BFF and the frontend to be ready
+
 ## Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-typescript-vue-plugin).
