@@ -1,0 +1,8 @@
+version: "3.4"
+
+services:
+  frontend:
+    image: ${CONTAINER_REGISTRY_BASE}/${CONTAINER_PROJECT_NAME}:${APP_BUILD}
+    build:
+      context: .
+      dockerfile: Kiss.Bff/Dockerfile
