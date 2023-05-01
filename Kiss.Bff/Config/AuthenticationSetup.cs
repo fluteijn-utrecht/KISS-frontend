@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private const string CookieSchemeName = "cookieScheme";
         private const string ChallengeSchemeName = "challengeScheme";
 
-        public static IServiceCollection AddKissAuth(this IServiceCollection services, string authority, string clientId, string clientSecret)
+        public static IServiceCollection AddKissAuth(this IServiceCollection services, string authority, string clientId, string clientSecret, string klantcontactmedewerkerRole)
         {
             services.AddAuthentication(options =>
             {
@@ -27,6 +27,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
                 options.SlidingExpiration = true;
                 //options.Events.OnSigningOut = (e) => e.HttpContext.RevokeRefreshTokenAsync();
+                options.Events.OnRedirectToAccessDenied = HandleLoggedOut;
+                options.Events.OnRedirectToLogin = HandleLoggedOut;
             })
             .AddOpenIdConnect(ChallengeSchemeName, options =>
             {
@@ -45,32 +47,30 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
                 options.SaveTokens = true;
 
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    NameClaimType = JwtClaimTypes.Name,
-                    RoleClaimType = JwtClaimTypes.Role
-                };
-
                 options.Events.OnRemoteFailure = RedirectToRoot;
                 options.Events.OnSignedOutCallbackRedirect = RedirectToRoot;
-
-                options.ClaimActions.Clear();
-                options.ClaimActions.MapAll();
             });
 
             services.AddDistributedMemoryCache();
             services.AddOpenIdConnectAccessTokenManagement();
 
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireRole(klantcontactmedewerkerRole ?? "Klantcontactmedewerker")
+                    .Build();
+            });
+
             return services;
         }
 
-        public static IApplicationBuilder UseStrictSameSiteExternalAuthenticationMiddleware(this IApplicationBuilder app) => app.UseMiddleware<StrictSameSiteExternalAuthenticationMiddleware>();
+        public static IApplicationBuilder UseStrictSameSiteExternalAuthenticationMiddleware(this IApplicationBuilder app) => app.Use(StrictSameSiteExternalAuthenticationMiddleware);
 
         public static IEndpointRouteBuilder MapKissAuthEndpoints(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapGet("api/logoff", LogoffAsync);
-            endpoints.MapGet("api/me", GetMeAsync);
-            endpoints.MapGet("api/challenge", ChallengeAsync);
+            endpoints.MapGet("api/logoff", LogoffAsync).AllowAnonymous();
+            endpoints.MapGet("api/me", GetMeAsync).AllowAnonymous();
+            endpoints.MapGet("api/challenge", ChallengeAsync).AllowAnonymous();
 
             return endpoints;
         }
@@ -80,6 +80,16 @@ namespace Microsoft.Extensions.DependencyInjection
             context.Response.Redirect("/");
             context.HandleResponse();
 
+            return Task.CompletedTask;
+        }
+
+        public static Task HandleLoggedOut<TOptions>(RedirectContext<TOptions> ctx) where TOptions : AuthenticationSchemeOptions
+        {
+            if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                ctx.Response.Headers.Location = ctx.RedirectUri;
+            }
             return Task.CompletedTask;
         }
 
@@ -123,53 +133,43 @@ namespace Microsoft.Extensions.DependencyInjection
             });
         }
 
-        private class StrictSameSiteExternalAuthenticationMiddleware
+        private static async Task StrictSameSiteExternalAuthenticationMiddleware(HttpContext ctx, RequestDelegate next)
         {
-            private readonly RequestDelegate _next;
+            var schemes = ctx.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+            var handlers = ctx.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
 
-            public StrictSameSiteExternalAuthenticationMiddleware(RequestDelegate next)
+            foreach (var scheme in await schemes.GetRequestHandlerSchemesAsync())
             {
-                _next = next;
-            }
-
-            public async Task Invoke(HttpContext ctx)
-            {
-                var schemes = ctx.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                var handlers = ctx.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
-
-                foreach (var scheme in await schemes.GetRequestHandlerSchemesAsync())
+                if (await handlers.GetHandlerAsync(ctx, scheme.Name) is IAuthenticationRequestHandler handler && await handler.HandleRequestAsync())
                 {
-                    if (await handlers.GetHandlerAsync(ctx, scheme.Name) is IAuthenticationRequestHandler handler && await handler.HandleRequestAsync())
+                    // start same-site cookie special handling
+                    string? location = null;
+                    if (ctx.Response.StatusCode == 302)
                     {
-                        // start same-site cookie special handling
-                        string? location = null;
-                        if (ctx.Response.StatusCode == 302)
-                        {
-                            location = ctx.Response.Headers["location"];
-                        }
-                        else if (ctx.Request.Method == "GET" && !ctx.Request.Query["skip"].Any())
-                        {
-                            location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
-                        }
+                        location = ctx.Response.Headers["location"];
+                    }
+                    else if (ctx.Request.Method == "GET" && !ctx.Request.Query["skip"].Any())
+                    {
+                        location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
+                    }
 
-                        if (location != null)
-                        {
-                            ctx.Response.ContentType = "text/html";
-                            ctx.Response.StatusCode = 200;
-                            var html = $@"
+                    if (location != null)
+                    {
+                        ctx.Response.ContentType = "text/html";
+                        ctx.Response.StatusCode = 200;
+                        var html = $@"
                         <html><head>
                             <meta http-equiv='refresh' content='0;url={location}' />
                         </head></html>";
-                            await ctx.Response.WriteAsync(html);
-                        }
-                        // end same-site cookie special handling
-
-                        return;
+                        await ctx.Response.WriteAsync(html);
                     }
-                }
+                    // end same-site cookie special handling
 
-                await _next(ctx);
+                    return;
+                }
             }
+
+            await next(ctx);
         }
     }
 }

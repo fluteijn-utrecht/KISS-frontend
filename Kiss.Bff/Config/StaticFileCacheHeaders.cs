@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
 
@@ -29,7 +29,7 @@ public static class StaticFileCacheHeaders
     public static IApplicationBuilder UseKissStaticFiles(this IApplicationBuilder app) => app.UseStaticFiles(s_staticFileOptions);
 
     public static IEndpointConventionBuilder MapFallbackToIndexHtml(this IEndpointRouteBuilder builder) => builder
-        .MapFallbackToFile("index.html", s_staticFileOptions);
+        .MapFallbackToFile("index.html", s_staticFileOptions).AllowAnonymous();
 
     private static void SetCacheHeaders(this StaticFileResponseContext ctx)
     {
