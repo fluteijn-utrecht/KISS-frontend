@@ -30,7 +30,7 @@ const parseKvkPagination = async ({
   aantal,
   totaal,
   resultaten,
-}: KvkPagination): Promise<Paginated<{ vestigingsnummer: string }>> => ({
+}: KvkPagination): Promise<Paginated<Bedrijf>> => ({
   page: await Promise.all(resultaten.map(mapHandelsRegister)),
   pageNumber: pagina,
   totalRecords: totaal,
