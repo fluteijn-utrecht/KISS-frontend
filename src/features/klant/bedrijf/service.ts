@@ -108,20 +108,19 @@ const mapVestiging = ({
   eersteHandelsnaam,
   adressen,
 }: any): KvkVestiging => {
-  const firstAdres =
-    adressen?.map(
-      ({ huisnummerToevoeging, postcode, huisnummer, huisletter }: any) => ({
-        postcode,
-        huisnummer,
-        huisletter,
-        huisnummertoevoeging: huisnummerToevoeging,
-      })
-    )?.[0] ?? {};
+  const { huisnummerToevoeging, postcode, huisnummer, huisletter } =
+    adressen?.find((x: any) => x?.type === "bezoekadres") ??
+    adressen?.[0] ??
+    {};
+
   return {
     vestigingsnummer,
     kvkNummer,
     handelsnaam: eersteHandelsnaam,
-    ...firstAdres,
+    huisnummertoevoeging: huisnummerToevoeging,
+    postcode,
+    huisnummer,
+    huisletter,
   };
 };
 
