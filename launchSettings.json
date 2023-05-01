@@ -3,9 +3,8 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
-      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchAction": "None",
       "composeLaunchServiceName": "kiss.bff",
-      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/api/weatherforecast",
       "serviceActions": {
         "kiss.bff": "StartDebugging"
       }
