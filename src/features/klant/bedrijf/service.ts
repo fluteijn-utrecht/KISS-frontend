@@ -1,10 +1,10 @@
 import {
-  enforceOneOrZero,
   fetchLoggedIn,
   parseJson,
-  parsePagination,
   ServiceResult,
   throwIfNotOk,
+  type Paginated,
+  enforceOneOrZero,
 } from "@/services";
 
 import type {
@@ -18,17 +18,37 @@ export const bedrijfQuery = <K extends SearchCategories>(
   query: BedrijfQuery<K>
 ) => query;
 
-const handelsRegisterBaseUrl = window.gatewayBaseUri + "/api/vestigingen";
+type KvkPagination = {
+  pagina: number;
+  aantal: number;
+  totaal: number;
+  resultaten: any[];
+};
+
+const parseKvkPagination = async ({
+  pagina,
+  aantal,
+  totaal,
+  resultaten,
+}: KvkPagination): Promise<Paginated<{ vestigingsnummer: string }>> => ({
+  page: await Promise.all(resultaten.map(mapHandelsRegister)),
+  pageNumber: pagina,
+  totalRecords: totaal,
+  pageSize: aantal,
+  totalPages: totaal === 0 ? 0 : Math.ceil(totaal / aantal),
+});
+
+const handelsRegisterBaseUrl = "/api/kvk";
 
 const bedrijfQueryDictionary: BedrijfQueryDictionary = {
   postcodeHuisnummer: ({ postcode, huisnummer }) => [
-    ["embedded.bezoekadres.postcode", postcode.numbers + postcode.digits],
-    ["embedded.bezoekadres.huisnummer[int_compare]", huisnummer],
+    ["postcode", postcode.numbers + postcode.digits],
+    ["huisnummer", huisnummer],
   ],
   emailadres: (search) => [["emailAdres[like]", search]],
   telefoonnummer: (search) => [["telefoonnummer[like]", search]],
   kvkNummer: (search) => [["kvkNummer", search]],
-  handelsnaam: (search) => [["eersteHandelsnaam[like]", search]],
+  handelsnaam: (search) => [["handelsnaam", search]],
 };
 
 const getSearchBedrijvenUrl = <K extends SearchCategories>({
@@ -37,61 +57,79 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
 }: SearchBedrijfArguments<K>) => {
   if (!query?.value) return "";
 
-  const url = new URL(handelsRegisterBaseUrl);
+  const params = new URLSearchParams();
   // TODO: think about how to search in both klantregister and handelsregister for phone / email
 
-  url.searchParams.set("_page", page?.toString() ?? "1");
-  url.searchParams.set("extend[]", "all");
+  params.set("pagina", page?.toString() ?? "1");
 
   const searchParams = bedrijfQueryDictionary[query.field](query.value);
 
   searchParams.forEach((tuple) => {
-    url.searchParams.set(...tuple);
+    params.set(...tuple);
   });
 
-  return url.toString();
+  return `${handelsRegisterBaseUrl}/zoeken?${params}`;
 };
 
-function mapHandelsRegister(json: any): Bedrijf {
-  const {
-    embedded,
-    emailAdres,
-    telefoonnummer,
-    vestigingsnummer,
-    kvkNummer,
-    eersteHandelsnaam,
-  } = json ?? {};
+async function mapHandelsRegister(json: any): Promise<Bedrijf> {
+  const { vestigingsnummer, kvkNummer, handelsnaam, straatnaam, plaats } =
+    json ?? {};
 
-  const {
-    huisnummer,
-    postcode,
-    straatnaam,
-    huisletter,
-    huisnummertoevoeging,
-    woonplaats,
-  } = embedded?.bezoekadres ?? {};
+  let vestiging: KvkVestiging | undefined;
+
+  if (vestigingsnummer) {
+    vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
+  }
 
   return {
     _typeOfKlant: "bedrijf",
     kvkNummer,
     vestigingsnummer,
-    postcode,
-    huisnummer: huisnummer.toString(),
-    telefoonnummer,
-    email: emailAdres,
-    bedrijfsnaam: eersteHandelsnaam,
+    bedrijfsnaam: handelsnaam,
     straatnaam,
-    huisletter,
-    huisnummertoevoeging,
-    woonplaats,
+    woonplaats: plaats,
+    ...(vestiging ?? {}),
   };
 }
+
+type KvkVestiging = {
+  vestigingsnummer: string;
+  kvkNummer: string;
+  handelsnaam: string;
+  postcode: string;
+  huisnummer: string;
+  huisletter: string;
+  huisnummertoevoeging: string;
+};
+
+const mapVestiging = ({
+  vestigingsnummer,
+  kvkNummer,
+  eersteHandelsnaam,
+  adressen,
+}: any): KvkVestiging => {
+  const firstAdres =
+    adressen?.map(
+      ({ huisnummerToevoeging, postcode, huisnummer, huisletter }: any) => ({
+        postcode,
+        huisnummer,
+        huisletter,
+        huisnummertoevoeging: huisnummerToevoeging,
+      })
+    )?.[0] ?? {};
+  return {
+    vestigingsnummer,
+    kvkNummer,
+    handelsnaam: eersteHandelsnaam,
+    ...firstAdres,
+  };
+};
 
 function searchBedrijvenInHandelsRegister(url: string) {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((json) => parsePagination(json, mapHandelsRegister));
+    .then(parseKvkPagination);
 }
 
 type SearchBedrijfArguments<K extends SearchCategories> = {
@@ -108,16 +146,23 @@ export function useSearchBedrijven<K extends SearchCategories>(
   );
 }
 
+const getVestingUrl = (vestigingsnummer?: string) => {
+  if (!vestigingsnummer) return "";
+  return handelsRegisterBaseUrl + "/vestigingsprofielen/" + vestigingsnummer;
+};
+
+const fetchVestiging = (url: string) =>
+  fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapVestiging);
+
 export const useBedrijfByVestigingsnummer = (
   getVestigingsnummer: () => string | undefined
 ) => {
   const getUrl = () => {
     const vestigingsnummer = getVestigingsnummer();
     if (!vestigingsnummer) return "";
-    const url = new URL(handelsRegisterBaseUrl);
-    url.searchParams.set("extend[]", "all");
-    url.searchParams.set("vestigingsnummer", vestigingsnummer);
-    return url.toString();
+    const searchParams = new URLSearchParams();
+    searchParams.set("vestigingsnummer", vestigingsnummer);
+    return `${handelsRegisterBaseUrl}/zoeken?${searchParams}`;
   };
 
   const getUniqueId = () => {
