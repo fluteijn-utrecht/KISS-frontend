@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var match = _proxyRoutes.FirstOrDefault(x => x.Route == context?.Cluster?.ClusterId);
             if (match != null)
             {
-                context.AddRequestTransform((ctx) => match.ApplyRequestTransform(ctx));
+                context.AddRequestTransform(match.ApplyRequestTransform);
             }
         }
 
