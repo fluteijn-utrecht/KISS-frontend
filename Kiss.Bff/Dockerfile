@@ -26,4 +26,4 @@ RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
+ENTRYPOINT ["/bin/sh", "-c" , "update-ca-certificates && dotnet Kiss.Bff.dll"]
