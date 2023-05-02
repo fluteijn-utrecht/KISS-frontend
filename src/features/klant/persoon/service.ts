@@ -45,20 +45,35 @@ export function persoonQuery<K extends PersoonSearchField>(
   return args;
 }
 
+const minimalFields = [
+  "burgerservicenummer",
+  "geboorte.datum",
+  "adressering.adresregel1",
+  "adressering.adresregel2",
+  "adressering.adresregel3",
+  "adressering.land.omschrijving",
+  "naam.voornamen",
+  "naam.voorvoegsel",
+  "naam.geslachtsnaam",
+];
+
 const queryDictionary: PersoonQueryParams = {
   bsn: (search) => [
     ["burgerservicenummer", [search]],
     ["type", "RaadpleegMetBurgerservicenummer"],
+    ["fields", [...minimalFields, "geboorte.land", "geboorte.plaats"]],
   ],
   geslachtsnaamGeboortedatum: ({ geslachtsnaam, geboortedatum }) => [
     ["geboortedatum", formatIsoDate(geboortedatum)],
     ["geslachtsnaam", geslachtsnaam],
     ["type", "ZoekMetGeslachtsnaamEnGeboortedatum"],
+    ["fields", [...minimalFields]],
   ],
   postcodeHuisnummer: ({ postcode, huisnummer }) => [
-    ["posctode", `${postcode.numbers}${postcode.digits}`],
+    ["postcode", `${postcode.numbers}${postcode.digits}`],
     ["huisnummer", huisnummer],
     ["type", "ZoekMetPostcodeEnHuisnummer"],
+    ["fields", [...minimalFields]],
   ],
 };
 
@@ -75,6 +90,11 @@ function mapPersoon(json: any): Persoon {
   // TODO parse to expected address fields???
   const { adresregel1, adresregel2, adresregel3 } = adressering ?? {};
 
+  const [numbers, digit] = adresregel2?.split(" ") ?? [];
+  const postcode = [numbers, digit].filter(Boolean).join("");
+  const adresParts = adresregel1?.split(" ") ?? [];
+  const huisnummer = adresParts.at(-1);
+
   const { geslachtsnaam, voornamen, voorvoegsel } = naam ?? {};
 
   const geboortedatum = datum?.datum && new Date(datum.datum);
@@ -88,6 +108,8 @@ function mapPersoon(json: any): Persoon {
     achternaam: geslachtsnaam,
     geboorteplaats: plaats,
     geboorteland: land,
+    postcode,
+    huisnummer,
   };
 }
 
@@ -105,22 +127,6 @@ export const searchPersonen = <K extends PersoonSearchField>(
   query: PersoonQuery<K>
 ) => {
   const entries = getQueryParams(query);
-  entries.push([
-    "fields",
-    [
-      "burgerservicenummer",
-      "geboorte.datum",
-      "geboorte.land",
-      "geboorte.plaats",
-      "adressering.adresregel1",
-      "adressering.adresregel2",
-      "adressering.adresregel3",
-      "adressering.land.omschrijving",
-      "naam.voornamen",
-      "naam.voorvoegsel",
-      "naam.geslachtsnaam",
-    ],
-  ]);
   const body = JSON.stringify(Object.fromEntries(entries));
   return fetchLoggedIn(zoekUrl, {
     method: "POST",

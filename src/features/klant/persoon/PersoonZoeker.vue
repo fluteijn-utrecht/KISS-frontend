@@ -119,7 +119,7 @@ type SearchFields = KlantSearchField | PersoonSearchField;
 const labels: {
   readonly [K in SearchFields]: string;
 } = {
-  geslachtsnaamGeboortedatum: "Geboortedatum",
+  geslachtsnaamGeboortedatum: "Geslachtsnaam + geboortedatum",
   postcodeHuisnummer: "Postcode + huisnummer",
   email: "E-mailadres",
   telefoonnummer: "Telefoonnummer",
