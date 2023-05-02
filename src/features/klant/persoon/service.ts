@@ -1,25 +1,28 @@
 import { formatIsoDate } from "@/helpers/date";
-import type { PostcodeHuisnummer } from "@/helpers/validation";
+import type {
+  GeslachtsnaamGeboortedatum,
+  PostcodeHuisnummer,
+} from "@/helpers/validation";
 import {
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
-  parsePagination,
   ServiceResult,
   type ServiceData,
   enforceOneOrZero,
+  defaultPagination,
 } from "@/services";
 import { mutate } from "swrv";
 import type { Ref } from "vue";
 import type { Persoon } from "./types";
 
-const personenRootUrl = window.gatewayBaseUri + "/api/ingeschrevenpersonen";
+const zoekUrl = "/api/haalcentraal/brp/personen";
 
-type QueryParam = [string, string][];
+type QueryParam = [string, string | string[]][];
 
 type SearchPersoonFieldParams = {
   bsn: string;
-  geboortedatum: Date;
+  geslachtsnaamGeboortedatum: GeslachtsnaamGeboortedatum;
   postcodeHuisnummer: PostcodeHuisnummer;
 };
 
@@ -43,17 +46,19 @@ export function persoonQuery<K extends PersoonSearchField>(
 }
 
 const queryDictionary: PersoonQueryParams = {
-  bsn: (search) => [["burgerservicenummer", search]],
-  geboortedatum: (search) => [
-    ["embedded.geboorte.embedded.datumOnvolledig.datum", formatIsoDate(search)],
+  bsn: (search) => [
+    ["burgerservicenummer", [search]],
+    ["type", "RaadpleegMetBurgerservicenummer"],
+  ],
+  geslachtsnaamGeboortedatum: ({ geslachtsnaam, geboortedatum }) => [
+    ["geboortedatum", formatIsoDate(geboortedatum)],
+    ["geslachtsnaam", geslachtsnaam],
+    ["type", "ZoekMetGeslachtsnaamEnGeboortedatum"],
   ],
   postcodeHuisnummer: ({ postcode, huisnummer }) => [
-    [
-      "embedded.verblijfplaats.postcode",
-      `${postcode.numbers}${postcode.digits}`,
-    ],
-
-    ["embedded.verblijfplaats.huisnummer[int_compare]", huisnummer],
+    ["posctode", `${postcode.numbers}${postcode.digits}`],
+    ["huisnummer", huisnummer],
+    ["type", "ZoekMetPostcodeEnHuisnummer"],
   ],
 };
 
@@ -64,110 +69,113 @@ function getQueryParams<K extends PersoonSearchField>(params: PersoonQuery<K>) {
 }
 
 function mapPersoon(json: any): Persoon {
-  const { verblijfplaats, naam, geboorte } = json?.embedded ?? {};
-  const { plaats, land } = geboorte?.embedded ?? {};
+  const { adressering, naam, geboorte, burgerservicenummer } = json ?? {};
+  const { plaats, land, datum } = geboorte ?? {};
 
-  const {
-    postcode,
-    huisnummer,
-    woonplaats,
-    straat,
-    huisletter,
-    huisnummertoevoeging,
-  } = verblijfplaats ?? {};
+  // TODO parse to expected address fields???
+  const { adresregel1, adresregel2, adresregel3 } = adressering ?? {};
 
-  const datum = geboorte?.embedded?.datumOnvolledig ?? {};
+  const { geslachtsnaam, voornamen, voorvoegsel } = naam ?? {};
 
-  const geboortedatum =
-    datum && new Date(datum.jaar, datum.maand - 1, datum.dag);
+  const geboortedatum = datum?.datum && new Date(datum.datum);
 
   return {
     _typeOfKlant: "persoon",
-    postcode: postcode,
-    huisnummer: huisnummer?.toString(),
-    bsn: json?.burgerservicenummer,
+    bsn: burgerservicenummer,
     geboortedatum,
-    voornaam: naam?.voornamen,
-    voorvoegselAchternaam: naam?.voorvoegsel,
-    achternaam: naam?.geslachtsnaam,
+    voornaam: voornamen,
+    voorvoegselAchternaam: voorvoegsel,
+    achternaam: geslachtsnaam,
     geboorteplaats: plaats,
     geboorteland: land,
-    woonplaats,
-    straat,
-    huisletter,
-    huisnummertoevoeging,
   };
 }
 
-function getPersoonSearchUrl<K extends PersoonSearchField>(
-  search: PersoonQuery<K> | undefined,
-  page: number | undefined
-) {
-  if (!search) return "";
-  const url = new URL(personenRootUrl);
-  getQueryParams<K>(search).forEach((tuple) => {
-    url.searchParams.set(...tuple);
-  });
-  url.searchParams.set("extend[]", "all");
-  if (page !== undefined && page !== 1) {
-    url.searchParams.set("_page", page.toString());
-  }
-
-  return url.toString();
-}
-
-function getPersoonUrlByBsn(bsn: string) {
-  if (!bsn) return "";
-  const url = new URL(personenRootUrl);
-  url.searchParams.set("burgerservicenummer", bsn);
-  url.searchParams.set("extend[]", "all");
-  return url.toString();
-}
-
 function getPersoonUniqueBsnId(bsn: string | undefined) {
-  const url = getPersoonUrlByBsn(bsn ?? "");
-  if (!url) return url;
-  return url + "_single";
+  return zoekUrl + "_single" + bsn;
 }
 
-const searchSinglePersoon = (url: string) =>
-  searchPersonen(url).then(enforceOneOrZero);
+const searchSinglePersoon = (bsn: string) =>
+  searchPersonen({
+    field: "bsn",
+    value: bsn,
+  }).then(enforceOneOrZero);
 
-export const searchPersonen = (url: string) => {
-  return fetchLoggedIn(url)
+export const searchPersonen = <K extends PersoonSearchField>(
+  query: PersoonQuery<K>
+) => {
+  const entries = getQueryParams(query);
+  entries.push([
+    "fields",
+    [
+      "burgerservicenummer",
+      "geboorte.datum",
+      "geboorte.land",
+      "geboorte.plaats",
+      "adressering.adresregel1",
+      "adressering.adresregel2",
+      "adressering.adresregel3",
+      "adressering.land.omschrijving",
+      "naam.voornamen",
+      "naam.voorvoegsel",
+      "naam.geslachtsnaam",
+    ],
+  ]);
+  const body = JSON.stringify(Object.fromEntries(entries));
+  return fetchLoggedIn(zoekUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body,
+  })
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((p) => parsePagination(p, mapPersoon))
-    .then((p) => {
-      p.page.forEach((persoon) => {
+    .then((json) => {
+      const mapped: Persoon[] = [];
+      json.personen.forEach((p: any) => {
+        const persoon = mapPersoon(p);
         const key = getPersoonUniqueBsnId(persoon.bsn);
         if (key) {
           mutate(key, persoon);
         }
+        mapped.push(persoon);
       });
-      return p;
+      return defaultPagination(mapped);
     });
 };
 
 export function usePersoonByBsn(
   getBsn: () => string | undefined
 ): ServiceData<Persoon | null> {
-  const getUrl = () => getPersoonUrlByBsn(getBsn() ?? "");
-  return ServiceResult.fromFetcher(getUrl, searchSinglePersoon, {
-    getUniqueId: () => getPersoonUniqueBsnId(getBsn()),
-  });
+  return ServiceResult.fromFetcher(
+    zoekUrl,
+    () => searchSinglePersoon(getBsn() || ""),
+    {
+      getUniqueId: () => getPersoonUniqueBsnId(getBsn()),
+    }
+  );
 }
 
 type UseSearchParams<K extends PersoonSearchField> = {
   query: Ref<PersoonQuery<K> | undefined>;
-  page: Ref<number | undefined>;
 };
 
 export function useSearchPersonen<K extends PersoonSearchField>({
   query,
-  page,
 }: UseSearchParams<K>) {
-  const getUrl = () => getPersoonSearchUrl(query.value, page.value);
-
-  return ServiceResult.fromFetcher(getUrl, searchPersonen);
+  return ServiceResult.fromFetcher(
+    zoekUrl,
+    () => {
+      if (!query.value) {
+        throw new Error("should not happen, already checked in unique id");
+      }
+      return searchPersonen(query.value);
+    },
+    {
+      getUniqueId() {
+        return query.value ? JSON.stringify(query.value) : "";
+      },
+    }
+  );
 }

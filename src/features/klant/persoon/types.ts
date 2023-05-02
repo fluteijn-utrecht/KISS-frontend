@@ -7,8 +7,8 @@ export interface Persoon {
   voornaam: string;
   voorvoegselAchternaam?: string;
   achternaam: string;
-  geboorteplaats: string;
-  geboorteland: string;
+  geboorteplaats?: string;
+  geboorteland?: string;
   postcode?: string;
   huisnummer?: string;
   straat?: string;

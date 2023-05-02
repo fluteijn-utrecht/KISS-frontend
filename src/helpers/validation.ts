@@ -20,6 +20,11 @@ export interface PostcodeHuisnummer {
   huisnummer: string;
 }
 
+export interface GeslachtsnaamGeboortedatum {
+  geslachtsnaam: string;
+  geboortedatum: Date;
+}
+
 export function parsePostcodeHuisnummer(
   input: string
 ): PostcodeHuisnummer | Error {
@@ -86,4 +91,23 @@ export function parseKvkNummer(input: string): string | Error {
   return !matches || matches.length < 2
     ? new Error("Vul de 8 cijfers van het KvK-nummer in, bijvoorbeeld 12345678")
     : matches[1];
+}
+
+export function parseGeslachtsnaamGeboortedatum(
+  input: string
+): GeslachtsnaamGeboortedatum | Error {
+  const [left, right] = input.split(" ");
+  if (!left || !right)
+    return new Error(
+      "Vul de geslachtsnaam en de geboortedatum in, gescheiden door een spatie"
+    );
+  let [geslachtsnaam, geboortedatum] = [left, parseDutchDate(right)];
+  if (geboortedatum instanceof Error) {
+    [geslachtsnaam, geboortedatum] = [right, parseDutchDate(left)];
+  }
+  if (geboortedatum instanceof Error) return geboortedatum;
+  return {
+    geboortedatum,
+    geslachtsnaam,
+  };
 }
