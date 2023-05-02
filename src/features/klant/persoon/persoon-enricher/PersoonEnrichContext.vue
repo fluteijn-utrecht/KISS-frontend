@@ -60,12 +60,6 @@ function mapGeboortedatum(persoon: Persoon | null) {
   return persoon?.geboortedatum ?? null;
 }
 
-function mapPostcodeHuisnummer(persoon: Persoon | null) {
-  return (
-    persoon && [persoon.postcode, persoon.huisnummer].filter(Boolean).join(" ")
-  );
-}
-
 const router = useRouter();
 
 const create = async () => {
@@ -101,7 +95,9 @@ const emails = mapServiceData(klantData, mapEmails);
 
 const geboortedatum = mapServiceData(persoonData, mapGeboortedatum);
 
-const postcodeHuisnummer = mapServiceData(persoonData, mapPostcodeHuisnummer);
+const adresregel1 = mapServiceData(persoonData, (k) => k?.adresregel1 || null);
+const adresregel2 = mapServiceData(persoonData, (k) => k?.adresregel2 || null);
+const adresregel3 = mapServiceData(persoonData, (k) => k?.adresregel3 || null);
 
 const detailLink = computed(() => {
   const n = naam.value.success ? naam.value.data : null;
@@ -114,7 +110,9 @@ const result: EnrichedPersoon = reactive({
   telefoonnummers,
   emails,
   geboortedatum,
-  postcodeHuisnummer,
+  adresregel1,
+  adresregel2,
+  adresregel3,
   create,
   detailLink,
 });

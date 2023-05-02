@@ -26,10 +26,16 @@
         :date="result.geboortedatum.data"
       />
     </td>
-    <td>
-      <div class="skeleton" v-if="result.postcodeHuisnummer.loading" />
-      <template v-if="result.postcodeHuisnummer.success">{{
-        result.postcodeHuisnummer.data
+    <td class="wrap">
+      <div class="skeleton" v-if="result.adresregel1.loading" />
+      <template v-if="result.adresregel1.success">{{
+        result.adresregel1.data
+      }}</template>
+    </td>
+    <td class="wrap">
+      <div class="skeleton" v-if="result.adresregel2.loading" />
+      <template v-if="result.adresregel2.success">{{
+        result.adresregel2.data
       }}</template>
     </td>
     <td>

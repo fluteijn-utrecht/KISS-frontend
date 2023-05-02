@@ -103,7 +103,6 @@ import { useRouter } from "vue-router";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import {
   parseBsn,
-  parseDutchDate,
   parseGeslachtsnaamGeboortedatum,
   parsePostcodeHuisnummer,
 } from "@/helpers/validation";
@@ -119,7 +118,7 @@ type SearchFields = KlantSearchField | PersoonSearchField;
 const labels: {
   readonly [K in SearchFields]: string;
 } = {
-  geslachtsnaamGeboortedatum: "Geslachtsnaam + geboortedatum",
+  geslachtsnaamGeboortedatum: "Achternaam + geboortedatum",
   postcodeHuisnummer: "Postcode + huisnummer",
   email: "E-mailadres",
   telefoonnummer: "Telefoonnummer",

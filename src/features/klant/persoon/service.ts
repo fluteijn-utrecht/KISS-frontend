@@ -73,7 +73,7 @@ const queryDictionary: PersoonQueryParams = {
     ["postcode", `${postcode.numbers}${postcode.digits}`],
     ["huisnummer", huisnummer],
     ["type", "ZoekMetPostcodeEnHuisnummer"],
-    ["fields", [...minimalFields]],
+    ["fields", [...minimalFields, "geboorte.land", "geboorte.plaats"]],
   ],
 };
 
@@ -87,13 +87,7 @@ function mapPersoon(json: any): Persoon {
   const { adressering, naam, geboorte, burgerservicenummer } = json ?? {};
   const { plaats, land, datum } = geboorte ?? {};
 
-  // TODO parse to expected address fields???
   const { adresregel1, adresregel2, adresregel3 } = adressering ?? {};
-
-  const [numbers, digit] = adresregel2?.split(" ") ?? [];
-  const postcode = [numbers, digit].filter(Boolean).join("");
-  const adresParts = adresregel1?.split(" ") ?? [];
-  const huisnummer = adresParts.at(-1);
 
   const { geslachtsnaam, voornamen, voorvoegsel } = naam ?? {};
 
@@ -108,8 +102,9 @@ function mapPersoon(json: any): Persoon {
     achternaam: geslachtsnaam,
     geboorteplaats: plaats,
     geboorteland: land,
-    postcode,
-    huisnummer,
+    adresregel1,
+    adresregel2,
+    adresregel3,
   };
 }
 
