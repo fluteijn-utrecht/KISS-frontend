@@ -73,7 +73,7 @@ const queryDictionary: PersoonQueryParams = {
     ["postcode", `${postcode.numbers}${postcode.digits}`],
     ["huisnummer", huisnummer],
     ["type", "ZoekMetPostcodeEnHuisnummer"],
-    ["fields", [...minimalFields, "geboorte.land", "geboorte.plaats"]],
+    ["fields", [...minimalFields]],
   ],
 };
 
