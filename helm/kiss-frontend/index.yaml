@@ -18,21 +18,4 @@ entries:
     urls:
     - charts/elasticstack-0.4.4.tgz
     version: 0.4.4
-  skeleton-app:
-  - apiVersion: v2
-    appVersion: 0.1.0
-    created: "2023-05-03T11:25:42.6469467+02:00"
-    dependencies:
-    - alias: gateway
-      condition: gateway.enabled
-      name: commonground-gateway
-      repository: https://raw.githubusercontent.com/ConductionNL/commonground-gateway/feature-cleanup/api/helm/
-      version: 0.1.7
-    description: A Helm chart for the Skeleton Gatsby Application
-    digest: f2dd476592f133f4955c81bff13192343b0833c91fc816a6456f762209599338
-    name: skeleton-app
-    type: application
-    urls:
-    - charts/skeleton-app-0.1.1.tgz
-    version: 0.1.1
 generated: "2023-05-03T11:25:42.6378689+02:00"
