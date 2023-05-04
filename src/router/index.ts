@@ -14,6 +14,10 @@ import { redirectRoute } from "@/features/login";
 import BedrijvenView from "@/views/BedrijvenView.vue";
 import BedrijfDetailView from "@/views/BedrijfDetailView.vue";
 import LinksView from "@/views/LinksView.vue";
+import NieuwsEnWerkinstructiesBeheer from "@/views/Beheer/NieuwsEnWerkinstructiesBeheer.vue";
+import NieuwsEnWerkinstructieBeheer from "@/views/Beheer/NieuwsEnWerkinstructieBeheer.vue";
+import SkillsBeheer from "@/views/Beheer/SkillsBeheer.vue";
+import SkillBeheer from "@/views/Beheer/SkillBeheer.vue";
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
@@ -95,6 +99,30 @@ const router = createRouter({
       name: "links",
       component: LinksView,
       meta: { showNav: true, showNotitie: true, showSearch: true },
+    },
+    {
+      path: "/NieuwsEnWerkinstructiesBeheer",
+      name: "NieuwsEnWerkinstructiesBeheer",
+      component: NieuwsEnWerkinstructiesBeheer,
+      meta: {},
+    },
+    {
+      path: "/SkillsBeheer",
+      name: "SkillsBeheer",
+      component: SkillsBeheer,
+      meta: {},
+    },
+    {
+      path: "/NieuwsEnWerkinstructieBeheer",
+      name: "NieuwsEnWerkinstructieBeheer",
+      component: NieuwsEnWerkinstructieBeheer,
+      meta: {},
+    },
+    {
+      path: "/SkillBeheer",
+      name: "SkillBeheer",
+      component: SkillBeheer,
+      meta: {},
     },
     redirectRoute,
   ],
