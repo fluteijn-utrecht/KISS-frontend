@@ -4,12 +4,12 @@
   <div v-else-if="error">Er is een fout opgetreden.</div>
   <ul v-else>
     <li v-for="bericht in berichten" :key="bericht.id">
-      <router-link :to="'/BerichtBeheer/' + bericht.id">{{
+      <router-link :to="'/NieuwsEnWerkinstructieBeheer/' + bericht.id">{{
         bericht.titel
       }}</router-link>
     </li>
   </ul>
-  <router-link to="/BerichtBeheer/">+</router-link>
+  <router-link to="/NieuwsEnWerkinstructieBeheer/">+</router-link>
 </template>
 
 <script setup lang="ts">

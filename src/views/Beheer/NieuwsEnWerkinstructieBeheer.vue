@@ -1,10 +1,14 @@
 <template>
   <h1>Bericht</h1>
 
+  <router-link to="/NieuwsEnWerkinstructiesBeheer/"
+    >Terug naar het overzicht</router-link
+  >
+
   <template v-if="loading"> ..loading </template>
-
-  <template v-else-if="success"> klaar. ga terug... </template>
-
+  <template v-else-if="success">
+    <div>Het bericht is opgeslagen.</div>
+  </template>
   <template v-else-if="bericht">
     <label for="titel">Titel </label>
     <input type="text" id="titel" v-model="bericht.titel" />
@@ -54,7 +58,7 @@ type berichtType = {
   id?: number;
   titel?: string;
   inhoud?: string;
-  publicatieDatum?: Date;
+  publicatieDatum?: string;
   isBelangrijk?: boolean;
   skills: Array<number>;
 };
@@ -76,6 +80,11 @@ const submit = async () => {
   error.value = false;
   success.value = false;
   try {
+    if (bericht.value?.publicatieDatum) {
+      bericht.value.publicatieDatum = new Date(
+        bericht.value?.publicatieDatum
+      ).toISOString();
+    }
     if (props.id) {
       await fetch("/api/berichten/" + props.id, {
         method: "PUT",
@@ -109,8 +118,16 @@ async function load() {
       //load bericht if id provided
       const response = await fetch("/api/berichten/" + props.id);
       const jsonData = await response.json();
+
+      if (jsonData.publicatieDatum) {
+        jsonData.publicatieDatum = toHtmlInputDateTime(
+          jsonData.publicatieDatum
+        );
+      }
       bericht.value = jsonData;
       //  bericht.value.skills= []
+    } else {
+      bericht.value = { skills: [] };
     }
 
     //load skils
@@ -121,6 +138,13 @@ async function load() {
     error.value = true;
   }
   loading.value = false;
+}
+
+function toHtmlInputDateTime(datumString: string) {
+  const datum = new Date(datumString);
+  return `${datum.getFullYear()}-${("0" + (datum.getMonth() + 1)).slice(-2)}-${(
+    "0" + datum.getDate()
+  ).slice(-2)}T${datum.getHours()}:${datum.getMinutes()}`;
 }
 
 onMounted(() => {

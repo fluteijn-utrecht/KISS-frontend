@@ -1,6 +1,8 @@
 <template>
   <h1>Skill</h1>
 
+  <router-link to="/SkillsBeheer/">Terug naar het overzicht</router-link>
+
   <template v-if="loading"> ..loading </template>
 
   <template v-else-if="success"> klaar. ga terug... </template>
