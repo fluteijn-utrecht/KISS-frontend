@@ -18,12 +18,6 @@ try
     });
 
     // Add services to the container.
-
-
-    builder.Services.AddDbContext<NieuwsEnWerkinstructiesDbContext>( );
-
-
-
     builder.Services.AddControllers();
     builder.Services.AddKissAuth(
         builder.Configuration["OIDC_AUTHORITY"],
@@ -34,7 +28,7 @@ try
     builder.Services.AddKissProxy();
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
-    var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
+    var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host=l{builder.Configuration["POSTGRES_HOST"]}Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
     builder.Services.AddDbContext<NieuwsEnWerkinstructiesDbContext>(o => o.UseNpgsql(connStr));
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
