@@ -9,3 +9,16 @@ services:
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
+  postgres-db:
+    env_file:
+      - .env
+      - .env.local
+    image: postgres
+    volumes:
+      - db:/var/lib/postgrsql/data
+    restart: always
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+volumes:
+  db:
