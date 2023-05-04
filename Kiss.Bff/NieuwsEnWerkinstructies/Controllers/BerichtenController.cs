@@ -72,22 +72,31 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         [HttpPost]
         public async Task<ActionResult<Bericht>> PostBericht(BerichtPostModel bericht)
         {
-            if (_context.Berichten == null)
+
+            try
             {
-                return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
+                if (_context.Berichten == null)
+                {
+                    return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
+                }
+
+                var newBericht = new Bericht
+                {
+                    Titel = bericht.Titel,
+                    Inhoud = bericht.Inhoud,
+                    PublicatieDatum = bericht.PublicatieDatum,
+                    IsBelangrijk = bericht.IsBelangrijk
+                };
+                _context.Berichten.Add(newBericht);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetBericht", new { id = newBericht.Id }, newBericht);
+
+            } catch (Exception ex)
+            {
+
+                return null;
             }
-
-            var newBericht = new Bericht
-            {
-                Titel = bericht.Titel,
-                Inhoud = bericht.Inhoud,
-                PublicatieDatum = bericht.PublicatieDatum,
-                IsBelangrijk = bericht.IsBelangrijk
-            };
-            _context.Berichten.Add(newBericht);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetBericht", new { id = newBericht.Id }, newBericht);
         }
 
         // DELETE: api/Berichten/5
@@ -134,7 +143,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
         public List<int>? Skills { get; set; }
-        public DateTime? PublicatieDatum { get; set; }
+        public DateTimeOffset? PublicatieDatum { get; set; }
     }
 }
 
