@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,11 @@ try
     });
 
     // Add services to the container.
+
+
+    builder.Services.AddDbContext<NieuwsEnWerkinstructiesDbContext>( );
+
+
 
     builder.Services.AddControllers();
     builder.Services.AddKissAuth(
