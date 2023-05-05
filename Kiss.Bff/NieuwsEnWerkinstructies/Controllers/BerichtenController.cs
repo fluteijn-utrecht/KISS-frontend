@@ -37,7 +37,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                 return NotFound();
             }
 
-            var bericht = await _context.Berichten.Include(x => x.Skills).FirstOrDefaultAsync(x=> x.Id ==id); //.Include(x=>x.Skills)
+            var bericht = await _context.Berichten
+                .Include(x => x.Skills.Where(s=>!s.IsDeleted))
+                .FirstOrDefaultAsync(x=> x.Id ==id); 
 
             if (bericht == null)
             {

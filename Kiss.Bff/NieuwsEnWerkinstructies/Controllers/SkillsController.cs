@@ -25,7 +25,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             {
                 return NotFound();
             }
-            return await _context.Skills.ToListAsync();
+            return await _context.Skills.Where(x=>!x.IsDeleted).ToListAsync();
         }
 
         // GET: api/Skills/5
@@ -38,7 +38,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             }
             var skill = await _context.Skills.FindAsync(id);
 
-            if (skill == null)
+            if (skill == null || skill.IsDeleted)
             {
                 return NotFound();
             }
@@ -87,8 +87,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public async Task<IActionResult> DeleteSkill(int id)
         {
 
-            throw new NotImplementedException();
-
             if (_context.Skills == null)
             {
                 return NotFound();
@@ -99,7 +97,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                 return NotFound();
             }
 
-            _context.Skills.Remove(skill);
+            //soft delete
+            skill.IsDeleted = true;
             await _context.SaveChangesAsync();
 
             return NoContent();
