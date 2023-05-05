@@ -8,7 +8,7 @@ public static class StaticFileCacheHeaders
 {
     private const int DurationInSeconds = 60 * 60 * 24 * 100;
 
-    private static readonly Regex s_hashHashRegex = new(@"^[\w]+\.[a-fA-F0-9]{8}\.[\w]+$");
+    private static readonly Regex s_hashHashRegex = new(@"^[\w]+-[a-fA-F0-9]{8}\.[\w]+$");
 
     private static readonly CacheControlHeaderValue s_longCache = new()
     {
