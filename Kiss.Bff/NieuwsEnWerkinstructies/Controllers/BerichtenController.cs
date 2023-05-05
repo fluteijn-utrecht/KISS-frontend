@@ -36,7 +36,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             {
                 return NotFound();
             }
-            var bericht = await _context.Berichten.FindAsync(id);
+
+            var bericht = await _context.Berichten.Include(x => x.Skills).FirstOrDefaultAsync(x=> x.Id ==id); //.Include(x=>x.Skills)
 
             if (bericht == null)
             {
@@ -50,7 +51,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBericht(int id, BerichtPutModel bericht)
         {
-            var current = _context.Berichten.FirstOrDefault(x => x.Id == id);
+            var current = _context.Berichten.Include(x=>x.Skills).FirstOrDefault(x => x.Id == id);
 
             if (current == null)
             {
@@ -62,41 +63,64 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             current.PublicatieDatum = bericht.PublicatieDatum;
             current.IsBelangrijk = bericht.IsBelangrijk;
 
+            UpdateSkills(bericht.Skills, current);
+
             await _context.SaveChangesAsync();
-          
+
             return NoContent();
         }
 
+        private void UpdateSkills(List<int>? selectedSkills, Bericht? current)
+        {
+            if (current == null)
+            {
+                return;
+            }
+
+            //reset 
+            current.Skills.Clear();
+          
+            //add selected skills
+            if (selectedSkills != null)
+            {
+                //available skills
+                var skills = _context.Skills.ToList();
+
+                foreach (var skillId in selectedSkills)
+                {
+                    var dbSkill = skills.FirstOrDefault(x => x.Id == skillId);
+                    if (dbSkill != null)
+                    {
+                        current.Skills.Add(dbSkill);
+                    }
+                }
+            }
+        }
+
         // POST: api/Berichten
-        
         [HttpPost]
         public async Task<ActionResult<Bericht>> PostBericht(BerichtPostModel bericht)
         {
-
-            try
+            if (_context.Berichten == null)
             {
-                if (_context.Berichten == null)
-                {
-                    return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
-                }
-
-                var newBericht = new Bericht
-                {
-                    Titel = bericht.Titel,
-                    Inhoud = bericht.Inhoud,
-                    PublicatieDatum = bericht.PublicatieDatum,
-                    IsBelangrijk = bericht.IsBelangrijk
-                };
-                _context.Berichten.Add(newBericht);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetBericht", new { id = newBericht.Id }, newBericht);
-
-            } catch (Exception ex)
-            {
-
-                return null;
+                return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
             }
+
+            var newBericht = new Bericht
+            {
+                Titel = bericht.Titel,
+                Inhoud = bericht.Inhoud,
+                PublicatieDatum = bericht.PublicatieDatum,
+                IsBelangrijk = bericht.IsBelangrijk
+            };
+
+            UpdateSkills(bericht.Skills, newBericht);
+
+            _context.Berichten.Add(newBericht);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetBericht", new { id = newBericht.Id }, newBericht);
+
         }
 
         // DELETE: api/Berichten/5
@@ -120,7 +144,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             return NoContent();
         }
-              
+
     }
 
 

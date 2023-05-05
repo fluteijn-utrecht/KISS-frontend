@@ -4,12 +4,12 @@
   <div v-else-if="error">Er is een fout opgetreden.</div>
   <ul v-else>
     <li v-for="skill in skills" :key="skill.id">
-      <router-link :to="'/SkillBeheer/' + skill.id">{{
+      <router-link :to="'/Beheer/Skill/' + skill.id">{{
         skill.naam
       }}</router-link>
     </li>
   </ul>
-  <router-link to="/SkillBeheer/">+</router-link>
+  <router-link to="/Beheer/Skill/">+</router-link>
 </template>
 
 <script setup lang="ts">

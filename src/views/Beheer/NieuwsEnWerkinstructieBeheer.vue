@@ -1,7 +1,7 @@
 <template>
   <h1>Bericht</h1>
 
-  <router-link to="/NieuwsEnWerkinstructiesBeheer/"
+  <router-link to="/Beheer/NieuwsEnWerkinstructies/"
     >Terug naar het overzicht</router-link
   >
 
@@ -60,7 +60,7 @@ type berichtType = {
   inhoud?: string;
   publicatieDatum?: string;
   isBelangrijk?: boolean;
-  skills: Array<number>;
+  skills: Array<any>;
 };
 
 type skill = {
@@ -125,7 +125,9 @@ async function load() {
         );
       }
       bericht.value = jsonData;
-      //  bericht.value.skills= []
+      if (bericht.value) {
+        bericht.value.skills = bericht.value.skills.map((s) => s.id);
+      }
     } else {
       bericht.value = { skills: [] };
     }
@@ -142,9 +144,12 @@ async function load() {
 
 function toHtmlInputDateTime(datumString: string) {
   const datum = new Date(datumString);
+
   return `${datum.getFullYear()}-${("0" + (datum.getMonth() + 1)).slice(-2)}-${(
     "0" + datum.getDate()
-  ).slice(-2)}T${datum.getHours()}:${datum.getMinutes()}`;
+  ).slice(-2)}T${("0" + datum.getHours()).slice(-2)}:${(
+    "0" + datum.getMinutes()
+  ).slice(-2)}`;
 }
 
 onMounted(() => {

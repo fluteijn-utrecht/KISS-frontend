@@ -1,7 +1,7 @@
 <template>
   <h1>Skill</h1>
 
-  <router-link to="/SkillsBeheer/">Terug naar het overzicht</router-link>
+  <router-link to="/Beheer/Skills/">Terug naar het overzicht</router-link>
 
   <template v-if="loading"> ..loading </template>
 

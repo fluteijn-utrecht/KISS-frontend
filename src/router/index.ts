@@ -18,6 +18,7 @@ import NieuwsEnWerkinstructiesBeheer from "@/views/Beheer/NieuwsEnWerkinstructie
 import NieuwsEnWerkinstructieBeheer from "@/views/Beheer/NieuwsEnWerkinstructieBeheer.vue";
 import SkillsBeheer from "@/views/Beheer/SkillsBeheer.vue";
 import SkillBeheer from "@/views/Beheer/SkillBeheer.vue";
+import NieuwsEnWerkinstructiesBeheerLayout from "@/views/Beheer/NieuwsEnWerkinstructiesBeheerLayout.vue";
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
@@ -100,31 +101,41 @@ const router = createRouter({
       component: LinksView,
       meta: { showNav: true, showNotitie: true, showSearch: true },
     },
+
     {
-      path: "/NieuwsEnWerkinstructiesBeheer",
-      name: "NieuwsEnWerkinstructiesBeheer",
-      component: NieuwsEnWerkinstructiesBeheer,
-      meta: {},
-    },
-    {
-      path: "/SkillsBeheer",
-      name: "SkillsBeheer",
-      component: SkillsBeheer,
-      meta: {},
-    },
-    {
-      path: "/NieuwsEnWerkinstructieBeheer/:id?",
-      name: "NieuwsEnWerkinstructieBeheer",
-      component: NieuwsEnWerkinstructieBeheer,
+      path: "/beheer",
+      name: "NieuwsEnWerkinstructiesBeheerLayout",
+      component: NieuwsEnWerkinstructiesBeheerLayout,
       props: true,
       meta: {},
-    },
-    {
-      path: "/SkillBeheer/:id?",
-      name: "SkillBeheer",
-      component: SkillBeheer,
-      props: true,
-      meta: {},
+      children: [
+        {
+          path: "NieuwsEnWerkinstructies",
+          name: "NieuwsEnWerkinstructiesBeheer",
+          component: NieuwsEnWerkinstructiesBeheer,
+          meta: {},
+        },
+        {
+          path: "Skills",
+          name: "SkillsBeheer",
+          component: SkillsBeheer,
+          meta: {},
+        },
+        {
+          path: "NieuwsEnWerkinstructie/:id?",
+          name: "NieuwsEnWerkinstructieBeheer",
+          component: NieuwsEnWerkinstructieBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "Skill/:id?",
+          name: "SkillBeheer",
+          component: SkillBeheer,
+          props: true,
+          meta: {},
+        },
+      ],
     },
     redirectRoute,
   ],
