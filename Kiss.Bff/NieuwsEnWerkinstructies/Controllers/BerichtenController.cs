@@ -17,6 +17,35 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             _context = context;
         }
 
+        // GET: api/Berichten/published
+        [HttpGet("published")]
+        public IAsyncEnumerable<BerichtViewModel> GetBerichten(BerichtFilterModel? filterModel)
+        {
+            IQueryable<Bericht> query = _context.Berichten;
+
+            if (!string.IsNullOrWhiteSpace(filterModel?.Berichttype))
+            {
+                query = query.Where(x=> x.Type == filterModel.Berichttype);
+            }
+
+            return query
+                .Where(x=> x.PublicatieDatum <= DateTimeOffset.Now)
+                .OrderByDescending(x=> x.DateUpdated ?? x.DateCreated)
+                .Select(x => new BerichtViewModel
+                {
+                    Id = x.Id,
+                    Inhoud = x.Inhoud,
+                    IsBelangrijk = x.IsBelangrijk,
+                    PublicatieDatum = x.PublicatieDatum,
+                    Titel = x.Titel,
+                    Skills = x.Skills
+                        .Where(y=> !y.IsDeleted)
+                        .Select(y => new BerichtSkillViewModel { Id = y.Id, Naam = y.Naam })
+                        .ToList(),
+                })
+                .AsAsyncEnumerable();
+        }
+
         // GET: api/Berichten
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Bericht>>> GetBerichten()
@@ -163,6 +192,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         }
 
     }
+
+    public record BerichtFilterModel(string? Berichttype)
 
 
     public class BerichtPutModel
