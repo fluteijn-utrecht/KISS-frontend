@@ -7,6 +7,19 @@
   </template>
   <template v-else-if="bericht">
     <form class="container" @submit.prevent="submit">
+      <fieldset>
+        <legend>Type</legend>
+        <label class="utrecht-form-label" v-for="t in berichtTypes" :key="t">
+          <input
+            type="radio"
+            name="berichtType"
+            :value="t"
+            v-model="bericht.type"
+          />
+          {{ t }}
+        </label>
+      </fieldset>
+
       <label class="utrecht-form-label" for="titel"
         ><span>Titel</span>
         <input type="text" id="titel" v-model="bericht.titel" />
@@ -33,7 +46,7 @@
       >
 
       <label class="utrecht-form-label" for="publicatieDatum">
-        <span>PublicatieDatum</span>
+        <span>Publicatiedatum</span>
 
         <input
           type="datetime-local"
@@ -42,18 +55,32 @@
         />
       </label>
 
+      <label class="utrecht-form-label">
+        <span>Publicatie-einddatum</span>
+
+        <input type="datetime-local" v-model="bericht.publicatieEinddatum" />
+      </label>
+
+      <fieldset>
+        <legend>Skills</legend>
+        <label
+          v-for="skill in skills"
+          :key="skill.id"
+          class="utrecht-form-label"
+          :for="skill.id.toString()"
+        >
+          <input
+            :id="skill.id.toString()"
+            type="checkbox"
+            :value="skill.id"
+            v-model="bericht.skills"
+          />
+          {{ skill.naam }}</label
+        >
+      </fieldset>
+
       <ul>
-        <li v-for="skill in skills" :key="skill.id">
-          <label class="utrecht-form-label" :for="skill.id.toString()">
-            <input
-              :id="skill.id.toString()"
-              type="checkbox"
-              :value="skill.id"
-              v-model="bericht.skills"
-            />
-            {{ skill.naam }}</label
-          >
-        </li>
+        <li></li>
       </ul>
 
       <!-- <input type="submit" value="ok" @click="submit" /> -->
@@ -86,6 +113,7 @@ import {
 } from "@utrecht/component-library-vue";
 //https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/vuejs-v3.html#quick-start
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { berichtTypes } from "@/features/werkbericht/types";
 
 const props = defineProps(["id"]);
 
@@ -98,9 +126,11 @@ const editorConfig = ref({
 
 type berichtType = {
   id?: number;
+  type?: string;
   titel?: string;
   inhoud?: string;
   publicatieDatum?: string;
+  publicatieEinddatum?: string;
   isBelangrijk?: boolean;
   skills: Array<any>;
 };
@@ -117,16 +147,18 @@ const error = ref<boolean>(false);
 const bericht = ref<berichtType | null>(null);
 const skills = ref<Array<skill>>([]);
 
+const addTimezone = (s?: string) => s && new Date(s).toISOString();
+
 const submit = async () => {
+  if (!bericht.value) return;
   loading.value = true;
   error.value = false;
   success.value = false;
   try {
-    if (bericht.value?.publicatieDatum) {
-      bericht.value.publicatieDatum = new Date(
-        bericht.value?.publicatieDatum
-      ).toISOString();
-    }
+    bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);
+    bericht.value.publicatieEinddatum = addTimezone(
+      bericht.value.publicatieEinddatum
+    );
     if (props.id) {
       await fetch("/api/berichten/" + props.id, {
         method: "PUT",
@@ -161,11 +193,10 @@ async function load() {
       const response = await fetch("/api/berichten/" + props.id);
       const jsonData = await response.json();
 
-      if (jsonData.publicatieDatum) {
-        jsonData.publicatieDatum = toHtmlInputDateTime(
-          jsonData.publicatieDatum
-        );
-      }
+      jsonData.publicatieDatum = toHtmlInputDateTime(jsonData.publicatieDatum);
+      jsonData.publicatieEinddatum = toHtmlInputDateTime(
+        jsonData.publicatieEinddatum
+      );
       bericht.value = jsonData;
       if (bericht.value) {
         bericht.value.skills = bericht.value.skills.map((s) => s.id);
@@ -184,7 +215,8 @@ async function load() {
   loading.value = false;
 }
 
-function toHtmlInputDateTime(datumString: string) {
+function toHtmlInputDateTime(datumString?: string) {
+  if (!datumString) return datumString;
   const datum = new Date(datumString);
 
   return `${datum.getFullYear()}-${("0" + (datum.getMonth() + 1)).slice(-2)}-${(
