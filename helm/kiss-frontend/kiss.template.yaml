@@ -1,19 +1,10 @@
-_common: &common
-  domain: dev.kiss-demo.nl
-  secretName: wildcard-kiss-tls
-  elasticPassword: pass
-  elasticIngress: elastic.dev.kiss-demo.nl
-  kibanaIngress: kibana.dev.kiss-demo.nl
-  elasticHost: https://elastic.dev.kiss-demo.nl
-  kibanaHost: https://elastic.dev.kiss-demo.nl
-  
 image:
-    pullPolicy: Always
+    pullPolicy: {{ .Values.image.pullPolicy }}
 ingress:
   enabled: true
   className: "nginx"
   hosts:
-    - host: *common.domain
+    - host: {{ .Values.common.domain }}
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -21,32 +12,32 @@ ingress:
           servicePort: 80
   tls:
     - hosts:
-        - *.common.domain
-      secretName: *common.secretName
+        - {{ .Values.common.domain }}
+      secretName: {{ .Values.common.secretName }}
 elasticstack:
-    elasticHost: *.common.elasticHost
-    kibanaHost: *.common.kibanaHost
+    elasticHost: {{ .Values.common.elasticHost }}
+    kibanaHost: {{ .Values.common.kibanaHost }}
     elasticsearch:
         ingress:
             hosts:
-              - host: *.common.elasticIngress
+              - host: {{ .Values.common.elasticIngress }}
                 paths:
                 - path: /
             tls:
               - hosts:
-                  - *.common.elasticIngress
-                secretName: *common.secretName
+                  - {{ .Values.common.elasticIngress }}
+                secretName: {{ .Values.common.secretName }}
     kibana:
         elasticsearchHost: https://elasticsearch-master:9200
         ingress:
             hosts:
-              - host: *.common.kibanaIngress
+              - host: {{ .Values.common.kibanaIngress }}
                 paths:
                   - path: /
             tls:
               - hosts:
-                  - *.common.kibanaIngress
-                secretName: *common.secretName
+                  - {{ .Values.common.kibanaIngress }}
+                secretName: {{ .Values.common.secretName }}
     credentials:
         username: elastic
-        password: *common.secretName
+        password: {{ .Values.common.elasticPassword }}

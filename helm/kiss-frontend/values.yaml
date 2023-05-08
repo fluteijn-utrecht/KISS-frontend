@@ -4,9 +4,14 @@
 
 replicaCount: 1
 
-config:  
-  organizationIds: []
-  gatewayBaseUri:
+common:
+  domain: dev.kiss-demo.nl
+  secretName: wildcard-kiss-tls
+  elasticPassword: pass
+  elasticIngress: elastic.dev.kiss-demo.nl
+  kibanaIngress: kibana.dev.kiss-demo.nl
+  elasticHost: https://elastic.dev.kiss-demo.nl
+  kibanaHost: https://kibana.dev.kiss-demo.nl
 
 image:
   repository: ghcr.io/klantinteractie-servicesysteem/kiss-frontend
