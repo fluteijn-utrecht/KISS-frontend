@@ -1,9 +1,14 @@
 <template>
   <utrecht-heading :level="1">Nieuws of werkinstructie</utrecht-heading>
 
-  <template v-if="loading"> ..loading </template>
+  <template v-if="loading"> <simple-spinner /></template>
   <template v-else-if="success">
-    <div>Het bericht is opgeslagen.</div>
+    <div class="container">
+      <p>Het bericht is opgeslagen.</p>
+      <router-link to="/Beheer/NieuwsEnWerkinstructies/">
+        Terug naar het overzicht
+      </router-link>
+    </div>
   </template>
   <template v-else-if="bericht">
     <form class="container" @submit.prevent="submit">
@@ -101,7 +106,6 @@
         </li>
       </menu>
     </form>
-    <template if="error"> fout:... </template>
   </template>
 </template>
 
@@ -114,6 +118,8 @@ import {
 //https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/vuejs-v3.html#quick-start
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { berichtTypes } from "@/features/werkbericht/types";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import { toast } from "@/stores/toast";
 
 const props = defineProps(["id"]);
 
@@ -142,17 +148,23 @@ type skill = {
 
 const loading = ref<boolean>(true);
 const success = ref<boolean>(false);
-const error = ref<boolean>(false);
 
 const bericht = ref<berichtType | null>(null);
 const skills = ref<Array<skill>>([]);
 
 const addTimezone = (s?: string) => s && new Date(s).toISOString();
 
+const showError = () => {
+  toast({
+    text: "Er is een fout opgetreden. Probeer het later opnieuw.",
+    type: "error",
+  });
+};
+
 const submit = async () => {
   if (!bericht.value) return;
   loading.value = true;
-  error.value = false;
+
   success.value = false;
   try {
     bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);
@@ -160,25 +172,35 @@ const submit = async () => {
       bericht.value.publicatieEinddatum
     );
     if (props.id) {
-      await fetch("/api/berichten/" + props.id, {
+      const result = await fetch("/api/berichten/" + props.id, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(bericht.value),
       });
+
+      if (result.status > 300) {
+        showError();
+      } else {
+        success.value = true;
+      }
     } else {
-      await fetch("/api/berichten/", {
+      const result = await fetch("/api/berichten/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(bericht.value),
       });
+      if (result.status > 300) {
+        showError();
+      } else {
+        success.value = true;
+      }
     }
-    success.value = true;
   } catch {
-    error.value = true;
+    showError();
   } finally {
     loading.value = false;
   }
@@ -186,11 +208,17 @@ const submit = async () => {
 
 async function load() {
   loading.value = true;
-  error.value = false;
+
   try {
     if (props.id) {
       //load bericht if id provided
       const response = await fetch("/api/berichten/" + props.id);
+
+      if (response.status > 300) {
+        showError();
+        return;
+      }
+
       const jsonData = await response.json();
 
       jsonData.publicatieDatum = toHtmlInputDateTime(jsonData.publicatieDatum);
@@ -207,10 +235,19 @@ async function load() {
 
     //load skils
     const skillsResponse = await fetch("/api/Skills");
+
+    if (skillsResponse.status > 300) {
+      showError();
+      return;
+    }
+
     const skillsJonData = await skillsResponse.json();
     skills.value = skillsJonData;
   } catch {
-    error.value = true;
+    toast({
+      text: "Er is een fout opgetreden. Probeer het later opnieuw.",
+      type: "error",
+    });
   }
   loading.value = false;
 }

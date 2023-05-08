@@ -1,6 +1,6 @@
 <template>
   <utrecht-heading :level="1">Skills</utrecht-heading>
-  <div v-if="loading">loading...</div>
+  <div v-if="loading"><SimpleSpinner /></div>
   <div v-else-if="error">Er is een fout opgetreden.</div>
 
   <ul v-else>
@@ -38,6 +38,8 @@ import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import { toast } from "@/stores/toast";
 
 type skill = {
   id: number;
@@ -49,15 +51,27 @@ const error = ref<boolean>(false);
 const deletesuccess = ref<boolean>(false);
 const skills = ref<Array<skill>>([]);
 
+const showError = () => {
+  toast({
+    text: "Er is een fout opgetreden. Probeer het later opnieuw.",
+    type: "error",
+  });
+};
+
 async function load() {
   loading.value = true;
-  error.value = false;
+
   try {
     const response = await fetch("/api/Skills");
+    if (response.status > 300) {
+      showError();
+      return;
+    }
+
     const jsonData = await response.json();
     skills.value = jsonData;
   } catch {
-    error.value = true;
+    showError();
   } finally {
     loading.value = false;
   }
@@ -68,16 +82,22 @@ const verwijder = async (id: number) => {
   error.value = false;
   deletesuccess.value = false;
   try {
-    await fetch("/api/Skills/" + id, {
+    const response = await fetch("/api/Skills/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
     });
+
+    if (response.status > 300) {
+      showError();
+      return;
+    }
+
     deletesuccess.value = true;
     load();
   } catch {
-    error.value = true;
+    showError();
   } finally {
     loading.value = false;
   }
