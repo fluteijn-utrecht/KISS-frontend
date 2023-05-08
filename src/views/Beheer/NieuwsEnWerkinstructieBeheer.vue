@@ -1,10 +1,6 @@
 <template>
   <utrecht-heading :level="1">Nieuws of werkinstructie</utrecht-heading>
 
-  <router-link to="/Beheer/NieuwsEnWerkinstructies/"
-    >Terug naar het overzicht</router-link
-  >
-
   <template v-if="loading"> ..loading </template>
   <template v-else-if="success">
     <div>Het bericht is opgeslagen.</div>
@@ -91,15 +87,13 @@
       <!-- <input type="submit" value="ok" @click="submit" /> -->
 
       <menu>
-        <!-- <li>
-          <utrecht-button
-            @click="cancelDialog.reveal"
-            appearance="secondary-action-button"
-            type="button"
-          >
-            Annuleren
-          </utrecht-button>
-        </li> -->
+        <li>
+          <router-link to="/Beheer/NieuwsEnWerkinstructies/">
+            <utrecht-button appearance="secondary-action-button" type="button">
+              Annuleren
+            </utrecht-button>
+          </router-link>
+        </li>
 
         <li>
           <utrecht-button appearance="primary-action-button" type="submit">

@@ -7,9 +7,9 @@
       <router-link :to="'/Beheer/NieuwsEnWerkinstructie/' + bericht.id">{{
         bericht.titel
       }}</router-link>
-      verwijderen gaat niet model is fout: moet koppeltabel worden
+
       <utrecht-button
-        appearance="subtle-button"
+        appearance="secondary-action-button"
         class="icon icon-after trash icon-only"
         title="Verwijderen"
         type="button"
@@ -23,9 +23,9 @@
         appearance="primary-action-button"
         title="toevoegen"
         type="button"
-        >+
-      </utrecht-button></router-link
-    >
+        class="icon icon-after plus icon-only"
+      ></utrecht-button
+    ></router-link>
   </menu>
   <div v-if="deletesuccess">bericht verwijderd</div>
 </template>

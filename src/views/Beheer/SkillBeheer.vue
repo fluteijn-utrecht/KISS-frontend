@@ -1,16 +1,36 @@
 <template>
-  <h1>Skill</h1>
-
-  <router-link to="/Beheer/Skills/">Terug naar het overzicht</router-link>
+  <utrecht-heading :level="1">Skill</utrecht-heading>
 
   <template v-if="loading"> ..loading </template>
 
   <template v-else-if="success"> klaar. ga terug... </template>
 
   <template v-else>
-    <label for="naam">Naam</label>
-    <input type="text" id="naam" v-model="skill.naam" />
-    <input type="submit" value="ok" @click="submit" />
+    <form class="container" @submit.prevent="submit">
+      <label for="naam" class="utrecht-form-label"
+        ><span>Naam</span> <input type="text" id="naam" v-model="skill.naam"
+      /></label>
+    </form>
+
+    <menu>
+      <li>
+        <router-link to="/Beheer/Skills/">
+          <utrecht-button appearance="secondary-action-button" type="button">
+            Annuleren
+          </utrecht-button>
+        </router-link>
+      </li>
+
+      <li>
+        <utrecht-button
+          appearance="primary-action-button"
+          type="submit"
+          @click="submit"
+        >
+          Opslaan
+        </utrecht-button>
+      </li>
+    </menu>
 
     <template if="error"> fout:... </template>
   </template>
@@ -18,6 +38,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import {
+  Heading as UtrechtHeading,
+  Button as UtrechtButton,
+} from "@utrecht/component-library-vue";
 
 const props = defineProps(["id"]);
 
@@ -78,4 +102,24 @@ onMounted(async () => {
 });
 </script>
 
-<style></style>
+<style>
+menu {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-default);
+}
+
+form {
+  margin-top: var(--spacing-default);
+}
+label > span {
+  display: block;
+}
+</style>
