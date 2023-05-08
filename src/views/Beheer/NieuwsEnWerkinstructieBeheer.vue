@@ -30,7 +30,7 @@
         ><span>Titel</span>
         <input required type="text" id="titel" v-model="bericht.titel" />
       </label>
-      <label class="utrecht-form-label" for="inhoud">Inhoud </label>
+      <label class="utrecht-form-label" for="inhoud">Inhoud</label>
 
       <!-- <div class="editorWithPreview">
         <div> -->
@@ -58,6 +58,7 @@
           type="datetime-local"
           id="publicatieDatum"
           v-model="bericht.publicatieDatum"
+          required
         />
       </label>
 
@@ -163,9 +164,11 @@ const showError = () => {
 };
 
 const submit = async () => {
-  if (!bericht.value) return;
+  if (!bericht.value?.inhoud) {
+    alert("De inhoud van het bericht mag niet leeg zijn");
+    return;
+  }
   loading.value = true;
-
   success.value = false;
   try {
     bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);

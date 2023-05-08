@@ -13,7 +13,8 @@
   <template v-else>
     <form class="container" @submit.prevent="submit">
       <label for="naam" class="utrecht-form-label"
-        ><span>Naam</span> <input type="text" id="naam" v-model="skill.naam"
+        ><span>Naam</span>
+        <input type="text" id="naam" v-model="skill.naam" required
       /></label>
     </form>
 

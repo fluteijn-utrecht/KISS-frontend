@@ -75,19 +75,23 @@ async function load() {
 
 const verwijder = async (id: number) => {
   loading.value = true;
-  error.value = false;
+
   deletesuccess.value = false;
   try {
-    await fetch("/api/berichten/" + id, {
+    const response = await fetch("/api/berichten/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
     });
+    if (response.status > 300) {
+      showError();
+      return;
+    }
     deletesuccess.value = true;
     load();
   } catch {
-    error.value = true;
+    showError();
   } finally {
     loading.value = false;
   }

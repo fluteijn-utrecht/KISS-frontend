@@ -23,7 +23,11 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             var skip = (page - 1) * pageSize;
 
-            IQueryable<Bericht> query = _context.Berichten.Where(x => x.PublicatieDatum <= DateTimeOffset.UtcNow);
+            IQueryable<Bericht> query = _context.Berichten.Where(x => 
+                x.PublicatieDatum <= DateTimeOffset.UtcNow
+                && (x.PublicatieEinddatum == null || x.PublicatieEinddatum >= DateTimeOffset.UtcNow)
+                
+                );
 
             if (!string.IsNullOrWhiteSpace(filterModel?.Type))
             {

@@ -26,7 +26,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             {
                 return NotFound();
             }
-            return await _context.Berichten.ToListAsync();
+            return await _context.Berichten.OrderByDescending(x=>x.DateUpdated).ToListAsync();
         }
 
         // GET: api/Berichten/5
@@ -95,29 +95,44 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         [HttpPost]
         public async Task<ActionResult<Bericht>> PostBericht(BerichtPostModel bericht)
         {
-            if (_context.Berichten == null)
-            {
-                return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
-            }
+            
+                if (_context.Berichten == null)
+                {
+                    return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
+                }
 
-            var newBericht = new Bericht
-            {
-                Titel = bericht.Titel,
-                Type = bericht.Type,
-                Inhoud = bericht.Inhoud,
-                PublicatieDatum = bericht.PublicatieDatum,
-                IsBelangrijk = bericht.IsBelangrijk,
-                DateCreated = DateTimeOffset.UtcNow,
-                PublicatieEinddatum = bericht.PublicatieEinddatum,
-            };
+                var newBericht = new Bericht
+                {
+                    Titel = bericht.Titel,
+                    Type = bericht.Type,
+                    Inhoud = bericht.Inhoud,
+                    PublicatieDatum = bericht.PublicatieDatum,
+                    IsBelangrijk = bericht.IsBelangrijk,
+                    DateCreated = DateTimeOffset.UtcNow,
+                    PublicatieEinddatum = bericht.PublicatieEinddatum,
+                };
 
-            UpdateSkills(bericht.Skills, newBericht);
+                UpdateSkills(bericht.Skills, newBericht);
 
-            _context.Berichten.Add(newBericht);
-            await _context.SaveChangesAsync();
+                _context.Berichten.Add(newBericht);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetBericht", new { id = newBericht.Id }, newBericht);
+                return CreatedAtAction("GetBericht", new { id = newBericht.Id },
+                    new BerichtViewModel
+                    {
+                        Id = newBericht.Id,
+                        Inhoud = newBericht.Inhoud,
+                        IsBelangrijk = newBericht.IsBelangrijk,
+                        PublicatieDatum = newBericht.PublicatieDatum,
+                        PublicatieEinddatum = newBericht.PublicatieEinddatum,
+                        Titel = newBericht.Titel,
+                        Type = newBericht.Type,
+                        Skills = newBericht.Skills
+                    .Select(skill => new BerichtSkillViewModel { Id = skill.Id, Naam = skill.Naam })
+                    .ToList()
 
+                    });
+           
         }
 
         // DELETE: api/Berichten/5
