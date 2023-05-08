@@ -1,5 +1,5 @@
 <template>
-  <h1>Skills</h1>
+  <utrecht-heading :level="1">Skills</utrecht-heading>
   <div v-if="loading">loading...</div>
   <div v-else-if="error">Er is een fout opgetreden.</div>
 
@@ -10,7 +10,7 @@
       }}</router-link>
 
       <utrecht-button
-        appearance="subtle-button"
+        appearance="secondary-action-button"
         class="icon icon-after trash icon-only"
         title="Verwijderen"
         type="button"
@@ -18,7 +18,17 @@
       ></utrecht-button>
     </li>
   </ul>
-  <router-link to="/Beheer/Skill/">+</router-link>
+  <menu>
+    <router-link to="/Beheer/Skill/">
+      <utrecht-button
+        appearance="primary-action-button"
+        title="toevoegen"
+        type="button"
+        class="icon icon-after plus icon-only"
+      >
+      </utrecht-button>
+    </router-link>
+  </menu>
   <div v-if="deletesuccess">skill verwijderd</div>
 </template>
 
@@ -89,8 +99,13 @@ li {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-block: var(--spacing-small);
 }
 li:not(:last-child) {
   border-bottom: 2px solid var(--color-tertiary);
+}
+
+menu {
+  margin-block-start: var(--spacing-default);
 }
 </style>
