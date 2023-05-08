@@ -4,7 +4,7 @@ ingress:
   enabled: true
   className: "nginx"
   hosts:
-    - host: ${DEV_HOST}
+    - host: $(devHost)
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -12,32 +12,32 @@ ingress:
           servicePort: 80
   tls:
     - hosts:
-        - ${DEV_HOST}
-      secretName: ${WILDCARD_TLS_SECRET}
+        - $(devHost)
+      secretName: $(wildcardTlsSecret)
 elasticstack:
-    elasticHost: ${ELASTIC_HOST}
-    kibanaHost: ${KIBANA_HOST}
+    elasticHost: $(elasticHost)
+    kibanaHost: $(kibanaHost)
     elasticsearch:
         ingress:
             hosts:
-              - host: ${ELASTIC_HOST}
+              - host: $(elasticHost)
                 paths:
                 - path: /
             tls:
               - hosts:
-                  - ${ELASTIC_HOST}
-                secretName: ${WILDCARD_TLS_SECRET}
+                  - $(elasticHost)
+                secretName: $(wildcardTlsSecret)
     kibana:
         elasticsearchHost: https://elasticsearch-master:9200
         ingress:
             hosts:
-              - host: ${KIBANA_HOST}
+              - host: $(kibanaHost)
                 paths:
                   - path: /
             tls:
               - hosts:
-                  - ${KIBANA_HOST}
-                secretName: ${WILDCARD_TLS_SECRET}
+                  - $(kibanaHost)
+                secretName: $(wildcardTlsSecret)
     credentials:
-        username: ${ELASTIC_USERNAME}
-        password: ${ELASTIC_PASSWORD}
+        username: $(elasticUsername)
+        password: $(elasticPassword)
