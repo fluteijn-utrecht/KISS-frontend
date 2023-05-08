@@ -48,7 +48,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             Response.Headers["X-Total-Pages"] = Math.Ceiling((double)total / pageSize).ToString();
 
             var result = query
-                .OrderByDescending(x => x.DateUpdated ?? x.DateCreated)
+                .OrderByDescending(x => x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum ?? x.DateCreated)
                 .Skip(skip)
                 .Take(pageSize)
                 .Select(x => new SearchBerichtenResponseModel(
