@@ -1,10 +1,14 @@
 image:
     pullPolicy: Always
+config:
+    pubBeheerUrl: openweb.dev.kiss-demo.nl
+    gatewayBaseUri: https://dev.kiss-demo.nl
+    organizationIds: ["999990639"]
 ingress:
   enabled: true
   className: "nginx"
   hosts:
-    - host: $(devHost)
+    - host: dev.kiss-demo.nl
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -12,32 +16,32 @@ ingress:
           servicePort: 80
   tls:
     - hosts:
-        - $(devHost)
-      secretName: $(wildcardTlsSecret)
+        - dev.kiss-demo.nl
+      secretName: wildcard-kiss-tls
 elasticstack:
-    elasticHost: $(elasticHost)
-    kibanaHost: $(kibanaHost)
+    elasticHost: https://elastic.dev.kiss-demo.nl
+    kibanaHost: https://kibana.dev.kiss-demo.nl
     elasticsearch:
         ingress:
             hosts:
-              - host: $(elasticHost)
+              - host: elastic.dev.kiss-demo.nl
                 paths:
                 - path: /
             tls:
               - hosts:
-                  - $(elasticHost)
-                secretName: $(wildcardTlsSecret)
+                  - elastic.dev.kiss-demo.nl
+                secretName: wildcard-kiss-tls
     kibana:
         elasticsearchHost: https://elasticsearch-master:9200
         ingress:
             hosts:
-              - host: $(kibanaHost)
+              - host: kibana.dev.kiss-demo.nl
                 paths:
                   - path: /
             tls:
               - hosts:
-                  - $(kibanaHost)
-                secretName: $(wildcardTlsSecret)
+                  - kibana.dev.kiss-demo.nl
+                secretName: wildcard-kiss-tls
     credentials:
-        username: $(elasticUsername)
-        password: $(elasticPassword)
+        username: elastic
+        password: pass
