@@ -16,6 +16,15 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Bericht>(b => 
+            {
+                b.Property(x => x.Type).HasMaxLength(200).IsRequired();
+                b.HasIndex(x => x.Type);
+
+                b.Property(x => x.Inhoud).IsRequired();
+                b.Property(x => x.Titel).IsRequired();
+
+            });
         }
 
 
