@@ -1,14 +1,19 @@
+_common: &common
+  domain: dev.kiss-demo.nl
+  secretName: wildcard-kiss-tls
+  elasticPassword: pass
+  elasticIngress: elastic.dev.kiss-demo.nl
+  kibanaIngress: kibana.dev.kiss-demo.nl
+  elasticHost: https://elastic.dev.kiss-demo.nl
+  kibanaHost: https://elastic.dev.kiss-demo.nl
+  
 image:
     pullPolicy: Always
-config:
-    pubBeheerUrl: openweb.dev.kiss-demo.nl
-    gatewayBaseUri: https://dev.kiss-demo.nl
-    organizationIds: ["999990639"]
 ingress:
   enabled: true
   className: "nginx"
   hosts:
-    - host: dev.kiss-demo.nl
+    - host: *common.domain
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -16,32 +21,32 @@ ingress:
           servicePort: 80
   tls:
     - hosts:
-        - dev.kiss-demo.nl
-      secretName: wildcard-kiss-tls
+        - *.common.domain
+      secretName: *common.secretName
 elasticstack:
-    elasticHost: https://elastic.dev.kiss-demo.nl
-    kibanaHost: https://kibana.dev.kiss-demo.nl
+    elasticHost: *.common.elasticHost
+    kibanaHost: *.common.kibanaHost
     elasticsearch:
         ingress:
             hosts:
-              - host: elastic.dev.kiss-demo.nl
+              - host: *.common.elasticIngress
                 paths:
                 - path: /
             tls:
               - hosts:
-                  - elastic.dev.kiss-demo.nl
-                secretName: wildcard-kiss-tls
+                  - *.common.elasticIngress
+                secretName: *common.secretName
     kibana:
         elasticsearchHost: https://elasticsearch-master:9200
         ingress:
             hosts:
-              - host: kibana.dev.kiss-demo.nl
+              - host: *.common.kibanaIngress
                 paths:
                   - path: /
             tls:
               - hosts:
-                  - kibana.dev.kiss-demo.nl
-                secretName: wildcard-kiss-tls
+                  - *.common.kibanaIngress
+                secretName: *common.secretName
     credentials:
         username: elastic
-        password: pass
+        password: *common.secretName
