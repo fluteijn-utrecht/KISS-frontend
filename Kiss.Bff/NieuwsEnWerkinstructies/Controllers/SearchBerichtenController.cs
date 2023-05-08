@@ -42,15 +42,12 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             var total = await query.CountAsync(token);
 
-
             Response.Headers["X-Current-Page"] = page.ToString();
             Response.Headers["X-Total-Records"] = total.ToString();
             Response.Headers["X-Page-Size"] = total.ToString();
             Response.Headers["X-Total-Pages"] = Math.Ceiling((double)total / pageSize).ToString();
 
-            return Ok(Inner());
-
-            IAsyncEnumerable<SearchBerichtenResponseModel> Inner() => query
+            var result = query
                 .OrderByDescending(x => x.DateUpdated ?? x.DateCreated)
                 .Skip(skip)
                 .Take(pageSize)
@@ -68,6 +65,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                         .ToList()
                 ))
                 .AsAsyncEnumerable();
+
+            return Ok(result);
         }
     }
     public record BerichtFilterModel(string? Type, string? Search, int[]? SkillIds, int? Page, int? PageSize);
