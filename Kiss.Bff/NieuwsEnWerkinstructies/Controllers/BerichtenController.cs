@@ -53,6 +53,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                 Inhoud = bericht.Inhoud,
                 IsBelangrijk = bericht.IsBelangrijk,
                 PublicatieDatum = bericht.PublicatieDatum,
+                PublicatieEinddatum = bericht.PublicatieEinddatum,
                 Titel = bericht.Titel,
                 Type = bericht.Type,
                 Skills = bericht.Skills
@@ -73,10 +74,12 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             }
 
             current.Titel = bericht.Titel;
+            current.Type = bericht.Type;
             current.Inhoud = bericht.Inhoud;
             current.PublicatieDatum = bericht.PublicatieDatum;
+            current.PublicatieEinddatum = bericht.PublicatieEinddatum;
             current.IsBelangrijk = bericht.IsBelangrijk;
-            current.DateUpdated = DateTimeOffset.Now;
+            current.DateUpdated = DateTimeOffset.UtcNow;
 
             UpdateSkills(bericht.Skills, current);
 
@@ -100,11 +103,12 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             var newBericht = new Bericht
             {
                 Titel = bericht.Titel,
+                Type = bericht.Type,
                 Inhoud = bericht.Inhoud,
                 PublicatieDatum = bericht.PublicatieDatum,
                 IsBelangrijk = bericht.IsBelangrijk,
-                DateCreated = DateTimeOffset.Now,
-
+                DateCreated = DateTimeOffset.UtcNow,
+                PublicatieEinddatum = bericht.PublicatieEinddatum,
             };
 
             UpdateSkills(bericht.Skills, newBericht);
@@ -176,7 +180,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
         public List<int>? Skills { get; set; }
-        public DateTime? PublicatieDatum { get; set; }
+        public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset? PublicatieEinddatum { get; set; }
+        public string Type { get; set; } = string.Empty;
     }
 
     public class BerichtPostModel
@@ -188,6 +194,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public bool IsBelangrijk { get; set; }
         public List<int>? Skills { get; set; }
         public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset? PublicatieEinddatum { get; set; }
+        public string Type { get; set; } = string.Empty;
     }
 
     public class BerichtViewModel
@@ -195,12 +203,13 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public int Id { get; set; }
 
         public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset? PublicatieEinddatum { get; set; }
         public string Titel { get; set; } = string.Empty;
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
 
         public List<BerichtSkillViewModel> Skills { get; set; } = new();
-        public string Type { get; internal set; }
+        public string Type { get; set; } = string.Empty;
     }
 
 

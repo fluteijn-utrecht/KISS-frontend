@@ -15,6 +15,7 @@
         <legend>Type</legend>
         <label class="utrecht-form-label" v-for="t in berichtTypes" :key="t">
           <input
+            required
             type="radio"
             name="berichtType"
             :value="t"
@@ -26,7 +27,7 @@
 
       <label class="utrecht-form-label" for="titel"
         ><span>Titel</span>
-        <input type="text" id="titel" v-model="bericht.titel" />
+        <input required type="text" id="titel" v-model="bericht.titel" />
       </label>
       <label class="utrecht-form-label" for="inhoud">Inhoud </label>
 
