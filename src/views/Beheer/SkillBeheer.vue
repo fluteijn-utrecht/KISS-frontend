@@ -1,9 +1,14 @@
 <template>
   <utrecht-heading :level="1">Skill</utrecht-heading>
 
-  <template v-if="loading"> ..loading </template>
+  <template v-if="loading"><SimpleSpinner /></template>
 
-  <template v-else-if="success"> klaar. ga terug... </template>
+  <template v-else-if="success">
+    <div class="container">
+      <p>De skill is opgeslagen.</p>
+      <router-link to="/Beheer/Skills/"> Terug naar het overzicht </router-link>
+    </div>
+  </template>
 
   <template v-else>
     <form class="container" @submit.prevent="submit">
@@ -31,8 +36,6 @@
         </utrecht-button>
       </li>
     </menu>
-
-    <template if="error"> fout:... </template>
   </template>
 </template>
 
@@ -42,6 +45,8 @@ import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import { toast } from "@/stores/toast";
 
 const props = defineProps(["id"]);
 
@@ -52,53 +57,73 @@ type skillType = {
 
 const loading = ref<boolean>(true);
 const success = ref<boolean>(false);
-const error = ref<boolean>(false);
 
 const skill = ref<skillType>({});
 
+const showError = () => {
+  toast({
+    text: "Er is een fout opgetreden. Probeer het later opnieuw.",
+    type: "error",
+  });
+};
+
 const submit = async () => {
   loading.value = true;
-  error.value = false;
+
   success.value = false;
   try {
     if (props.id) {
-      await fetch("/api/Skills/" + props.id, {
+      const result = await fetch("/api/Skills/" + props.id, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(skill.value),
       });
+      if (result.status > 300) {
+        showError();
+      } else {
+        success.value = true;
+      }
     } else {
-      await fetch("/api/Skills/", {
+      const result = await fetch("/api/Skills/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(skill.value),
       });
+      if (result.status > 300) {
+        showError();
+      } else {
+        success.value = true;
+      }
     }
     success.value = true;
   } catch {
-    error.value = true;
+    showError();
   } finally {
     loading.value = false;
   }
 };
 
 onMounted(async () => {
-  loading.value = true;
-  error.value = false;
   if (props.id) {
+    loading.value = true;
     try {
       const response = await fetch("/api/Skills/" + props.id);
+      if (response.status > 300) {
+        showError();
+        return;
+      }
       const jsonData = await response.json();
       skill.value = jsonData;
     } catch {
-      error.value = true;
+      showError();
+    } finally {
+      loading.value = false;
     }
   }
-  loading.value = false;
 });
 </script>
 

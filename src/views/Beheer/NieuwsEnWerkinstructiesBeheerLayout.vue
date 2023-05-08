@@ -6,12 +6,17 @@
     >
     <router-link to="/Beheer/Skills">Skills</router-link>
   </nav>
-  <router-view />
+  <main>
+    <router-view />
+  </main>
 </template>
 
 <style lang="scss" scoped>
 nav {
   display: flex;
   gap: var(--spacing-default);
+}
+main {
+  max-width: var(--section-width-large);
 }
 </style>
