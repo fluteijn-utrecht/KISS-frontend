@@ -1,8 +1,8 @@
-﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+﻿using System.ComponentModel.DataAnnotations;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 {
@@ -19,38 +19,38 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         // GET: api/Skills
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Skill>>> GetSkills()
+        public ActionResult<IAsyncEnumerable<Skill>> GetSkills()
         {
-            if (_context.Skills == null)
-            {
-                return NotFound();
-            }
-            return await _context.Skills.Where(x=>!x.IsDeleted).ToListAsync();
+            var result = _context.Skills.Where(x => !x.IsDeleted)
+                .Select(x => new SkillViewModel { Id = x.Id, Naam = x.Naam })
+                .AsAsyncEnumerable();
+
+            return Ok(result);
         }
 
         // GET: api/Skills/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Skill>> GetSkill(int id)
+        public async Task<ActionResult<SkillViewModel>> GetSkill(int id, CancellationToken token)
         {
             if (_context.Skills == null)
             {
                 return NotFound();
             }
-            var skill = await _context.Skills.FindAsync(id);
+            var skill = await _context.Skills.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: token);
 
             if (skill == null || skill.IsDeleted)
             {
                 return NotFound();
             }
 
-            return skill;
+            return new SkillViewModel { Id = skill.Id, Naam = skill.Naam };
         }
 
         // PUT: api/Skills/5        
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSkill(int id, SkillPutModel skill)
+        public async Task<IActionResult> PutSkill(int id, SkillPutModel skill, CancellationToken token)
         {
-            var current = _context.Skills.FirstOrDefault(x => x.Id == id);
+            var current = await _context.Skills.FirstOrDefaultAsync(x => x.Id == id, token);
 
             if (current == null)
             {
@@ -59,39 +59,35 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             current.Naam = skill.Naam;
 
-            await _context.SaveChangesAsync();
-            
+            await _context.SaveChangesAsync(token);
+
             return NoContent();
         }
 
         // POST: api/Skills        
         [HttpPost]
-        public async Task<ActionResult<Skill>> PostSkill(SkillPostModel skill)
+        public async Task<ActionResult<Skill>> PostSkill(SkillPostModel skill, CancellationToken token)
         {
-            if (_context.Skills == null)
-            {
-                return Problem("Entity set 'CmsDbContext.Skills'  is null.");
-            }
-
             var newSkill = new Skill { Naam = skill.Naam };
 
-            _context.Skills.Add(newSkill);
+            await _context.Skills.AddAsync(newSkill, token);
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(token);
 
             return CreatedAtAction("GetSkill", new { id = newSkill.Id }, newSkill);
         }
 
         // DELETE: api/Skills/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSkill(int id)
+        public async Task<IActionResult> DeleteSkill(int id, CancellationToken token)
         {
 
             if (_context.Skills == null)
             {
                 return NotFound();
             }
-            var skill = await _context.Skills.FindAsync(id);
+            var skill = await _context.Skills.FirstOrDefaultAsync(x => x.Id == id, token);
+
             if (skill == null)
             {
                 return NotFound();
@@ -99,13 +95,17 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             //soft delete
             skill.IsDeleted = true;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(token);
 
             return NoContent();
         }
 
     }
-
+    public class SkillViewModel
+    {
+        public int Id { get; set; }
+        public string Naam { get; set; } = string.Empty;
+    }
 
     public class SkillPutModel
     {

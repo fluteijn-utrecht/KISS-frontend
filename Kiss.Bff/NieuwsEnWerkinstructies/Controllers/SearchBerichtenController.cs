@@ -25,7 +25,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             IQueryable<Bericht> query = _context.Berichten
                 .Where(x => x.PublicatieDatum <= DateTimeOffset.UtcNow)
-                .Where(x=> !x.PublicatieEinddatum.HasValue || x.PublicatieEinddatum >= DateTimeOffset.UtcNow);
+                .Where(x => !x.PublicatieEinddatum.HasValue || x.PublicatieEinddatum >= DateTimeOffset.UtcNow);
 
             if (!string.IsNullOrWhiteSpace(filterModel?.Type))
             {

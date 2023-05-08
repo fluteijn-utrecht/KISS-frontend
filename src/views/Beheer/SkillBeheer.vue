@@ -56,7 +56,7 @@ type skillType = {
   naam?: string;
 };
 
-const loading = ref<boolean>(true);
+const loading = ref<boolean>(false);
 const success = ref<boolean>(false);
 
 const skill = ref<skillType>({});

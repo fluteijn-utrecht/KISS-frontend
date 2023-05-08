@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -20,18 +19,25 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         // GET: api/Berichten
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Bericht>>> GetBerichten()
+        public ActionResult<IAsyncEnumerable<BerichtOverviewModel>> GetBerichten()
         {
             if (_context.Berichten == null)
             {
                 return NotFound();
             }
-            return await _context.Berichten.OrderByDescending(x=>x.DateUpdated).ToListAsync();
+
+            var result = _context
+                .Berichten
+                .OrderByDescending(x => x.DateUpdated ?? x.DateCreated)
+                .Select(x => new BerichtOverviewModel { Id = x.Id, Titel = x.Titel })
+                .AsAsyncEnumerable();
+
+            return Ok(result);
         }
 
         // GET: api/Berichten/5
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<BerichtViewModel>> GetBericht(int id)
+        public async Task<ActionResult<BerichtViewModel>> GetBericht(int id, CancellationToken token)
         {
             if (_context.Berichten == null)
             {
@@ -40,33 +46,23 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             var bericht = await _context.Berichten
                 .Include(x => x.Skills.Where(s => !s.IsDeleted))
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken: token);
 
             if (bericht == null)
             {
                 return NotFound();
             }
 
-            return new BerichtViewModel
-            {
-                Id = bericht.Id,
-                Inhoud = bericht.Inhoud,
-                IsBelangrijk = bericht.IsBelangrijk,
-                PublicatieDatum = bericht.PublicatieDatum,
-                PublicatieEinddatum = bericht.PublicatieEinddatum,
-                Titel = bericht.Titel,
-                Type = bericht.Type,
-                Skills = bericht.Skills
-                    .Select(skill => new BerichtSkillViewModel { Id = skill.Id, Naam = skill.Naam })
-                    .ToList()
-            };
+            return MapBericht(bericht);
         }
+
+
 
         // PUT: api/Berichten/5      
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBericht(int id, BerichtPutModel bericht)
+        public async Task<IActionResult> PutBericht(int id, BerichtPutModel bericht, CancellationToken token)
         {
-            var current = _context.Berichten.Include(x => x.Skills).FirstOrDefault(x => x.Id == id);
+            var current = await _context.Berichten.Include(x => x.Skills).FirstOrDefaultAsync(x => x.Id == id, token);
 
             if (current == null)
             {
@@ -84,7 +80,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             UpdateSkills(bericht.Skills, current);
 
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(token);
 
             return NoContent();
         }
@@ -93,67 +89,59 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         // POST: api/Berichten
         [HttpPost]
-        public async Task<ActionResult<Bericht>> PostBericht(BerichtPostModel bericht)
+        public async Task<ActionResult<BerichtViewModel>> PostBericht(BerichtPostModel bericht, CancellationToken token)
         {
-            
-                if (_context.Berichten == null)
-                {
-                    return Problem("Entity set 'CmsDbContext.Berichten'  is null.");
-                }
+            var newBericht = new Bericht
+            {
+                Titel = bericht.Titel,
+                Type = bericht.Type,
+                Inhoud = bericht.Inhoud,
+                PublicatieDatum = bericht.PublicatieDatum,
+                IsBelangrijk = bericht.IsBelangrijk,
+                DateCreated = DateTimeOffset.UtcNow,
+                PublicatieEinddatum = bericht.PublicatieEinddatum,
+            };
 
-                var newBericht = new Bericht
-                {
-                    Titel = bericht.Titel,
-                    Type = bericht.Type,
-                    Inhoud = bericht.Inhoud,
-                    PublicatieDatum = bericht.PublicatieDatum,
-                    IsBelangrijk = bericht.IsBelangrijk,
-                    DateCreated = DateTimeOffset.UtcNow,
-                    PublicatieEinddatum = bericht.PublicatieEinddatum,
-                };
+            UpdateSkills(bericht.Skills, newBericht);
 
-                UpdateSkills(bericht.Skills, newBericht);
+            await _context.Berichten.AddAsync(newBericht, token);
+            await _context.SaveChangesAsync(token);
 
-                _context.Berichten.Add(newBericht);
-                await _context.SaveChangesAsync();
+            return CreatedAtAction("GetBericht", new { id = newBericht.Id }, MapBericht(newBericht));
 
-                return CreatedAtAction("GetBericht", new { id = newBericht.Id },
-                    new BerichtViewModel
-                    {
-                        Id = newBericht.Id,
-                        Inhoud = newBericht.Inhoud,
-                        IsBelangrijk = newBericht.IsBelangrijk,
-                        PublicatieDatum = newBericht.PublicatieDatum,
-                        PublicatieEinddatum = newBericht.PublicatieEinddatum,
-                        Titel = newBericht.Titel,
-                        Type = newBericht.Type,
-                        Skills = newBericht.Skills
-                    .Select(skill => new BerichtSkillViewModel { Id = skill.Id, Naam = skill.Naam })
-                    .ToList()
-
-                    });
-           
         }
 
         // DELETE: api/Berichten/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBericht(int id)
+        public async Task<IActionResult> DeleteBericht(int id, CancellationToken token)
         {
-            if (_context.Berichten == null)
-            {
-                return NotFound();
-            }
-            var bericht = await _context.Berichten.FindAsync(id);
+            var bericht = await _context.Berichten.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: token);
+
             if (bericht == null)
             {
-                return NotFound();
+                return NotFound(token);
             }
 
             _context.Berichten.Remove(bericht);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(token);
 
             return NoContent();
         }
+
+        private static BerichtViewModel MapBericht(Bericht bericht) => new()
+        {
+            Id = bericht.Id,
+            Inhoud = bericht.Inhoud,
+            IsBelangrijk = bericht.IsBelangrijk,
+            PublicatieDatum = bericht.PublicatieDatum,
+            PublicatieEinddatum = bericht.PublicatieEinddatum,
+            Titel = bericht.Titel,
+            Type = bericht.Type,
+            Skills = bericht.Skills
+                .Where(x=> !x.IsDeleted)
+                .Select(skill => new BerichtSkillViewModel { Id = skill.Id, Naam = skill.Naam })
+                .ToList()
+        };
 
 
         private void UpdateSkills(List<int>? selectedSkills, Bericht? current)
@@ -163,28 +151,32 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                 return;
             }
 
-            //reset 
-            current.Skills.Clear();
+            // remove not selected skill 
+            var notSelected = current.Skills.Where(x => selectedSkills != null && !selectedSkills.Contains(x.Id)).ToList();
+            foreach (var item in notSelected)
+            {
+                current.Skills.Remove(item);
+            }
+            
 
-            //add selected skills
+            //add new skills
             if (selectedSkills != null)
             {
-                //available skills
-                var skills = _context.Skills.ToList();
-
-                foreach (var skillId in selectedSkills)
+                foreach (var skillId in selectedSkills.Where(x=> !current.Skills.Any(s => s.Id == x)))
                 {
-                    var dbSkill = skills.FirstOrDefault(x => x.Id == skillId);
-                    if (dbSkill != null)
-                    {
-                        current.Skills.Add(dbSkill);
-                    }
+                    var newSkill = new Skill { Id = skillId };
+                    _context.Attach(newSkill);
+                    current.Skills.Add(newSkill);
                 }
             }
         }
 
     }
-
+    public class BerichtOverviewModel
+    {
+        public int Id { get; set; }
+        public string Titel { get; set; } = string.Empty;
+    }
 
 
     public class BerichtPutModel

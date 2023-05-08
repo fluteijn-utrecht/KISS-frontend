@@ -1,7 +1,6 @@
 <template>
   <UtrechtHeading :level="1">Berichten</UtrechtHeading>
   <div v-if="loading"><SimpleSpinner /></div>
-  <div v-else-if="error">Er is een fout opgetreden.</div>
   <ul v-else>
     <li v-for="bericht in berichten" :key="bericht.id">
       <router-link :to="'/Beheer/NieuwsEnWerkinstructie/' + bericht.id">{{
