@@ -8,6 +8,7 @@
 
 
         public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset? PublicatieEinddatum { get; set; }
         public string Titel { get; set; } = string.Empty;
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
