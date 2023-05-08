@@ -1,7 +1,8 @@
-﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
@@ -17,35 +18,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             _context = context;
         }
 
-        // GET: api/Berichten/published
-        [HttpGet("published")]
-        public IAsyncEnumerable<BerichtViewModel> GetBerichten(BerichtFilterModel? filterModel)
-        {
-            IQueryable<Bericht> query = _context.Berichten;
-
-            if (!string.IsNullOrWhiteSpace(filterModel?.Berichttype))
-            {
-                query = query.Where(x=> x.Type == filterModel.Berichttype);
-            }
-
-            return query
-                .Where(x=> x.PublicatieDatum <= DateTimeOffset.Now)
-                .OrderByDescending(x=> x.DateUpdated ?? x.DateCreated)
-                .Select(x => new BerichtViewModel
-                {
-                    Id = x.Id,
-                    Inhoud = x.Inhoud,
-                    IsBelangrijk = x.IsBelangrijk,
-                    PublicatieDatum = x.PublicatieDatum,
-                    Titel = x.Titel,
-                    Skills = x.Skills
-                        .Where(y=> !y.IsDeleted)
-                        .Select(y => new BerichtSkillViewModel { Id = y.Id, Naam = y.Naam })
-                        .ToList(),
-                })
-                .AsAsyncEnumerable();
-        }
-
         // GET: api/Berichten
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Bericht>>> GetBerichten()
@@ -58,7 +30,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         }
 
         // GET: api/Berichten/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<BerichtViewModel>> GetBericht(int id)
         {
             if (_context.Berichten == null)
@@ -82,9 +54,10 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                 IsBelangrijk = bericht.IsBelangrijk,
                 PublicatieDatum = bericht.PublicatieDatum,
                 Titel = bericht.Titel,
+                Type = bericht.Type,
                 Skills = bericht.Skills
                     .Select(skill => new BerichtSkillViewModel { Id = skill.Id, Naam = skill.Naam })
-                    .ToList()            
+                    .ToList()
             };
         }
 
@@ -193,7 +166,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
     }
 
-    public record BerichtFilterModel(string? Berichttype)
 
 
     public class BerichtPutModel
@@ -228,6 +200,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public bool IsBelangrijk { get; set; }
 
         public List<BerichtSkillViewModel> Skills { get; set; } = new();
+        public string Type { get; internal set; }
     }
 
 

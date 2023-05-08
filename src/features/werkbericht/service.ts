@@ -14,83 +14,39 @@ const WP_MAX_ALLOWED_PAGE_SIZE = "100";
 const BERICHTEN_BASE_URI = `${window.gatewayBaseUri}/api/kiss_openpub_pub`;
 
 export type UseWerkberichtenParams = {
-  typeId?: number;
+  type?: string;
   search?: string;
   skillIds?: number[];
   page?: number;
   pagesize?: number;
 };
 
-function parseDateStrWithTimezone(dateStr: string) {
-  const timezoneRegex = /T[0-9|:]*[+|-|Z]+/;
-
-  if (timezoneRegex.test(dateStr)) return new Date(dateStr);
-
-  // if no timezone info is present we assume UTC
-  return new Date(dateStr + "Z");
-}
-
-function maxDate(dates: Date[]) {
-  return new Date(Math.max(...dates.map((x) => x.getTime())));
-}
-
 /**
  * Tries to parse a json object returned by the api as a Werkbericht
  * @param jsonObject a json object
  * @param getBerichtTypeNameById a function to get the name of a berichttype from it's id
  */
-function parseWerkbericht(
-  jsonObject: any,
-  getBerichtTypeNameById: (id: number) => string | undefined,
-  getSkillNameById: (id: number) => string | undefined
-): Werkbericht {
-  if (
-    typeof jsonObject?.embedded?.title?.rendered !== "string" ||
-    typeof jsonObject?.embedded?.acf?.publicationContent !== "string" ||
-    typeof jsonObject?.date !== "string"
-  ) {
-    throw new Error(
-      "invalid werkbericht, required fields are missing. input: " +
-        JSON.stringify(jsonObject)
-    );
-  }
-
-  const berichtTypeId = jsonObject?.embedded?.acf?.publicationType;
-  const berichtTypeName = getBerichtTypeNameById(berichtTypeId) ?? "onbekend";
-
-  const skillIds = jsonObject?.embedded?.acf?.publicationSkill;
-  const skillNames = Array.isArray(skillIds)
-    ? skillIds.map(
-        (x) => (typeof x === "number" && getSkillNameById(x)) || "onbekend"
-      )
-    : ["onbekend"];
-
-  const dateCreated = parseDateStrWithTimezone(jsonObject.date);
-  const dateModified = parseDateStrWithTimezone(jsonObject.modified);
-
-  const dateLatest = maxDate([dateCreated, dateModified]);
-
-  let dateRead = jsonObject["_self"]?.dateRead;
-
-  if (
-    dateRead &&
-    new Date(dateModified) > new Date(parseDateStrWithTimezone(dateRead))
-  ) {
-    unreadBericht(jsonObject.id);
-
-    dateRead = false;
-  }
-
+function parseWerkbericht({
+  id,
+  inhoud,
+  isBelangrijk,
+  datum,
+  titel,
+  type,
+  skills,
+  dateRead,
+  url,
+}: any = {}): Werkbericht {
   return {
-    id: jsonObject.id,
+    id,
     read: !!dateRead,
-    title: jsonObject.embedded.title.rendered,
-    content: jsonObject.embedded.acf.publicationContent,
-    date: dateLatest,
-    type: berichtTypeName,
-    skills: skillNames,
-    url: jsonObject["_self"]?.self,
-    featured: jsonObject.embedded.acf.publicationFeatured,
+    title: titel,
+    content: inhoud,
+    date: datum && new Date(datum),
+    type,
+    skills,
+    featured: isBelangrijk,
+    url,
   };
 }
 
@@ -144,100 +100,63 @@ export function useSkills(): ServiceData<LookupList<number, string>> {
 export function useWerkberichten(
   parameters?: Ref<UseWerkberichtenParams>
 ): ServiceData<Paginated<Werkbericht>> {
-  const typesResult = useBerichtTypes();
-  const skillsResult = useSkills();
-
   function getUrl() {
-    return "/api/berichten";
+    const base = "/api/berichten/published";
+    if (!parameters?.value) return base;
 
-    // // we return a falsy value if we haven't received the berichttypes yet,
-    // // because we need them to look up names of berichttypes by their id.
-    // // a falsy value indicates to the SWRV library that it should not yet trigger a fetch
-    // if (typesResult.state !== "success" || skillsResult.state !== "success")
-    //   return "";
+    const { type, search, page, skillIds } = parameters.value;
 
-    // if (!parameters?.value) return BERICHTEN_BASE_URI;
+    const params: [string, string][] = [["pageSize", "10"]];
 
-    // const { typeId, search, page, skillIds } = parameters.value;
+    if (type) {
+      params.push(["type", type]);
+    }
 
-    // const params: [string, string][] = [["extend[]", "_self.dateRead"]];
+    if (search) {
+      params.push(["search", search]);
+    }
 
-    // params.push(["_limit", "10"]);
-    // params.push(["_order[modified]", "desc"]);
-    // params.push(["extend[]", "_self.self"]);
-    // params.push(["extend[]", "acf"]);
-    // params.push(["embedded.acf.publicationEndDate[after]", "now"]);
+    if (page) {
+      params.push(["page", page.toString()]);
+    }
 
-    // if (typeId) {
-    //   params.push([
-    //     "embedded.acf.publicationType[int_compare]",
-    //     typeId.toString(),
-    //   ]);
-    // }
+    if (skillIds?.length) {
+      skillIds.forEach((skillId) => {
+        params.push(["skillIds", skillId.toString()]);
+      });
+    }
 
-    // if (search) {
-    //   params.push([
-    //     "_search[embedded.title.rendered,embedded.acf.publicationContent]",
-    //     search,
-    //   ]);
-    // }
-
-    // if (page) {
-    //   params.push(["page", page.toString()]);
-    // }
-
-    // if (skillIds?.length) {
-    //   skillIds.forEach((skillId) => {
-    //     params.push([
-    //       "embedded.acf.publicationSkill[int_compare][]",
-    //       skillId.toString(),
-    //     ]);
-    //   });
-    // }
-    // return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
+    return `${base}?${new URLSearchParams(params)}`;
   }
 
-  console.log("useWerkberichten");
   async function fetchBerichten(url: string): Promise<Paginated<Werkbericht>> {
-    console.log("BERICHTEN OPHALEN");
-
-    if (
-      typesResult.state !== "success" ||
-      skillsResult.state !== "success" ||
-      !url
-    )
-      throw new Error(
-        "this should never happen, we already check this in the url function"
-      );
-
     const r = await fetchLoggedIn(url);
     if (!r.ok) throw new Error(r.status.toString());
 
-    const json = await r.json();
+    const json: any[] = await r.json();
 
-    const berichten = json.results;
-    console.log("---fetched berichten", berichten);
+    const berichten = json.map(parseWerkbericht);
 
     if (!Array.isArray(berichten))
       throw new Error("expected a list, input: " + JSON.stringify(berichten));
 
-    const featuredBerichten = berichten.filter(
-      (bericht) => bericht.embedded.acf.publicationFeatured
-    );
-    const regularBerichten = berichten.filter(
-      (bericht) => !bericht.embedded.acf.publicationFeatured
-    );
+    const featuredBerichten = berichten.filter(({ featured }) => featured);
+    const regularBerichten = berichten.filter(({ featured }) => !featured);
     const sortedBerichten = [...featuredBerichten, ...regularBerichten];
 
-    return parsePagination(
-      { ...json, results: sortedBerichten },
-      (bericht: any) =>
-        parseWerkbericht(
-          bericht,
-          typesResult.data.fromKeyToValue,
-          skillsResult.data.fromKeyToValue
-        )
-    );
+    const intHeader = (name: string) => {
+      const header = r.headers.get(name);
+      if (!header) throw new Error();
+      return +header;
+    };
+
+    return {
+      page: sortedBerichten,
+      pageNumber: intHeader("X-Current-Page"),
+      totalRecords: intHeader("X-Total-Records"),
+      totalPages: intHeader("X-Total-Pages"),
+      pageSize: intHeader("X-Page-Size"),
+    };
   }
 
   return ServiceResult.fromFetcher(getUrl, fetchBerichten, { poll: true });

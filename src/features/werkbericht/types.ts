@@ -4,7 +4,7 @@ export interface Werkbericht {
   date: Date;
   content: string;
   type: string;
-  skills: string[];
+  skills: { id: number; naam: string }[];
   read: boolean;
   url: string;
   featured: boolean;
