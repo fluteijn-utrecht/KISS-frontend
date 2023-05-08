@@ -88,6 +88,7 @@
         </form>
       </li>
     </menu>
+
     <werk-berichten
       v-if="state.currentSearch"
       :level="2"

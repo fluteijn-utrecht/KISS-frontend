@@ -10,6 +10,9 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^37.1.0",
+    "@ckeditor/ckeditor5-vue": "^5.1.0",
+    "@tinymce/tinymce-vue": "^4.0.7",
     "@types/luxon": "^2.3.1",
     "@vueuse/core": "^8.6.0",
     "dompurify": "^2.3.8",

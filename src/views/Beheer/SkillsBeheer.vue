@@ -8,7 +8,14 @@
       <router-link :to="'/Beheer/Skill/' + skill.id">{{
         skill.naam
       }}</router-link>
-      <button @click="confirmVerwijder(skill.id)">verwijder</button>
+
+      <utrecht-button
+        appearance="subtle-button"
+        class="icon icon-after trash icon-only"
+        title="Verwijderen"
+        type="button"
+        @click="confirmVerwijder(skill.id)"
+      ></utrecht-button>
     </li>
   </ul>
   <router-link to="/Beheer/Skill/">+</router-link>
@@ -17,6 +24,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import {
+  Heading as UtrechtHeading,
+  Button as UtrechtButton,
+} from "@utrecht/component-library-vue";
 
 type skill = {
   id: number;
@@ -73,4 +84,13 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+li:not(:last-child) {
+  border-bottom: 2px solid var(--color-tertiary);
+}
+</style>

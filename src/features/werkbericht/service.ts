@@ -148,54 +148,59 @@ export function useWerkberichten(
   const skillsResult = useSkills();
 
   function getUrl() {
-    // we return a falsy value if we haven't received the berichttypes yet,
-    // because we need them to look up names of berichttypes by their id.
-    // a falsy value indicates to the SWRV library that it should not yet trigger a fetch
-    if (typesResult.state !== "success" || skillsResult.state !== "success")
-      return "";
+    return "/api/berichten";
 
-    if (!parameters?.value) return BERICHTEN_BASE_URI;
+    // // we return a falsy value if we haven't received the berichttypes yet,
+    // // because we need them to look up names of berichttypes by their id.
+    // // a falsy value indicates to the SWRV library that it should not yet trigger a fetch
+    // if (typesResult.state !== "success" || skillsResult.state !== "success")
+    //   return "";
 
-    const { typeId, search, page, skillIds } = parameters.value;
+    // if (!parameters?.value) return BERICHTEN_BASE_URI;
 
-    const params: [string, string][] = [["extend[]", "_self.dateRead"]];
+    // const { typeId, search, page, skillIds } = parameters.value;
 
-    params.push(["_limit", "10"]);
-    params.push(["_order[modified]", "desc"]);
-    params.push(["extend[]", "_self.self"]);
-    params.push(["extend[]", "acf"]);
-    params.push(["embedded.acf.publicationEndDate[after]", "now"]);
+    // const params: [string, string][] = [["extend[]", "_self.dateRead"]];
 
-    if (typeId) {
-      params.push([
-        "embedded.acf.publicationType[int_compare]",
-        typeId.toString(),
-      ]);
-    }
+    // params.push(["_limit", "10"]);
+    // params.push(["_order[modified]", "desc"]);
+    // params.push(["extend[]", "_self.self"]);
+    // params.push(["extend[]", "acf"]);
+    // params.push(["embedded.acf.publicationEndDate[after]", "now"]);
 
-    if (search) {
-      params.push([
-        "_search[embedded.title.rendered,embedded.acf.publicationContent]",
-        search,
-      ]);
-    }
+    // if (typeId) {
+    //   params.push([
+    //     "embedded.acf.publicationType[int_compare]",
+    //     typeId.toString(),
+    //   ]);
+    // }
 
-    if (page) {
-      params.push(["page", page.toString()]);
-    }
+    // if (search) {
+    //   params.push([
+    //     "_search[embedded.title.rendered,embedded.acf.publicationContent]",
+    //     search,
+    //   ]);
+    // }
 
-    if (skillIds?.length) {
-      skillIds.forEach((skillId) => {
-        params.push([
-          "embedded.acf.publicationSkill[int_compare][]",
-          skillId.toString(),
-        ]);
-      });
-    }
-    return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
+    // if (page) {
+    //   params.push(["page", page.toString()]);
+    // }
+
+    // if (skillIds?.length) {
+    //   skillIds.forEach((skillId) => {
+    //     params.push([
+    //       "embedded.acf.publicationSkill[int_compare][]",
+    //       skillId.toString(),
+    //     ]);
+    //   });
+    // }
+    // return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
   }
 
+  console.log("useWerkberichten");
   async function fetchBerichten(url: string): Promise<Paginated<Werkbericht>> {
+    console.log("BERICHTEN OPHALEN");
+
     if (
       typesResult.state !== "success" ||
       skillsResult.state !== "success" ||
@@ -211,6 +216,7 @@ export function useWerkberichten(
     const json = await r.json();
 
     const berichten = json.results;
+    console.log("---fetched berichten", berichten);
 
     if (!Array.isArray(berichten))
       throw new Error("expected a list, input: " + JSON.stringify(berichten));
@@ -245,6 +251,9 @@ export function useFeaturedWerkberichtenCount() {
 
     const json = await r.json();
 
+    console.log("berichten", json);
+    return 33333333;
+
     if (!json.results.length) return 0;
 
     return json.results.filter((result: any) => !result["_self"].dateRead)
@@ -252,14 +261,14 @@ export function useFeaturedWerkberichtenCount() {
   }
 
   function getUrl() {
-    const params: [string, string][] = [
-      ["embedded.acf.publicationFeatured[bool_compare]", "true"],
-      ["fields[]", "_self.dateRead"],
-      ["extend[]", "_self.dateRead"],
-      ["embedded.acf.publicationEndDate[after]", "now"],
-    ];
-
-    return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
+    return "/api/berichten";
+    // const params: [string, string][] = [
+    //   ["embedded.acf.publicationFeatured[bool_compare]", "true"],
+    //   ["fields[]", "_self.dateRead"],
+    //   ["extend[]", "_self.dateRead"],
+    //   ["embedded.acf.publicationEndDate[after]", "now"],
+    // ];
+    // return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
   }
 
   return ServiceResult.fromFetcher(getUrl(), fetchFeaturedWerkberichten, {

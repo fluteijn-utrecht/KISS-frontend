@@ -11,7 +11,7 @@
         public string Titel { get; set; } = string.Empty;
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
-
-        public List<Skill> Skills { get; set; } = new List<Skill>();
+ 
+        public List<Skill> Skills { get; } = new ();
     }
 }

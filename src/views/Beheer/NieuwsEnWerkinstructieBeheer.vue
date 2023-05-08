@@ -1,5 +1,5 @@
 <template>
-  <h1>Bericht</h1>
+  <utrecht-heading :level="1">Nieuws of werkinstructie</utrecht-heading>
 
   <router-link to="/Beheer/NieuwsEnWerkinstructies/"
     >Terug naar het overzicht</router-link
@@ -10,49 +10,97 @@
     <div>Het bericht is opgeslagen.</div>
   </template>
   <template v-else-if="bericht">
-    <label for="titel">Titel </label>
-    <input type="text" id="titel" v-model="bericht.titel" />
+    <form class="container" @submit.prevent="submit">
+      <label class="utrecht-form-label" for="titel"
+        ><span>Titel</span>
+        <input type="text" id="titel" v-model="bericht.titel" />
+      </label>
+      <label class="utrecht-form-label" for="inhoud">Inhoud </label>
 
-    <label for="inhoud">Inhoud </label>
-    <input type="text" id="inhoud" v-model="bericht.inhoud" />
-
-    <label for="isBelangrijk"> Belangrijk </label>
-    <input
-      type="checkbox"
-      id="isBelangrijk"
-      name="isBelangrijk"
-      v-model="bericht.isBelangrijk"
-    />
-
-    <label for="publicatieDatum"> PublicatieDatum </label>
-    <input
-      type="datetime-local"
-      id="publicatieDatum"
-      v-model="bericht.publicatieDatum"
-    />
-
-    <ul>
-      <li v-for="skill in skills" :key="skill.id">
-        <label :for="skill.id.toString()">{{ skill.naam }}</label>
+      <!-- <div class="editorWithPreview">
+        <div> -->
+      <ckeditor
+        :editor="editor"
+        v-model="bericht.inhoud"
+        :config="editorConfig"
+      ></ckeditor>
+      <!-- </div>
+        <div class="preview" v-html="bericht.inhoud"></div>
+      </div> -->
+      <label class="utrecht-form-label" for="isBelangrijk">
         <input
-          :id="skill.id.toString()"
           type="checkbox"
-          :value="skill.id"
-          v-model="bericht.skills"
+          id="isBelangrijk"
+          name="isBelangrijk"
+          v-model="bericht.isBelangrijk"
+        />Belangrijk</label
+      >
+
+      <label class="utrecht-form-label" for="publicatieDatum">
+        <span>PublicatieDatum</span>
+
+        <input
+          type="datetime-local"
+          id="publicatieDatum"
+          v-model="bericht.publicatieDatum"
         />
-      </li>
-    </ul>
+      </label>
 
-    <input type="submit" value="ok" @click="submit" />
+      <ul>
+        <li v-for="skill in skills" :key="skill.id">
+          <label class="utrecht-form-label" :for="skill.id.toString()">
+            <input
+              :id="skill.id.toString()"
+              type="checkbox"
+              :value="skill.id"
+              v-model="bericht.skills"
+            />
+            {{ skill.naam }}</label
+          >
+        </li>
+      </ul>
 
+      <!-- <input type="submit" value="ok" @click="submit" /> -->
+
+      <menu>
+        <!-- <li>
+          <utrecht-button
+            @click="cancelDialog.reveal"
+            appearance="secondary-action-button"
+            type="button"
+          >
+            Annuleren
+          </utrecht-button>
+        </li> -->
+
+        <li>
+          <utrecht-button appearance="primary-action-button" type="submit">
+            Opslaan
+          </utrecht-button>
+        </li>
+      </menu>
+    </form>
     <template if="error"> fout:... </template>
   </template>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import {
+  Heading as UtrechtHeading,
+  Button as UtrechtButton,
+} from "@utrecht/component-library-vue";
+//https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/vuejs-v3.html#quick-start
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
 const props = defineProps(["id"]);
+
+const editor = ref(ClassicEditor);
+//const editorData = ref("<p>Content of the editor.</p>");
+const editorConfig = ref({
+  toolbar: ["bold", "italic", "|", "NumberedList", "BulletedList", "|", "link"],
+  link: { addTargetToExternalLinks: true, defaultProtocol: "https://" },
+});
 
 type berichtType = {
   id?: number;
@@ -157,4 +205,41 @@ onMounted(() => {
 });
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-default);
+}
+// .preview {
+//   background-color: var(--color-secondary);
+//   padding: var(--spacing-default);
+// }
+// .editorWithPreview {
+//   width: 100%;
+//   display: flex;
+//   gap: var(--spacing-default);
+//   * {
+//     flex: 1 1 0;
+//   }
+// }
+
+:deep(.ck-editor ol),
+:deep(.ck-editor ul) {
+  padding-left: var(--spacing-default);
+}
+
+menu {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+form {
+  margin-top: var(--spacing-default);
+}
+label > span {
+  display: block;
+}
+</style>

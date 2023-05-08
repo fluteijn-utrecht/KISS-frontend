@@ -7,5 +7,7 @@
         public DateTimeOffset DateUpdated { get; set; }
         public bool IsDeleted { get; set; }
         public string Naam { get; set; } = string.Empty;
+
+        public List<Bericht> Berichten { get; } = new();
     }
 }

@@ -12,7 +12,7 @@ This template should help get you started developing with Vue 3 in Vite.
 4. Open KISS-frontend.sln in Visual Studio 2022
 5. Right-click the solution in the Solution Explorer and pick Configure Startup Projects
 6. Select Multiple startup projects, and set the Action to Start for docker-compose and KISS-frontend
-7. Startup the solution and wait for both the BFF and the frontend to be ready (note, initially you might get an error, due to different startup times of individual components. retry https://localhost:3000/ after a few moments)
+7. Startup the solution and wait for both the BFF and the frontend to be ready (note, initially you might get an error, due to different startup times of individual components. refresh the page after a few moments)
 
 ## Recommended IDE Setup
 
