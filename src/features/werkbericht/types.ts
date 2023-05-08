@@ -1,9 +1,13 @@
+export const berichtTypes = ["Werkinstructie", "Nieuws"] as const;
+
+export type Berichttype = typeof berichtTypes[number];
+
 export interface Werkbericht {
   id: string;
   title: string;
   date: Date;
   content: string;
-  type: string;
+  type: Berichttype;
   skills: { id: number; naam: string }[];
   read: boolean;
   url: string;

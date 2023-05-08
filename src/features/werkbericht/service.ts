@@ -1,4 +1,4 @@
-import type { Werkbericht } from "./types";
+import type { Berichttype, Werkbericht } from "./types";
 import {
   createLookupList,
   ServiceResult,
@@ -13,7 +13,7 @@ const WP_MAX_ALLOWED_PAGE_SIZE = "100";
 const BERICHTEN_BASE_URI = `${window.gatewayBaseUri}/api/kiss_openpub_pub`;
 
 export type UseWerkberichtenParams = {
-  type?: string;
+  type?: Berichttype;
   search?: string;
   skillIds?: number[];
   page?: number;
