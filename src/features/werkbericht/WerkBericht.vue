@@ -50,10 +50,10 @@
     <div class="skills-container">
       <small
         v-for="(skill, i) in bericht.skills"
-        :class="`category-${skill.split(' ').join('-')}`"
+        :class="`category-${skill.naam.split(' ').join('-')}`"
         :key="i"
       >
-        {{ skill }}
+        {{ skill.naam }}
       </small>
     </div>
 
@@ -172,8 +172,8 @@ const handleToggleBerichtInContactmoment = (): void => {
   const type = props.bericht.type;
   const bericht = { url: props.bericht.url, title: props.bericht.title };
 
-  type === "nieuws" && contactmomentStore.toggleNieuwsbericht(bericht);
-  type === "werkinstructie" && contactmomentStore.toggleWerkinstructie(bericht);
+  type === "Nieuws" && contactmomentStore.toggleNieuwsbericht(bericht);
+  type === "Werkinstructie" && contactmomentStore.toggleWerkinstructie(bericht);
 };
 </script>
 
