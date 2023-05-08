@@ -1,7 +1,6 @@
 import type { Werkbericht } from "./types";
 import {
   createLookupList,
-  parsePagination,
   ServiceResult,
   type LookupList,
   type Paginated,
@@ -146,7 +145,7 @@ export function useWerkberichten(
 
     const intHeader = (name: string) => {
       const header = r.headers.get(name);
-      if (!header) throw new Error();
+      if (!header) throw new Error("expected header with name " + name);
       return +header;
     };
 
@@ -170,29 +169,16 @@ export function useFeaturedWerkberichtenCount() {
 
     const json = await r.json();
 
-    console.log("berichten", json);
-    return 33333333;
-
-    if (!json.results.length) return 0;
-
-    return json.results.filter((result: any) => !result["_self"].dateRead)
-      .length;
+    return json.count;
   }
 
-  function getUrl() {
-    return "/api/berichten";
-    // const params: [string, string][] = [
-    //   ["embedded.acf.publicationFeatured[bool_compare]", "true"],
-    //   ["fields[]", "_self.dateRead"],
-    //   ["extend[]", "_self.dateRead"],
-    //   ["embedded.acf.publicationEndDate[after]", "now"],
-    // ];
-    // return `${BERICHTEN_BASE_URI}?${new URLSearchParams(params)}`;
-  }
-
-  return ServiceResult.fromFetcher(getUrl(), fetchFeaturedWerkberichten, {
-    poll: true,
-  });
+  return ServiceResult.fromFetcher(
+    "/api/berichten/featuredcount",
+    fetchFeaturedWerkberichten,
+    {
+      poll: true,
+    }
+  );
 }
 
 export async function readBericht(id: string): Promise<boolean> {
