@@ -1,0 +1,43 @@
+image:
+    pullPolicy: Always
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: ${DEV_HOST}
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          serviceName: kiss-frontend
+          servicePort: 80
+  tls:
+    - hosts:
+        - ${DEV_HOST}
+      secretName: ${WILDCARD_TLS_SECRET}
+elasticstack:
+    elasticHost: ${ELASTIC_HOST}
+    kibanaHost: ${KIBANA_HOST}
+    elasticsearch:
+        ingress:
+            hosts:
+              - host: ${ELASTIC_HOST}
+                paths:
+                - path: /
+            tls:
+              - hosts:
+                  - ${ELASTIC_HOST}
+                secretName: ${WILDCARD_TLS_SECRET}
+    kibana:
+        elasticsearchHost: https://elasticsearch-master:9200
+        ingress:
+            hosts:
+              - host: ${KIBANA_HOST}
+                paths:
+                  - path: /
+            tls:
+              - hosts:
+                  - ${KIBANA_HOST}
+                secretName: ${WILDCARD_TLS_SECRET}
+    credentials:
+        username: ${ELASTIC_USERNAME}
+        password: ${ELASTIC_PASSWORD}
