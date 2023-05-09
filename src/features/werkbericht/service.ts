@@ -5,12 +5,11 @@ import {
   type LookupList,
   type Paginated,
   type ServiceData,
+  throwIfNotOk,
+  parseJson,
 } from "@/services";
 import type { Ref } from "vue";
 import { fetchLoggedIn } from "@/services";
-
-const WP_MAX_ALLOWED_PAGE_SIZE = "100";
-const BERICHTEN_BASE_URI = `${window.gatewayBaseUri}/api/kiss_openpub_pub`;
 
 export type UseWerkberichtenParams = {
   type?: Berichttype;
@@ -50,45 +49,20 @@ function parseWerkbericht({
 }
 
 /**
- * Fetches a lookuplist from the api
- * @param url
- */
-function fetchLookupList(urlStr: string): Promise<LookupList<number, string>> {
-  const url = new URL(urlStr);
-
-  // having pagination here is a nuisance.
-  if (!url.searchParams.has("page")) {
-    url.searchParams.set("per_page", WP_MAX_ALLOWED_PAGE_SIZE);
-  }
-
-  return fetchLoggedIn(url)
-    .then((r) => r.json())
-    .then((json) => {
-      if (!Array.isArray(json))
-        throw new Error(
-          "Invalide json, verwacht een lijst: " + JSON.stringify(json)
-        );
-      return json
-        .filter((x) => typeof x?.id === "number" && typeof x?.slug === "string")
-        .map((x) => [x.id, x.slug] as [number, string]);
-    })
-    .then(createLookupList);
-}
-
-/**
- * Returns a reactive ServiceData object promising a LookupList of berichttypes
- */
-export function useBerichtTypes(): ServiceData<LookupList<number, string>> {
-  const url = window.gatewayBaseUri + "/api/openpub/openpub_type";
-  return ServiceResult.fromFetcher(url, fetchLookupList);
-}
-
-/**
  * Returns a reactive ServiceData object promising a LookupList of skills
  */
 export function useSkills(): ServiceData<LookupList<number, string>> {
-  const url = window.gatewayBaseUri + "/api/openpub/openpub_skill";
-  return ServiceResult.fromFetcher(url, fetchLookupList);
+  const url = "/api/skills";
+  const fetcher = (u: string) =>
+    fetchLoggedIn(u)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((j: any[]) =>
+        createLookupList(
+          j.map(({ id, naam }: { id: number; naam: string }) => [id, naam])
+        )
+      );
+  return ServiceResult.fromFetcher(url, fetcher);
 }
 
 /**
@@ -182,26 +156,29 @@ export function useFeaturedWerkberichtenCount() {
 }
 
 export async function readBericht(id: string): Promise<boolean> {
-  const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}?fields[]`);
+  throw new Error("not implemented");
+  // const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}?fields[]`);
 
-  if (!res.ok)
-    throw new Error(`Expected to read bericht: ${res.status.toString()}`);
+  // if (!res.ok)
+  //   throw new Error(`Expected to read bericht: ${res.status.toString()}`);
 
-  return res.ok;
+  // return res.ok;
 }
 
 export async function unreadBericht(id: string): Promise<boolean> {
-  const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}`, {
-    method: "PATCH",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ "@dateRead": false }),
-  });
+  throw new Error("not implemented");
 
-  if (!res.ok)
-    throw new Error(`Expected to unread bericht: ${res.status.toString()}`);
+  // const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}`, {
+  //   method: "PATCH",
+  //   headers: {
+  //     Accept: "application/json",
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({ "@dateRead": false }),
+  // });
 
-  return res.ok;
+  // if (!res.ok)
+  //   throw new Error(`Expected to unread bericht: ${res.status.toString()}`);
+
+  // return res.ok;
 }
