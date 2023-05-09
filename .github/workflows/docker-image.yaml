@@ -3,14 +3,13 @@ name: Docker CI
 on:
   pull_request:
     branches:
-    - DIM%405678_setup_ci
+ packa    - main
 
   push:
     branches:
-    - DIM%405678_setup_ci
+    - main
   workflow_dispatch:
   
-
 jobs:
   build-node:
     runs-on: ubuntu-latest
