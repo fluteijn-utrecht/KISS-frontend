@@ -117,10 +117,10 @@ import type { EditorConfig } from "@ckeditor/ckeditor5-core";
 import { berichtTypes, type Berichttype } from "@/features/werkbericht/types";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
-import Ckeditor from "@ckeditor/ckeditor5-vue/dist/ckeditor";
+import _Ckeditor from "@ckeditor/ckeditor5-vue";
 import { fetchLoggedIn } from "@/services";
 const props = defineProps(["id"]);
-
+const Ckeditor = _Ckeditor.component;
 //const editorData = ref("<p>Content of the editor.</p>");
 const editorConfig: EditorConfig = {
   toolbar: ["bold", "italic", "|", "NumberedList", "BulletedList", "|", "link"],
