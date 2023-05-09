@@ -139,7 +139,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             Type = bericht.Type,
             Skills = bericht.Skills
                 .Where(x=> !x.IsDeleted)
-                .Select(skill => new BerichtSkillViewModel { Id = skill.Id, Naam = skill.Naam })
+                .Select(skill => skill.Id)
                 .ToList()
         };
 
@@ -217,16 +217,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
 
-        public List<BerichtSkillViewModel> Skills { get; set; } = new();
+        public List<int> Skills { get; set; } = new();
         public string Type { get; set; } = string.Empty;
     }
-
-
-    public class BerichtSkillViewModel
-    {
-        public int Id { get; set; }
-        public string Naam { get; set; } = string.Empty;
-    }
-
 }
 
