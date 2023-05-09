@@ -5,4 +5,4 @@ services:
     image: ${CONTAINER_REGISTRY_BASE}/${CONTAINER_PROJECT_NAME}:${APP_BUILD}
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Kiss.Bff/Dockerfile
