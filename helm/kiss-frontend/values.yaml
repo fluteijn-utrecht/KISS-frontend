@@ -5,7 +5,6 @@
 replicaCount: 1
 
 config:  
-  pubBeheerUrl:  
   organizationIds: []
   gatewayBaseUri:
 
@@ -66,135 +65,10 @@ ingress:
           pathType: ImplementationSpecific
           serviceName:
           servicePort:
-        - path: /admin
-          pathType: ImplementationSpecific
-          serviceName: commonground-gateway
-          servicePort: 80
-        - path: /api
-          pathType: ImplementationSpecific
-          serviceName: commonground-gateway
-          servicePort: 80
-        - path: /me
-          pathType: ImplementationSpecific
-          serviceName: commonground-gateway
-          servicePort: 80
-        - path: /login
-          pathType: ImplementationSpecific
-          serviceName: commonground-gateway
-          servicePort: 80
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-
-
-gateway:
-  config:
-    cache: true
-    cronRunner:
-      enabled: true
-    debug: 0
-    defaultBackUrl: chart-example.local
-    defaultRedirectUrl: chart-example.local/login/oidc/dex
-  ingress:
-    hostname: chart-example.local
-    enabled: false
-  mailgun: mailgun_url
-  nginx:
-    tag: cleanup
-  php:
-    tag: cleanup
-  postgresql:
-    enabled: true
-  mongodb:
-    enabled: true
-    auth:
-      rootPassword: "!ChangeMe!"
-    updateStrategy:
-      type: Recreate
-
-gatewayui:
-  ingress:
-    annotations: {}
-    hostname: admin.chart-example.local
-    tls: []
-  pwa:
-    adminUrl: https://chart-example.local/admin
-    apiUrl: https://chart-example.local/api
-    baseUrl: https://chart-example.local
-    frontendUrl: https://chart-example.local
-    meUrl: https://chart-example.local/api
-    image:
-      image: ghcr.io/conductionnl/gateway-ui
-      tag: stag
-    organization: https://example.com
-    redirectUrl: vault
-
-dex:
-  enabled: true
-  config:
-    connectors:
-      #Example for openldap configuration below, override for use with other connectors
-      - config:
-          bindDN: cn=admin,dc=example,dc=org
-          bindPW: OpenLDAPPassword
-          groupSearch:
-            baseDN: ou=Groups,dc=example,dc=org
-            filter: (objectClass=groupOfNames)
-            nameAttr: cn
-            userMatchers:
-              - groupAttr: member
-                userAttr: DN
-          host: openldap:389
-          insecureNoSSL: true
-          userSearch:
-            baseDN: ou=People,dc=example,dc=org
-            emailAttr: mail
-            filter: (objectClass=person)
-            firstNameAttr: cn
-            idAttr: DN
-            lastNameAttr: sn
-            nameAttr: cn
-            username: mail
-          usernamePrompt: Email Address
-        id: ldap
-        name: OpenLDAP
-        type: ldap
-    enablePasswordDB: true
-    issuer: https://chart.example.local/dex
-    oauth2:
-      responseTypes:
-        - code
-        - token
-        - id_token
-      skipApprovalScreen: true
-    staticClients:
-      - id: kiss
-        name: KISS
-        redirectURIs:
-          - http://chart.example.local/login/oidc/dex #weirdly enough this should be HTTP instead of HTTPS
-        secret: KMAku42sy3iQ0CBcTHUZ
-    storage:
-      config:
-        inCluster: true
-      type: kubernetes
-  ingress:
-    className: nginx
-    enabled: true
-    hosts:
-      - host: chart.example.local
-        paths:
-          - path: /dex
-            pathType: ImplementationSpecific
-
-openldap:
-  enabled: true
-  adminPassword: OpenLDAPPassword
-  customLdifFiles:
-    config-kiss.ldif: |
-      #please fill this file to add users to your openldap, for examples see: https://www.ibm.com/docs/en/sdse/6.4.0?topic=ldif-examples
-
-
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
