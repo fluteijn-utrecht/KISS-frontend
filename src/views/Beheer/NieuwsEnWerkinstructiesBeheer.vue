@@ -26,7 +26,6 @@
       ></utrecht-button
     ></router-link>
   </menu>
-  <div v-if="deletesuccess">bericht verwijderd</div>
 </template>
 
 <script setup lang="ts">
@@ -45,7 +44,6 @@ type berichtType = {
 };
 
 const loading = ref<boolean>(true);
-const deletesuccess = ref<boolean>(false);
 const berichten = ref<Array<berichtType>>([]);
 
 const showError = () => {
@@ -76,7 +74,6 @@ async function load() {
 const verwijder = async (id: number) => {
   loading.value = true;
 
-  deletesuccess.value = false;
   try {
     const response = await fetchLoggedIn("/api/berichten/" + id, {
       method: "DELETE",
@@ -88,8 +85,8 @@ const verwijder = async (id: number) => {
       showError();
       return;
     }
-    deletesuccess.value = true;
-    load();
+    toast({ text: "Bericht verwijderd" });
+    await load();
   } catch {
     showError();
   } finally {

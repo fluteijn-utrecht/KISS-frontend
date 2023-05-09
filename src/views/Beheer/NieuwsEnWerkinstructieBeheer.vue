@@ -2,14 +2,6 @@
   <utrecht-heading :level="1">Nieuws of werkinstructie</utrecht-heading>
 
   <template v-if="loading"> <simple-spinner /></template>
-  <template v-else-if="success">
-    <div class="container">
-      <p>Het bericht is opgeslagen.</p>
-      <router-link to="/Beheer/NieuwsEnWerkinstructies/">
-        Terug naar het overzicht
-      </router-link>
-    </div>
-  </template>
   <template v-else-if="bericht">
     <form class="container" @submit.prevent="submit">
       <fieldset>
@@ -119,6 +111,7 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import _Ckeditor from "@ckeditor/ckeditor5-vue";
 import { fetchLoggedIn } from "@/services";
+import { useRouter } from "vue-router";
 const props = defineProps(["id"]);
 const Ckeditor = _Ckeditor.component;
 //const editorData = ref("<p>Content of the editor.</p>");
@@ -143,8 +136,9 @@ type Skill = {
   naam: string;
 };
 
+const router = useRouter();
+
 const loading = ref<boolean>(true);
-const success = ref<boolean>(false);
 
 const bericht = ref<BerichtDetail | null>(null);
 const skills = ref<Array<Skill>>([]);
@@ -158,13 +152,19 @@ const showError = () => {
   });
 };
 
+const handleSuccess = () => {
+  toast({
+    text: "Het bericht is opgeslagen",
+  });
+  return router.push("/Beheer/NieuwsEnWerkinstructies/");
+};
+
 const submit = async () => {
   if (!bericht.value?.inhoud) {
     alert("De inhoud van het bericht mag niet leeg zijn");
     return;
   }
   loading.value = true;
-  success.value = false;
   try {
     bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);
     bericht.value.publicatieEinddatum = addTimezone(
@@ -182,7 +182,7 @@ const submit = async () => {
       if (result.status > 300) {
         showError();
       } else {
-        success.value = true;
+        return handleSuccess();
       }
     } else {
       const result = await fetchLoggedIn("/api/berichten/", {
@@ -195,7 +195,7 @@ const submit = async () => {
       if (result.status > 300) {
         showError();
       } else {
-        success.value = true;
+        handleSuccess();
       }
     }
   } catch {

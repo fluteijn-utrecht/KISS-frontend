@@ -29,7 +29,6 @@
       </utrecht-button>
     </router-link>
   </menu>
-  <div v-if="deletesuccess">skill verwijderd</div>
 </template>
 
 <script setup lang="ts">
@@ -49,7 +48,6 @@ type skill = {
 
 const loading = ref<boolean>(true);
 const error = ref<boolean>(false);
-const deletesuccess = ref<boolean>(false);
 const skills = ref<Array<skill>>([]);
 
 const showError = () => {
@@ -81,7 +79,6 @@ async function load() {
 const verwijder = async (id: number) => {
   loading.value = true;
   error.value = false;
-  deletesuccess.value = false;
   try {
     const response = await fetchLoggedIn("/api/Skills/" + id, {
       method: "DELETE",
@@ -95,8 +92,11 @@ const verwijder = async (id: number) => {
       return;
     }
 
-    deletesuccess.value = true;
-    load();
+    toast({
+      text: "Skill verwijderd",
+    });
+
+    await load();
   } catch {
     showError();
   } finally {

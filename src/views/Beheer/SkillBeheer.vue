@@ -3,13 +3,6 @@
 
   <template v-if="loading"><SimpleSpinner /></template>
 
-  <template v-else-if="success">
-    <div class="container">
-      <p>De skill is opgeslagen.</p>
-      <router-link to="/Beheer/Skills/"> Terug naar het overzicht </router-link>
-    </div>
-  </template>
-
   <template v-else>
     <form class="container" @submit.prevent="submit">
       <label for="naam" class="utrecht-form-label"
@@ -49,16 +42,16 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
-
+import { useRouter } from "vue-router";
 const props = defineProps(["id"]);
 
 type skillType = {
   id?: number;
   naam?: string;
 };
+const router = useRouter();
 
 const loading = ref<boolean>(false);
-const success = ref<boolean>(false);
 
 const skill = ref<skillType>({});
 
@@ -69,10 +62,16 @@ const showError = () => {
   });
 };
 
+const handleSuccess = () => {
+  toast({
+    text: "Skill opgeslagen",
+  });
+  return router.push("/Beheer/Skills/");
+};
+
 const submit = async () => {
   loading.value = true;
 
-  success.value = false;
   try {
     if (props.id) {
       const result = await fetchLoggedIn("/api/Skills/" + props.id, {
@@ -85,7 +84,7 @@ const submit = async () => {
       if (result.status > 300) {
         showError();
       } else {
-        success.value = true;
+        return handleSuccess();
       }
     } else {
       const result = await fetchLoggedIn("/api/Skills/", {
@@ -98,10 +97,10 @@ const submit = async () => {
       if (result.status > 300) {
         showError();
       } else {
-        success.value = true;
+        return handleSuccess();
       }
     }
-    success.value = true;
+    return handleSuccess();
   } catch {
     showError();
   } finally {
