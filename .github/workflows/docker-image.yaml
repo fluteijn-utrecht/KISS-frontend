@@ -3,7 +3,7 @@ name: Docker CI
 on:
   pull_request:
     branches:
- packa    - main
+    - main
 
   push:
     branches:
