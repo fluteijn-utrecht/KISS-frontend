@@ -2,6 +2,9 @@ import { fileURLToPath, URL } from "url";
 import { defineConfig, type ProxyOptions, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import basicSsl from "@vitejs/plugin-basic-ssl";
+import { createRequire } from "node:module";
+import ckeditor5 from "@ckeditor/vite-plugin-ckeditor5";
+const require = createRequire(import.meta.url);
 
 const getProxy = (
   env: Record<string, string>
@@ -24,7 +27,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const proxy = getProxy(env);
   return {
-    plugins: [vue(), basicSsl()],
+    plugins: [
+      ckeditor5({ theme: require.resolve("@ckeditor/ckeditor5-theme-lark") }),
+      vue(),
+      basicSsl(),
+    ],
     server: {
       port: 3000,
       proxy,
@@ -33,6 +40,9 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
       },
+    },
+    build: {
+      assetsInlineLimit: 0,
     },
   };
 });

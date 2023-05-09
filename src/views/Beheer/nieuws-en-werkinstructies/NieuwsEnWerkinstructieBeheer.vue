@@ -26,11 +26,7 @@
 
       <!-- <div class="editorWithPreview">
         <div> -->
-      <ckeditor
-        :editor="ClassicEditor"
-        v-model="bericht.inhoud"
-        :config="editorConfig"
-      ></ckeditor>
+      <ck-editor v-model="bericht.inhoud" />
       <!-- </div>
         <div class="preview" v-html="bericht.inhoud"></div>
       </div> -->
@@ -103,22 +99,14 @@ import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
-//https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/vuejs-v3.html#quick-start
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import type { EditorConfig } from "@ckeditor/ckeditor5-core";
 import { berichtTypes, type Berichttype } from "@/features/werkbericht/types";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
-import _Ckeditor from "@ckeditor/ckeditor5-vue";
 import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
+import CkEditor from "@/components/ckeditor";
+
 const props = defineProps(["id"]);
-const Ckeditor = _Ckeditor.component;
-//const editorData = ref("<p>Content of the editor.</p>");
-const editorConfig: EditorConfig = {
-  toolbar: ["bold", "italic", "|", "NumberedList", "BulletedList", "|", "link"],
-  link: { addTargetToExternalLinks: true, defaultProtocol: "https://" },
-};
 
 type BerichtDetail = {
   id?: number;

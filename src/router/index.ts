@@ -15,14 +15,10 @@ import BedrijvenView from "@/views/BedrijvenView.vue";
 import BedrijfDetailView from "@/views/BedrijfDetailView.vue";
 import LinksView from "@/views/LinksView.vue";
 import NieuwsEnWerkinstructiesBeheer from "@/views/Beheer/nieuws-en-werkinstructies/NieuwsEnWerkinstructiesBeheer.vue";
+import NieuwsEnWerkinstructieBeheer from "@/views/Beheer/nieuws-en-werkinstructies/NieuwsEnWerkinstructieBeheer.vue";
 import SkillsBeheer from "@/views/Beheer/skills/SkillsBeheer.vue";
 import SkillBeheer from "@/views/Beheer/skills/SkillBeheer.vue";
 import BeheerLayout from "@/views/Beheer/BeheerLayout.vue";
-
-const NieuwsEnWerkinstructieBeheer = () =>
-  import(
-    "@/views/Beheer/nieuws-en-werkinstructies/NieuwsEnWerkinstructieBeheer.vue"
-  );
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
