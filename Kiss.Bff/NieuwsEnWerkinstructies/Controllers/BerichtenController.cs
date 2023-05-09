@@ -107,7 +107,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             await _context.Berichten.AddAsync(newBericht, token);
             await _context.SaveChangesAsync(token);
 
-            return CreatedAtAction("GetBericht", new { id = newBericht.Id }, MapBericht(newBericht));
+            return CreatedAtAction(nameof(GetBericht), new { id = newBericht.Id }, MapBericht(newBericht));
 
         }
 
@@ -151,23 +151,25 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                 return;
             }
 
+            if (selectedSkills == null)
+            {
+                current.Skills.Clear();
+                return;
+            }
+
             // remove not selected skill 
-            var notSelected = current.Skills.Where(x => selectedSkills != null && !selectedSkills.Contains(x.Id)).ToList();
+            var notSelected = current.Skills.Where(x => !selectedSkills.Contains(x.Id)).ToList();
             foreach (var item in notSelected)
             {
                 current.Skills.Remove(item);
             }
-            
 
             //add new skills
-            if (selectedSkills != null)
+            foreach (var skillId in selectedSkills.Where(x => !current.Skills.Any(s => s.Id == x)))
             {
-                foreach (var skillId in selectedSkills.Where(x=> !current.Skills.Any(s => s.Id == x)))
-                {
-                    var newSkill = new Skill { Id = skillId };
-                    _context.Attach(newSkill);
-                    current.Skills.Add(newSkill);
-                }
+                var newSkill = new Skill { Id = skillId };
+                _context.Attach(newSkill);
+                current.Skills.Add(newSkill);
             }
         }
 
@@ -187,7 +189,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
         public List<int>? Skills { get; set; }
-        public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset PublicatieDatum { get; set; }
         public DateTimeOffset? PublicatieEinddatum { get; set; }
         public string Type { get; set; } = string.Empty;
     }
@@ -200,7 +202,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
         public List<int>? Skills { get; set; }
-        public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset PublicatieDatum { get; set; }
         public DateTimeOffset? PublicatieEinddatum { get; set; }
         public string Type { get; set; } = string.Empty;
     }
@@ -209,7 +211,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     {
         public int Id { get; set; }
 
-        public DateTimeOffset? PublicatieDatum { get; set; }
+        public DateTimeOffset PublicatieDatum { get; set; }
         public DateTimeOffset? PublicatieEinddatum { get; set; }
         public string Titel { get; set; } = string.Empty;
         public string Inhoud { get; set; } = string.Empty;

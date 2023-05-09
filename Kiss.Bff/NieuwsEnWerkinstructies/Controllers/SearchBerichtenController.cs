@@ -50,7 +50,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             Response.Headers["X-Total-Pages"] = Math.Ceiling((double)total / pageSize).ToString();
 
             var result = query
-                .OrderByDescending(x => x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum ?? x.DateCreated)
+                .OrderByDescending(x => x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum)
                 .Skip(skip)
                 .Take(pageSize)
                 .Select(x => new SearchBerichtenResponseModel(
@@ -58,7 +58,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                     "/api/berichten/" + x.Id.ToString(),
                     x.Inhoud,
                     x.IsBelangrijk,
-                    x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum ?? x.DateCreated,
+                    x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum,
                     x.Titel,
                     x.Type,
                     x.Skills
@@ -71,6 +71,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             return Ok(result);
         }
     }
+
     public record BerichtFilterModel(string? Type, string? Search, int[]? SkillIds, int? Page, int? PageSize);
 
     internal class SearchBerichtenResponseModel
