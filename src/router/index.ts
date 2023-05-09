@@ -15,10 +15,12 @@ import BedrijvenView from "@/views/BedrijvenView.vue";
 import BedrijfDetailView from "@/views/BedrijfDetailView.vue";
 import LinksView from "@/views/LinksView.vue";
 import NieuwsEnWerkinstructiesBeheer from "@/views/Beheer/NieuwsEnWerkinstructiesBeheer.vue";
-import NieuwsEnWerkinstructieBeheer from "@/views/Beheer/NieuwsEnWerkinstructieBeheer.vue";
 import SkillsBeheer from "@/views/Beheer/SkillsBeheer.vue";
 import SkillBeheer from "@/views/Beheer/SkillBeheer.vue";
 import NieuwsEnWerkinstructiesBeheerLayout from "@/views/Beheer/NieuwsEnWerkinstructiesBeheerLayout.vue";
+
+const NieuwsEnWerkinstructieBeheer = () =>
+  import("@/views/Beheer/NieuwsEnWerkinstructieBeheer.vue");
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();

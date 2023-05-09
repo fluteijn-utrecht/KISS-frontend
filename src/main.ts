@@ -3,7 +3,6 @@ import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
 import { useIntersectionObserver } from "@vueuse/core";
-import CKEditor from "@ckeditor/ckeditor5-vue";
 
 declare global {
   interface Window {
@@ -26,8 +25,6 @@ const app = createApp(App);
 
 app.use(createPinia());
 app.use(router);
-
-app.use(CKEditor);
 
 // Register a global custom directive called `v-focus`
 app.directive("focus", {

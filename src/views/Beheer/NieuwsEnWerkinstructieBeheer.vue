@@ -35,7 +35,7 @@
       <!-- <div class="editorWithPreview">
         <div> -->
       <ckeditor
-        :editor="editor"
+        :editor="ClassicEditor"
         v-model="bericht.inhoud"
         :config="editorConfig"
       ></ckeditor>
@@ -74,14 +74,8 @@
           v-for="skill in skills"
           :key="skill.id"
           class="utrecht-form-label"
-          :for="skill.id.toString()"
         >
-          <input
-            :id="skill.id.toString()"
-            type="checkbox"
-            :value="skill.id"
-            v-model="bericht.skills"
-          />
+          <input type="checkbox" :value="skill.id" v-model="bericht.skills" />
           {{ skill.naam }}</label
         >
       </fieldset>
@@ -119,31 +113,31 @@ import {
 } from "@utrecht/component-library-vue";
 //https://ckeditor.com/docs/ckeditor5/latest/installation/frameworks/vuejs-v3.html#quick-start
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { berichtTypes } from "@/features/werkbericht/types";
+import type { EditorConfig } from "@ckeditor/ckeditor5-core";
+import { berichtTypes, type Berichttype } from "@/features/werkbericht/types";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
-
+import Ckeditor from "@ckeditor/ckeditor5-vue/dist/ckeditor";
 const props = defineProps(["id"]);
 
-const editor = ref(ClassicEditor);
 //const editorData = ref("<p>Content of the editor.</p>");
-const editorConfig = ref({
+const editorConfig: EditorConfig = {
   toolbar: ["bold", "italic", "|", "NumberedList", "BulletedList", "|", "link"],
   link: { addTargetToExternalLinks: true, defaultProtocol: "https://" },
-});
+};
 
-type berichtType = {
+type BerichtDetail = {
   id?: number;
-  type?: string;
+  type?: Berichttype;
   titel?: string;
   inhoud?: string;
   publicatieDatum?: string;
   publicatieEinddatum?: string;
   isBelangrijk?: boolean;
-  skills: Array<any>;
+  skills: Array<number>;
 };
 
-type skill = {
+type Skill = {
   id: number;
   naam: string;
 };
@@ -151,8 +145,8 @@ type skill = {
 const loading = ref<boolean>(true);
 const success = ref<boolean>(false);
 
-const bericht = ref<berichtType | null>(null);
-const skills = ref<Array<skill>>([]);
+const bericht = ref<BerichtDetail | null>(null);
+const skills = ref<Array<Skill>>([]);
 
 const addTimezone = (s?: string) => s && new Date(s).toISOString();
 
@@ -230,9 +224,6 @@ async function load() {
         jsonData.publicatieEinddatum
       );
       bericht.value = jsonData;
-      if (bericht.value) {
-        bericht.value.skills = bericht.value.skills.map((s) => s.id);
-      }
     } else {
       bericht.value = { skills: [] };
     }
