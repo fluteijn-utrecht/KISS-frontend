@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
     [DbContext(typeof(NieuwsEnWerkinstructiesDbContext))]
-    [Migration("20230504090106_Init")]
+    [Migration("20230509075042_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,21 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BerichtSkill", b =>
+                {
+                    b.Property<int>("BerichtenId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SkillsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("BerichtenId", "SkillsId");
+
+                    b.HasIndex("SkillsId");
+
+                    b.ToTable("BerichtSkill");
+                });
+
             modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", b =>
                 {
                     b.Property<int>("Id")
@@ -32,10 +47,10 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("DateUpdated")
+                    b.Property<DateTimeOffset?>("DateUpdated")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Inhoud")
@@ -45,14 +60,24 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.Property<bool>("IsBelangrijk")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("PublicatieDatum")
+                    b.Property<DateTimeOffset>("PublicatieDatum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("PublicatieEinddatum")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Titel")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Type");
 
                     b.ToTable("Berichten");
                 });
@@ -65,13 +90,10 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BerichtId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateTimeOffset>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DateUpdated")
+                    b.Property<DateTimeOffset>("DateUpdated")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -83,21 +105,22 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BerichtId");
-
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Skill", b =>
+            modelBuilder.Entity("BerichtSkill", b =>
                 {
                     b.HasOne("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", null)
-                        .WithMany("Skills")
-                        .HasForeignKey("BerichtId");
-                });
+                        .WithMany()
+                        .HasForeignKey("BerichtenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-            modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", b =>
-                {
-                    b.Navigation("Skills");
+                    b.HasOne("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Skill", null)
+                        .WithMany()
+                        .HasForeignKey("SkillsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
