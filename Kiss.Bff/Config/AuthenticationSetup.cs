@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 options.ResponseType = OidcConstants.ResponseTypes.Code;
                 options.UsePkce = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
+                options.GetClaimsFromUserInfoEndpoint = false;
 
                 options.Scope.Clear();
                 options.Scope.Add(OidcConstants.StandardScopes.OpenId);
