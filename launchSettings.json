@@ -5,7 +5,6 @@
       "commandVersion": "1.0",
       "composeLaunchAction": "LaunchBrowser",
       "composeLaunchServiceName": "kiss.bff",
-      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/weatherforecast",
       "serviceActions": {
         "kiss.bff": "StartDebugging"
       }

@@ -13,7 +13,14 @@ COPY . .
 WORKDIR "/src/Kiss.Bff"
 RUN dotnet build "Kiss.Bff.csproj" -c Release -o /app/build
 
+FROM node:alpine AS frontend
+WORKDIR /app
+COPY . .
+RUN npm ci
+RUN npm run build --if-present
+
 FROM build AS publish
+COPY --from=frontend /app/dist ./wwwroot
 RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
