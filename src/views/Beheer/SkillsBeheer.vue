@@ -40,6 +40,7 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
+import { fetchLoggedIn } from "@/services";
 
 type skill = {
   id: number;
@@ -62,7 +63,7 @@ async function load() {
   loading.value = true;
 
   try {
-    const response = await fetch("/api/Skills");
+    const response = await fetchLoggedIn("/api/Skills");
     if (response.status > 300) {
       showError();
       return;
@@ -82,7 +83,7 @@ const verwijder = async (id: number) => {
   error.value = false;
   deletesuccess.value = false;
   try {
-    const response = await fetch("/api/Skills/" + id, {
+    const response = await fetchLoggedIn("/api/Skills/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -118,6 +118,7 @@ import { berichtTypes, type Berichttype } from "@/features/werkbericht/types";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import Ckeditor from "@ckeditor/ckeditor5-vue/dist/ckeditor";
+import { fetchLoggedIn } from "@/services";
 const props = defineProps(["id"]);
 
 //const editorData = ref("<p>Content of the editor.</p>");
@@ -170,7 +171,7 @@ const submit = async () => {
       bericht.value.publicatieEinddatum
     );
     if (props.id) {
-      const result = await fetch("/api/berichten/" + props.id, {
+      const result = await fetchLoggedIn("/api/berichten/" + props.id, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +185,7 @@ const submit = async () => {
         success.value = true;
       }
     } else {
-      const result = await fetch("/api/berichten/", {
+      const result = await fetchLoggedIn("/api/berichten/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -210,7 +211,7 @@ async function load() {
   try {
     if (props.id) {
       //load bericht if id provided
-      const response = await fetch("/api/berichten/" + props.id);
+      const response = await fetchLoggedIn("/api/berichten/" + props.id);
 
       if (response.status > 300) {
         showError();
@@ -229,7 +230,7 @@ async function load() {
     }
 
     //load skils
-    const skillsResponse = await fetch("/api/Skills");
+    const skillsResponse = await fetchLoggedIn("/api/Skills");
 
     if (skillsResponse.status > 300) {
       showError();

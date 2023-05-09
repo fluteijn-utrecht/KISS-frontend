@@ -48,6 +48,7 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
+import { fetchLoggedIn } from "@/services";
 
 const props = defineProps(["id"]);
 
@@ -74,7 +75,7 @@ const submit = async () => {
   success.value = false;
   try {
     if (props.id) {
-      const result = await fetch("/api/Skills/" + props.id, {
+      const result = await fetchLoggedIn("/api/Skills/" + props.id, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -87,7 +88,7 @@ const submit = async () => {
         success.value = true;
       }
     } else {
-      const result = await fetch("/api/Skills/", {
+      const result = await fetchLoggedIn("/api/Skills/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +113,7 @@ onMounted(async () => {
   if (props.id) {
     loading.value = true;
     try {
-      const response = await fetch("/api/Skills/" + props.id);
+      const response = await fetchLoggedIn("/api/Skills/" + props.id);
       if (response.status > 300) {
         showError();
         return;

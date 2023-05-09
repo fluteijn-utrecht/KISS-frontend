@@ -37,6 +37,7 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
+import { fetchLoggedIn } from "@/services";
 
 type berichtType = {
   id: number;
@@ -58,7 +59,7 @@ async function load() {
   loading.value = true;
 
   try {
-    const response = await fetch("/api/berichten");
+    const response = await fetchLoggedIn("/api/berichten");
     if (response.status > 300) {
       showError();
       return;
@@ -77,7 +78,7 @@ const verwijder = async (id: number) => {
 
   deletesuccess.value = false;
   try {
-    const response = await fetch("/api/berichten/" + id, {
+    const response = await fetchLoggedIn("/api/berichten/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
