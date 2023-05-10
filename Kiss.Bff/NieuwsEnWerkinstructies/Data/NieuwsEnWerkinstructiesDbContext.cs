@@ -1,7 +1,5 @@
 ﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
@@ -23,12 +21,16 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
 
                 b.Property(x => x.Inhoud).IsRequired();
                 b.Property(x => x.Titel).IsRequired();
+            });
 
+            modelBuilder.Entity<BerichtGelezen>(g =>
+            {
+                g.HasKey(x => new { x.UserId, x.BerichtId });
             });
         }
 
-
         public DbSet<Bericht> Berichten { get; set; } = null!;
         public DbSet<Skill> Skills { get; set; } = null!;
+        public DbSet<BerichtGelezen> Gelezen { get; set; } = null!;
     }
 }

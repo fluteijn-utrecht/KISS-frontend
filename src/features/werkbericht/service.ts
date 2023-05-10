@@ -32,12 +32,12 @@ function parseWerkbericht({
   titel,
   type,
   skills,
-  dateRead,
+  isGelezen,
   url,
 }: any = {}): Werkbericht {
   return {
     id,
-    read: !!dateRead,
+    read: isGelezen,
     title: titel,
     content: inhoud,
     date: datum && new Date(datum),
@@ -155,30 +155,17 @@ export function useFeaturedWerkberichtenCount() {
   );
 }
 
-export async function readBericht(id: string): Promise<boolean> {
-  throw new Error("not implemented");
-  // const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}?fields[]`);
+export async function putBerichtRead(id: string, isGelezen: boolean) {
+  const res = await fetchLoggedIn(`/api/berichten/${id}/read`, {
+    method: "PUT",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      isGelezen,
+    }),
+  });
 
-  // if (!res.ok)
-  //   throw new Error(`Expected to read bericht: ${res.status.toString()}`);
-
-  // return res.ok;
-}
-
-export async function unreadBericht(id: string): Promise<boolean> {
-  throw new Error("not implemented");
-
-  // const res = await fetchLoggedIn(`${BERICHTEN_BASE_URI}/${id}`, {
-  //   method: "PATCH",
-  //   headers: {
-  //     Accept: "application/json",
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify({ "@dateRead": false }),
-  // });
-
-  // if (!res.ok)
-  //   throw new Error(`Expected to unread bericht: ${res.status.toString()}`);
-
-  // return res.ok;
+  if (!res.ok)
+    throw new Error(`Expected to read bericht: ${res.status.toString()}`);
 }

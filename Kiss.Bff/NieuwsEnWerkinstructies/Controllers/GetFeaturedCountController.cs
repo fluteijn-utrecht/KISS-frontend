@@ -15,10 +15,23 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         }
 
         [HttpGet("api/berichten/featuredcount")]
-        public async Task<IActionResult> GetCount(CancellationToken token)
+        public async Task<ActionResult<FeaturedCount>> GetCount(CancellationToken token)
         {
-            var count = await _context.Berichten.Where(x => x.IsBelangrijk).CountAsync(token);
-            return Ok(new FeaturedCount(count));
+            var userId = User.GetId();
+            
+            var count = await _context.Berichten
+                .Select(x=> new 
+                {
+                    x.IsBelangrijk, 
+                    x.Gelezen, 
+                    Datum = x.DateUpdated > x.PublicatieDatum 
+                        ? x.DateUpdated 
+                        : x.PublicatieDatum 
+                })
+                .Where(x => x.IsBelangrijk && !x.Gelezen.Any(g => g.UserId == userId && g.GelezenOp >= x.Datum))
+                .CountAsync(token);
+
+            return new FeaturedCount(count);
         }
     }
 

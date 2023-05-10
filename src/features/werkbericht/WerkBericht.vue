@@ -71,7 +71,7 @@ import {
   Document as UtrechtDocument,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
-import { readBericht, unreadBericht } from "./service";
+import { putBerichtRead } from "./service";
 import { sanitizeHtmlToBerichtFormat, increaseHeadings } from "@/helpers/html";
 import { toast } from "@/stores/toast";
 import { useContactmomentStore } from "@/stores/contactmoment";
@@ -124,30 +124,21 @@ watch(
 
 const toggleReadIsLoading = ref<boolean>(false);
 
-const toggleRead = async (): Promise<void> => {
-  let toggleReadError = false;
+const toggleRead = (): Promise<void> => {
   toggleReadIsLoading.value = true;
-
-  if (read.value) {
-    await unreadBericht(props.bericht.id).catch(() => (toggleReadError = true));
-  }
-
-  if (!read.value) {
-    await readBericht(props.bericht.id).catch(() => (toggleReadError = true));
-  }
-
-  toggleReadIsLoading.value = false;
-
-  if (!toggleReadError) {
-    read.value = !read.value;
-  }
-
-  if (toggleReadError) {
-    toast({
-      text: "Oeps het lukt niet om dit bericht te markeren. Probeer het later opnieuw.",
-      type: "error",
+  const wasRead = read.value;
+  read.value = !wasRead;
+  return putBerichtRead(props.bericht.id, !wasRead)
+    .catch(() => {
+      read.value = wasRead;
+      toast({
+        text: "Oeps het lukt niet om dit bericht te markeren. Probeer het later opnieuw.",
+        type: "error",
+      });
+    })
+    .finally(() => {
+      toggleReadIsLoading.value = false;
     });
-  }
 };
 
 const localeString = (d: Date) =>
