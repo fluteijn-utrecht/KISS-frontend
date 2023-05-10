@@ -99,3 +99,5 @@ env:
   OIDC_CLIENT_SECRET: ""
   OIDC_CLIENT_ID: ""
   OIDC_AUTHORITY: ""
+  KVK_BASE_URL: ""
+  KVK_API_KEY: ""
