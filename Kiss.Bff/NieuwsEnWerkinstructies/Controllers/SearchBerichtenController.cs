@@ -72,6 +72,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                         .Select(y => new SearchBerichtenSkillModel(y.Id, y.Naam))
                         .ToList()
                 ))
+                .AsSplitQuery()
                 .AsAsyncEnumerable();
 
             return Ok(result);
