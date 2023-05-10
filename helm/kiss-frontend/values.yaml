@@ -94,3 +94,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+env:
+  OIDC_CLIENT_SECRET: ""
+  OIDC_CLIENT_ID: ""
+  OIDC_AUTHORITY: ""
