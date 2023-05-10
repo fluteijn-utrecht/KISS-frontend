@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
-using Serilog;
+﻿using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,28 +32,15 @@ try
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
-    app.UseForwardedHeaders(new ForwardedHeadersOptions
-    {
-        ForwardedHeaders = ForwardedHeaders.All
-    });
-
-    app.Use((context, next) =>
-    {
-        if (context.Request.Headers["x-forwarded-proto"] == "https")
-        {
-            context.Request.Scheme = "https";
-        }
-        return next();
-    });
 
     app.UseHttpsRedirection();
 
     app.UseSerilogRequestLogging();
 
     app.UseKissStaticFiles();
-    //app.UseKissSecurityHeaders();
+    app.UseKissSecurityHeaders();
 
-    //app.UseStrictSameSiteExternalAuthenticationMiddleware();
+    app.UseKissAuthMiddlewares();
     app.UseAuthentication();
     app.UseAuthorization();
 

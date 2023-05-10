@@ -2,6 +2,7 @@
 using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.DefaultChallengeScheme = ChallengeSchemeName;
             }).AddCookie(CookieSchemeName, options =>
             {
-                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.SameSite = SameSiteMode.Strict;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.IsEssential = true;
                 options.Cookie.HttpOnly = true;
@@ -32,14 +33,14 @@ namespace Microsoft.Extensions.DependencyInjection
             })
             .AddOpenIdConnect(ChallengeSchemeName, options =>
             {
-                //options.NonceCookie.HttpOnly = true;
-                //options.NonceCookie.IsEssential = true;
-                //options.NonceCookie.SameSite = SameSiteMode.None;
-                //options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-                //options.CorrelationCookie.HttpOnly = true;
-                //options.CorrelationCookie.IsEssential = true;
-                //options.CorrelationCookie.SameSite = SameSiteMode.None;
-                //options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.NonceCookie.HttpOnly = true;
+                options.NonceCookie.IsEssential = true;
+                options.NonceCookie.SameSite = SameSiteMode.None;
+                options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.CorrelationCookie.HttpOnly = true;
+                options.CorrelationCookie.IsEssential = true;
+                options.CorrelationCookie.SameSite = SameSiteMode.None;
+                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
 
                 options.Authority = authority;
                 options.ClientId = clientId;
@@ -65,15 +66,34 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAuthorization(options =>
             {
-                //options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                //    .RequireRole(klantcontactmedewerkerRole ?? "Klantcontactmedewerker")
-                //    .Build();
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireRole(klantcontactmedewerkerRole ?? "Klantcontactmedewerker")
+                    .Build();
             });
 
             return services;
         }
 
-        public static IApplicationBuilder UseStrictSameSiteExternalAuthenticationMiddleware(this IApplicationBuilder app) => app.Use(StrictSameSiteExternalAuthenticationMiddleware);
+        public static IApplicationBuilder UseKissAuthMiddlewares(this IApplicationBuilder app)
+        {
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.All
+            });
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Headers["x-forwarded-proto"] == "https")
+                {
+                    context.Request.Scheme = "https";
+                }
+                return next();
+            });
+
+            app.Use(StrictSameSiteExternalAuthenticationMiddleware);
+
+            return app;
+        }
 
         public static IEndpointRouteBuilder MapKissAuthEndpoints(this IEndpointRouteBuilder endpoints)
         {
