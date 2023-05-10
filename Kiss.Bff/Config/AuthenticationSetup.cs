@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.DefaultChallengeScheme = ChallengeSchemeName;
             }).AddCookie(CookieSchemeName, options =>
             {
-                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.SameSite = SameSiteMode.Lax;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.IsEssential = true;
                 options.Cookie.HttpOnly = true;
