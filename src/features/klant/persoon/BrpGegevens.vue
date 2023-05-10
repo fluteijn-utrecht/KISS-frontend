@@ -24,22 +24,18 @@
       <dt>Geboorteland</dt>
       <dd>{{ persoon.geboorteland }}</dd>
       <dt>Adres</dt>
-      <dd>
-        {{
-          [
-            persoon.straat,
-            persoon.huisnummer,
-            persoon.huisletter,
-            persoon.huisnummertoevoeging,
-          ]
-            .filter(Boolean)
-            .join(" ")
-        }}
-      </dd>
-      <dt>Postcode</dt>
-      <dd>{{ persoon.postcode }}</dd>
-      <dt>Woonplaats</dt>
-      <dd>{{ persoon.woonplaats }}</dd>
+      <template v-if="persoon.adresregel1">
+        <dt>Adresregel 1</dt>
+        <dd>{{ persoon.adresregel1 }}</dd>
+      </template>
+      <template v-if="persoon.adresregel2">
+        <dt>Adresregel 2</dt>
+        <dd>{{ persoon.adresregel2 }}</dd>
+      </template>
+      <template v-if="persoon.adresregel3">
+        <dt>Adresregel 3</dt>
+        <dd>{{ persoon.adresregel3 }}</dd>
+      </template>
     </dl>
   </article>
 </template>
