@@ -42,7 +42,7 @@ try
     app.UseKissStaticFiles();
     app.UseKissSecurityHeaders();
 
-    app.UseStrictSameSiteExternalAuthenticationMiddleware();
+    app.UseKissAuthMiddlewares();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapKissAuthEndpoints();

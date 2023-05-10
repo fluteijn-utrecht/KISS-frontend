@@ -49,14 +49,21 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /WeatherForecast
+              path: /
               port: http
           readinessProbe:
             httpGet:
-              path: /WeatherForecast
+              path: /
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:  # Add your environment variables here
+          - name: OIDC_CLIENT_SECRET
+            value: {{ .Values.env.OIDC_CLIENT_SECRET | quote }}
+          - name: OIDC_CLIENT_ID
+            value: {{ .Values.env.OIDC_CLIENT_ID | quote }}
+          - name: OIDC_AUTHORITY
+            value: {{ .Values.env.OIDC_AUTHORITY | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
