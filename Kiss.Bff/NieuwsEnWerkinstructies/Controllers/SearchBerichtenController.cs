@@ -55,7 +55,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             var result = query
                 .Select(x=> new { Bericht = x, Datum = x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum })
-                .OrderByDescending(x => x.Datum)
+                .OrderByDescending(x=> x.Bericht.IsBelangrijk)
+                .ThenByDescending(x => x.Datum)
                 .Skip(skip)
                 .Take(pageSize)
                 .Select(x => new SearchBerichtenResponseModel(

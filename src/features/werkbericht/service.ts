@@ -106,16 +106,12 @@ export function useWerkberichten(
     const r = await fetchLoggedIn(url);
     if (!r.ok) throw new Error(r.status.toString());
 
-    const json: any[] = await r.json();
+    const json = await r.json();
 
-    const berichten = json.map(parseWerkbericht);
+    if (!Array.isArray(json))
+      throw new Error("expected a list, input: " + JSON.stringify(page));
 
-    if (!Array.isArray(berichten))
-      throw new Error("expected a list, input: " + JSON.stringify(berichten));
-
-    const featuredBerichten = berichten.filter(({ featured }) => featured);
-    const regularBerichten = berichten.filter(({ featured }) => !featured);
-    const sortedBerichten = [...featuredBerichten, ...regularBerichten];
+    const page = json.map(parseWerkbericht);
 
     const intHeader = (name: string) => {
       const header = r.headers.get(name);
@@ -124,7 +120,7 @@ export function useWerkberichten(
     };
 
     return {
-      page: sortedBerichten,
+      page,
       pageNumber: intHeader("X-Current-Page"),
       totalRecords: intHeader("X-Total-Records"),
       totalPages: intHeader("X-Total-Pages"),
