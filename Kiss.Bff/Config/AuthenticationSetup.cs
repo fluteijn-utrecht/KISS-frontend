@@ -32,14 +32,14 @@ namespace Microsoft.Extensions.DependencyInjection
             })
             .AddOpenIdConnect(ChallengeSchemeName, options =>
             {
-                options.NonceCookie.HttpOnly = true;
-                options.NonceCookie.IsEssential = true;
-                options.NonceCookie.SameSite = SameSiteMode.None;
-                options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.CorrelationCookie.HttpOnly = true;
-                options.CorrelationCookie.IsEssential = true;
-                options.CorrelationCookie.SameSite = SameSiteMode.None;
-                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+                //options.NonceCookie.HttpOnly = true;
+                //options.NonceCookie.IsEssential = true;
+                //options.NonceCookie.SameSite = SameSiteMode.None;
+                //options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                //options.CorrelationCookie.HttpOnly = true;
+                //options.CorrelationCookie.IsEssential = true;
+                //options.CorrelationCookie.SameSite = SameSiteMode.None;
+                //options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
 
                 options.Authority = authority;
                 options.ClientId = clientId;
@@ -65,9 +65,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAuthorization(options =>
             {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireRole(klantcontactmedewerkerRole ?? "Klantcontactmedewerker")
-                    .Build();
+                //options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                //    .RequireRole(klantcontactmedewerkerRole ?? "Klantcontactmedewerker")
+                //    .Build();
             });
 
             return services;
