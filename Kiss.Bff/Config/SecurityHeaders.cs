@@ -1,4 +1,4 @@
-namespace Microsoft.AspNetCore.Builder
+﻿namespace Microsoft.AspNetCore.Builder
 {
     public static class SecurityHeaders
     {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Builder
                 csp.AddImgSrc().Self();
                 csp.AddFontSrc().Self();
                 csp.AddFrameAncestors().None();
-                csp.AddFormAction().None();
+                csp.AddFormAction().Self();
                 csp.AddBaseUri().None();
             })
             .AddPermissionsPolicy(permissions =>

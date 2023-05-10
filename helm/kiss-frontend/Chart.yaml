@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.0.17
+version: 1.0.25
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -24,23 +24,6 @@ version: 1.0.17
 appVersion: "1.0.0"
 
 dependencies:
-  - name: commonground-gateway
-    alias: gateway
-    version: 1.2.8
-    repository: https://raw.githubusercontent.com/ConductionNL/commonground-gateway/feature-cleanup/api/helm/
-    condition: gateway.enabled
   - name: elasticstack
     version: 0.4.4
     repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
-  - name: skeleton-app
-    alias: gatewayui
-    version: 0.1.1
-    repository: https://raw.githubusercontent.com/ConductionNL/gateway-ui/demo/helm/
-  - name: dex
-    repository: https://charts.dexidp.io
-    version: 0.12.1
-    condition: dex.enabled
-  - name: openldap
-    repository: https://jp-gouin.github.io/helm-openldap/
-    version: 2.0.4
-    condition: openldap.enabled
