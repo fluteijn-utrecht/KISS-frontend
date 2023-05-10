@@ -24,6 +24,8 @@ try
         builder.Configuration["OIDC_CLIENT_SECRET"],
         builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"]
     );
+    builder.Services.AddKissProxy();
+    builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -43,9 +45,9 @@ try
     app.UseKissAuthMiddlewares();
     app.UseAuthentication();
     app.UseAuthorization();
-
     app.MapKissAuthEndpoints();
     app.MapControllers();
+    app.MapKissProxy();
     app.MapFallbackToIndexHtml();
 
     app.Run();

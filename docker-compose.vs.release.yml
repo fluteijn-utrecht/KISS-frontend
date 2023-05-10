@@ -1,0 +1,5 @@
+version: '3.4'
+
+services:
+  kiss.bff:
+    entrypoint: "sh -c 'update-ca-certificates && tail -f /dev/null'"

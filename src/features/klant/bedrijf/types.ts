@@ -5,14 +5,14 @@ export interface Bedrijf {
   kvkNummer: string;
   vestigingsnummer: string;
   bedrijfsnaam: string;
-  postcode: string;
-  huisnummer: string;
-  telefoonnummer: string;
-  email: string;
+  postcode?: string;
+  huisnummer?: string;
+  telefoonnummer?: string;
+  email?: string;
   straatnaam: string;
-  huisletter: string;
-  huisnummertoevoeging: string;
-  woonplaats: string;
+  huisletter?: string;
+  huisnummertoevoeging?: string;
+  woonplaats?: string;
 }
 
 export interface EnrichedBedrijf {

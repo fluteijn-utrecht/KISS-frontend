@@ -3,7 +3,7 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
-      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchAction": "None",
       "composeLaunchServiceName": "kiss.bff",
       "serviceActions": {
         "kiss.bff": "StartDebugging"
