@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using IdentityModel;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -54,8 +52,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             var userId = User.GetId();
 
             var result = query
-                .Select(x=> new { Bericht = x, Datum = x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum })
-                .OrderByDescending(x=> x.Bericht.IsBelangrijk)
+                .Select(x => new { Bericht = x, Datum = x.DateUpdated > x.PublicatieDatum ? x.DateUpdated.Value : x.PublicatieDatum })
+                .OrderByDescending(x => x.Bericht.IsBelangrijk)
                 .ThenByDescending(x => x.Datum)
                 .Skip(skip)
                 .Take(pageSize)
