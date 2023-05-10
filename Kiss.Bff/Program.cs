@@ -1,4 +1,4 @@
-using Serilog;
+﻿using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +18,12 @@ try
     // Add services to the container.
 
     builder.Services.AddControllers();
+    builder.Services.AddKissAuth(
+        builder.Configuration["OIDC_AUTHORITY"],
+        builder.Configuration["OIDC_CLIENT_ID"],
+        builder.Configuration["OIDC_CLIENT_SECRET"],
+        builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"]
+    );
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -34,9 +40,11 @@ try
     app.UseKissStaticFiles();
     app.UseKissSecurityHeaders();
 
-
+    app.UseKissAuthMiddlewares();
+    app.UseAuthentication();
     app.UseAuthorization();
 
+    app.MapKissAuthEndpoints();
     app.MapControllers();
     app.MapFallbackToIndexHtml();
 

@@ -2,6 +2,9 @@ version: '3.4'
 
 services:
   kiss.bff:
+    env_file:
+      - .env
+      - .env.local
     image: ${DOCKER_REGISTRY-}kissbff
     build:
       context: .
