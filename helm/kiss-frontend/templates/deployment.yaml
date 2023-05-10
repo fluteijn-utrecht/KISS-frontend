@@ -77,6 +77,12 @@ spec:
             value: {{ .Values.env.HAAL_CENTRAAL_BASE_URL | quote }}
           - name: HAAL_CENTRAAL_API_KEY
             value: {{ .Values.env.HAAL_CENTRAAL_API_KEY | quote }}
+          - name: POSTGRES_PASSWORD
+            value: {{ .Values.env.POSTGRES_PASSWORD | quote }}
+          - name: POSTGRES_USER
+            value: {{ .Values.env.POSTGRES_USER | quote }}
+          - name: POSTGRES_DB
+            value: {{ .Values.env.POSTGRES_DB | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
