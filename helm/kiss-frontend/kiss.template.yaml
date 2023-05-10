@@ -6,6 +6,8 @@ config:
 ingress:
   enabled: true
   className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
   hosts:
     - host: dev.kiss-demo.nl
       paths:
