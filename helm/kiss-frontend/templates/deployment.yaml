@@ -49,11 +49,11 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /WeatherForecast
+              path: /
               port: http
           readinessProbe:
             httpGet:
-              path: /WeatherForecast
+              path: /
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
