@@ -4,11 +4,15 @@ This template should help get you started developing with Vue 3 in Vite.
 
 ## Run from Visual Studio 2022
 1. Make sure you've installed Docker Desktop (preferably with WSL2 if using windows)
-2. Make a copy of .env.local.example, rename it .env.local and fill in the required secrets
-3. Open KISS-frontend.sln in Visual Studio 2022
-4. Right-click the solution in the Solution Explorer and pick Configure Startup Projects
-5. Select Multiple startup projects, and set the Action to Start for docker-compose and KISS-frontend
-6. Startup the solution and wait for both the BFF and the frontend to be ready
+2. Make a copy of .env.local.example, rename it .env.local and fill in the required secrets:
+   - `OIDC_CLIENT_SECRET`, `OIDC_CLIENT_ID`, `OIDC_AUTHORITY`: use any OIDC provider
+   - `KVK_BASE_URL`: for the KvK test environment, use `https://api.kvk.nl/test/api/v1` 
+   - `KVK_API_KEY`: for the KvK test environment, look for the API key on [the KvK website](https://developers.kvk.nl/documentation/testing)
+3. Download the Root and intermediate certificates from [the KvK website](https://developers.kvk.nl/documentation/install-tls-certificate#download-certificates) and place them in a `certificates` folder in the root of the repo
+4. Open KISS-frontend.sln in Visual Studio 2022
+5. Right-click the solution in the Solution Explorer and pick Configure Startup Projects
+6. Select Multiple startup projects, and set the Action to Start for docker-compose and KISS-frontend
+7. Startup the solution and wait for both the BFF and the frontend to be ready
 
 ## Recommended IDE Setup
 
