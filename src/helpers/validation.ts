@@ -112,7 +112,7 @@ export function parseGeslachtsnaamGeboortedatum(
 
   const geslachtsnaam = input.replace(result.matchedString, "").trim();
 
-  if (!geslachtsnaam) return new Error("Vul een geslachtsnaam in");
+  if (!geslachtsnaam) return new Error("Vul een achternaam in");
   return {
     geboortedatum: result.date,
     geslachtsnaam,
