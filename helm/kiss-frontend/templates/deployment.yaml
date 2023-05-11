@@ -32,6 +32,9 @@ spec:
         configMap:
           name: {{ include "kiss-frontend.fullname" . }}
           defaultMode: 420
+      - name: kvk-certs-volume
+        secret:
+          secretName: kvk-certs
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -43,20 +46,43 @@ spec:
             subPath: env.js
             name: environment
             readOnly: true
+          - name: kvk-certs-volume
+            mountPath: /usr/local/share/ca-certificates
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /WeatherForecast
+              path: /
               port: http
           readinessProbe:
             httpGet:
-              path: /WeatherForecast
+              path: /
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          env:  # Add your environment variables here
+          - name: OIDC_CLIENT_SECRET
+            value: {{ .Values.env.OIDC_CLIENT_SECRET | quote }}
+          - name: OIDC_CLIENT_ID
+            value: {{ .Values.env.OIDC_CLIENT_ID | quote }}
+          - name: OIDC_AUTHORITY
+            value: {{ .Values.env.OIDC_AUTHORITY | quote }}
+          - name: KVK_BASE_URL
+            value: {{ .Values.env.KVK_BASE_URL | quote }}
+          - name: KVK_API_KEY
+            value: {{ .Values.env.KVK_API_KEY | quote }}
+          - name: HAAL_CENTRAAL_BASE_URL
+            value: {{ .Values.env.HAAL_CENTRAAL_BASE_URL | quote }}
+          - name: HAAL_CENTRAAL_API_KEY
+            value: {{ .Values.env.HAAL_CENTRAAL_API_KEY | quote }}
+          - name: POSTGRES_PASSWORD
+            value: {{ .Values.env.POSTGRES_PASSWORD | quote }}
+          - name: POSTGRES_USER
+            value: {{ .Values.env.POSTGRES_USER | quote }}
+          - name: POSTGRES_DB
+            value: {{ .Values.env.POSTGRES_DB | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

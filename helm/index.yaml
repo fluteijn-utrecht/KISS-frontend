@@ -3,7 +3,63 @@ entries:
   kiss-frontend:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.1976791+02:00"
+    created: "2023-05-10T17:48:02.1043882+02:00"
+    dependencies:
+    - name: elasticstack
+      repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
+      version: 0.4.4
+    description: A Helm chart for Kubernetes
+    digest: 28f75a7fc3f54fa383b8f7839b751781b35d992d2111ea619f4c108d53d9bb3b
+    name: kiss-frontend
+    type: application
+    urls:
+    - kiss-frontend-1.0.27.tgz
+    version: 1.0.27
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-05-10T17:48:02.1011032+02:00"
+    dependencies:
+    - name: elasticstack
+      repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
+      version: 0.4.4
+    description: A Helm chart for Kubernetes
+    digest: 4f2e2da123851a9dc34a6417d30dd3cca4befbe11aa5a04c4158b23fd43a62b5
+    name: kiss-frontend
+    type: application
+    urls:
+    - kiss-frontend-1.0.26.tgz
+    version: 1.0.26
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-05-10T17:48:02.0980144+02:00"
+    dependencies:
+    - name: elasticstack
+      repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
+      version: 0.4.4
+    description: A Helm chart for Kubernetes
+    digest: 2b72afe713bd292e1ffabfe30dfba48f88c85e9fd1ac34a7c9aece689515bce6
+    name: kiss-frontend
+    type: application
+    urls:
+    - kiss-frontend-1.0.25.tgz
+    version: 1.0.25
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-05-10T17:48:02.0948155+02:00"
+    dependencies:
+    - name: elasticstack
+      repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
+      version: 0.4.4
+    description: A Helm chart for Kubernetes
+    digest: 408275f217ab69bd982d6c4cc62315dcfaa731a8f94a75fa2e1103dcca9becd6
+    name: kiss-frontend
+    type: application
+    urls:
+    - kiss-frontend-1.0.24.tgz
+    version: 1.0.24
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-05-10T17:48:02.0907335+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -17,7 +73,7 @@ entries:
     version: 1.0.23
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.1956794+02:00"
+    created: "2023-05-10T17:48:02.0877336+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -31,7 +87,7 @@ entries:
     version: 1.0.22
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.1916653+02:00"
+    created: "2023-05-10T17:48:02.0857286+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -45,7 +101,7 @@ entries:
     version: 1.0.21
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.1885194+02:00"
+    created: "2023-05-10T17:48:02.0815112+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -59,7 +115,7 @@ entries:
     version: 1.0.20
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.149487+02:00"
+    created: "2023-05-10T17:48:02.0466883+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -73,7 +129,7 @@ entries:
     version: 1.0.19
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.1328208+02:00"
+    created: "2023-05-10T17:48:02.03299+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -87,7 +143,7 @@ entries:
     version: 1.0.18
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.0941516+02:00"
+    created: "2023-05-10T17:48:02.0008843+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -118,7 +174,7 @@ entries:
     version: 1.0.17
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.0593864+02:00"
+    created: "2023-05-10T17:48:01.9707111+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -149,7 +205,7 @@ entries:
     version: 1.0.16
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.0268319+02:00"
+    created: "2023-05-10T17:48:01.9426649+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -180,7 +236,7 @@ entries:
     version: 1.0.15
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.9929866+02:00"
+    created: "2023-05-10T17:48:01.9082608+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -211,7 +267,7 @@ entries:
     version: 1.0.14
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.9578003+02:00"
+    created: "2023-05-10T17:48:01.877521+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -242,7 +298,7 @@ entries:
     version: 1.0.13
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.9222186+02:00"
+    created: "2023-05-10T17:48:01.8456987+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -273,7 +329,7 @@ entries:
     version: 1.0.12
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.8877898+02:00"
+    created: "2023-05-10T17:48:01.8154057+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -304,7 +360,7 @@ entries:
     version: 1.0.11
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.8563324+02:00"
+    created: "2023-05-10T17:48:01.7825282+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -335,7 +391,7 @@ entries:
     version: 1.0.10
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.436313+02:00"
+    created: "2023-05-10T17:48:02.3250806+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -366,7 +422,7 @@ entries:
     version: 1.0.9
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.4011991+02:00"
+    created: "2023-05-10T17:48:02.2937322+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -397,7 +453,7 @@ entries:
     version: 1.0.8
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.3646395+02:00"
+    created: "2023-05-10T17:48:02.2626301+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -428,7 +484,7 @@ entries:
     version: 1.0.7
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.3297373+02:00"
+    created: "2023-05-10T17:48:02.2311856+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -459,7 +515,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.2984804+02:00"
+    created: "2023-05-10T17:48:02.1976786+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -490,7 +546,7 @@ entries:
     version: 1.0.5
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.2643189+02:00"
+    created: "2023-05-10T17:48:02.1669277+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -521,7 +577,7 @@ entries:
     version: 1.0.4
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.2328009+02:00"
+    created: "2023-05-10T17:48:02.1370704+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -552,7 +608,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:32.1844153+02:00"
+    created: "2023-05-10T17:48:02.0788904+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -583,7 +639,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.820914+02:00"
+    created: "2023-05-10T17:48:01.7527666+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -614,7 +670,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-05-09T13:52:31.7794213+02:00"
+    created: "2023-05-10T17:48:01.719523+02:00"
     dependencies:
     - alias: gateway
       condition: gateway.enabled
@@ -637,7 +693,7 @@ entries:
     version: 1.0.0
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2023-05-09T13:52:31.7325765+02:00"
+    created: "2023-05-10T17:48:01.6853332+02:00"
     description: A Helm chart for Kubernetes
     digest: 9a1722bdcc63d3a201f8d736251f31b120073800093efd8fcc05e25ff5926311
     name: kiss-frontend
@@ -647,7 +703,7 @@ entries:
     version: 0.1.8
   - apiVersion: v2
     appVersion: 0.1.7
-    created: "2023-05-09T13:52:31.7315767+02:00"
+    created: "2023-05-10T17:48:01.6841195+02:00"
     description: A Helm chart for Kubernetes
     digest: 95f320705b4b5cdf03e4938f6499c2fc3e86d33e3cdfcf03b9553956500a578d
     name: kiss-frontend
@@ -657,7 +713,7 @@ entries:
     version: 0.1.7
   - apiVersion: v2
     appVersion: 0.1.6
-    created: "2023-05-09T13:52:31.7305767+02:00"
+    created: "2023-05-10T17:48:01.6836223+02:00"
     description: A Helm chart for Kubernetes
     digest: 9912bb338ba6afd0d56915ffd6c8fc80d0190c1a334e56767993a75be4f2a3c7
     name: kiss-frontend
@@ -667,7 +723,7 @@ entries:
     version: 0.1.6
   - apiVersion: v2
     appVersion: 0.1.5
-    created: "2023-05-09T13:52:31.7295769+02:00"
+    created: "2023-05-10T17:48:01.6831352+02:00"
     description: A Helm chart for Kubernetes
     digest: 6cd87ea25b4f3c8c915e06af88cc3169ea0d3f8e6f4a92b11da699fa8290d138
     name: kiss-frontend
@@ -677,7 +733,7 @@ entries:
     version: 0.1.5
   - apiVersion: v2
     appVersion: 0.1.3
-    created: "2023-05-09T13:52:31.7285771+02:00"
+    created: "2023-05-10T17:48:01.6826441+02:00"
     description: A Helm chart for Kubernetes
     digest: bad87a629e1ff53a1544013101020de24d8cde28d0df2a7aaca2c6accb84c8c4
     name: kiss-frontend
@@ -687,7 +743,7 @@ entries:
     version: 0.1.4
   - apiVersion: v2
     appVersion: 0.1.2
-    created: "2023-05-09T13:52:31.7275768+02:00"
+    created: "2023-05-10T17:48:01.6826441+02:00"
     description: A Helm chart for Kubernetes
     digest: cd56ddc531f2690cebd170a17a5cc4553858cb79ec026ec21f5cadde4a260827
     name: kiss-frontend
@@ -697,7 +753,7 @@ entries:
     version: 0.1.3
   - apiVersion: v2
     appVersion: 0.1.2
-    created: "2023-05-09T13:52:31.7265777+02:00"
+    created: "2023-05-10T17:48:01.6817046+02:00"
     description: A Helm chart for Kubernetes
     digest: 7533cf47752696221a6e34d6afe93b0226b789722336341568ba1c867bb917a1
     name: kiss-frontend
@@ -707,7 +763,7 @@ entries:
     version: 0.1.2
   - apiVersion: v2
     appVersion: 0.1.1
-    created: "2023-05-09T13:52:31.7265777+02:00"
+    created: "2023-05-10T17:48:01.6801387+02:00"
     description: A Helm chart for Kubernetes
     digest: 5caac7f24fc53757078d8353a431f23e59fe3e9c051509cf89ade9e132b89489
     name: kiss-frontend
@@ -717,7 +773,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2023-05-09T13:52:31.7255779+02:00"
+    created: "2023-05-10T17:48:01.6791214+02:00"
     description: A Helm chart for Kubernetes
     digest: 23b0e1db8ffb0d2018f7cf87007b22a9fb3164ff09b2644e04bb57190b2be5ad
     name: kiss-frontend
@@ -725,4 +781,4 @@ entries:
     urls:
     - kiss-frontend-0.1.0.tgz
     version: 0.1.0
-generated: "2023-05-09T13:52:31.7218821+02:00"
+generated: "2023-05-10T17:48:01.6786597+02:00"

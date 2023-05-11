@@ -26,7 +26,7 @@
                 csp.AddImgSrc().Self();
                 csp.AddFontSrc().Self();
                 csp.AddFrameAncestors().None();
-                csp.AddFormAction().None();
+                csp.AddFormAction().Self();
                 csp.AddBaseUri().None();
             })
             .AddPermissionsPolicy(permissions =>
