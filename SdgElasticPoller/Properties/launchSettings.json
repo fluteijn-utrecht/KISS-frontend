@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SdgElasticPoller": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
