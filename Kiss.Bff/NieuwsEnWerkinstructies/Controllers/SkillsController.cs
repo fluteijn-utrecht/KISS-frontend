@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = Policies.RedactiePolicy)]
     public class SkillsController : ControllerBase
     {
         private readonly NieuwsEnWerkinstructiesDbContext _context;

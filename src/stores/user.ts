@@ -8,6 +8,7 @@ export type User =
     }
   | {
       isLoggedIn: true;
+      isRedacteur: boolean;
       email: string;
     };
 

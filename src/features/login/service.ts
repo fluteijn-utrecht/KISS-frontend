@@ -1,6 +1,6 @@
 import { ServiceResult } from "@/services";
 import type { User } from "@/stores/user";
-import { logoutUrl, meUrl } from "./config";
+import { meUrl } from "./config";
 
 const anonymousUser = Object.freeze({
   isLoggedIn: false,
@@ -21,11 +21,14 @@ async function fetchUser(url: string): Promise<User> {
 
   const isLoggedIn = !!json?.isLoggedIn;
   const email = json?.email;
+  const isRedacteur = !!json?.isRedacteur;
+
   if (!isLoggedIn || typeof email !== "string" || !email) return anonymousUser;
 
   return {
     isLoggedIn,
     email,
+    isRedacteur,
   };
 }
 

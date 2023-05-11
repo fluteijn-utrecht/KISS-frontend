@@ -23,7 +23,8 @@ try
         builder.Configuration["OIDC_AUTHORITY"],
         builder.Configuration["OIDC_CLIENT_ID"],
         builder.Configuration["OIDC_CLIENT_SECRET"],
-        builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"]
+        builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"],
+        builder.Configuration["OIDC_REDACTEUR_ROLE"]
     );
     builder.Services.AddKissProxy();
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
