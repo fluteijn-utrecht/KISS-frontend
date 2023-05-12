@@ -356,3 +356,4 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 /certificates
+/SdgElasticPoller/Properties/launchSettings.json
