@@ -11,6 +11,21 @@
   </main>
 </template>
 
+<script setup lang="ts">
+import { useCurrentUser } from "@/features/login";
+import { watchEffect } from "vue";
+import { useRouter } from "vue-router";
+
+const user = useCurrentUser();
+const router = useRouter();
+
+watchEffect(() => {
+  if (user.success && user.data.isLoggedIn && !user.data.isRedacteur) {
+    router.push("/");
+  }
+});
+</script>
+
 <style lang="scss" scoped>
 nav {
   display: flex;

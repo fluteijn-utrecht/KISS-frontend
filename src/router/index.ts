@@ -111,7 +111,7 @@ const router = createRouter({
 
     {
       path: "/beheer",
-      name: "NieuwsEnWerkinstructiesBeheerLayout",
+      name: "Beheer",
       component: BeheerLayout,
       props: true,
       meta: {},
