@@ -1,4 +1,5 @@
-﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+﻿using Kiss.Bff.Beheer.Links.Data.Entities;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -32,5 +33,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
         public DbSet<Bericht> Berichten { get; set; } = null!;
         public DbSet<Skill> Skills { get; set; } = null!;
         public DbSet<BerichtGelezen> Gelezen { get; set; } = null!;
+        public DbSet<Link> Links { get; set; } = null!;
     }
 }

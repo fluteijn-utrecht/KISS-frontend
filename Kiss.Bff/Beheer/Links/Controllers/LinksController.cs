@@ -1,0 +1,175 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Kiss.Bff.Beheer.Links.Data.Entities;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
+using Microsoft.Build.Framework;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+using NuGet.Common;
+
+namespace Kiss.Bff.Beheer.Links.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class LinksController : ControllerBase
+    {
+        private readonly NieuwsEnWerkinstructiesDbContext _context;
+
+        public LinksController(NieuwsEnWerkinstructiesDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: api/Links
+        [HttpGet]
+        public IActionResult GetLinks()
+        {
+            if (_context.Links == null)
+            {
+                return NotFound();
+            }
+
+
+            var result = _context
+               .Links
+               .GroupBy(x => x.Categorie)
+               .Select(categorieGroep => new
+               {
+                   Category = categorieGroep.Key,
+                   Items = categorieGroep.Select(categorieGroepItems => new { categorieGroepItems.Id, categorieGroepItems.Titel, categorieGroepItems.Categorie, categorieGroepItems.Url })
+               })
+               .AsAsyncEnumerable();
+
+            return Ok(result);
+        }
+
+        // GET: api/Links/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Link>> GetLink(int id)
+        {
+            if (_context.Links == null)
+            {
+                return NotFound();
+            }
+            var link = await _context.Links.FindAsync(id);
+
+            if (link == null)
+            {
+                return NotFound();
+            }
+
+            return link;
+        }
+
+        // PUT: api/Links/5       
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutLink(int id, LinkPutModel link, CancellationToken token)
+        {
+            var current = await _context.Links.FirstOrDefaultAsync(x => x.Id == id, token);
+
+            if (current == null)
+            {
+                return NotFound();
+            }
+
+            current.Titel = link.Titel;
+            current.Url = link.Url;
+            current.Categorie = link.Categorie;         
+            current.DateUpdated = DateTimeOffset.UtcNow;
+
+            await _context.SaveChangesAsync(token);
+
+            return NoContent();
+
+        }
+
+        // POST: api/Links
+        [HttpPost]
+        public async Task<ActionResult<Link>> PostLink(LinkPostModel link)
+        {
+            if (_context.Links == null)
+            {
+                return Problem("Entity set 'NieuwsEnWerkinstructiesDbContext.Links'  is null.");
+            }
+            var newLink = new Link
+            {
+                Titel = link.Titel,
+                Url = link.Url,
+                Categorie = link.Categorie,
+                DateCreated = DateTimeOffset.UtcNow
+            };
+
+           await _context.Links.AddAsync(newLink  );
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetLink", new { id = newLink.Id }, newLink);
+        }
+
+        // DELETE: api/Links/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteLink(int id)
+        {
+            if (_context.Links == null)
+            {
+                return NotFound();
+            }
+            var link = await _context.Links.FindAsync(id);
+            if (link == null)
+            {
+                return NotFound();
+            }
+
+            _context.Links.Remove(link);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool LinkExists(int id)
+        {
+            return (_context.Links?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+
+        //public class LinkViewModel
+        //{
+        //    public int Id { get; set; }
+
+        //    public string Titel { get; set; } = string.Empty;
+        //    public string Url { get; set; } = string.Empty;
+        //    public string Categorie { get; set; } = string.Empty;
+        //}
+
+
+        public class LinkPostModel
+        {
+            [Required]
+            public string Titel { get; set; } = string.Empty;
+            [Required]
+            public string Url { get; set; } = string.Empty;
+            [Required]
+            public string Categorie { get; set; } = string.Empty;
+
+        }
+
+        public class LinkPutModel
+        {
+            [Required]
+            public int Id { get; set; }   
+            [Required]
+            public string Titel { get; set; } = string.Empty;
+            [Required]
+            public string Url { get; set; } = string.Empty;
+            [Required]
+            public string Categorie { get; set; } = string.Empty;
+
+        }
+
+    }
+}
