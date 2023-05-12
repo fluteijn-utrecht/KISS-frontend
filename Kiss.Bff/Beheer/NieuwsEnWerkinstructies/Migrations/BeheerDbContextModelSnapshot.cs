@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
-    [DbContext(typeof(NieuwsEnWerkinstructiesDbContext))]
-    partial class NieuwsEnWerkinstructiesDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(BeheerDbContext))]
+    partial class BeheerDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

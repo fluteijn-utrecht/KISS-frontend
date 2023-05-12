@@ -17,8 +17,17 @@
 
       <label for="naam" class="utrecht-form-label"
         ><span>Caterorie</span>
-        <input type="text" id="naam" v-model="link.categorie" required
-      /></label>
+        <SimpleTypeahead
+          v-model="link.categorie"
+          :defaultItem="link.categorie"
+          required
+          id="categorie"
+          :items="categorien"
+          :minInputLength="1"
+          @selectItem="(e:any) => (link.categorie = e)"
+        >
+        </SimpleTypeahead>
+      </label>
     </form>
 
     <menu>
@@ -53,6 +62,8 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
+import SimpleTypeahead from "vue3-simple-typeahead";
+
 const props = defineProps(["id"]);
 
 type linkType = {
@@ -66,6 +77,8 @@ const router = useRouter();
 const loading = ref<boolean>(false);
 
 const link = ref<linkType>({ titel: "", url: "", categorie: "" });
+
+const categorien = ref<Array<string>>([]);
 
 const showError = () => {
   toast({
@@ -123,7 +136,9 @@ const submit = async () => {
 onMounted(async () => {
   if (props.id) {
     loading.value = true;
+
     try {
+      //load link
       const response = await fetchLoggedIn("/api/links/" + props.id);
       if (response.status > 300) {
         showError();
@@ -131,6 +146,12 @@ onMounted(async () => {
       }
       const jsonData = await response.json();
       link.value = jsonData;
+
+      //load categorie suggestions
+      const categoriesResponse = await fetchLoggedIn("/api/categorien");
+      if (categoriesResponse.status == 200) {
+        categorien.value = await categoriesResponse.json();
+      }
     } catch {
       showError();
     } finally {
@@ -159,5 +180,18 @@ form {
 }
 label > span {
   display: block;
+}
+
+.simple-typeahead-list {
+  background-color: var(--color-secondary);
+}
+
+.simple-typeahead-list-item {
+  padding: var(--spacing-small);
+}
+
+.simple-typeahead-list-item:hover,
+.simple-typeahead-list-item-active {
+  background-color: var(--color-primary-hover);
 }
 </style>
