@@ -4,6 +4,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 
+namespace Kiss
+{
+    public static class UserExtensions
+    {
+        public static string? GetId(this ClaimsPrincipal? user) => user?.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+}
+
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class AuthenticationSetupExtensions
@@ -46,7 +54,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.ClientId = clientId;
                 options.ClientSecret = clientSecret;
                 options.SignedOutRedirectUri = SignOutCallback;
-
                 options.ResponseType = OidcConstants.ResponseTypes.Code;
                 options.UsePkce = true;
                 options.GetClaimsFromUserInfoEndpoint = false;
