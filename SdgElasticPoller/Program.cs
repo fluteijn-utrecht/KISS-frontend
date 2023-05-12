@@ -1,9 +1,10 @@
 ﻿using SdgElasticPoller;
 
-
-var sdgBaseUrl = GetEnvironmentVariable("SDG_BASE_URL") ?? "https://sdgtest.icatt-services.nl";
-var elasticBaseUrl = GetEnvironmentVariable("ELASTIC_BASE_URL") ?? "https://sdgtest.icatt-services.nl";
-var elasticIndex = GetEnvironmentVariable("ELASTIC_SDG_INDEX") ?? "my_index";
+var sdgBaseUrl = GetEnvironmentVariable("SDG_BASE_URL");
+var elasticBaseUrl = GetEnvironmentVariable("ELASTIC_BASE_URL");
+var elasticUsername = GetEnvironmentVariable("ELASTIC_USERNAME");
+var elasticPassword = GetEnvironmentVariable("PASSWORD");
+var elasticIndex = GetEnvironmentVariable("ELASTIC_SDG_INDEX");
 
 if (!Uri.TryCreate(sdgBaseUrl, UriKind.Absolute, out var sdgBaseUri))
 {
@@ -21,13 +22,17 @@ if (!Uri.TryCreate(elasticBaseUrl, UriKind.Absolute, out var elasticBaseUri))
 
 using var consoleStream = Console.OpenStandardOutput();
 using var sdgClient = new SdgProductClient(sdgBaseUri);
-using var elasticClient = new ElasticBulkIndexClient(elasticBaseUri);
+using var elasticClient = new ElasticBulkIndexClient(elasticBaseUri, elasticUsername, elasticPassword);
 using var cancelSource = new CancellationTokenSource();
 
 AppDomain.CurrentDomain.ProcessExit += (_, _) => cancelSource.Dispose();
 
-//await elasticClient.BulkIndexAsync(stream => sdgClient.Get("/api/v1/producten", (el) => consoleStream.WriteBulkWriteSdgIndexRequest(el, elasticIndex), cancelSource.Token), cancelSource.Token);
+var records = sdgClient.Get(cancelSource.Token);
+await elasticClient.BulkIndexAsync(records, elasticIndex, cancelSource.Token);
 
-await sdgClient.Get("/api/v1/producten", (el) => consoleStream.WriteBulkWriteSdgIndexRequest(el, elasticIndex), cancelSource.Token);
+//await foreach (var item in records)
+//{
+//    consoleStream.WriteBulkWriteSdgIndexRequest(item, elasticIndex);
+//}
 
 static string? GetEnvironmentVariable(string name) => Environment.GetEnvironmentVariable("name", EnvironmentVariableTarget.Process);

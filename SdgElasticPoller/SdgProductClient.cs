@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace SdgElasticPoller
 {
@@ -14,7 +15,9 @@ namespace SdgElasticPoller
             };
         }
 
-        public async Task Get(string url, Action<JsonElement> write, CancellationToken token)
+        public IAsyncEnumerable<JsonElement> Get(CancellationToken token) => Get("/api/v1/producten", token);
+
+        private async IAsyncEnumerable<JsonElement> Get(string url, [EnumeratorCancellation] CancellationToken token)
         {
             await using var stream = await _httpClient.GetStreamAsync(url, token);
             using var jsonDoc = await JsonDocument.ParseAsync(stream, cancellationToken: token);
@@ -27,13 +30,16 @@ namespace SdgElasticPoller
             {
                 foreach (var item in resultsProp.EnumerateArray())
                 {
-                    write(item);
+                    yield return item;
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(next))
             {
-                await Get(next, write, token);
+                await foreach (var el in Get(next, token))
+                {
+                    yield return el;
+                }
             }
         }
 

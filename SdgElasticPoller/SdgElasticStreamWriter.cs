@@ -4,40 +4,49 @@ namespace SdgElasticPoller
 {
     public static class SdgElasticStreamWriter
     {
-        const byte NewLine = (byte)'\n';
-
-        public static void WriteBulkWriteSdgIndexRequest(this Stream outputStream, JsonElement element, string elasticIndex)
+        public static async Task WriteBulkSdgIndexRequestAsync(this Utf8JsonWriter jsonWriter, Action writeNewLine, JsonElement element, string elasticIndex, CancellationToken token)
         {
-            using var jsonWriter = new Utf8JsonWriter(outputStream);
-            jsonWriter.WriteSdgIndexRequest(elasticIndex, element);
-            outputStream.WriteByte(NewLine);
-        }
+            if (!element.TryGetProperty("uuid", out var uuidProp))
+            {
+                return;
+            }
 
-        private static void WriteSdgIndexRequest(this Utf8JsonWriter jsonWriter, string elasticIndex, JsonElement sdgProduct)
-        {
+
+            var id = $"kennisartikel_{uuidProp.GetString()}";
+
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("index");
             jsonWriter.WriteStartObject();
-
             jsonWriter.WriteString("_index", elasticIndex);
+            jsonWriter.WriteString("_id", id);
 
-            if (sdgProduct.TryGetProperty("uuid", out var uuidProp))
-            {
-                var uuid = uuidProp.GetString();
-                jsonWriter.WriteString("id", $"kennisartikel_{uuid}");
-                jsonWriter.WriteString("_id", $"kennisartikel_{uuid}");
-            }
+            jsonWriter.WriteEndObject();
+            await jsonWriter.FlushAsync(token);
+            jsonWriter.Reset();
+            writeNewLine();
+            jsonWriter.WriteSdgIndexRequest(element, id);
+            await jsonWriter.FlushAsync(token);
+            jsonWriter.Reset();
+            writeNewLine();
+        }
+
+        private static void WriteSdgIndexRequest(this Utf8JsonWriter jsonWriter, JsonElement sdgProduct, string id)
+        {
+            jsonWriter.WriteStartObject();
+            jsonWriter.WriteString("id", id);
 
             if (sdgProduct.TryGetProperty("vertalingen", out var vertalingenProp) && vertalingenProp.ValueKind == JsonValueKind.Array)
             {
                 var vertaling = vertalingenProp[0];
                 if (vertaling.TryGetProperty("titel", out var titelProp) && titelProp.ValueKind == JsonValueKind.String)
                 {
-                    jsonWriter.WriteString("title", titelProp.GetString());
+                    jsonWriter.WritePropertyName("title");
+                    titelProp.WriteTo(jsonWriter);
                 }
                 if (vertaling.TryGetProperty("tekst", out var tekstProp) && tekstProp.ValueKind == JsonValueKind.String)
                 {
-                    jsonWriter.WriteString("object_meta", tekstProp.GetString());
+                    jsonWriter.WritePropertyName("object_meta");
+                    tekstProp.WriteTo(jsonWriter);
                 }
             }
 
@@ -46,7 +55,6 @@ namespace SdgElasticPoller
 
             sdgProduct.WriteTo(jsonWriter);
 
-            jsonWriter.WriteEndObject();
             jsonWriter.WriteEndObject();
         }
     }
