@@ -3,7 +3,7 @@
 
   <template v-if="loading"><SimpleSpinner /></template>
 
-  <template v-else>
+  <template v-else-if="link">
     <form class="container" @submit.prevent="submit">
       <label for="titel" class="utrecht-form-label"
         ><span>Titel</span>
@@ -12,7 +12,12 @@
 
       <label for="naam" class="utrecht-form-label"
         ><span>Url</span>
-        <input type="text" id="naam" v-model="link.url" required
+        <input
+          type="url"
+          id="naam"
+          v-model="link.url"
+          required
+          pattern="https://.+"
       /></label>
 
       <label for="naam" class="utrecht-form-label"
@@ -28,27 +33,23 @@
         >
         </SimpleTypeahead>
       </label>
-    </form>
 
-    <menu>
-      <li>
-        <router-link to="/Beheer/links/">
-          <utrecht-button appearance="secondary-action-button" type="button">
-            Annuleren
+      <menu>
+        <li>
+          <router-link to="/Beheer/links/">
+            <utrecht-button appearance="secondary-action-button" type="button">
+              Annuleren
+            </utrecht-button>
+          </router-link>
+        </li>
+
+        <li>
+          <utrecht-button appearance="primary-action-button" type="submit">
+            Opslaan
           </utrecht-button>
-        </router-link>
-      </li>
-
-      <li>
-        <utrecht-button
-          appearance="primary-action-button"
-          type="submit"
-          @click="submit"
-        >
-          Opslaan
-        </utrecht-button>
-      </li>
-    </menu>
+        </li>
+      </menu>
+    </form>
   </template>
 </template>
 
@@ -68,15 +69,15 @@ const props = defineProps(["id"]);
 
 type linkType = {
   id?: number;
-  titel: string;
-  url: string;
-  categorie: string;
+  titel?: string;
+  url?: string;
+  categorie?: string;
 };
 const router = useRouter();
 
 const loading = ref<boolean>(false);
 
-const link = ref<linkType>({ titel: "", url: "", categorie: "" });
+const link = ref<linkType | null>(null);
 
 const categorien = ref<Array<string>>([]);
 
@@ -145,6 +146,7 @@ onMounted(async () => {
         return;
       }
       const jsonData = await response.json();
+
       link.value = jsonData;
 
       //load categorie suggestions
@@ -157,6 +159,8 @@ onMounted(async () => {
     } finally {
       loading.value = false;
     }
+  } else {
+    link.value = {};
   }
 });
 </script>

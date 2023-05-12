@@ -7,14 +7,12 @@
   />
   <nav v-if="links.success">
     <dl v-if="links.data.length">
-      <template v-for="(link, idx) in links.data" :key="idx">
-        <dt v-if="idx === 0 || link.category !== links.data[idx - 1]?.category">
-          {{ link.category }}
-        </dt>
-        <dd>
-          <a :href="link.url" rel="noopener noreferrer" target="_blank">{{
-            link.title
-          }}</a>
+      <template v-for="groep in links.data" :key="groep.category">
+        <dt>{{ groep.category }}</dt>
+        <dd v-for="item in groep.items" :key="item.id">
+          <a :href="item.url" rel="noopener noreferrer" target="_blank">
+            {{ item.titel }}
+          </a>
         </dd>
       </template>
     </dl>
