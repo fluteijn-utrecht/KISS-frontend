@@ -8,9 +8,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [ApiController]
     public class SearchBerichtenController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public SearchBerichtenController(NieuwsEnWerkinstructiesDbContext context)
+        public SearchBerichtenController(BeheerDbContext context)
         {
             _context = context;
         }

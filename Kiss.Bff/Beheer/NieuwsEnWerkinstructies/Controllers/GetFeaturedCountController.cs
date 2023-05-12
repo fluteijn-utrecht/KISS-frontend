@@ -8,9 +8,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [ApiController]
     public class GetFeaturedCountController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public GetFeaturedCountController(NieuwsEnWerkinstructiesDbContext context)
+        public GetFeaturedCountController(BeheerDbContext context)
         {
             _context = context;
         }

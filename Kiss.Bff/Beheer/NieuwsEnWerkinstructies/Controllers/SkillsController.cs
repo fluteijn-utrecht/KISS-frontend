@@ -12,9 +12,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [Authorize(Policy = Policies.RedactiePolicy)]
     public class SkillsController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public SkillsController(NieuwsEnWerkinstructiesDbContext context)
+        public SkillsController(BeheerDbContext context)
         {
             _context = context;
         }

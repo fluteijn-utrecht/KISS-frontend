@@ -11,9 +11,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [ApiController]
     public class MarkeerGelezenController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public MarkeerGelezenController(NieuwsEnWerkinstructiesDbContext context)
+        public MarkeerGelezenController(BeheerDbContext context)
         {
             _context = context;
         }

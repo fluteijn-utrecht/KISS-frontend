@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
 {
-    public class NieuwsEnWerkinstructiesDbContext : DbContext
+    public class BeheerDbContext : DbContext
     {
 
-        public NieuwsEnWerkinstructiesDbContext(DbContextOptions<NieuwsEnWerkinstructiesDbContext> options)
+        public BeheerDbContext(DbContextOptions<BeheerDbContext> options)
             : base(options)
         {
         }

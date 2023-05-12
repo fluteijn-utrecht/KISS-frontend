@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
-    [DbContext(typeof(NieuwsEnWerkinstructiesDbContext))]
+    [DbContext(typeof(BeheerDbContext))]
     [Migration("20230510125123_Gelezen")]
     partial class Gelezen
     {
