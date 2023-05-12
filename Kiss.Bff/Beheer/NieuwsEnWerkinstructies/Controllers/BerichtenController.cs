@@ -12,9 +12,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [ApiController]
     public class BerichtenController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public BerichtenController(NieuwsEnWerkinstructiesDbContext context)
+        public BerichtenController(BeheerDbContext context)
         {
             _context = context;
         }

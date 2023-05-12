@@ -18,9 +18,9 @@ namespace Kiss.Bff.Beheer.Links.Controllers
     [ApiController]
     public class LinksController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public LinksController(NieuwsEnWerkinstructiesDbContext context)
+        public LinksController(BeheerDbContext context)
         {
             _context = context;
         }
@@ -94,7 +94,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
         {
             if (_context.Links == null)
             {
-                return Problem("Entity set 'NieuwsEnWerkinstructiesDbContext.Links'  is null.");
+                return Problem("Entity set 'BeheerDbContext.Links'  is null.");
             }
             var newLink = new Link
             {
