@@ -2,7 +2,7 @@
 
 namespace SdgElasticPoller
 {
-    public readonly record struct KissEnvelope(JsonElement Object, JsonElement Title, JsonElement ObjectMeta, string Id)
+    public readonly record struct KissEnvelope(in JsonElement Object, in JsonElement Title, in JsonElement ObjectMeta, in string Id)
     {
         public void WriteTo(Utf8JsonWriter jsonWriter, string bron)
         {
