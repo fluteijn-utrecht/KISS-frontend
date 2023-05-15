@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 namespace SdgElasticPoller
@@ -26,29 +25,42 @@ namespace SdgElasticPoller
 
             while (hasData)
             {
-                using var content = new PushStreamContent(async (stream) =>
+                // enterprise search demands a content-length header. by writing to a file first, we know the content-length in advance, without needing to load anything into memory.
+                await using var stream = new FileStream(
+                    Path.GetTempFileName(),
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    4096,
+                    FileOptions.RandomAccess | FileOptions.DeleteOnClose);
+
+                using var jsonWriter = new Utf8JsonWriter(stream);
+                var count = 0;
+                jsonWriter.WriteStartArray();
+
+                while (true)
                 {
-                    using var jsonWriter = new Utf8JsonWriter(stream);
-                    var count = 0;
-                    jsonWriter.WriteStartArray();
+                    enumerator.Current.WriteTo(jsonWriter, bron);
+                    hasData = await enumerator.MoveNextAsync();
+                    count++;
 
-                    while (true)
+                    if (!hasData || count >= MaxDocuments)
                     {
-                        enumerator.Current.WriteTo(jsonWriter, bron);
+                        jsonWriter.WriteEndArray();
                         await jsonWriter.FlushAsync(token);
-                        hasData = await enumerator.MoveNextAsync();
-                        count++;
-                        if (!hasData || count >= MaxDocuments)
-                        {
-                            jsonWriter.WriteEndArray();
-                            break;
-                        }
+                        break;
                     }
-                });
 
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                using var requestMessage = new HttpRequestMessage(HttpMethod.Post, url);
-                requestMessage.Content = content;
+                    await jsonWriter.FlushAsync(token);
+                }
+
+                stream.Seek(0, SeekOrigin.Begin);
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, url)
+                {
+                    Content = new StreamContent(stream)
+                };
+                requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 // https://www.stevejgordon.co.uk/using-httpcompletionoption-responseheadersread-to-improve-httpclient-performance-dotnet
                 using var response = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, token);
                 await using var responseStream = await response.Content.ReadAsStreamAsync(token);
