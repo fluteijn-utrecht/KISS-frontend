@@ -106,12 +106,15 @@ env:
   POSTGRES_PASSWORD: ""
   POSTGRES_USER: ""
   POSTGRES_DB: ""
+  POSTGRES_HOST: "kiss-ci-release-postgresql"
 
 postgresql:
   enabled: true
-  postgresqlUsername: "{{ .Values.env.POSTGRES_USER }}"
-  postgresqlPassword: "{{ .Values.env.POSTGRES_PASSWORD }}"
-  postgresqlDatabase: "{{ .Values.env.POSTGRES_DB }}"
+  auth:  
+    username: "{{ .Values.env.POSTGRES_USER }}"
+    password: "{{ .Values.env.POSTGRES_PASSWORD }}"
+    database: "{{ .Values.env.POSTGRES_DB }}"
   service:
-    port: 5432
+    ports:
+      postgresql: 5432
 
