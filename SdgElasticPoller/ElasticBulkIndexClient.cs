@@ -87,11 +87,7 @@ namespace SdgElasticPoller
 
         private async Task EnsureIndex(string elasticIndex, CancellationToken token)
         {
-            using var existsRequest = new HttpRequestMessage
-            {
-                Method = HttpMethod.Head,
-                RequestUri = new Uri(_httpClient.BaseAddress!, elasticIndex)
-            };
+            using var existsRequest = new HttpRequestMessage(HttpMethod.Head, elasticIndex);
             using var existsResult = await _httpClient.SendAsync(existsRequest, HttpCompletionOption.ResponseHeadersRead, token);
             if (!existsResult.IsSuccessStatusCode)
             {
