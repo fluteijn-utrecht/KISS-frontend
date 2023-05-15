@@ -110,9 +110,9 @@ env:
 
 postgresql:
   enabled: true
-  postgresqlUsername: "{{ .Values.env.POSTGRES_USER }}"
-  postgresqlPassword: "{{ .Values.env.POSTGRES_PASSWORD }}"
-  postgresqlDatabase: "{{ .Values.env.POSTGRES_DB }}"
+  postgresqlUsername: myuser
+  postgresqlPassword: mypassword
+  postgresqlDatabase: mydatabase
   service:
     port: 5432
 
