@@ -8,6 +8,7 @@ namespace SdgElasticPoller
     {
         const int MaxRequestSizeInMegabytes = 10;
         const int MaxPositionInBytes = MaxRequestSizeInMegabytes * 1000 * 1000;
+        const byte NewLine = (byte)'\n';
 
         private readonly HttpClient _httpClient;
 
@@ -18,7 +19,7 @@ namespace SdgElasticPoller
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("basic", base64);
         }
 
-        public async Task BulkIndexAsync(IAsyncEnumerable<JsonElement> documents, string elasticIndex, CancellationToken token)
+        public async Task BulkIndexAsync(IAsyncEnumerable<KissEnvelope> documents, string elasticIndex, string bron, CancellationToken token)
         {
             await EnsureIndex(elasticIndex, token);
 
@@ -34,16 +35,13 @@ namespace SdgElasticPoller
                     FileShare.None,
                     4096,
                     FileOptions.RandomAccess | FileOptions.DeleteOnClose);
-                const byte NewLine = (byte)'\n';
 
-                var writeNewLine = () => fs.WriteByte(NewLine);
-
-                using var writer = new Utf8JsonWriter(fs);
+                using var jsonWriter = new Utf8JsonWriter(fs);
 
                 while (await enumerator.MoveNextAsync())
                 {
                     hasData = true;
-                    await writer.WriteBulkSdgIndexRequestAsync(writeNewLine, enumerator.Current, elasticIndex, token);
+                    await WriteBulkRequestAsync(elasticIndex, bron, enumerator, fs, jsonWriter, token);
                     if (fs.Position >= MaxPositionInBytes)
                     {
                         break;
@@ -64,6 +62,24 @@ namespace SdgElasticPoller
                 await responseStream.CopyToAsync(stdOutStream, token);
                 response.EnsureSuccessStatusCode();
             }
+        }
+
+        private static async Task WriteBulkRequestAsync(string elasticIndex, string bron, IAsyncEnumerator<KissEnvelope> enumerator, FileStream fs, Utf8JsonWriter jsonWriter, CancellationToken token)
+        {
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("index");
+            jsonWriter.WriteStartObject();
+            jsonWriter.WriteString("_index", elasticIndex);
+            jsonWriter.WriteString("_id", enumerator.Current.Id);
+
+            jsonWriter.WriteEndObject();
+            await jsonWriter.FlushAsync(token);
+            jsonWriter.Reset();
+            fs.WriteByte(NewLine);
+            enumerator.Current.WriteTo(jsonWriter, bron);
+            await jsonWriter.FlushAsync(token);
+            jsonWriter.Reset();
+            fs.WriteByte(NewLine);
         }
 
         private async Task EnsureIndex(string elasticIndex, CancellationToken token)

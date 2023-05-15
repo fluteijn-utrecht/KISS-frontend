@@ -15,9 +15,9 @@ namespace SdgElasticPoller
             };
         }
 
-        public IAsyncEnumerable<JsonElement> Get(CancellationToken token) => Get("/api/v1/producten", token);
+        public IAsyncEnumerable<KissEnvelope> Get(CancellationToken token) => Get("/api/v1/producten", token);
 
-        private async IAsyncEnumerable<JsonElement> Get(string url, [EnumeratorCancellation] CancellationToken token)
+        private async IAsyncEnumerable<KissEnvelope> Get(string url, [EnumeratorCancellation] CancellationToken token)
         {
             string? next;
 
@@ -31,9 +31,24 @@ namespace SdgElasticPoller
 
                 if (jsonDoc.RootElement.TryGetProperty("results", out var resultsProp) && resultsProp.ValueKind == JsonValueKind.Array)
                 {
-                    foreach (var item in resultsProp.EnumerateArray())
+                    foreach (var sdgProduct in resultsProp.EnumerateArray())
                     {
-                        yield return item;
+                        if (!sdgProduct.TryGetProperty("uuid", out var id))
+                        {
+                            continue;
+                        }
+
+                        JsonElement title = default;
+                        JsonElement objectMeta = default;
+
+                        if (sdgProduct.TryGetProperty("vertalingen", out var vertalingenProp) && vertalingenProp.ValueKind == JsonValueKind.Array)
+                        {
+                            var vertaling = vertalingenProp[0];
+                            vertaling.TryGetProperty("titel", out title);
+                            vertaling.TryGetProperty("tekst", out objectMeta);
+                        }
+
+                        yield return new KissEnvelope(sdgProduct, title, objectMeta, $"kennisartikel_{id.GetString()}");
                     }
                 }
             }

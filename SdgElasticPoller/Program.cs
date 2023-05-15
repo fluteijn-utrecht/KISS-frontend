@@ -27,11 +27,6 @@ using var cancelSource = new CancellationTokenSource();
 AppDomain.CurrentDomain.ProcessExit += (_, _) => cancelSource.CancelSafely();
 
 var records = sdgClient.Get(cancelSource.Token);
-await elasticClient.BulkIndexAsync(records, elasticIndex, cancelSource.Token);
-
-//await foreach (var item in records)
-//{
-//    consoleStream.WriteBulkWriteSdgIndexRequest(item, elasticIndex);
-//}
+await elasticClient.BulkIndexAsync(records, elasticIndex, "Kennisartikel", cancelSource.Token);
 
 static string GetEnvironmentVariable(string name) => Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process) ?? throw new Exception("missing environment variable: " + name);
