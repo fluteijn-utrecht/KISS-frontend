@@ -111,9 +111,9 @@ env:
 postgresql:
   enabled: true
   auth:  
-    username: "{{ .Values.env.POSTGRES_USER }}"
+    username: "kiss.bff"
     password: "{{ .Values.env.POSTGRES_PASSWORD }}"
-    database: "{{ .Values.env.POSTGRES_DB }}"
+    database: "kiss.bff"
   service:
     ports:
       postgresql: 5432
