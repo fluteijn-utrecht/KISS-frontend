@@ -21,8 +21,11 @@ namespace SdgElasticPoller
         {
             string? next;
 
-            await using (var stream = await _httpClient.GetStreamAsync(url, token))
+            using (var message = new HttpRequestMessage(HttpMethod.Get, url))
             {
+                using var response = await _httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, token);
+                response.EnsureSuccessStatusCode();
+                await using var stream = await response.Content.ReadAsStreamAsync(token);
                 using var jsonDoc = await JsonDocument.ParseAsync(stream, cancellationToken: token);
 
                 next = jsonDoc.RootElement.TryGetProperty("next", out var nextProp) && nextProp.ValueKind == JsonValueKind.String
