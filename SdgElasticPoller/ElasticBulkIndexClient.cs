@@ -54,7 +54,10 @@ namespace SdgElasticPoller
                 fs.Position = 0;
                 var content = new StreamContent(fs);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/x-ndjson");
-                using var response = await _httpClient.PostAsync("_bulk", content, token);
+                using var requestMessage = new HttpRequestMessage(HttpMethod.Post, "_bulk");
+                requestMessage.Content = content;
+                // https://www.stevejgordon.co.uk/using-httpcompletionoption-responseheadersread-to-improve-httpclient-performance-dotnet
+                using var response = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, token);
                 await using var responseStream = await response.Content.ReadAsStreamAsync(token);
                 await using var stdOutStream = response.IsSuccessStatusCode
                     ? Console.OpenStandardOutput()
