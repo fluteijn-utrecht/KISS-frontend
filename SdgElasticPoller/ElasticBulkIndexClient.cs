@@ -22,52 +22,37 @@ namespace SdgElasticPoller
         public async Task BulkIndexAsync(IAsyncEnumerable<KissEnvelope> documents, string elasticIndex, string bron, CancellationToken token)
         {
             await EnsureIndex(elasticIndex, token);
+            await using var standardOutput = Console.OpenStandardOutput();
 
             await using var enumerator = documents.GetAsyncEnumerator(token);
-            while (true)
+            var hasData = await enumerator.MoveNextAsync();
+
+            while (hasData)
             {
-                var hasData = false;
-
-                await using var fs = new FileStream(
-                    Path.GetTempFileName(),
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    4096,
-                    FileOptions.RandomAccess | FileOptions.DeleteOnClose);
-
-                using var jsonWriter = new Utf8JsonWriter(fs);
-
-                while (await enumerator.MoveNextAsync())
+                using var content = new PushStreamContent(async (stream) =>
                 {
-                    hasData = true;
-                    await WriteBulkRequestAsync(elasticIndex, bron, enumerator, fs, jsonWriter, token);
-                    if (fs.Position >= MaxPositionInBytes)
+                    using var jsonWriter = new Utf8JsonWriter(stream);
+                    long bytesWritten = 0;
+
+                    do
                     {
-                        break;
-                    }
-                }
+                        bytesWritten += await WriteBulkRequestAsync(elasticIndex, bron, enumerator, stream, jsonWriter, token);
+                        hasData = await enumerator.MoveNextAsync();
+                    } while (hasData && bytesWritten < MaxPositionInBytes);
+                });
 
-                if (!hasData) break;
-
-                fs.Seek(0, SeekOrigin.Begin);
-                fs.Position = 0;
-                var content = new StreamContent(fs);
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/x-ndjson");
                 using var requestMessage = new HttpRequestMessage(HttpMethod.Post, "_bulk");
                 requestMessage.Content = content;
                 // https://www.stevejgordon.co.uk/using-httpcompletionoption-responseheadersread-to-improve-httpclient-performance-dotnet
                 using var response = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, token);
                 await using var responseStream = await response.Content.ReadAsStreamAsync(token);
-                await using var stdOutStream = response.IsSuccessStatusCode
-                    ? Console.OpenStandardOutput()
-                    : Console.OpenStandardError();
-                await responseStream.CopyToAsync(stdOutStream, token);
+                await responseStream.CopyToAsync(standardOutput, token);
                 response.EnsureSuccessStatusCode();
             }
         }
 
-        private static async Task WriteBulkRequestAsync(string elasticIndex, string bron, IAsyncEnumerator<KissEnvelope> enumerator, FileStream fs, Utf8JsonWriter jsonWriter, CancellationToken token)
+        private static async Task<long> WriteBulkRequestAsync(string elasticIndex, string bron, IAsyncEnumerator<KissEnvelope> enumerator, Stream stream, Utf8JsonWriter jsonWriter, CancellationToken token)
         {
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("index");
@@ -77,12 +62,17 @@ namespace SdgElasticPoller
 
             jsonWriter.WriteEndObject();
             await jsonWriter.FlushAsync(token);
+            var written = jsonWriter.BytesCommitted;
             jsonWriter.Reset();
-            fs.WriteByte(NewLine);
+            stream.WriteByte(NewLine);
+            written++;
             enumerator.Current.WriteTo(jsonWriter, bron);
             await jsonWriter.FlushAsync(token);
+            written += jsonWriter.BytesCommitted;
             jsonWriter.Reset();
-            fs.WriteByte(NewLine);
+            stream.WriteByte(NewLine);
+            written++;
+            return written;
         }
 
         private async Task EnsureIndex(string elasticIndex, CancellationToken token)
