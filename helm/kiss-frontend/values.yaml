@@ -107,6 +107,7 @@ env:
   POSTGRES_USER: ""
   POSTGRES_DB: ""
   POSTGRES_HOST: "kiss-ci-release-postgresql"
+  ASPNETCORE_ENVIRONMENT: Development
 
 postgresql:
   enabled: true
