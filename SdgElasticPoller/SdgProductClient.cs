@@ -19,18 +19,22 @@ namespace SdgElasticPoller
 
         private async IAsyncEnumerable<JsonElement> Get(string url, [EnumeratorCancellation] CancellationToken token)
         {
-            await using var stream = await _httpClient.GetStreamAsync(url, token);
-            using var jsonDoc = await JsonDocument.ParseAsync(stream, cancellationToken: token);
+            string? next;
 
-            var next = jsonDoc.RootElement.TryGetProperty("next", out var nextProp) && nextProp.ValueKind == JsonValueKind.String
-                ? nextProp.GetString()
-                : null;
-
-            if (jsonDoc.RootElement.TryGetProperty("results", out var resultsProp) && resultsProp.ValueKind == JsonValueKind.Array)
+            await using (var stream = await _httpClient.GetStreamAsync(url, token))
             {
-                foreach (var item in resultsProp.EnumerateArray())
+                using var jsonDoc = await JsonDocument.ParseAsync(stream, cancellationToken: token);
+
+                next = jsonDoc.RootElement.TryGetProperty("next", out var nextProp) && nextProp.ValueKind == JsonValueKind.String
+                    ? nextProp.GetString()
+                    : null;
+
+                if (jsonDoc.RootElement.TryGetProperty("results", out var resultsProp) && resultsProp.ValueKind == JsonValueKind.Array)
                 {
-                    yield return item;
+                    foreach (var item in resultsProp.EnumerateArray())
+                    {
+                        yield return item;
+                    }
                 }
             }
 
