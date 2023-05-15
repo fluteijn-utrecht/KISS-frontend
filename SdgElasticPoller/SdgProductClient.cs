@@ -44,8 +44,8 @@ namespace SdgElasticPoller
                         if (sdgProduct.TryGetProperty("vertalingen", out var vertalingenProp) && vertalingenProp.ValueKind == JsonValueKind.Array)
                         {
                             var vertaling = vertalingenProp[0];
-                            vertaling.TryGetProperty("titel", out title);
-                            vertaling.TryGetProperty("tekst", out objectMeta);
+                            vertaling.TryGetProperty("productTitelDecentraal", out title);
+                            vertaling.TryGetProperty("specifiekeTekst", out objectMeta);
                         }
 
                         yield return new KissEnvelope(sdgProduct, title, objectMeta, $"kennisartikel_{id.GetString()}");
