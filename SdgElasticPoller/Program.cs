@@ -2,8 +2,7 @@
 
 var sdgBaseUrl = GetEnvironmentVariable("SDG_BASE_URL");
 var elasticBaseUrl = GetEnvironmentVariable("ELASTIC_BASE_URL");
-var elasticUsername = GetEnvironmentVariable("ELASTIC_USERNAME");
-var elasticPassword = GetEnvironmentVariable("ELASTIC_PASSWORD");
+var elasticApiKey = GetEnvironmentVariable("ELASTIC_API_KEY");
 var elasticEngine = GetEnvironmentVariable("ELASTIC_ENGINE");
 
 if (!Uri.TryCreate(sdgBaseUrl, UriKind.Absolute, out var sdgBaseUri))
@@ -22,7 +21,7 @@ if (!Uri.TryCreate(elasticBaseUrl, UriKind.Absolute, out var elasticBaseUri))
 
 using var consoleStream = Console.OpenStandardOutput();
 using var sdgClient = new SdgProductClient(sdgBaseUri);
-using var elasticClient = new ElasticEnterpriseSearchClient(elasticBaseUri, elasticUsername, elasticPassword);
+using var elasticClient = new ElasticEnterpriseSearchClient(elasticBaseUri, elasticApiKey);
 using var cancelSource = new CancellationTokenSource();
 AppDomain.CurrentDomain.ProcessExit += (_, _) => cancelSource.CancelSafely();
 

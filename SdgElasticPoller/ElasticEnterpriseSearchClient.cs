@@ -10,11 +10,10 @@ namespace SdgElasticPoller
 
         private readonly HttpClient _httpClient;
 
-        public ElasticEnterpriseSearchClient(Uri baseUri, string username, string password)
+        public ElasticEnterpriseSearchClient(Uri baseUri, string apiKey)
         {
             _httpClient = new HttpClient { BaseAddress = baseUri };
-            var base64 = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("basic", base64);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
         }
 
         public async Task IndexDocumentsAsync(IAsyncEnumerable<KissEnvelope> documents, string engine, string bron, CancellationToken token)
