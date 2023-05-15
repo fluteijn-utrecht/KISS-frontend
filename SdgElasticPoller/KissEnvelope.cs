@@ -7,6 +7,7 @@ namespace SdgElasticPoller
         public void WriteTo(Utf8JsonWriter jsonWriter, string bron)
         {
             jsonWriter.WriteStartObject();
+
             jsonWriter.WriteString("id", Id);
 
             if (Title.ValueKind == JsonValueKind.String)
@@ -22,8 +23,8 @@ namespace SdgElasticPoller
             }
 
             jsonWriter.WriteString("object_bron", bron);
+            
             jsonWriter.WritePropertyName("object");
-
             Object.WriteTo(jsonWriter);
 
             jsonWriter.WriteEndObject();
