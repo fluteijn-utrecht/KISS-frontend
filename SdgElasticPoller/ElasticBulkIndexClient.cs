@@ -92,11 +92,11 @@ namespace SdgElasticPoller
                 Method = HttpMethod.Head,
                 RequestUri = new Uri(_httpClient.BaseAddress!, elasticIndex)
             };
-            using var existsResult = await _httpClient.SendAsync(existsRequest, token);
+            using var existsResult = await _httpClient.SendAsync(existsRequest, HttpCompletionOption.ResponseHeadersRead, token);
             if (!existsResult.IsSuccessStatusCode)
             {
-
-                using var createResult = await _httpClient.PutAsync(elasticIndex, null, token);
+                using var putRequest = new HttpRequestMessage(HttpMethod.Put, elasticIndex);
+                using var createResult = await _httpClient.SendAsync(putRequest, HttpCompletionOption.ResponseHeadersRead, token);
                 createResult.EnsureSuccessStatusCode();
             }
         }
