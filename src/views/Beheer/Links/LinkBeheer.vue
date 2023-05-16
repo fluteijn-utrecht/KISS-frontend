@@ -72,7 +72,7 @@ import SimpleTypeahead from "vue3-simple-typeahead";
 
 const props = defineProps(["id"]);
 
-type linkType = {
+type Link = {
   id?: number;
   titel?: string;
   url?: string;
@@ -82,7 +82,7 @@ const router = useRouter();
 
 const loading = ref<boolean>(false);
 
-const link = ref<linkType | null>(null);
+const link = ref<Link | null>(null);
 
 const categorien = ref<Array<string>>([]);
 
