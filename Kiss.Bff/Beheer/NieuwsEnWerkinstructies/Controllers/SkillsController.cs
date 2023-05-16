@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

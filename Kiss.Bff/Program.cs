@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Serilog;
+using Kiss.Bff.Beheer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

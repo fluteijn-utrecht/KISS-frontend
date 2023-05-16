@@ -3,7 +3,7 @@ using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
+namespace Kiss.Bff.Beheer.Data
 {
     public class BeheerDbContext : DbContext
     {
@@ -15,7 +15,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Bericht>(b => 
+            modelBuilder.Entity<Bericht>(b =>
             {
                 b.Property(x => x.Type).HasMaxLength(200).IsRequired();
                 b.HasIndex(x => x.Type);
