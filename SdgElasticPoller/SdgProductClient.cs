@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace SdgElasticPoller
@@ -7,12 +8,13 @@ namespace SdgElasticPoller
     {
         private readonly HttpClient _httpClient;
 
-        public SdgProductClient(Uri baseUri)
+        public SdgProductClient(Uri baseUri, string apiKey)
         {
             _httpClient = new HttpClient
             {
                 BaseAddress = baseUri,
             };
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", apiKey);
         }
 
         public IAsyncEnumerable<KissEnvelope> Get(CancellationToken token) => Get("/api/v1/producten", token);
