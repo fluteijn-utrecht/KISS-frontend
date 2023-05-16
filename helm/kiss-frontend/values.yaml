@@ -107,14 +107,13 @@ env:
   POSTGRES_USER: ""
   POSTGRES_DB: ""
   POSTGRES_HOST: "kiss-ci-release-postgresql"
+  ASPNETCORE_ENVIRONMENT: Development
 
 postgresql:
   enabled: true
-  auth:  
-    username: "{{ .Values.env.POSTGRES_USER }}"
-    password: "{{ .Values.env.POSTGRES_PASSWORD }}"
-    database: "{{ .Values.env.POSTGRES_DB }}"
+  postgresqlUsername: myuser
+  postgresqlPassword: mypassword
+  postgresqlDatabase: mydatabase
   service:
-    ports:
-      postgresql: 5432
+    port: 5432
 
