@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Kiss.Bff.Beheer.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Kiss.Bff.Beheer.Links.Data.Entities;
-using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
-using Microsoft.Build.Framework;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
-using NuGet.Common;
-using Kiss.Bff.Beheer.Data;
 
 namespace Kiss.Bff.Beheer.Links.Controllers
 {
@@ -37,12 +27,12 @@ namespace Kiss.Bff.Beheer.Links.Controllers
             var result = _context
                .Links
                .GroupBy(x => x.Categorie)
-               .Select(categorieGroep => categorieGroep.Key  )
+               .Select(categorieGroep => categorieGroep.Key)
                .AsAsyncEnumerable();
 
             return Ok(result);
         }
-         
+
 
     }
 }

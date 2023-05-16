@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Links.Data.Entities;
-using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Framework;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
-using NuGet.Common;
-using Kiss.Bff.Beheer.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kiss.Bff.Beheer.Links.Controllers
 {
@@ -41,7 +33,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
                {
                    Categorie = categorieGroep.Key,
                    Items = categorieGroep
-                    .OrderBy(x=>x.Titel)
+                    .OrderBy(x => x.Titel)
                     .Select(categorieGroepItems => new { categorieGroepItems.Id, categorieGroepItems.Titel, categorieGroepItems.Categorie, categorieGroepItems.Url })
                })
                .OrderBy(x => x.Categorie)
@@ -81,7 +73,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
 
             current.Titel = link.Titel;
             current.Url = link.Url;
-            current.Categorie = link.Categorie;         
+            current.Categorie = link.Categorie;
             current.DateUpdated = DateTimeOffset.UtcNow;
 
             await _context.SaveChangesAsync(token);
@@ -106,7 +98,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
                 DateCreated = DateTimeOffset.UtcNow
             };
 
-           await _context.Links.AddAsync(newLink  );
+            await _context.Links.AddAsync(newLink);
 
             await _context.SaveChangesAsync();
 
@@ -147,7 +139,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
         public class LinkPutModel
         {
             [Required]
-            public int Id { get; set; }   
+            public int Id { get; set; }
             [Required]
             public string Titel { get; set; } = string.Empty;
             [Required]
