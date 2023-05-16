@@ -111,9 +111,6 @@ env:
 
 postgresql:
   enabled: true
-  postgresqlUsername: myuser
-  postgresqlPassword: mypassword
-  postgresqlDatabase: mydatabase
   service:
     port: 5432
 
