@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Serilog;
+using Kiss.Bff.EnterpriseSearch;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,8 @@ try
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
     builder.Services.AddDbContext<NieuwsEnWerkinstructiesDbContext>(o => o.UseNpgsql(connStr));
+    builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PUBLIC_API_KEY"]);
+
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
