@@ -1,9 +1,9 @@
 ﻿using SdgElasticPoller;
 
 var sdgBaseUrl = GetEnvironmentVariable("SDG_BASE_URL");
-var elasticBaseUrl = GetEnvironmentVariable("ELASTIC_BASE_URL");
-var elasticApiKey = GetEnvironmentVariable("ELASTIC_PRIVATE_API_KEY");
-var elasticEngine = GetEnvironmentVariable("ELASTIC_ENGINE");
+var elasticBaseUrl = GetEnvironmentVariable("ENTERPRISE_SEARCH_BASE_URL");
+var elasticApiKey = GetEnvironmentVariable("ENTERPRISE_SEARCH_PRIVATE_API_KEY");
+var elasticEngine = GetEnvironmentVariable("ENTERPRISE_SEARCH_ENGINE");
 
 if (!Uri.TryCreate(sdgBaseUrl, UriKind.Absolute, out var sdgBaseUri))
 {
