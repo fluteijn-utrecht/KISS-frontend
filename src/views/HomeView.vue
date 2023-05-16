@@ -21,21 +21,18 @@
           @submit="handleSubmit"
           class="search-bar"
         >
-          <label
-            for="werkberichtTypeInput"
-            v-if="berichtTypes.state === 'success'"
-          >
+          <label for="werkberichtTypeInput">
             Naar welk type bericht ben je op zoek?
             <select
               name="type"
               id="werkberichtTypeInput"
-              v-model="state.typeIdField"
+              v-model="state.typeField"
             >
               <option :value="undefined">Alle</option>
               <option
-                v-for="[key, label] in berichtTypes.data.entries"
-                :key="`berichtTypes_${key}`"
-                :value="key"
+                v-for="label in berichtTypes"
+                :key="`berichtTypes_${label}`"
+                :value="label"
               >
                 {{ label }}
               </option>
@@ -88,13 +85,14 @@
         </form>
       </li>
     </menu>
+
     <werk-berichten
       v-if="state.currentSearch"
       :level="2"
       page-param-name="werkberichtsearchpage"
       :search="state.currentSearch"
       :skill-ids="userStore.preferences.skills"
-      :type-id="state.currentTypeId"
+      :type="state.currentType"
       :current-page="state.searchPage"
       @navigate="state.searchPage = $event"
       header="Zoekresultaten"
@@ -102,20 +100,18 @@
     <template v-else>
       <werk-berichten
         :level="2"
-        v-if="nieuwsId"
         header="Nieuws"
         page-param-name="nieuwspage"
-        :typeId="nieuwsId"
+        :type="'Nieuws'"
         :skill-ids="userStore.preferences.skills"
         :current-page="state.nieuwsPage"
         @navigate="state.nieuwsPage = $event"
       />
       <werk-berichten
         :level="2"
-        v-if="werkInstructieId"
         header="Werkinstructies"
         page-param-name="werkinstructiepage"
-        :typeId="werkInstructieId"
+        :type="'Werkinstructie'"
         :skill-ids="userStore.preferences.skills"
         :current-page="state.werkinstructiesPage"
         @navigate="state.werkinstructiesPage = $event"
@@ -126,30 +122,23 @@
 
 <script setup lang="ts">
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import { computed, ref } from "vue";
-import {
-  useBerichtTypes,
-  useSkills,
-  WerkBerichten,
-} from "@/features/werkbericht";
-import { parseValidInt } from "@/services";
+import { computed } from "vue";
+import { useSkills, WerkBerichten } from "@/features/werkbericht";
 import MultiSelect from "@/components/MultiSelect.vue";
 import { useUserStore } from "@/stores/user";
 import { ensureState } from "@/stores/create-store";
+import { type Berichttype, berichtTypes } from "@/features/werkbericht/types";
 
 const { pubBeheerUrl } = window;
-
-const werkinstructie = "werkinstructie";
-const nieuws = "nieuws";
 
 const state = ensureState({
   stateId: "HomeView",
   stateFactory() {
     return {
       searchField: "",
-      typeIdField: undefined as number | undefined,
+      typeField: undefined as Berichttype | undefined,
       currentSearch: "",
-      currentTypeId: undefined as number | undefined,
+      currentType: undefined as Berichttype | undefined,
       searchPage: 1,
       nieuwsPage: 1,
       werkinstructiesPage: 1,
@@ -159,7 +148,6 @@ const state = ensureState({
 
 const userStore = useUserStore();
 
-const berichtTypes = useBerichtTypes();
 const skills = useSkills();
 
 const selectedSkills = computed(() => {
@@ -173,17 +161,6 @@ const selectedSkills = computed(() => {
     .filter((x) => userStore.preferences.skills.includes(x.id));
 });
 
-const werkInstructieId = computed(
-  () =>
-    berichtTypes.state === "success" &&
-    berichtTypes.data.fromValueToKey(werkinstructie)
-);
-
-const nieuwsId = computed(
-  () =>
-    berichtTypes.state === "success" && berichtTypes.data.fromValueToKey(nieuws)
-);
-
 function handleSubmit(e: Event) {
   const { currentTarget } = e;
   if (!(currentTarget instanceof HTMLFormElement)) return;
@@ -191,7 +168,9 @@ function handleSubmit(e: Event) {
   const formData = new FormData(currentTarget);
   const obj = Object.fromEntries(formData);
   state.value.currentSearch = obj?.search?.toString() || "";
-  state.value.currentTypeId = parseValidInt(obj?.type?.toString());
+  state.value.currentType = berichtTypes.includes(obj.type as Berichttype)
+    ? (obj?.type as Berichttype)
+    : undefined;
 }
 
 function handleSearch(e: Event) {

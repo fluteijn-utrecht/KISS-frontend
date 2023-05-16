@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using Microsoft.EntityFrameworkCore;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,17 +18,19 @@ try
     });
 
     // Add services to the container.
-
     builder.Services.AddControllers();
     builder.Services.AddKissAuth(
         builder.Configuration["OIDC_AUTHORITY"],
         builder.Configuration["OIDC_CLIENT_ID"],
         builder.Configuration["OIDC_CLIENT_SECRET"],
-        builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"]
+        builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"],
+        builder.Configuration["OIDC_REDACTEUR_ROLE"]
     );
     builder.Services.AddKissProxy();
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
+    var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
+    builder.Services.AddDbContext<NieuwsEnWerkinstructiesDbContext>(o => o.UseNpgsql(connStr));
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -50,6 +54,13 @@ try
     app.MapControllers();
     app.MapKissProxy();
     app.MapFallbackToIndexHtml();
+
+    if (builder.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NieuwsEnWerkinstructiesDbContext>();
+        db.Database.Migrate(); // apply the migrations
+    }
 
     app.Run();
 }

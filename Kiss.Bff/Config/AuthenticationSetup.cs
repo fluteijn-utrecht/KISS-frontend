@@ -1,19 +1,40 @@
 ﻿using System.Security.Claims;
 using IdentityModel;
+using Kiss;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 
+namespace Kiss
+{
+    public static class Policies
+    {
+        public const string RedactiePolicy = "RedactiePolicy";
+    }
+
+    public static class UserExtensions
+    {
+        public static string? GetId(this ClaimsPrincipal? user) => user?.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+}
+
 namespace Microsoft.Extensions.DependencyInjection
 {
+    public delegate bool IsRedacteur(ClaimsPrincipal? user);
+
     public static class AuthenticationSetupExtensions
     {
         private const string SignOutCallback = "/signout-callback-oidc";
         private const string CookieSchemeName = "cookieScheme";
         private const string ChallengeSchemeName = "challengeScheme";
 
-        public static IServiceCollection AddKissAuth(this IServiceCollection services, string authority, string clientId, string clientSecret, string klantcontactmedewerkerRole)
+        public static IServiceCollection AddKissAuth(this IServiceCollection services, string authority, string clientId, string clientSecret, string klantcontactmedewerkerRole, string redacteurRole)
         {
+            klantcontactmedewerkerRole ??= "Klantcontactmedewerker";
+            redacteurRole ??= "Redacteur";
+
+            services.AddSingleton<IsRedacteur>(user => user?.IsInRole(redacteurRole) ?? false);
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieSchemeName;
@@ -46,7 +67,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.ClientId = clientId;
                 options.ClientSecret = clientSecret;
                 options.SignedOutRedirectUri = SignOutCallback;
-
                 options.ResponseType = OidcConstants.ResponseTypes.Code;
                 options.UsePkce = true;
                 options.GetClaimsFromUserInfoEndpoint = false;
@@ -67,8 +87,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddAuthorization(options =>
             {
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireRole(klantcontactmedewerkerRole ?? "Klantcontactmedewerker")
+                    .RequireRole(klantcontactmedewerkerRole)
                     .Build();
+
+                options.AddPolicy(Policies.RedactiePolicy, 
+                    new AuthorizationPolicyBuilder()
+                        .RequireRole(redacteurRole)
+                        .Build());
             });
 
             return services;
@@ -98,7 +123,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IEndpointRouteBuilder MapKissAuthEndpoints(this IEndpointRouteBuilder endpoints)
         {
             endpoints.MapGet("api/logoff", LogoffAsync).AllowAnonymous();
-            endpoints.MapGet("api/me", GetMeAsync).AllowAnonymous();
+            endpoints.MapGet("api/me", GetMe).AllowAnonymous();
             endpoints.MapGet("api/challenge", ChallengeAsync).AllowAnonymous();
 
             return endpoints;
@@ -128,18 +153,17 @@ namespace Microsoft.Extensions.DependencyInjection
             await httpContext.SignOutAsync(ChallengeSchemeName);
         }
 
-        private static Task GetMeAsync(HttpContext httpContext)
+        private static KissUser GetMe(HttpContext httpContext)
         {
             var isLoggedIn = httpContext.User.Identity?.IsAuthenticated ?? false;
             var email = httpContext.User.FindFirstValue(JwtClaimTypes.Email) ?? httpContext.User.FindFirstValue(JwtClaimTypes.PreferredUserName);
+            var isRedacteur = httpContext.RequestServices.GetService<IsRedacteur>()?.Invoke(httpContext.User) ?? false;
 
-            var result = new
-            {
-                isLoggedIn,
-                email
-            };
-            return httpContext.Response.WriteAsJsonAsync(result, httpContext.RequestAborted);
+            return new KissUser(email, isLoggedIn, isRedacteur);
         }
+
+        private readonly record struct KissUser(string Email, bool IsLoggedIn, bool IsRedacteur);
+
 
         private static Task ChallengeAsync(HttpContext httpContext)
         {
