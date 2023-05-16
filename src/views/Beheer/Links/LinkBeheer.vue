@@ -26,7 +26,7 @@
       </label>
 
       <label for="categorie" class="utrecht-form-label">
-        <span>Caterorie</span>
+        <span>Categorie</span>
         <SimpleTypeahead
           v-model="link.categorie"
           :defaultItem="link.categorie"
