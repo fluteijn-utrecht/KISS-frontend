@@ -46,19 +46,19 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 
-type linkType = {
+type Link = {
   id: number;
   titel: string;
 };
 
-type linkGroepType = {
+type LinkGroep = {
   categorie: string;
-  items: Array<linkType>;
+  items: Array<Link>;
 };
 
 const loading = ref<boolean>(true);
 const error = ref<boolean>(false);
-const linksGroepen = ref<Array<linkGroepType>>([]);
+const linksGroepen = ref<Array<LinkGroep>>([]);
 
 const showError = () => {
   toast({
