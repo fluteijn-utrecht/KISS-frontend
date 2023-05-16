@@ -55,6 +55,11 @@
                 ><span>Links</span></router-link
               >
             </li>
+            <li v-if="isRedacteur">
+              <router-link :to="{ name: 'Beheer' }">
+                <span>Beheer</span>
+              </router-link>
+            </li>
           </ul>
         </nav>
       </header>
@@ -66,13 +71,19 @@
 import { useFeaturedWerkberichtenCount } from "@/features/werkbericht";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { useRoute } from "vue-router";
-import { LoginOverlay, logoutUrl } from "../features/login";
+import { LoginOverlay, logoutUrl, useCurrentUser } from "../features/login";
 import GlobalSearch from "../features/search/GlobalSearch.vue";
+import { computed } from "vue";
 
 const route = useRoute();
+const user = useCurrentUser();
 const contactmomentStore = useContactmomentStore();
 
 const featuredWerkberichtenCount = useFeaturedWerkberichtenCount();
+
+const isRedacteur = computed(
+  () => user.success && user.data.isLoggedIn && user.data.isRedacteur
+);
 </script>
 
 <style lang="scss" scoped>

@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-vue": "^5.1.0",
     "@types/luxon": "^2.3.1",
     "@vueuse/core": "^8.6.0",
     "dompurify": "^2.3.8",
@@ -22,6 +23,17 @@
     "vue-toast-notification": "3.0"
   },
   "devDependencies": {
+    "@ckeditor/ckeditor5-autoformat": "^37.1.0",
+    "@ckeditor/ckeditor5-basic-styles": "^37.1.0",
+    "@ckeditor/ckeditor5-block-quote": "^37.1.0",
+    "@ckeditor/ckeditor5-editor-classic": "^37.1.0",
+    "@ckeditor/ckeditor5-essentials": "^37.1.0",
+    "@ckeditor/ckeditor5-heading": "^37.1.0",
+    "@ckeditor/ckeditor5-link": "^37.1.0",
+    "@ckeditor/ckeditor5-list": "^37.1.0",
+    "@ckeditor/ckeditor5-paragraph": "^37.1.0",
+    "@ckeditor/ckeditor5-theme-lark": "^37.1.0",
+    "@ckeditor/vite-plugin-ckeditor5": "^0.1.1",
     "@rushstack/eslint-patch": "^1.1.0",
     "@types/dompurify": "^2.3.3",
     "@types/jsdom": "^16.2.14",

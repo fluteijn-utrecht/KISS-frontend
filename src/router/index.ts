@@ -15,6 +15,18 @@ import BedrijvenView from "@/views/BedrijvenView.vue";
 import BedrijfDetailView from "@/views/BedrijfDetailView.vue";
 import LinksView from "@/views/LinksView.vue";
 
+const NieuwsEnWerkinstructiesBeheer = () =>
+  import(
+    "@/views/Beheer/nieuws-en-werkinstructies/NieuwsEnWerkinstructiesBeheer.vue"
+  );
+const NieuwsEnWerkinstructieBeheer = () =>
+  import(
+    "@/views/Beheer/nieuws-en-werkinstructies/NieuwsEnWerkinstructieBeheer.vue"
+  );
+const SkillsBeheer = () => import("@/views/Beheer/skills/SkillsBeheer.vue");
+const SkillBeheer = () => import("@/views/Beheer/skills/SkillBeheer.vue");
+const BeheerLayout = () => import("@/views/Beheer/BeheerLayout.vue");
+
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
   if (contactmoment.contactmomentLoopt) {
@@ -95,6 +107,42 @@ const router = createRouter({
       name: "links",
       component: LinksView,
       meta: { showNav: true, showNotitie: true, showSearch: true },
+    },
+
+    {
+      path: "/beheer",
+      name: "Beheer",
+      component: BeheerLayout,
+      props: true,
+      meta: {},
+      children: [
+        {
+          path: "NieuwsEnWerkinstructies",
+          name: "NieuwsEnWerkinstructiesBeheer",
+          component: NieuwsEnWerkinstructiesBeheer,
+          meta: {},
+        },
+        {
+          path: "Skills",
+          name: "SkillsBeheer",
+          component: SkillsBeheer,
+          meta: {},
+        },
+        {
+          path: "NieuwsEnWerkinstructie/:id?",
+          name: "NieuwsEnWerkinstructieBeheer",
+          component: NieuwsEnWerkinstructieBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "Skill/:id?",
+          name: "SkillBeheer",
+          component: SkillBeheer,
+          props: true,
+          meta: {},
+        },
+      ],
     },
     redirectRoute,
   ],
