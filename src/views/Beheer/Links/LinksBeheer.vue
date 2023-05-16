@@ -4,8 +4,8 @@
   <div v-else-if="error">Er is een fout opgetreden.</div>
 
   <ul v-else>
-    <li v-for="linksgroep in linksGroepen" :key="linksgroep.category">
-      <utrecht-heading :level="2">{{ linksgroep.category }}</utrecht-heading>
+    <li v-for="linksgroep in linksGroepen" :key="linksgroep.categorie">
+      <utrecht-heading :level="2">{{ linksgroep.categorie }}</utrecht-heading>
       <ul>
         <li v-for="link in linksgroep.items" :key="link.id" class="listItem">
           <router-link :to="'/Beheer/link/' + link.id">{{
@@ -52,7 +52,7 @@ type linkType = {
 };
 
 type linkGroepType = {
-  category: string;
+  categorie: string;
   items: Array<linkType>;
 };
 

@@ -7,8 +7,8 @@
   />
   <nav v-if="links.success">
     <dl v-if="links.data.length">
-      <template v-for="groep in links.data" :key="groep.category">
-        <dt>{{ groep.category }}</dt>
+      <template v-for="groep in links.data" :key="groep.categorie">
+        <dt>{{ groep.categorie }}</dt>
         <dd v-for="item in groep.items" :key="item.id">
           <a :href="item.url" rel="noopener noreferrer" target="_blank">
             {{ item.titel }}

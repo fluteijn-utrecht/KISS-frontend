@@ -11,21 +11,10 @@ const linksUrl = (function () {
   
 })();
 
-function mapLink(json: any): Link {
-  const { id, url, title, category } = json ?? {};
-  return {
-    id,
-    url,
-    title,
-    category,
-  };
-}
-
 function fetchLinks(url: string) {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((r) => r.json())
-  //  .then((json) => parsePagination(json, mapLink));
 }
 
 async function fetchAllLinks(url: string) {

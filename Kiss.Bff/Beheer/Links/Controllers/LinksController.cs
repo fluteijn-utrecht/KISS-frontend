@@ -34,15 +34,17 @@ namespace Kiss.Bff.Beheer.Links.Controllers
                 return NotFound();
             }
 
-
             var result = _context
                .Links
                .GroupBy(x => x.Categorie)
                .Select(categorieGroep => new
                {
-                   Category = categorieGroep.Key,
-                   Items = categorieGroep.Select(categorieGroepItems => new { categorieGroepItems.Id, categorieGroepItems.Titel, categorieGroepItems.Categorie, categorieGroepItems.Url })
+                   Categorie = categorieGroep.Key,
+                   Items = categorieGroep
+                    .OrderBy(x=>x.Titel)
+                    .Select(categorieGroepItems => new { categorieGroepItems.Id, categorieGroepItems.Titel, categorieGroepItems.Categorie, categorieGroepItems.Url })
                })
+               .OrderBy(x => x.Categorie)
                .AsAsyncEnumerable();
 
             return Ok(result);
@@ -130,22 +132,6 @@ namespace Kiss.Bff.Beheer.Links.Controllers
 
             return NoContent();
         }
-
-        private bool LinkExists(int id)
-        {
-            return (_context.Links?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-
-
-        //public class LinkViewModel
-        //{
-        //    public int Id { get; set; }
-
-        //    public string Titel { get; set; } = string.Empty;
-        //    public string Url { get; set; } = string.Empty;
-        //    public string Categorie { get; set; } = string.Empty;
-        //}
-
 
         public class LinkPostModel
         {

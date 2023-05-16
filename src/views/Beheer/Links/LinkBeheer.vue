@@ -1,27 +1,32 @@
 <template>
   <utrecht-heading :level="1">Link</utrecht-heading>
 
-  <template v-if="loading"><SimpleSpinner /></template>
+  <template v-if="loading">
+    <SimpleSpinner />
+  </template>
 
   <template v-else-if="link">
     <form class="container" @submit.prevent="submit">
-      <label for="titel" class="utrecht-form-label"
-        ><span>Titel</span>
-        <input type="text" id="titel" v-model="link.titel" required
-      /></label>
+      <label for="titel" class="utrecht-form-label">
+        <span>Titel</span>
+        <input type="text" id="titel" v-model="link.titel" required />
+      </label>
 
-      <label for="naam" class="utrecht-form-label"
-        ><span>Url</span>
+      <label for="naam" class="utrecht-form-label">
+        <span>Url</span>
         <input
           type="url"
-          id="naam"
+          id="url"
           v-model="link.url"
           required
           pattern="https://.+"
-      /></label>
+          oninvalid="setCustomValidity('Een url moet beginnen met https://')"
+          onchange="try{setCustomValidity('')}catch(e){}"
+        />
+      </label>
 
-      <label for="naam" class="utrecht-form-label"
-        ><span>Caterorie</span>
+      <label for="categorie" class="utrecht-form-label">
+        <span>Caterorie</span>
         <SimpleTypeahead
           v-model="link.categorie"
           :defaultItem="link.categorie"
@@ -29,7 +34,7 @@
           id="categorie"
           :items="categorien"
           :minInputLength="1"
-          @selectItem="(e:any) => (link.categorie = e)"
+          @selectItem="(e:any) => { if(link){link.categorie = e;}}"
         >
         </SimpleTypeahead>
       </label>
@@ -54,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
@@ -135,10 +140,10 @@ const submit = async () => {
 };
 
 onMounted(async () => {
-  if (props.id) {
-    loading.value = true;
+  loading.value = true;
 
-    try {
+  try {
+    if (props.id) {
       //load link
       const response = await fetchLoggedIn("/api/links/" + props.id);
       if (response.status > 300) {
@@ -148,19 +153,19 @@ onMounted(async () => {
       const jsonData = await response.json();
 
       link.value = jsonData;
-
-      //load categorie suggestions
-      const categoriesResponse = await fetchLoggedIn("/api/categorien");
-      if (categoriesResponse.status == 200) {
-        categorien.value = await categoriesResponse.json();
-      }
-    } catch {
-      showError();
-    } finally {
-      loading.value = false;
+    } else {
+      link.value = {};
     }
-  } else {
-    link.value = {};
+
+    //load categorie suggestions
+    const categoriesResponse = await fetchLoggedIn("/api/categorien");
+    if (categoriesResponse.status == 200) {
+      categorien.value = await categoriesResponse.json();
+    }
+  } catch {
+    showError();
+  } finally {
+    loading.value = false;
   }
 });
 </script>
@@ -182,6 +187,7 @@ menu {
 form {
   margin-top: var(--spacing-default);
 }
+
 label > span {
   display: block;
 }
