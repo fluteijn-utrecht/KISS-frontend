@@ -2,7 +2,7 @@
 
 var sdgBaseUrl = GetEnvironmentVariable("SDG_BASE_URL");
 var elasticBaseUrl = GetEnvironmentVariable("ELASTIC_BASE_URL");
-var elasticApiKey = GetEnvironmentVariable("ELASTIC_API_KEY");
+var elasticApiKey = GetEnvironmentVariable("ELASTIC_PRIVATE_API_KEY");
 var elasticEngine = GetEnvironmentVariable("ELASTIC_ENGINE");
 
 if (!Uri.TryCreate(sdgBaseUrl, UriKind.Absolute, out var sdgBaseUri))
