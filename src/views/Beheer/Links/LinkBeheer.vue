@@ -20,8 +20,7 @@
           v-model="link.url"
           required
           pattern="https://.+"
-          oninvalid="setCustomValidity('Een url moet beginnen met https://')"
-          onchange="try{setCustomValidity('')}catch(e){}"
+          :title="'Een url moet beginnen met https://'"
         />
       </label>
 
@@ -70,7 +69,7 @@ import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
 import SimpleTypeahead from "vue3-simple-typeahead";
 
-const props = defineProps(["id"]);
+const props = defineProps<{ id: string }>();
 
 type Link = {
   id?: number;
