@@ -1,20 +1,21 @@
-﻿using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+﻿using Kiss.Bff.Beheer.Links.Data.Entities;
+using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
+namespace Kiss.Bff.Beheer.Data
 {
-    public class NieuwsEnWerkinstructiesDbContext : DbContext
+    public class BeheerDbContext : DbContext
     {
 
-        public NieuwsEnWerkinstructiesDbContext(DbContextOptions<NieuwsEnWerkinstructiesDbContext> options)
+        public BeheerDbContext(DbContextOptions<BeheerDbContext> options)
             : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Bericht>(b => 
+            modelBuilder.Entity<Bericht>(b =>
             {
                 b.Property(x => x.Type).HasMaxLength(200).IsRequired();
                 b.HasIndex(x => x.Type);
@@ -32,5 +33,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Data
         public DbSet<Bericht> Berichten { get; set; } = null!;
         public DbSet<Skill> Skills { get; set; } = null!;
         public DbSet<BerichtGelezen> Gelezen { get; set; } = null!;
+        public DbSet<Link> Links { get; set; } = null!;
     }
 }

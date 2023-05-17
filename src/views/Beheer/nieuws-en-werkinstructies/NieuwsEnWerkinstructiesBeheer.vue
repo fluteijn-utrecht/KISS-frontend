@@ -2,7 +2,7 @@
   <UtrechtHeading :level="1">Berichten</UtrechtHeading>
   <div v-if="loading"><SimpleSpinner /></div>
   <ul v-else>
-    <li v-for="bericht in berichten" :key="bericht.id">
+    <li v-for="bericht in berichten" :key="bericht.id" class="listItem">
       <router-link :to="'/Beheer/NieuwsEnWerkinstructie/' + bericht.id">{{
         bericht.titel
       }}</router-link>
@@ -105,21 +105,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="scss">
-menu {
-  margin-block-start: var(--spacing-default);
-}
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-block: var(--spacing-small);
-}
-li:not(:last-child) {
-  border-bottom: 2px solid var(--color-tertiary);
-}
-button a {
-  color: white;
-  text-decoration: none;
-}
-</style>
+<style scoped lang="scss"></style>
