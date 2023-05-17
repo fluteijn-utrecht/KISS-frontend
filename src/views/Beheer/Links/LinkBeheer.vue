@@ -20,7 +20,7 @@
           v-model="link.url"
           required
           pattern="https://.+"
-          :title="'Een url moet beginnen met https://'"
+          title="Een url moet beginnen met https://"
         />
       </label>
 
