@@ -25,6 +25,8 @@ const NieuwsEnWerkinstructieBeheer = () =>
   );
 const SkillsBeheer = () => import("@/views/Beheer/skills/SkillsBeheer.vue");
 const SkillBeheer = () => import("@/views/Beheer/skills/SkillBeheer.vue");
+const LinksBeheer = () => import("@/views/Beheer/Links/LinksBeheer.vue");
+const LinkBeheer = () => import("@/views/Beheer/Links/LinkBeheer.vue");
 const BeheerLayout = () => import("@/views/Beheer/BeheerLayout.vue");
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
@@ -129,6 +131,12 @@ const router = createRouter({
           meta: {},
         },
         {
+          path: "Links",
+          name: "LinksBeheer",
+          component: LinksBeheer,
+          meta: {},
+        },
+        {
           path: "NieuwsEnWerkinstructie/:id?",
           name: "NieuwsEnWerkinstructieBeheer",
           component: NieuwsEnWerkinstructieBeheer,
@@ -139,6 +147,13 @@ const router = createRouter({
           path: "Skill/:id?",
           name: "SkillBeheer",
           component: SkillBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "Link/:id?",
+          name: "LinkBeheer",
+          component: LinkBeheer,
           props: true,
           meta: {},
         },

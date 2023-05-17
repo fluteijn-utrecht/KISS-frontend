@@ -1,25 +1,30 @@
 <template>
-  <utrecht-heading :level="1">Skills</utrecht-heading>
+  <utrecht-heading :level="1">Links</utrecht-heading>
   <div v-if="loading"><SimpleSpinner /></div>
   <div v-else-if="error">Er is een fout opgetreden.</div>
 
   <ul v-else>
-    <li v-for="skill in skills" :key="skill.id" class="listItem">
-      <router-link :to="'/Beheer/Skill/' + skill.id">{{
-        skill.naam
-      }}</router-link>
+    <li v-for="linksgroep in linksGroepen" :key="linksgroep.categorie">
+      <utrecht-heading :level="2">{{ linksgroep.categorie }}</utrecht-heading>
+      <ul>
+        <li v-for="link in linksgroep.items" :key="link.id" class="listItem">
+          <router-link :to="'/Beheer/link/' + link.id">{{
+            link.titel
+          }}</router-link>
 
-      <utrecht-button
-        appearance="secondary-action-button"
-        class="icon icon-after trash icon-only"
-        title="Verwijderen"
-        type="button"
-        @click="confirmVerwijder(skill.id)"
-      ></utrecht-button>
+          <utrecht-button
+            appearance="secondary-action-button"
+            class="icon icon-after trash icon-only"
+            title="Verwijderen"
+            type="button"
+            @click="confirmVerwijder(link.id)"
+          ></utrecht-button>
+        </li>
+      </ul>
     </li>
   </ul>
   <menu>
-    <router-link to="/Beheer/Skill/">
+    <router-link to="/Beheer/link/">
       <utrecht-button
         appearance="primary-action-button"
         title="toevoegen"
@@ -41,14 +46,19 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 
-type skill = {
+type Link = {
   id: number;
-  naam: string;
+  titel: string;
+};
+
+type LinkGroep = {
+  categorie: string;
+  items: Array<Link>;
 };
 
 const loading = ref<boolean>(true);
 const error = ref<boolean>(false);
-const skills = ref<Array<skill>>([]);
+const linksGroepen = ref<Array<LinkGroep>>([]);
 
 const showError = () => {
   toast({
@@ -61,14 +71,14 @@ async function load() {
   loading.value = true;
 
   try {
-    const response = await fetchLoggedIn("/api/Skills");
+    const response = await fetchLoggedIn("/api/links");
     if (response.status > 300) {
       showError();
       return;
     }
 
     const jsonData = await response.json();
-    skills.value = jsonData;
+    linksGroepen.value = jsonData;
   } catch {
     showError();
   } finally {
@@ -80,7 +90,7 @@ const verwijder = async (id: number) => {
   loading.value = true;
   error.value = false;
   try {
-    const response = await fetchLoggedIn("/api/Skills/" + id, {
+    const response = await fetchLoggedIn("/api/links/" + id, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -93,7 +103,7 @@ const verwijder = async (id: number) => {
     }
 
     toast({
-      text: "Skill verwijderd",
+      text: "link verwijderd",
     });
 
     await load();
@@ -105,7 +115,7 @@ const verwijder = async (id: number) => {
 };
 
 const confirmVerwijder = (id: number) => {
-  if (confirm("weet u zeker dat u deze skill wilt verwijderen?")) {
+  if (confirm("weet u zeker dat u deze link wilt verwijderen?")) {
     verwijder(id);
   }
 };
@@ -115,4 +125,8 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+li h2 {
+  margin-block-start: var(--spacing-large);
+}
+</style>

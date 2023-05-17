@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using IdentityModel;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +11,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [ApiController]
     public class MarkeerGelezenController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public MarkeerGelezenController(NieuwsEnWerkinstructiesDbContext context)
+        public MarkeerGelezenController(BeheerDbContext context)
         {
             _context = context;
         }
