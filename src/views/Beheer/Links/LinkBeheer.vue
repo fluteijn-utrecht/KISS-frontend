@@ -69,7 +69,7 @@ import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
 import SimpleTypeahead from "vue3-simple-typeahead";
 
-const props = defineProps<{ id: string }>();
+const props = defineProps<{ id?: string }>();
 
 type Link = {
   id?: number;

@@ -9,7 +9,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = Policies.RedactiePolicy)]
     public class SkillsController : ControllerBase
     {
         private readonly BeheerDbContext _context;
@@ -50,6 +49,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         // PUT: api/Skills/5        
         [HttpPut("{id}")]
+        [Authorize(Policy = Policies.RedactiePolicy)]
         public async Task<IActionResult> PutSkill(int id, SkillPutModel skill, CancellationToken token)
         {
             var current = await _context.Skills.FirstOrDefaultAsync(x => x.Id == id, token);
@@ -68,6 +68,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         // POST: api/Skills        
         [HttpPost]
+        [Authorize(Policy = Policies.RedactiePolicy)]
         public async Task<ActionResult<Skill>> PostSkill(SkillPostModel skill, CancellationToken token)
         {
             var newSkill = new Skill { Naam = skill.Naam };
@@ -81,6 +82,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         // DELETE: api/Skills/5
         [HttpDelete("{id}")]
+        [Authorize(Policy = Policies.RedactiePolicy)]
         public async Task<IActionResult> DeleteSkill(int id, CancellationToken token)
         {
 
