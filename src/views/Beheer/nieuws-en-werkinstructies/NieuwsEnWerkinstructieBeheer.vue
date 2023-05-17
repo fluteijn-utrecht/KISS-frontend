@@ -1,8 +1,19 @@
 <template>
   <utrecht-heading :level="1">Nieuws of werkinstructie</utrecht-heading>
-
   <template v-if="loading"> <simple-spinner /></template>
   <template v-else-if="bericht">
+    <p v-if="bericht.dateCreated">
+      Aangemaakt op
+      <time :datetime="bericht.dateCreated.toISOString()">
+        {{ formatDateAndTime(bericht.dateCreated) }}
+      </time>
+    </p>
+    <p v-if="bericht.dateUpdated">
+      Gewijzigd op
+      <time :datetime="bericht.dateUpdated.toISOString()">
+        {{ formatDateAndTime(bericht.dateUpdated) }}
+      </time>
+    </p>
     <form class="container" @submit.prevent="submit">
       <fieldset>
         <legend>Type</legend>
@@ -68,18 +79,13 @@
         >
       </fieldset>
 
-      <ul>
-        <li></li>
-      </ul>
-
-      <!-- <input type="submit" value="ok" @click="submit" /> -->
-
       <menu>
         <li>
-          <router-link to="/Beheer/NieuwsEnWerkinstructies/">
-            <utrecht-button appearance="secondary-action-button" type="button">
-              Annuleren
-            </utrecht-button>
+          <router-link
+            to="/Beheer/NieuwsEnWerkinstructies/"
+            class="utrecht-button utrecht-button--secondary-action"
+          >
+            Annuleren
           </router-link>
         </li>
 
@@ -105,9 +111,9 @@ import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
 import CkEditor from "@/components/ckeditor";
+import { formatDateAndTime } from "@/helpers/date";
 
 const props = defineProps(["id"]);
-
 type BerichtDetail = {
   id?: number;
   type?: Berichttype;
@@ -115,6 +121,8 @@ type BerichtDetail = {
   inhoud?: string;
   publicatieDatum?: string;
   publicatieEinddatum?: string;
+  dateCreated?: Date;
+  dateUpdated?: Date;
   isBelangrijk?: boolean;
   skills: Array<number>;
 };
@@ -131,7 +139,7 @@ const loading = ref<boolean>(true);
 const bericht = ref<BerichtDetail | null>(null);
 const skills = ref<Array<Skill>>([]);
 
-const addTimezone = (s?: string) => s && new Date(s).toISOString();
+const addTimezone = (s?: string) => (s ? new Date(s).toISOString() : undefined);
 
 const showError = () => {
   toast({
@@ -212,6 +220,9 @@ async function load() {
       jsonData.publicatieEinddatum = toHtmlInputDateTime(
         jsonData.publicatieEinddatum
       );
+      jsonData.dateCreated = new Date(jsonData.dateCreated);
+      jsonData.dateUpdated =
+        jsonData.dateUpdated && new Date(jsonData.dateUpdated);
       bericht.value = jsonData;
     } else {
       bericht.value = { skills: [] };
@@ -258,18 +269,6 @@ onMounted(() => {
   flex-direction: column;
   gap: var(--spacing-default);
 }
-// .preview {
-//   background-color: var(--color-secondary);
-//   padding: var(--spacing-default);
-// }
-// .editorWithPreview {
-//   width: 100%;
-//   display: flex;
-//   gap: var(--spacing-default);
-//   * {
-//     flex: 1 1 0;
-//   }
-// }
 
 :deep(.ck-editor ol),
 :deep(.ck-editor ul) {

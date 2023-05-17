@@ -48,8 +48,13 @@ main {
   margin-block-start: var(--spacing-default);
 }
 
-:deep(button a) {
-  color: white;
+:deep(.header-wrapper) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:deep(a.utrecht-button) {
   text-decoration: none;
 }
 </style>
