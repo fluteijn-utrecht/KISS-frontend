@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace SdgElasticPoller
+namespace Kiss.ElasticPoller
 {
     public readonly record struct KissEnvelope(in JsonElement Object, in JsonElement Title, in JsonElement ObjectMeta, in string Id)
     {
@@ -23,7 +23,7 @@ namespace SdgElasticPoller
             }
 
             jsonWriter.WriteString("object_bron", bron);
-            
+
             jsonWriter.WritePropertyName("object");
             Object.WriteTo(jsonWriter);
 

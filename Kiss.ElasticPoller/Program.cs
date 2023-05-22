@@ -1,4 +1,4 @@
-﻿using SdgElasticPoller;
+﻿using Kiss.ElasticPoller;
 
 var sdgBaseUrl = GetEnvironmentVariable("SDG_BASE_URL");
 var sdgApiKey = GetEnvironmentVariable("SDG_API_KEY");

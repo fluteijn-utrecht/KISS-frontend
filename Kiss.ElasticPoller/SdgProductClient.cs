@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-namespace SdgElasticPoller
+namespace Kiss.ElasticPoller
 {
     public sealed class SdgProductClient : IDisposable
     {

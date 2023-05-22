@@ -1,4 +1,4 @@
-﻿namespace SdgElasticPoller
+﻿namespace Kiss.ElasticPoller
 {
     public static class Extensions
     {
