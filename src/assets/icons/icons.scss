@@ -35,9 +35,16 @@
 }
 
 .icon-before.chevron-down::before,
-.icon-after.chevron-down::after {
+.icon-after.chevron-down::after,
+.icon-before.chevron-right::before,
+.icon-after.chevron-right::after {
     block-size: 0.6rem;
     mask-image: url("@/assets/icons/chevron-down.svg");
+}
+
+.icon-before.chevron-right::before,
+.icon-after.chevron-right::after {
+    rotate: (-90deg);
 }
 
 .icon-before.circle-xmark::before,

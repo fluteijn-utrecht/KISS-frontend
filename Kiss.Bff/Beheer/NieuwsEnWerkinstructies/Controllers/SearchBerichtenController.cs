@@ -39,7 +39,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
             if (!string.IsNullOrWhiteSpace(filterModel?.Search))
             {
-                query = query.Where(x => x.Titel.Contains(filterModel.Search) || x.Inhoud.Contains(filterModel.Search));
+                var like = $"%{filterModel.Search}%";
+                query = query.Where(x => EF.Functions.ILike(x.Titel, like) || EF.Functions.ILike(x.Inhoud, like));
             }
 
             var total = await query.CountAsync(token);
@@ -63,7 +64,8 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
                     x.Bericht.Inhoud,
                     x.Bericht.IsBelangrijk,
                     x.Bericht.Gelezen.Any(g => g.GelezenOp >= x.Datum && g.UserId == userId),
-                    x.Datum,
+                    x.Bericht.PublicatieDatum,
+                    x.Bericht.DateUpdated,
                     x.Bericht.Titel,
                     x.Bericht.Type,
                     x.Bericht.Skills
@@ -86,20 +88,22 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         public string Inhoud { get; }
         public bool IsBelangrijk { get; }
         public bool IsGelezen { get; }
-        public DateTimeOffset Datum { get; }
+        public DateTimeOffset PublicatieDatum { get; }
+        public DateTimeOffset? WijzigingsDatum { get; }
         public string Url { get; }
         public string Titel { get; }
         public string Type { get; }
         public List<SearchBerichtenSkillModel> Skills { get; }
 
-        public SearchBerichtenResponseModel(int id, string url, string inhoud, bool isBelangrijk, bool isGelezen, DateTimeOffset datum, string titel, string type, List<SearchBerichtenSkillModel> skills)
+        public SearchBerichtenResponseModel(int id, string url, string inhoud, bool isBelangrijk, bool isGelezen, DateTimeOffset datum, DateTimeOffset? wijzigingsDatum, string titel, string type, List<SearchBerichtenSkillModel> skills)
         {
             Id = id;
             Url = url;
             Inhoud = inhoud;
             IsBelangrijk = isBelangrijk;
             IsGelezen = isGelezen;
-            Datum = datum;
+            PublicatieDatum = datum;
+            WijzigingsDatum = wijzigingsDatum;
             Titel = titel;
             Type = type;
             Skills = skills;

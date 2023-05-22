@@ -13,10 +13,11 @@
 
     <menu>
       <li>
-        <router-link to="/Beheer/Skills/">
-          <utrecht-button appearance="secondary-action-button" type="button">
-            Annuleren
-          </utrecht-button>
+        <router-link
+          to="/Beheer/Skills/"
+          class="utrecht-button utrecht-button--secondary-action"
+        >
+          Annuleren
         </router-link>
       </li>
 

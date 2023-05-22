@@ -11,9 +11,17 @@
 
     <div class="heading-container">
       <div class="heading-top-row">
-        <time :datetime="bericht.date.toISOString()">{{
-          localeString(bericht.date)
-        }}</time>
+        <p>
+          <time :datetime="bericht.date.toISOString()">{{
+            localeString(bericht.date)
+          }}</time>
+          <small v-if="bericht.modified"
+            >Bewerkt op
+            <time :datetime="bericht.modified.toISOString()">
+              {{ localeString(bericht.modified) }}
+            </time>
+          </small>
+        </p>
 
         <menu>
           <li>
@@ -197,7 +205,6 @@ article {
 
   time {
     color: var(--color-primary);
-    display: block;
   }
 
   .heading-container {
@@ -208,6 +215,14 @@ article {
       display: flex;
       justify-content: space-between;
       align-items: center;
+
+      p {
+        inline-size: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--color-primary);
+      }
 
       menu {
         display: flex;
