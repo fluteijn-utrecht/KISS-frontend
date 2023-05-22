@@ -19,14 +19,11 @@
     </li>
   </ul>
   <menu>
-    <router-link to="/Beheer/Skill/">
-      <utrecht-button
-        appearance="primary-action-button"
-        title="toevoegen"
-        type="button"
-        class="icon icon-after plus icon-only"
-      >
-      </utrecht-button>
+    <router-link
+      to="/Beheer/Skill/"
+      title="toevoegen"
+      class="utrecht-button utrecht-button--primary-action icon icon-after plus icon-only"
+    >
     </router-link>
   </menu>
 </template>

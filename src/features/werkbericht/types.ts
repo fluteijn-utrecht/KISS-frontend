@@ -6,6 +6,7 @@ export interface Werkbericht {
   id: string;
   title: string;
   date: Date;
+  modified?: Date;
   content: string;
   type: Berichttype;
   skills: { id: number; naam: string }[];
