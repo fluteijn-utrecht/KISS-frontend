@@ -124,9 +124,11 @@ const berichtSelectedInContactmoment = computed(() => {
 
 const read = ref<boolean>(props.bericht.read);
 watch(
-  () => props.bericht.read,
-  (newValue) => {
-    read.value = newValue;
+  () => props.bericht,
+  (b) => {
+    if (!toggleReadIsLoading.value) {
+      read.value = b.read;
+    }
   }
 );
 

@@ -60,4 +60,8 @@ main {
 :deep(a.utrecht-button) {
   text-decoration: none;
 }
+
+:deep(form) {
+  max-inline-size: 40rem;
+}
 </style>

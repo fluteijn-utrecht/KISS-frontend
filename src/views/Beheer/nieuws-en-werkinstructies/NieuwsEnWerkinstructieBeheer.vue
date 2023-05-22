@@ -31,7 +31,13 @@
 
       <label class="utrecht-form-label" for="titel"
         ><span>Titel</span>
-        <input required type="text" id="titel" v-model="bericht.titel" />
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          required
+          type="text"
+          id="titel"
+          v-model="bericht.titel"
+        />
       </label>
       <label class="utrecht-form-label" for="inhoud">Inhoud</label>
 
@@ -55,6 +61,7 @@
 
         <input
           type="datetime-local"
+          class="utrecht-textbox utrecht-textbox--html-input"
           id="publicatieDatum"
           v-model="bericht.publicatieDatum"
           required
@@ -64,7 +71,11 @@
       <label class="utrecht-form-label">
         <span>Publicatie-einddatum</span>
 
-        <input type="datetime-local" v-model="bericht.publicatieEinddatum" />
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          type="datetime-local"
+          v-model="bericht.publicatieEinddatum"
+        />
       </label>
 
       <fieldset>
