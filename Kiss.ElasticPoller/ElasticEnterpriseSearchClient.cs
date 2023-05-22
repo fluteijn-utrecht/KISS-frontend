@@ -32,7 +32,7 @@ namespace Kiss.ElasticPoller
                     FileAccess.ReadWrite,
                     FileShare.None,
                     4096,
-                    FileOptions.RandomAccess | FileOptions.DeleteOnClose);
+                    FileOptions.RandomAccess | FileOptions.DeleteOnClose | FileOptions.Asynchronous);
 
                 using var jsonWriter = new Utf8JsonWriter(stream);
                 var count = 0;
