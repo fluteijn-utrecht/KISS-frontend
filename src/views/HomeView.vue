@@ -91,7 +91,7 @@
       :level="2"
       page-param-name="werkberichtsearchpage"
       :search="state.currentSearch"
-      :skill-ids="userStore.preferences.skills"
+      :skill-ids="selectedSkillIds"
       :type="state.currentType"
       :current-page="state.searchPage"
       @navigate="state.searchPage = $event"
@@ -103,7 +103,7 @@
         header="Nieuws"
         page-param-name="nieuwspage"
         :type="'Nieuws'"
-        :skill-ids="userStore.preferences.skills"
+        :skill-ids="selectedSkillIds"
         :current-page="state.nieuwsPage"
         @navigate="state.nieuwsPage = $event"
       />
@@ -112,7 +112,7 @@
         header="Werkinstructies"
         page-param-name="werkinstructiepage"
         :type="'Werkinstructie'"
-        :skill-ids="userStore.preferences.skills"
+        :skill-ids="selectedSkillIds"
         :current-page="state.werkinstructiesPage"
         @navigate="state.werkinstructiesPage = $event"
       />
@@ -160,6 +160,10 @@ const selectedSkills = computed(() => {
     }))
     .filter((x) => userStore.preferences.skills.includes(x.id));
 });
+
+const selectedSkillIds = computed(() =>
+  selectedSkills.value?.map(({ id }) => id)
+);
 
 function handleSubmit(e: Event) {
   const { currentTarget } = e;

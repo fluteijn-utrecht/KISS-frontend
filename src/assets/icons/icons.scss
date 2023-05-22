@@ -24,20 +24,27 @@
     content: "";
     background-color: currentColor;
     mask-repeat: no-repeat;
-    inline-size: 1rem;
-    block-size: 1rem;
+    min-inline-size: 1rem;
+    min-block-size: 1rem;
 }
 
 .icon-large::after,
 .icon-large::before {
-    inline-size: 1.5rem;
-    block-size: 1.5rem;
+    min-inline-size: 1.5rem;
+    min-block-size: 1.5rem;
 }
 
 .icon-before.chevron-down::before,
-.icon-after.chevron-down::after {
-    block-size: 0.6rem;
+.icon-after.chevron-down::after,
+.icon-before.chevron-right::before,
+.icon-after.chevron-right::after {
+    min-block-size: 0.6rem;
     mask-image: url("@/assets/icons/chevron-down.svg");
+}
+
+.icon-before.chevron-right::before,
+.icon-after.chevron-right::after {
+    rotate: (-90deg);
 }
 
 .icon-before.circle-xmark::before,
@@ -77,8 +84,8 @@
 
 .icon-before.xmark::before,
 .icon-after.xmark::after {
-    inline-size: 0.75rem;
-    block-size: 0.75rem;
+    min-inline-size: 0.75rem;
+    min-block-size: 0.75rem;
     mask-image: url("@/assets/icons/xmark.svg");
 }
 

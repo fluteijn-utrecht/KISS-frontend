@@ -31,7 +31,15 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             var result = _context
                 .Berichten
                 .OrderByDescending(x => x.DateUpdated ?? x.DateCreated)
-                .Select(x => new BerichtOverviewModel { Id = x.Id, Titel = x.Titel })
+                .Select(x => new BerichtOverviewModel
+                {
+                    Id = x.Id,
+                    Titel = x.Titel,
+                    DateCreated = x.DateCreated,
+                    DateUpdated = x.DateUpdated,
+                    Type = x.Type,
+                    Publicatiedatum = x.PublicatieDatum
+                })
                 .AsAsyncEnumerable();
 
             return Ok(result);
@@ -137,10 +145,12 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
             IsBelangrijk = bericht.IsBelangrijk,
             PublicatieDatum = bericht.PublicatieDatum,
             PublicatieEinddatum = bericht.PublicatieEinddatum,
+            DateCreated = bericht.DateCreated,
+            DateUpdated = bericht.DateUpdated,
             Titel = bericht.Titel,
             Type = bericht.Type,
             Skills = bericht.Skills
-                .Where(x=> !x.IsDeleted)
+                .Where(x => !x.IsDeleted)
                 .Select(skill => skill.Id)
                 .ToList()
         };
@@ -180,6 +190,10 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     {
         public int Id { get; set; }
         public string Titel { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public DateTimeOffset Publicatiedatum { get; set; }
+        public DateTimeOffset DateCreated { get; set; }
+        public DateTimeOffset? DateUpdated { get; set; }
     }
 
 
@@ -215,6 +229,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
 
         public DateTimeOffset PublicatieDatum { get; set; }
         public DateTimeOffset? PublicatieEinddatum { get; set; }
+        public DateTimeOffset DateCreated { get; set; }
+        public DateTimeOffset? DateUpdated { get; set; }
+
         public string Titel { get; set; } = string.Empty;
         public string Inhoud { get; set; } = string.Empty;
         public bool IsBelangrijk { get; set; }
