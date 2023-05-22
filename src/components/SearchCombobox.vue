@@ -70,7 +70,7 @@ export type DatalistItem = {
 const props = defineProps({
   modelValue: {
     type: String,
-    required: true,
+    default: undefined,
   },
   id: {
     type: String,
@@ -168,15 +168,16 @@ const matchingResult = computed(() => {
   return "";
 });
 
-const shouldSetValidity = computed(
-  () =>
-    (!matchingResult.value && !!props.modelValue && props.exactMatch) ||
-    (!props.modelValue && props.required)
-);
+const validity = computed(() => {
+  if (!props.modelValue && props.required) return "Vul dit veld in.";
+  if (!matchingResult.value && !!props.modelValue && props.exactMatch)
+    return "Kies een optie uit de lijst";
+  return "";
+});
 
-watch([inputRef, shouldSetValidity], ([r, s]) => {
+watch([inputRef, validity], ([r, v]) => {
   if (!(r instanceof HTMLInputElement)) return;
-  r.setCustomValidity(s ? "Kies een optie uit de lijst" : "");
+  r.setCustomValidity(v);
 });
 
 watch(

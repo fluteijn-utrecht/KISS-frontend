@@ -9,7 +9,13 @@
     <form class="container" @submit.prevent="submit">
       <label for="titel" class="utrecht-form-label">
         <span>Titel</span>
-        <input type="text" id="titel" v-model="link.titel" required />
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          type="text"
+          id="titel"
+          v-model="link.titel"
+          required
+        />
       </label>
 
       <label for="naam" class="utrecht-form-label">
@@ -17,25 +23,21 @@
         <input
           type="url"
           id="url"
+          class="utrecht-textbox utrecht-textbox--html-input"
           v-model="link.url"
           required
-          pattern="https://.+"
-          title="Een url moet beginnen met https://"
         />
       </label>
 
-      <label for="categorie" class="utrecht-form-label">
+      <label for="categorie" class="utrecht-form-label p-r">
         <span>Categorie</span>
-        <SimpleTypeahead
+        <SearchCombobox
           v-model="link.categorie"
-          :defaultItem="link.categorie"
+          class="utrecht-textbox utrecht-textbox--html-input"
           required
-          id="categorie"
-          :items="categorien"
-          :minInputLength="1"
-          @selectItem="(e:any) => { if(link){link.categorie = e;}}"
-        >
-        </SimpleTypeahead>
+          :exactMatch="false"
+          :listItems="filteredCategorien"
+        />
       </label>
 
       <menu>
@@ -66,9 +68,17 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
-import { fetchLoggedIn } from "@/services";
+import {
+  ServiceResult,
+  fetchLoggedIn,
+  mapServiceData,
+  parseJson,
+  throwIfNotOk,
+} from "@/services";
 import { useRouter } from "vue-router";
-import SimpleTypeahead from "vue3-simple-typeahead";
+import SearchCombobox, {
+  type DatalistItem,
+} from "@/components/SearchCombobox.vue";
 
 const props = defineProps<{ id: string }>();
 
@@ -82,9 +92,7 @@ const router = useRouter();
 
 const loading = ref<boolean>(false);
 
-const link = ref<Link | null>(null);
-
-const categorien = ref<Array<string>>([]);
+const link = ref<Link>();
 
 const showError = () => {
   toast({
@@ -139,6 +147,21 @@ const submit = async () => {
   }
 };
 
+const categorien = ServiceResult.fromPromise<DatalistItem[]>(
+  fetchLoggedIn("/api/categorien")
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r: string[]) => r.map((value) => ({ value })))
+);
+
+const filteredCategorien = mapServiceData(categorien, (c) =>
+  c.filter(
+    ({ value }) =>
+      link.value?.categorie &&
+      value.toLocaleLowerCase().includes(link.value.categorie)
+  )
+);
+
 onMounted(async () => {
   loading.value = true;
 
@@ -158,10 +181,7 @@ onMounted(async () => {
     }
 
     //load categorie suggestions
-    const categoriesResponse = await fetchLoggedIn("/api/categorien");
-    if (categoriesResponse.status == 200) {
-      categorien.value = await categoriesResponse.json();
-    }
+    await categorien;
   } catch {
     showError();
   } finally {
@@ -192,16 +212,7 @@ label > span {
   display: block;
 }
 
-.simple-typeahead-list {
-  background-color: var(--color-secondary);
-}
-
-.simple-typeahead-list-item {
-  padding: var(--spacing-small);
-}
-
-.simple-typeahead-list-item:hover,
-.simple-typeahead-list-item-active {
-  background-color: var(--color-primary-hover);
+.p-r {
+  position: relative;
 }
 </style>
