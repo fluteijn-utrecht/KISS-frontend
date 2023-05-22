@@ -11,6 +11,7 @@
         <span>Titel</span>
         <input
           type="text"
+          class="utrecht-textbox utrecht-textbox--html-input"
           id="titel"
           v-model="gespreksresultaat.definitie"
           required
