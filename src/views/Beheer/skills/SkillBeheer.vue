@@ -7,30 +7,34 @@
     <form class="container" @submit.prevent="submit">
       <label for="naam" class="utrecht-form-label"
         ><span>Naam</span>
-        <input type="text" id="naam" v-model="skill.naam" required
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          type="text"
+          id="naam"
+          v-model="skill.naam"
+          required
       /></label>
+      <menu>
+        <li>
+          <router-link
+            to="/Beheer/Skills/"
+            class="utrecht-button utrecht-button--secondary-action"
+          >
+            Annuleren
+          </router-link>
+        </li>
+
+        <li>
+          <utrecht-button
+            appearance="primary-action-button"
+            type="submit"
+            @click="submit"
+          >
+            Opslaan
+          </utrecht-button>
+        </li>
+      </menu>
     </form>
-
-    <menu>
-      <li>
-        <router-link
-          to="/Beheer/Skills/"
-          class="utrecht-button utrecht-button--secondary-action"
-        >
-          Annuleren
-        </router-link>
-      </li>
-
-      <li>
-        <utrecht-button
-          appearance="primary-action-button"
-          type="submit"
-          @click="submit"
-        >
-          Opslaan
-        </utrecht-button>
-      </li>
-    </menu>
   </template>
 </template>
 
