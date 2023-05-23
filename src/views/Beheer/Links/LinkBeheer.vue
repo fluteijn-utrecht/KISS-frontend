@@ -192,9 +192,9 @@ onMounted(async () => {
 
 <style>
 menu {
-  margin-top: 2rem;
+  margin-top: var(--spacing-large);
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-default);
   justify-content: flex-end;
 }
 

@@ -154,7 +154,7 @@ const clear = () => {
 fieldset {
   display: grid;
   align-items: center;
-  grid-gap: 1rem;
+  grid-gap: var(--spacing-default);
   grid-template-columns: 1fr 2fr;
 }
 
@@ -163,9 +163,9 @@ label {
 }
 
 menu {
-  margin-top: 2rem;
+  margin-top: var(--spacing-large);
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-default);
   justify-content: flex-end;
 }
 

@@ -80,17 +80,17 @@ whenever(
 <style lang="scss" scoped>
 menu {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-default);
   justify-content: flex-end;
 }
 form {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--spacing-large);
 }
 dialog {
   border-radius: var(--radius-default);
-  padding: 2rem;
+  padding: var(--spacing-large);
   border: 1px solid var(--color-primary);
   min-width: 50%;
 }
