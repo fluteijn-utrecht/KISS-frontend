@@ -75,34 +75,34 @@ const handleSuccess = () => {
   return router.push(LIJST_BEHEER_URL);
 };
 
-function withState<T>(p: Promise<T>) {
+const submit = () => {
   loading.value = true;
-  return p.catch(showError).finally(() => {
-    loading.value = false;
-  });
-}
-
-const submit = () =>
-  withState(
-    fetchLoggedIn(`${API_URL}${props.id || ""}`, {
-      method: props.id ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(gespreksresultaat.value),
-    })
-      .then(throwIfNotOk)
-      .then(handleSuccess)
-  );
+  return fetchLoggedIn(`${API_URL}${props.id || ""}`, {
+    method: props.id ? "PUT" : "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(gespreksresultaat.value),
+  })
+    .then(throwIfNotOk)
+    .then(handleSuccess)
+    .catch(showError)
+    .finally(() => {
+      loading.value = false;
+    });
+};
 
 onMounted(async () => {
   if (props.id) {
+    loading.value = true;
     gespreksresultaat.value =
-      (await withState(
-        fetchLoggedIn(API_URL + props.id)
-          .then(throwIfNotOk)
-          .then(parseJson)
-      )) ?? {};
+      (await fetchLoggedIn(API_URL + props.id)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .catch(showError)
+        .finally(() => {
+          loading.value = false;
+        })) ?? {};
   }
 });
 </script>

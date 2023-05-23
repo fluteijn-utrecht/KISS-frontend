@@ -62,36 +62,37 @@ const showError = () => {
   });
 };
 
-function withState<T>(p: Promise<T>) {
+const load = () => {
   loading.value = true;
-  return p.catch(showError).finally(() => {
-    loading.value = false;
-  });
-}
-
-const load = () =>
-  withState(
-    fetchLoggedIn(API_URL)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((r) => {
-        gespreksresultaten.value = r;
-      })
-  );
-
-const verwijder = (id: number) =>
-  withState(
-    fetchLoggedIn(API_URL + id, {
-      method: "DELETE",
+  return fetchLoggedIn(API_URL)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => {
+      gespreksresultaten.value = r;
     })
-      .then(throwIfNotOk)
-      .then(load)
-      .then(() =>
-        toast({
-          text: "Gespreksresultaat verwijderd",
-        })
-      )
-  );
+    .catch(showError)
+    .finally(() => {
+      loading.value = false;
+    });
+};
+
+const verwijder = (id: number) => {
+  loading.value = true;
+  return fetchLoggedIn(API_URL + id, {
+    method: "DELETE",
+  })
+    .then(throwIfNotOk)
+    .then(load)
+    .then(() =>
+      toast({
+        text: "Gespreksresultaat verwijderd",
+      })
+    )
+    .catch(showError)
+    .finally(() => {
+      loading.value = false;
+    });
+};
 
 const confirmVerwijder = (id: number) => {
   if (confirm("weet u zeker dat u dit gespreksresultaat wilt verwijderen?")) {
