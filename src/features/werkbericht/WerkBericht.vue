@@ -270,7 +270,7 @@ article {
   :deep(ul) {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-extrasmall);
     list-style-type: disc;
     padding-left: var(--text-margin);
     line-height: var(--line-height-default);

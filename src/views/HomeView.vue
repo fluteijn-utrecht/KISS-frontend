@@ -206,7 +206,7 @@ function handleSearch(e: Event) {
 
   > utrecht-heading:first-child {
     padding-left: var(--text-margin);
-    padding-bottom: 0.5rem;
+    padding-bottom: var(--spacing-small);
     border-bottom: 1px solid var(--color-tertiary);
   }
 }
@@ -259,7 +259,7 @@ form {
 
 .remove-filter {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--spacing-small);
   border: none;
 
   &:focus-visible {
@@ -277,7 +277,7 @@ form {
 
 .skills-form {
   display: grid;
-  gap: 1rem;
+  gap: var(--spacing-default);
   align-items: flex-end;
   justify-items: flex-end;
   width: 100%;
@@ -290,6 +290,6 @@ menu {
 .delete-skills-menu {
   display: flex;
   flex-flow: row wrap;
-  gap: 0.5rem;
+  gap: var(--spacing-small);
 }
 </style>

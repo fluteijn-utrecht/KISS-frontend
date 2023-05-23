@@ -29,9 +29,6 @@ export const saveContactmoment = (
     .then(throwIfNotOk)
     .then((r) => r.json());
 
-const gespreksResultatenBaseUri =
-  window.gatewayBaseUri + "/api/ref/resultaattypeomschrijvingen";
-
 export const useGespreksResultaten = () => {
   const fetchBerichten = (url: string) =>
     fetchLoggedIn(url)
@@ -43,14 +40,13 @@ export const useGespreksResultaten = () => {
         }
         return r.json();
       })
-      .then((json) => {
-        const results = json?.results;
+      .then((results) => {
         if (!Array.isArray(results))
-          throw new Error("unexpected json result: " + JSON.stringify(json));
+          throw new Error("unexpected json result: " + JSON.stringify(results));
         return results as Array<Gespreksresultaat>;
       });
 
-  return ServiceResult.fromFetcher(gespreksResultatenBaseUri, fetchBerichten);
+  return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
 };
 
 const objectcontactmomentenUrl =

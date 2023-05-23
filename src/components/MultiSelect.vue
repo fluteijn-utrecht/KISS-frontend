@@ -61,7 +61,7 @@ summary {
   border-radius: var(--radius-large);
   margin-inline-start: auto;
   font-weight: 500;
-  padding-block: 0.5rem;
+  padding-block: var(--spacing-small);
   padding-inline: var(--padding-inline);
   width: 100%;
   user-select: none;
@@ -80,7 +80,7 @@ details {
   min-width: 20rem;
   z-index: 1;
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-default);
   color: var(--color-primary);
 }
 
@@ -93,7 +93,7 @@ fieldset {
   position: absolute;
   inline-size: 100%;
   margin-block-start: var(--spacing-small);
-  gap: 0.5rem;
+  gap: var(--spacing-small);
   background-color: var(--color-white);
   box-shadow: var(--box-shadow);
   padding-block: var(--spacing-default);
@@ -104,7 +104,7 @@ fieldset {
   label {
     display: flex;
     align-items: baseline;
-    gap: 1rem;
+    gap: var(--spacing-default);
     line-height: var(
       --utrecht-paragraph-line-height,
       var(--utrecht-document-line-height, normal)
