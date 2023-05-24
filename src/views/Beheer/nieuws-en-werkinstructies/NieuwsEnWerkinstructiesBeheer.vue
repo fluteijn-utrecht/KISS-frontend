@@ -1,31 +1,67 @@
 <template>
-  <UtrechtHeading :level="1">Berichten</UtrechtHeading>
+  <div class="header-wrapper">
+    <UtrechtHeading :level="1">Berichten</UtrechtHeading>
+    <router-link to="/Beheer/NieuwsEnWerkinstructie/"> Toevoegen </router-link>
+  </div>
   <div v-if="loading"><SimpleSpinner /></div>
-  <ul v-else>
-    <li v-for="bericht in berichten" :key="bericht.id">
-      <router-link :to="'/Beheer/NieuwsEnWerkinstructie/' + bericht.id">{{
-        bericht.titel
-      }}</router-link>
-
-      <utrecht-button
-        appearance="secondary-action-button"
-        class="icon icon-after trash icon-only"
-        title="Verwijderen"
-        type="button"
-        @click="confirmVerwijder(bericht.id)"
-      ></utrecht-button>
-    </li>
-  </ul>
-  <menu>
-    <router-link to="/Beheer/NieuwsEnWerkinstructie/">
-      <utrecht-button
-        appearance="primary-action-button"
-        title="toevoegen"
-        type="button"
-        class="icon icon-after plus icon-only"
-      ></utrecht-button
-    ></router-link>
-  </menu>
+  <div v-else class="table-wrapper">
+    <table class="overview">
+      <thead>
+        <tr>
+          <th>Titel</th>
+          <th>Type</th>
+          <th>Publicatiedatum</th>
+          <th class="wrap">Aangemaakt op</th>
+          <th class="wrap">Gewijzigd op</th>
+          <th class="row-link-header">Acties</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="bericht in berichten" :key="bericht.id">
+          <td class="wrap">{{ bericht.titel }}</td>
+          <td>{{ bericht.type }}</td>
+          <td>
+            <time :datetime="bericht.publicatiedatum.toISOString()">
+              {{ formatDateAndTime(bericht.publicatiedatum) }}
+            </time>
+          </td>
+          <td>
+            <time :datetime="bericht.dateCreated.toISOString()">
+              {{ formatDateAndTime(bericht.dateCreated) }}
+            </time>
+          </td>
+          <td>
+            <time
+              v-if="bericht.dateUpdated"
+              :datetime="bericht.dateUpdated.toISOString()"
+            >
+              {{ formatDateAndTime(bericht.dateUpdated) }}
+            </time>
+          </td>
+          <td class="actions">
+            <ul>
+              <li>
+                <utrecht-button
+                  appearance="secondary-action-button"
+                  class="icon icon-after trash icon-only"
+                  :title="`Verwijder ${bericht.titel}`"
+                  type="button"
+                  @click="confirmVerwijder(bericht.id)"
+                />
+              </li>
+              <li>
+                <router-link
+                  class="icon icon-after icon-only chevron-right"
+                  :to="'/Beheer/NieuwsEnWerkinstructie/' + bericht.id"
+                  :title="`Details ${bericht.titel}`"
+                />
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -37,12 +73,16 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
+import { formatDateAndTime } from "@/helpers/date";
 
 type berichtType = {
   id: number;
   titel: string;
+  type: string;
+  dateCreated: Date;
+  dateUpdated?: Date;
+  publicatiedatum: Date;
 };
-
 const loading = ref<boolean>(true);
 const berichten = ref<Array<berichtType>>([]);
 
@@ -62,8 +102,13 @@ async function load() {
       showError();
       return;
     }
-    const jsonData = await response.json();
-    berichten.value = jsonData;
+    const jsonData: any[] = await response.json();
+    berichten.value = jsonData.map((x) => ({
+      ...x,
+      dateCreated: new Date(x.dateCreated),
+      dateUpdated: x.dateUpdated && new Date(x.dateUpdated),
+      publicatiedatum: new Date(x.publicatiedatum),
+    }));
   } catch {
     showError();
   } finally {
@@ -106,20 +151,20 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-menu {
-  margin-block-start: var(--spacing-default);
-}
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-block: var(--spacing-small);
-}
-li:not(:last-child) {
-  border-bottom: 2px solid var(--color-tertiary);
-}
-button a {
-  color: white;
-  text-decoration: none;
+.actions {
+  vertical-align: middle;
+  ul {
+    display: flex;
+    gap: var(--spacing-small);
+  }
+  li {
+    display: flex;
+    align-items: stretch;
+    width: fit-content;
+  }
+  a {
+    display: flex;
+    inline-size: 2rem;
+  }
 }
 </style>

@@ -293,6 +293,11 @@ th.row-link-header {
     font-size: 0;
 }
 
+.table-wrapper {
+    max-inline-size: 100%;
+    overflow-x: auto;
+}
+
 .details-block {
     background-color: var(--color-secondary);
     padding: var(--spacing-default);

@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data;
+using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +12,9 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
     [Authorize(Policy = Policies.RedactiePolicy)]
     public class SkillsController : ControllerBase
     {
-        private readonly NieuwsEnWerkinstructiesDbContext _context;
+        private readonly BeheerDbContext _context;
 
-        public SkillsController(NieuwsEnWerkinstructiesDbContext context)
+        public SkillsController(BeheerDbContext context)
         {
             _context = context;
         }

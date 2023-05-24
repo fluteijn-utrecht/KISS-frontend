@@ -83,6 +83,10 @@ spec:
             value: {{ .Values.env.POSTGRES_USER | quote }}
           - name: POSTGRES_DB
             value: {{ .Values.env.POSTGRES_DB | quote }}
+          - name: POSTGRES_HOST
+            value: {{ .Values.env.POSTGRES_HOST | quote }}
+          - name: ASPNETCORE_ENVIRONMENT
+            value: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

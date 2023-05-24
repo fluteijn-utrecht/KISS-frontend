@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using Yarp.ReverseProxy.Transforms;
 
-namespace Kiss.Bff.EnterpriseSearch
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class EnterpriseSearchExtensions
     {

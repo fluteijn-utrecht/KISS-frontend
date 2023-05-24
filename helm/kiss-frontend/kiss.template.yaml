@@ -7,7 +7,7 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
-    nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 16k #ivm azure open id connect > nginx default buffer 8k te laag
   hosts:
     - host: dev.kiss-demo.nl
       paths:

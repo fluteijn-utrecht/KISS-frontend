@@ -1,10 +1,11 @@
 <template>
   <nav>
     <router-link to="/">Home</router-link>
-    <router-link to="/Beheer/NieuwsEnWerkinstructies"
-      >Nieuws en werkinstructies</router-link
-    >
+    <router-link to="/Beheer/NieuwsEnWerkinstructies">
+      Nieuws en werkinstructies
+    </router-link>
     <router-link to="/Beheer/Skills">Skills</router-link>
+    <router-link to="/Beheer/Links">Links</router-link>
   </nav>
   <main>
     <router-view />
@@ -33,5 +34,31 @@ nav {
 }
 main {
   max-width: var(--section-width-large);
+}
+
+:deep(.listItem) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: var(--spacing-small);
+  border-bottom: 2px solid var(--color-tertiary);
+}
+
+:deep(menu) {
+  margin-block-start: var(--spacing-default);
+}
+
+:deep(.header-wrapper) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:deep(a.utrecht-button) {
+  text-decoration: none;
+}
+
+:deep(form) {
+  max-inline-size: 40rem;
 }
 </style>

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data;
 using Serilog;
-using Kiss.Bff.EnterpriseSearch;
+using Kiss.Bff.Beheer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +30,7 @@ try
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
-    builder.Services.AddDbContext<NieuwsEnWerkinstructiesDbContext>(o => o.UseNpgsql(connStr));
+    builder.Services.AddDbContext<BeheerDbContext>(o => o.UseNpgsql(connStr));
     builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PUBLIC_API_KEY"]);
 
 
@@ -61,7 +60,7 @@ try
     if (builder.Environment.IsDevelopment())
     {
         using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<NieuwsEnWerkinstructiesDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
         db.Database.Migrate(); // apply the migrations
     }
 
