@@ -95,7 +95,14 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         Address = x.Destination
                     }
+                },
+#if DEBUG
+                HttpClient = new HttpClientConfig
+                {
+                    DangerousAcceptAnyServerCertificate = true
                 }
+#endif
+
             }).ToArray();
 
             _config = new SimpleProxyConfig(routes, clusters);
