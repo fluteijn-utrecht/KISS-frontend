@@ -29,3 +29,11 @@ export interface Document {
   formaat: string;
   inhoud: string;
 }
+
+export type ZaakType = {
+  id: string;
+  onderwerp: string;
+  omschrijving: string;
+  doorlooptijd: string;
+  servicenorm: string;
+};

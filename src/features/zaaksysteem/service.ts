@@ -5,8 +5,9 @@ import {
   ServiceResult,
   throwIfNotOk,
   type Paginated,
+  type PaginatedResult,
 } from "@/services";
-import type { ZaakDetails } from "./types";
+import type { ZaakDetails, ZaakType } from "./types";
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { formatIsoDate } from "@/helpers/date";
@@ -34,14 +35,18 @@ const getNamePerRoltype = (zaak: any, roletype: Roltype) => {
   return name || ONBEKEND;
 };
 
-const mapZaakDetails = (zaak: any) => {
+const mapZaakDetails = async (zaak: any) => {
+  console.log("----", zaak);
+
+  const zaakzaaktype = await getZaakType(zaak.zaaktype);
+
   const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
 
   const fataleDatum =
     startdatum &&
     DateTime.fromJSDate(startdatum)
       .plus({
-        days: parseInt(zaak.embedded.zaaktype.doorlooptijd, 10),
+        days: parseInt(zaakzaaktype.doorlooptijd, 10),
       })
       .toJSDate();
 
@@ -49,16 +54,16 @@ const mapZaakDetails = (zaak: any) => {
     startdatum &&
     DateTime.fromJSDate(startdatum)
       .plus({
-        days: parseInt(zaak.embedded.zaaktype.servicenorm, 10),
+        days: parseInt(zaakzaaktype.servicenorm, 10),
       })
       .toJSDate();
 
   return {
     ...zaak,
-    zaaktype: zaak.embedded.zaaktype.id,
-    zaaktypeLabel: zaak.embedded.zaaktype.onderwerp,
-    zaaktypeOmschrijving: zaak.embedded.zaaktype.omschrijving,
-    status: zaak.embedded.status.statustoelichting,
+    zaaktype: zaakzaaktype.id,
+    zaaktypeLabel: zaakzaaktype.onderwerp,
+    zaaktypeOmschrijving: zaakzaaktype.omschrijving,
+    status: zaak.status.statustoelichting,
     behandelaar: getNamePerRoltype(zaak, "behandelaar"),
     aanvrager: getNamePerRoltype(zaak, "initiator"),
     startdatum,
@@ -71,20 +76,37 @@ const mapZaakDetails = (zaak: any) => {
     omschrijving: zaak.omschrijving,
   } as ZaakDetails;
 };
-
+//zaken/api/v1/
 const zaaksysteemBaseUri = `/api/zaken/zaken`;
+//const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1/zaken`;
 
-const overviewFetcher = (url: string): Promise<Paginated<ZaakDetails>> =>
+const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
   fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => parsePagination(json, mapZaakDetails))
     .then((zaken) => {
       zaken.page.forEach((zaak) => {
+        console.log("--zaak:", zaak);
+
         mutate(getZaakUrl(zaak.id), zaak);
       });
       return zaken;
     });
+
+const getZaakType = (zaaktype: string): Promise<ZaakType> => {
+  const zaaktypeid = zaaktype.split("/").pop();
+  const url = `/api/zaken/catalogi/api/v1/zaaktypen/${zaaktypeid}`;
+
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) => {
+      console.log("zaaktype: ", zaaktype);
+
+      return json;
+    });
+};
 
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
