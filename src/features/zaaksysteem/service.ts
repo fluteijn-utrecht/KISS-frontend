@@ -72,7 +72,7 @@ const mapZaakDetails = (zaak: any) => {
   } as ZaakDetails;
 };
 
-const zaaksysteemBaseUri = `/api/zaken`;
+const zaaksysteemBaseUri = `/api/zaken/zaken`;
 
 const overviewFetcher = (url: string): Promise<Paginated<ZaakDetails>> =>
   fetchLoggedIn(url)
@@ -102,10 +102,11 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   const getUrl = () => {
-    if (!zaaknummer.value) return "";
-    const url = new URL(zaaksysteemBaseUri);
-    url.searchParams.set("identificatie", zaaknummer.value);
-    return url.toString();
+    return zaaksysteemBaseUri;
+    //if (!zaaknummer.value) return "";
+    //const url = new URL(zaaksysteemBaseUri);
+    //url.searchParams.set("identificatie", zaaknummer.value);
+    //return url.toString();
   };
 
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
@@ -173,7 +174,6 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
   const getUrl = () => {
     if (!vestigingsnummer.value) return "";
     const url = new URL(zaaksysteemBaseUri);
-    addExtends(url);
     url.searchParams.set(
       "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
       vestigingsnummer.value
