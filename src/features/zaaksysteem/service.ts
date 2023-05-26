@@ -72,12 +72,7 @@ const mapZaakDetails = (zaak: any) => {
   } as ZaakDetails;
 };
 
-const zaaksysteemBaseUri = `${window.gatewayBaseUri}/api/zaken`;
-
-function addExtends(url: URL) {
-  url.searchParams.set("extend[]", "all");
-  url.searchParams.append("extend[]", "embedded._self.self");
-}
+const zaaksysteemBaseUri = `/api/zaken`;
 
 const overviewFetcher = (url: string): Promise<Paginated<ZaakDetails>> =>
   fetchLoggedIn(url)
@@ -95,7 +90,6 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
     if (!bsn.value) return "";
     const url = new URL(zaaksysteemBaseUri);
-    addExtends(url);
     url.searchParams.set(
       "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
       bsn.value
@@ -110,7 +104,6 @@ export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   const getUrl = () => {
     if (!zaaknummer.value) return "";
     const url = new URL(zaaksysteemBaseUri);
-    addExtends(url);
     url.searchParams.set("identificatie", zaaknummer.value);
     return url.toString();
   };
@@ -121,7 +114,6 @@ export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
 const getZaakUrl = (id: string) => {
   if (!id) return "";
   const url = new URL(`${zaaksysteemBaseUri}/${id}`);
-  addExtends(url);
   return url.toString();
 };
 
