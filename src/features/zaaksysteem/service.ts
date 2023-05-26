@@ -42,21 +42,24 @@ const mapZaakDetails = async (zaak: any) => {
 
   const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
 
-  const fataleDatum =
-    startdatum &&
-    DateTime.fromJSDate(startdatum)
-      .plus({
-        days: parseInt(zaakzaaktype.doorlooptijd, 10),
-      })
-      .toJSDate();
+  //temp. todo fix
+  const fataleDatum = new Date();
+  const streefDatum = new Date();
+  // const fataleDatum =
+  //   startdatum &&
+  //   DateTime.fromJSDate(startdatum)
+  //     .plus({
+  //       days: parseInt(zaakzaaktype.doorlooptijd, 10),
+  //     })
+  //     .toJSDate();
 
-  const streefDatum =
-    startdatum &&
-    DateTime.fromJSDate(startdatum)
-      .plus({
-        days: parseInt(zaakzaaktype.servicenorm, 10),
-      })
-      .toJSDate();
+  // const streefDatum =
+  //   startdatum &&
+  //   DateTime.fromJSDate(startdatum)
+  //     .plus({
+  //       days: parseInt(zaakzaaktype.servicenorm, 10),
+  //     })
+  //     .toJSDate();
 
   return {
     ...zaak,
@@ -71,13 +74,13 @@ const mapZaakDetails = async (zaak: any) => {
     streefDatum: streefDatum,
     indienDatum: zaak.publicatiedatum && new Date(zaak.publicatiedatum),
     registratieDatum: zaak.registratiedatum && new Date(zaak.registratiedatum),
-    self: zaak["_self"].self,
+    self: zaak.url,
     documenten: mapDocumenten(zaak?.embedded?.zaakinformatieobjecten),
     omschrijving: zaak.omschrijving,
   } as ZaakDetails;
 };
 //zaken/api/v1/
-const zaaksysteemBaseUri = `/api/zaken/zaken`;
+const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1/zaken`;
 //const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1/zaken`;
 
 const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
@@ -102,7 +105,7 @@ const getZaakType = (zaaktype: string): Promise<ZaakType> => {
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => {
-      console.log("zaaktype: ", zaaktype);
+      console.log("zaaktype: ", json);
 
       return json;
     });
