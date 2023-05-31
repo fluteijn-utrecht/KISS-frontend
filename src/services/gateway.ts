@@ -10,8 +10,6 @@ export async function parsePagination<T>(
   json: unknown,
   map: (jObj: unknown) => T
 ): Promise<PaginatedResult<Awaited<T>>> {
-  console.log("--json: ", json);
-
   const { count, next, previous, results } = json as {
     [key: string]: unknown;
   };

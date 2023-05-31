@@ -7,10 +7,16 @@ import {
   type Paginated,
   type PaginatedResult,
 } from "@/services";
-import type { ZaakDetails, ZaakType } from "./types";
+import type {
+  InformatieObject,
+  ZaakDetails,
+  ZaakDocument,
+  ZaakType,
+} from "./types";
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { formatIsoDate } from "@/helpers/date";
+import { splitListItemBefore } from "@ckeditor/ckeditor5-list/src/documentlist/utils/model";
 
 type Roltype = "behandelaar" | "initiator";
 const ONBEKEND = "Onbekend";
@@ -36,7 +42,7 @@ const getNamePerRoltype = (zaak: any, roletype: Roltype) => {
 };
 
 const mapZaakDetails = async (zaak: any) => {
-  console.log("----", zaak);
+  // console.log("---- zaakdetail", zaak);
 
   const zaakzaaktype = await getZaakType(zaak.zaaktype);
 
@@ -61,8 +67,29 @@ const mapZaakDetails = async (zaak: any) => {
   //     })
   //     .toJSDate();
 
+  ///api/zaken/zaken/api/v1/zaken/zaakinformatieobjecten?zaak=https://open-zaak.dev.kiss-demo.nl/zaken/api/v1/zaken/2711ffff-95d6-4476-acbd-5951298c07d2
+  //console.log(`${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaak.url}`);
+
+  const documenten = await getDocumenten(zaak.url);
+  //nb de echte donload links zitten hier nog niet in
+  //de informatieobject link moet gebruikt worden om het https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/{uuid} op te vragen
+  //daarin zit een veld ' inhoud' dat is de download link. het veld formaat bevat de mime  type.
+
+  // informatieobject
+  // :
+  // "https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f"
+  // registratiedatum
+  // :
+  // "2023-05-26T15:23:45.952059Z"
+  // titel
+  // :
+  // "KvK Uittreksel 69599084"
+
+  const id = zaak.url.split("/").pop();
+
   return {
     ...zaak,
+    id: id,
     zaaktype: zaakzaaktype.id,
     zaaktypeLabel: zaakzaaktype.onderwerp,
     zaaktypeOmschrijving: zaakzaaktype.omschrijving,
@@ -75,12 +102,35 @@ const mapZaakDetails = async (zaak: any) => {
     indienDatum: zaak.publicatiedatum && new Date(zaak.publicatiedatum),
     registratieDatum: zaak.registratiedatum && new Date(zaak.registratiedatum),
     self: zaak.url,
-    documenten: mapDocumenten(zaak?.embedded?.zaakinformatieobjecten),
+    documenten: documenten,
     omschrijving: zaak.omschrijving,
   } as ZaakDetails;
 };
+
+const mapInformatieObject = (informatieObjectenRaw: any) => {
+  if (!Array.isArray(informatieObjectenRaw)) {
+    return [];
+  }
+
+  const informatieObjecten: Array<InformatieObject> = [];
+
+  informatieObjectenRaw.forEach((item: any) => {
+    informatieObjecten.push({
+      informatieobjectId: item.informatieobject.split("/").pop(),
+      // informatieobject: item.informatieobject,
+      // titel: item.titel,
+      // beschrijving: item.beschrijving,
+    });
+  });
+  //console.log("------informatieObjecten", informatieObjecten);
+  return {
+    informatieObjecten,
+  };
+};
+
 //zaken/api/v1/
-const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1/zaken`;
+const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
+const documentenBaseUri = `/api/documenten/documenten/api/v1`;
 //const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1/zaken`;
 
 const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
@@ -90,12 +140,72 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
     .then((json) => parsePagination(json, mapZaakDetails))
     .then((zaken) => {
       zaken.page.forEach((zaak) => {
-        console.log("--zaak:", zaak);
-
         mutate(getZaakUrl(zaak.id), zaak);
       });
       return zaken;
     });
+
+const getDocumenten = async (zaakurl: string): Promise<Array<ZaakDocument>> => {
+  // fetchLoggedIn(
+  //   "/api/zaken/zaken/api/v1/zaakinformatieobjecten?zaak=https://open-zaak.dev.kiss-demo.nl/zaken/api/v1/zaken/073ab9aa-e02b-40c6-b99d-ed3719080117"
+  // )
+  const docs: Array<ZaakDocument> = [];
+  // const infoObjecten: Array<InformatieObject> = [];
+  const infoObjecten = await fetchLoggedIn(
+    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
+  )
+    .then(throwIfNotOk)
+    .then((x) => x.json());
+  //.then(mapInformatieObject);
+
+  if (Array.isArray(infoObjecten)) {
+    infoObjecten.forEach(async (item: any) => {
+      const id = item.informatieobject.split("/").pop();
+
+      const doc = await fetchLoggedIn(
+        `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`
+      )
+        // const doc = await fetchLoggedIn(
+        //   "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f"
+        // )
+        .then(throwIfNotOk) //todo 404 afvanengen
+        .then((x) => x.json())
+        .then(mapDocument);
+      if (doc) {
+        docs.push(doc);
+      }
+    });
+  }
+  // const docs: Array<ZaakDocument> = [];
+  // console.log("111111111", infoObjecten, x);
+
+  // if (infoObjecten && infoObjecten.informatieObjecten) {
+  //   infoObjecten.forEach(async (infoObject: any) => {
+  //     console.log("----------", infoObject);
+  //     //https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/6c61a6e5-96fd-4e25-8e6b-fa73126eeaf9
+  //     //https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e7
+  //     const doc = await fetchLoggedIn(
+  //       `${documentenBaseUri}/enkelvoudiginformatieobjecten/${infoObject.informatieobjectId}`
+  //     )
+  //       // const doc = await fetchLoggedIn(
+  //       //   "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f"
+  //       // )
+  //       .then(throwIfNotOk) //todo 404 afvanengen
+  //       .then((x) => x.json())
+  //       .then(mapDocument);
+  //     if (doc) {
+  //       docs.push(doc);
+  //     }
+  //   });
+  //}
+
+  return docs;
+  // .then((items) => {
+  //   items.forEach((item: InformatieObject) => {
+  //     console.log("InformatieObject:", item);
+  //   });
+  //   return items;
+};
 
 const getZaakType = (zaaktype: string): Promise<ZaakType> => {
   const zaaktypeid = zaaktype.split("/").pop();
@@ -105,8 +215,6 @@ const getZaakType = (zaaktype: string): Promise<ZaakType> => {
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => {
-      console.log("zaaktype: ", json);
-
       return json;
     });
 };
@@ -114,7 +222,7 @@ const getZaakType = (zaaktype: string): Promise<ZaakType> => {
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
     if (!bsn.value) return "";
-    const url = new URL(zaaksysteemBaseUri);
+    const url = new URL(zaaksysteemBaseUri + "/zaken");
     url.searchParams.set(
       "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
       bsn.value
@@ -127,7 +235,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   const getUrl = () => {
-    return zaaksysteemBaseUri;
+    return zaaksysteemBaseUri + "/zaken";
     //if (!zaaknummer.value) return "";
     //const url = new URL(zaaksysteemBaseUri);
     //url.searchParams.set("identificatie", zaaknummer.value);
@@ -139,8 +247,9 @@ export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
 
 const getZaakUrl = (id: string) => {
   if (!id) return "";
-  const url = new URL(`${zaaksysteemBaseUri}/${id}`);
-  return url.toString();
+  return `${zaaksysteemBaseUri}/zaken/${id}`;
+  //const url = new URL(`${zaaksysteemBaseUri}/${id}`);
+  //return url.toString();
 };
 
 export const useZaakById = (id: Ref<string>) => {
@@ -180,25 +289,24 @@ export async function updateToelichting(
   mutate(url, updatedZaak);
 }
 
-const mapDocumenten = (rawDocumenten: any[]) => {
-  if (!rawDocumenten) return [];
+const mapDocument = (rawDocumenten: any): ZaakDocument | null => {
+  if (!rawDocumenten) return null;
 
-  return rawDocumenten.map((document) => ({
-    id: document.embedded.informatieobject.id,
-    titel: document.embedded.informatieobject.titel,
-    bestandsomvang: document.embedded.informatieobject.bestandsomvang,
-    creatiedatum: new Date(document.embedded.informatieobject.creatiedatum),
-    vertrouwelijkheidaanduiding:
-      document.embedded.informatieobject.vertrouwelijkheidaanduiding,
-    formaat: document.embedded.informatieobject.formaat,
-    inhoud: document.embedded.informatieobject.inhoud,
-  }));
+  return {
+    id: rawDocumenten.identificatie,
+    titel: rawDocumenten.titel,
+    bestandsomvang: rawDocumenten.bestandsomvang,
+    creatiedatum: new Date(rawDocumenten.creatiedatum),
+    vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
+    formaat: rawDocumenten.formaat,
+    inhoud: rawDocumenten.inhoud,
+  };
 };
 
 export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
   const getUrl = () => {
     if (!vestigingsnummer.value) return "";
-    const url = new URL(zaaksysteemBaseUri);
+    const url = new URL(zaaksysteemBaseUri + "/zaken");
     url.searchParams.set(
       "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
       vestigingsnummer.value

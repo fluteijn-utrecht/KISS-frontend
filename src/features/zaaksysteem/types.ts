@@ -16,11 +16,11 @@ export type ZaakDetails = {
   indienDatum?: Date;
   registratieDatum?: Date;
   self: string;
-  documenten?: Document[];
+  documenten?: ZaakDocument[];
   omschrijving: string;
 };
 
-export interface Document {
+export interface ZaakDocument {
   id: string;
   titel: string;
   bestandsomvang: number;
@@ -36,4 +36,11 @@ export type ZaakType = {
   omschrijving: string;
   doorlooptijd: string;
   servicenorm: string;
+};
+
+export type InformatieObject = {
+  //uuid: string;
+  informatieobjectId: string;
+  // titel: string;
+  // beschrijving: string;
 };
