@@ -744,7 +744,7 @@ const afdelingen = useAfdelingen();
   }
 
   input[type="checkbox"] {
-    margin: 0.25rem;
+    margin: var(--spacing-extrasmall);
     scale: 1.5;
   }
 }

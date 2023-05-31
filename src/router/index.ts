@@ -27,6 +27,10 @@ const SkillsBeheer = () => import("@/views/Beheer/skills/SkillsBeheer.vue");
 const SkillBeheer = () => import("@/views/Beheer/skills/SkillBeheer.vue");
 const LinksBeheer = () => import("@/views/Beheer/Links/LinksBeheer.vue");
 const LinkBeheer = () => import("@/views/Beheer/Links/LinkBeheer.vue");
+const GespreksresultaatBeheer = () =>
+  import("@/views/Beheer/gespreksresultaten/GespreksresultaatBeheer.vue");
+const GespreksresultatenBeheer = () =>
+  import("@/views/Beheer/gespreksresultaten/GespreksresultatenBeheer.vue");
 const BeheerLayout = () => import("@/views/Beheer/BeheerLayout.vue");
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
@@ -137,6 +141,12 @@ const router = createRouter({
           meta: {},
         },
         {
+          path: "gespreksresultaten",
+          name: "GespreksresultatenBeheer",
+          component: GespreksresultatenBeheer,
+          meta: {},
+        },
+        {
           path: "NieuwsEnWerkinstructie/:id?",
           name: "NieuwsEnWerkinstructieBeheer",
           component: NieuwsEnWerkinstructieBeheer,
@@ -154,6 +164,13 @@ const router = createRouter({
           path: "Link/:id?",
           name: "LinkBeheer",
           component: LinkBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "gespreksresultaat/:id?",
+          name: "GespreksresultaatBeheer",
+          component: GespreksresultaatBeheer,
           props: true,
           meta: {},
         },

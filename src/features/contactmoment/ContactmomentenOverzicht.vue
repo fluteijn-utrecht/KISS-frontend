@@ -134,7 +134,7 @@ dl {
   padding-inline-start: var(--spacing-default);
   display: grid;
   column-gap: var(--gap);
-  row-gap: 1rem;
+  row-gap: var(--spacing-default);
   grid-template-columns: var(--column-width) 1fr;
   padding-block: var(--spacing-large);
 }

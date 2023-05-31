@@ -6,6 +6,9 @@
     </router-link>
     <router-link to="/Beheer/Skills">Skills</router-link>
     <router-link to="/Beheer/Links">Links</router-link>
+    <router-link to="/Beheer/gespreksresultaten"
+      >Gespreksresultaten</router-link
+    >
   </nav>
   <main>
     <router-view />

@@ -402,9 +402,9 @@ fieldset {
   position: relative;
 
   > ul li {
-    padding-block: 2rem;
+    padding-block: var(--spacing-large);
     display: grid;
-    gap: 1rem;
+    gap: var(--spacing-default);
   }
 
   &:not(.isExpanded) {
@@ -432,7 +432,7 @@ fieldset {
   padding-inline-start: var(--spacing-large);
   inline-size: 100%;
   block-size: 1rem;
-  padding-block: 0.25rem;
+  padding-block: var(--spacing-extrasmall);
   white-space: nowrap;
   display: flex;
   justify-content: center;
