@@ -42,7 +42,7 @@ const getNamePerRoltype = (zaak: any, roletype: Roltype) => {
 };
 
 const mapZaakDetails = async (zaak: any) => {
-  // console.log("---- zaakdetail", zaak);
+  console.log("---- zaakdetail", zaak);
 
   const zaakzaaktype = await getZaakType(zaak.zaaktype);
 
@@ -145,12 +145,11 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
       return zaken;
     });
 
-const getDocumenten = async (zaakurl: string): Promise<Array<ZaakDocument>> => {
-  // fetchLoggedIn(
-  //   "/api/zaken/zaken/api/v1/zaakinformatieobjecten?zaak=https://open-zaak.dev.kiss-demo.nl/zaken/api/v1/zaken/073ab9aa-e02b-40c6-b99d-ed3719080117"
-  // )
-  const docs: Array<ZaakDocument> = [];
-  // const infoObjecten: Array<InformatieObject> = [];
+const getDocumenten = async (
+  zaakurl: string
+): Promise<Array<ZaakDocument | null>> => {
+  let docs: Array<ZaakDocument | null> = [];
+
   const infoObjecten = await fetchLoggedIn(
     `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
   )
@@ -159,25 +158,27 @@ const getDocumenten = async (zaakurl: string): Promise<Array<ZaakDocument>> => {
   //.then(mapInformatieObject);
 
   if (Array.isArray(infoObjecten)) {
-    infoObjecten.forEach(async (item: any) => {
+    const promises = infoObjecten.map(async (item: any) => {
       const id = item.informatieobject.split("/").pop();
 
-      const doc = await fetchLoggedIn(
+      return fetchLoggedIn(
         `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`
       )
-        // const doc = await fetchLoggedIn(
-        //   "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f"
-        // )
         .then(throwIfNotOk) //todo 404 afvanengen
         .then((x) => x.json())
         .then(mapDocument);
-      if (doc) {
-        docs.push(doc);
-      }
     });
+
+    docs = await Promise.all(promises);
+
+    // if (doc) {
+    //   console.log("doc", doc);
+    //   docs.push(doc);
+    // }
+
+    //
   }
   // const docs: Array<ZaakDocument> = [];
-  // console.log("111111111", infoObjecten, x);
 
   // if (infoObjecten && infoObjecten.informatieObjecten) {
   //   infoObjecten.forEach(async (infoObject: any) => {
@@ -198,7 +199,7 @@ const getDocumenten = async (zaakurl: string): Promise<Array<ZaakDocument>> => {
   //     }
   //   });
   //}
-
+  console.log("docs:", docs);
   return docs;
   // .then((items) => {
   //   items.forEach((item: InformatieObject) => {
@@ -292,7 +293,7 @@ export async function updateToelichting(
 const mapDocument = (rawDocumenten: any): ZaakDocument | null => {
   if (!rawDocumenten) return null;
 
-  return {
+  const doc = {
     id: rawDocumenten.identificatie,
     titel: rawDocumenten.titel,
     bestandsomvang: rawDocumenten.bestandsomvang,
@@ -301,6 +302,8 @@ const mapDocument = (rawDocumenten: any): ZaakDocument | null => {
     formaat: rawDocumenten.formaat,
     inhoud: rawDocumenten.inhoud,
   };
+  console.log("mapDocument:", doc);
+  return doc;
 };
 
 export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
