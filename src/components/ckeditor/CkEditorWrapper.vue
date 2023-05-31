@@ -55,4 +55,13 @@ const onFocus = () => {
     opacity: 0;
   }
 }
+
+:deep(.ck-editor ol),
+:deep(.ck-editor ul) {
+  padding-left: var(--spacing-default);
+}
+
+:deep(.ck-editor p:not(:last-child)) {
+  margin-block-end: 1em;
+}
 </style>

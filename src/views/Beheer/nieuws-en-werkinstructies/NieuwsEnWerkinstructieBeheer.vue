@@ -292,11 +292,6 @@ onMounted(() => {
   gap: var(--spacing-default);
 }
 
-:deep(.ck-editor ol),
-:deep(.ck-editor ul) {
-  padding-left: var(--spacing-default);
-}
-
 menu {
   margin-top: var(--spacing-large);
   display: flex;
