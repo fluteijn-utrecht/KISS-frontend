@@ -178,10 +178,6 @@ const handleSuccess = () => {
 };
 
 const submit = async () => {
-  if (!bericht.value?.inhoud) {
-    alert("Vul de inhoud van het bericht in.");
-    return;
-  }
   loading.value = true;
   try {
     bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);

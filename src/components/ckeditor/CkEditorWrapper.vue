@@ -4,7 +4,7 @@
       <textarea
         :value="modelValue"
         v-bind="$attrs"
-        @focus="onFocus"
+        @focus="editableElement?.focus()"
         tabindex="-1"
       ></textarea>
       <CkEditorAsync v-model="modelValue" v-bind="$attrs" />
@@ -38,10 +38,6 @@ const editableElement = computed(() => {
   if (el && el instanceof HTMLElement) return el;
   return undefined;
 });
-const onFocus = () => {
-  if (!editableElement.value) return;
-  editableElement.value.focus();
-};
 </script>
 
 <style lang="scss" scoped>
