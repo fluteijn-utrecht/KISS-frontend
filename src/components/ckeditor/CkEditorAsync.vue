@@ -1,5 +1,5 @@
 <template>
-  <ckeditor :editor="CustomEditor" v-model="modelValue" />
+  <ckeditor :editor="CustomEditor" v-model="modelValue" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
