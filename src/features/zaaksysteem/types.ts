@@ -27,7 +27,8 @@ export interface ZaakDocument {
   creatiedatum: Date;
   vertrouwelijkheidaanduiding: string;
   formaat: string;
-  inhoud: string;
+
+  downloadUrl: string;
 }
 
 export type ZaakType = {

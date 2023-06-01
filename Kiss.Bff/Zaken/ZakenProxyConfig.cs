@@ -2,7 +2,10 @@
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using IdentityModel;
 using Kiss.Bff;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Common;
 using Yarp.ReverseProxy.Transforms;
@@ -14,87 +17,47 @@ namespace Kiss.Bff.Zaken
     {
         public static class ZakenExtensions
         {
-            public static IServiceCollection AddZaken(this IServiceCollection services, string baseUrl, string apiKey)
+            public static IServiceCollection AddZaken(this IServiceCollection services, string baseUrl )
             {
-                services.AddSingleton<IKissProxyRoute>(new ZakenProxyConfig(baseUrl, apiKey));
+                services.AddSingleton<IKissProxyRoute>((x) => {
+                    var zgwToken = x.GetRequiredService<ZgwTokenProvider>();                    
+                    return new ZakenProxyConfig(baseUrl, zgwToken); 
+                });
+
                 return services;
             }
         }
 
         public sealed class ZakenProxyConfig : IKissProxyRoute
-        {
-            private readonly string _apiKey;
+        { 
+            private readonly ZgwTokenProvider _zgwTokenProvider;
 
-            public ZakenProxyConfig(string destination, string apiKey)
+            public ZakenProxyConfig(string destination, ZgwTokenProvider zgwTokenProvider)
             {
-                Destination = destination;
-                _apiKey = apiKey;
+                Destination = destination;           
+                _zgwTokenProvider = zgwTokenProvider;
             }
 
             public string Route => "zaken";
             public string Destination { get; }
 
+            public IServiceProvider ServiceProvider => throw new NotImplementedException();
+
+            //documentatie: https://open-zaak.readthedocs.io/en/latest/client-development/authentication.html
             public ValueTask ApplyRequestTransform(RequestTransformContext context)
             {
-                //hier het tijdelijk geldige token uit https://open-zaak.dev.kiss-demo.nl/admin/authorizations/applicatie/1/change/ invullen
-                //var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiZmZfY2xpZW50IiwiaWF0IjoxNjg1MDkzNzY0LCJjbGllbnRfaWQiOiJiZmZfY2xpZW50IiwidXNlcl9pZCI6IiIsInVzZXJfcmVwcmVzZW50YXRpb24iOiIifQ.ITz3VrY8dxzwayxZ3SVaMCbfrMtDJql1ZtEn-dv8s14";
+                var userId = context.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
+                var userRepresentation = context.HttpContext.User?.Identity?.Name;
 
-                var token = GenerateToken();
-
-                //token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ0ZXN0IiwiaWF0IjoxNjg1MTA4Njk3LCJjbGllbnRfaWQiOiJ0ZXN0IiwidXNlcl9pZCI6IiIsInVzZXJfcmVwcmVzZW50YXRpb24iOiIifQ.JFkS-YGp1tElRF-W9412B__WPpTuDsRafvVi1n20Ji0";
+                var token = _zgwTokenProvider.GenerateToken(userId, userRepresentation);
 
                 context.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                context.ProxyRequest.Headers.Add("Accept-Crs", "EPSG:4326"); //todo uitzoeken. moet dit?? en moet dit configurabel zijn?
+                context.ProxyRequest.Headers.Add("Accept-Crs", "EPSG:4326"); //voorlopig eignelijk niet nodig. wordt pas relevant wanneer we geografische coordinaten gaan opvragen
+
                 return new();
             }
-
-
-
-            private  string GenerateToken()
-            {
-                try
-                {
-
-                    var secretKey = "eensleutelvanminimaal16karakters";
-
-
-                    var client_id = "test";
-                    var iss = "test";
-                    var iat = 1602857301;
-                    var user_id = "123";
-                    var user_representation = "icatt tester";
-
-
-                    var claims = new Dictionary<string, object>
-                {
-                    { "client_id", client_id },
-                    { "iss", iss },
-                    { "iat", iat },
-                    { "user_id", user_id},
-                    { "user_representation", user_representation }
-                };
-
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var key = Encoding.ASCII.GetBytes(secretKey);
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Claims = claims,
-                        Subject = new ClaimsIdentity(),
-                        Expires = DateTime.UtcNow.AddHours(1),
-                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                    };
-                    var token = tokenHandler.CreateToken(tokenDescriptor);
-                    return tokenHandler.WriteToken(token);
-                }
-                catch (Exception ex)
-                {
-
-                    throw;
-                }
-
-                
-            }
+         
         }
     }
 

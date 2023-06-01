@@ -42,30 +42,40 @@ const getNamePerRoltype = (zaak: any, roletype: Roltype) => {
 };
 
 const mapZaakDetails = async (zaak: any) => {
-  console.log("---- zaakdetail", zaak);
-
   const zaakzaaktype = await getZaakType(zaak.zaaktype);
 
   const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
 
-  //temp. todo fix
-  const fataleDatum = new Date();
-  const streefDatum = new Date();
-  // const fataleDatum =
-  //   startdatum &&
-  //   DateTime.fromJSDate(startdatum)
-  //     .plus({
-  //       days: parseInt(zaakzaaktype.doorlooptijd, 10),
-  //     })
-  //     .toJSDate();
+  const doorlooptijd = parseInt(
+    zaakzaaktype.doorlooptijd
+      ? zaakzaaktype.doorlooptijd.replace(/^\D+/g, "")
+      : "0",
+    10
+  );
 
-  // const streefDatum =
-  //   startdatum &&
-  //   DateTime.fromJSDate(startdatum)
-  //     .plus({
-  //       days: parseInt(zaakzaaktype.servicenorm, 10),
-  //     })
-  //     .toJSDate();
+  const servicenorm = parseInt(
+    zaakzaaktype.servicenorm
+      ? zaakzaaktype.servicenorm.replace(/^\D+/g, "")
+      : "0",
+    10
+  );
+
+  //temp. todo fix
+  const fataleDatum =
+    startdatum &&
+    DateTime.fromJSDate(startdatum)
+      .plus({
+        days: isNaN(doorlooptijd) ? 0 : doorlooptijd,
+      })
+      .toJSDate();
+
+  const streefDatum =
+    startdatum &&
+    DateTime.fromJSDate(startdatum)
+      .plus({
+        days: isNaN(servicenorm) ? 0 : servicenorm,
+      })
+      .toJSDate();
 
   ///api/zaken/zaken/api/v1/zaken/zaakinformatieobjecten?zaak=https://open-zaak.dev.kiss-demo.nl/zaken/api/v1/zaken/2711ffff-95d6-4476-acbd-5951298c07d2
   //console.log(`${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaak.url}`);
@@ -107,26 +117,26 @@ const mapZaakDetails = async (zaak: any) => {
   } as ZaakDetails;
 };
 
-const mapInformatieObject = (informatieObjectenRaw: any) => {
-  if (!Array.isArray(informatieObjectenRaw)) {
-    return [];
-  }
+// const mapInformatieObject = (informatieObjectenRaw: any) => {
+//   if (!Array.isArray(informatieObjectenRaw)) {
+//     return [];
+//   }
 
-  const informatieObjecten: Array<InformatieObject> = [];
+//   const informatieObjecten: Array<InformatieObject> = [];
 
-  informatieObjectenRaw.forEach((item: any) => {
-    informatieObjecten.push({
-      informatieobjectId: item.informatieobject.split("/").pop(),
-      // informatieobject: item.informatieobject,
-      // titel: item.titel,
-      // beschrijving: item.beschrijving,
-    });
-  });
-  //console.log("------informatieObjecten", informatieObjecten);
-  return {
-    informatieObjecten,
-  };
-};
+//   informatieObjectenRaw.forEach((item: any) => {
+//     informatieObjecten.push({
+//       informatieobjectId: item.informatieobject.split("/").pop(),
+//       // informatieobject: item.informatieobject,
+//       // titel: item.titel,
+//       // beschrijving: item.beschrijving,
+//     });
+//   });
+//   //console.log("------informatieObjecten", informatieObjecten);
+//   return {
+//     informatieObjecten,
+//   };
+// };
 
 //zaken/api/v1/
 const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
@@ -148,64 +158,29 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
 const getDocumenten = async (
   zaakurl: string
 ): Promise<Array<ZaakDocument | null>> => {
-  let docs: Array<ZaakDocument | null> = [];
+  //let docs: Array<ZaakDocument | null> = [];
 
   const infoObjecten = await fetchLoggedIn(
     `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
   )
     .then(throwIfNotOk)
     .then((x) => x.json());
-  //.then(mapInformatieObject);
 
   if (Array.isArray(infoObjecten)) {
     const promises = infoObjecten.map(async (item: any) => {
       const id = item.informatieobject.split("/").pop();
 
-      return fetchLoggedIn(
-        `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`
-      )
+      const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
+      return fetchLoggedIn(docUrl)
         .then(throwIfNotOk) //todo 404 afvanengen
         .then((x) => x.json())
-        .then(mapDocument);
+        .then((x) => mapDocument(x, docUrl));
     });
 
-    docs = await Promise.all(promises);
-
-    // if (doc) {
-    //   console.log("doc", doc);
-    //   docs.push(doc);
-    // }
-
-    //
+    return await Promise.all(promises);
   }
-  // const docs: Array<ZaakDocument> = [];
 
-  // if (infoObjecten && infoObjecten.informatieObjecten) {
-  //   infoObjecten.forEach(async (infoObject: any) => {
-  //     console.log("----------", infoObject);
-  //     //https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/6c61a6e5-96fd-4e25-8e6b-fa73126eeaf9
-  //     //https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e7
-  //     const doc = await fetchLoggedIn(
-  //       `${documentenBaseUri}/enkelvoudiginformatieobjecten/${infoObject.informatieobjectId}`
-  //     )
-  //       // const doc = await fetchLoggedIn(
-  //       //   "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f"
-  //       // )
-  //       .then(throwIfNotOk) //todo 404 afvanengen
-  //       .then((x) => x.json())
-  //       .then(mapDocument);
-  //     if (doc) {
-  //       docs.push(doc);
-  //     }
-  //   });
-  //}
-  console.log("docs:", docs);
-  return docs;
-  // .then((items) => {
-  //   items.forEach((item: InformatieObject) => {
-  //     console.log("InformatieObject:", item);
-  //   });
-  //   return items;
+  return [];
 };
 
 const getZaakType = (zaaktype: string): Promise<ZaakType> => {
@@ -236,8 +211,8 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   const getUrl = () => {
-    return zaaksysteemBaseUri + "/zaken";
-    //if (!zaaknummer.value) return "";
+    if (!zaaknummer.value) return "";
+    return `${zaaksysteemBaseUri}/zaken?identificatie=${zaaknummer.value}`;
     //const url = new URL(zaaksysteemBaseUri);
     //url.searchParams.set("identificatie", zaaknummer.value);
     //return url.toString();
@@ -290,7 +265,9 @@ export async function updateToelichting(
   mutate(url, updatedZaak);
 }
 
-const mapDocument = (rawDocumenten: any): ZaakDocument | null => {
+const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
+  console.log("ewerwerwerwe", xx);
+
   if (!rawDocumenten) return null;
 
   const doc = {
@@ -300,7 +277,16 @@ const mapDocument = (rawDocumenten: any): ZaakDocument | null => {
     creatiedatum: new Date(rawDocumenten.creatiedatum),
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,
-    inhoud: rawDocumenten.inhoud,
+    downloadUrl: xx + "/download?versie=1",
+    // downloadUrl:
+    //  "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
+
+    // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1",
+    //"https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
+
+    //                                        https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1
+
+    // rawDocumenten.inhoud?.split("/").pop(), //https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1
   };
   console.log("mapDocument:", doc);
   return doc;
