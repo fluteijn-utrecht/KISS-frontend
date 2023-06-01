@@ -95,7 +95,7 @@ const verwijder = (id: number) => {
 };
 
 const confirmVerwijder = (id: number) => {
-  if (confirm("weet u zeker dat u dit gespreksresultaat wilt verwijderen?")) {
+  if (confirm("Weet u zeker dat u dit gespreksresultaat wilt verwijderen?")) {
     verwijder(id);
   }
 };
