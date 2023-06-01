@@ -140,7 +140,7 @@ const verwijder = async (id: number) => {
 };
 
 const confirmVerwijder = (id: number) => {
-  if (confirm("weet u zeker dat u dit item wilt verwijderen?")) {
+  if (confirm("Weet u zeker dat u dit bericht wilt verwijderen?")) {
     verwijder(id);
   }
 };
