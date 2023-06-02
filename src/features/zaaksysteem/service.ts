@@ -6,7 +6,14 @@ import {
   throwIfNotOk,
   type PaginatedResult,
 } from "@/services";
-import type { RolType, ZaakDetails, ZaakDocument, ZaakType } from "./types";
+import type {
+  RolType,
+  StatusType,
+  StatusTypeType,
+  ZaakDetails,
+  ZaakDocument,
+  ZaakType,
+} from "./types";
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 
@@ -33,6 +40,32 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
     .join(" ");
 
   return name || ONBEKEND;
+};
+
+const getStatus = async (statusUrl: string) => {
+  const statusId = statusUrl?.split("/")?.pop();
+
+  if (!statusId) return "";
+
+  const statusType = await fetchLoggedIn(
+    `${zaaksysteemBaseUri}/statussen/${statusId}`
+  )
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) => json.statustype);
+
+  const statusTypeUuid = statusType?.split("/")?.pop();
+
+  if (!statusTypeUuid) return "";
+
+  const statusTypeUrl = `/api/zaken/catalogi/api/v1/statustypen/${statusTypeUuid}`;
+
+  const statusOmschrijving = await fetchLoggedIn(statusTypeUrl)
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) => json.omschrijving);
+
+  return statusOmschrijving;
 };
 
 const mapZaakDetails = async (zaak: any) => {
@@ -82,7 +115,7 @@ const mapZaakDetails = async (zaak: any) => {
     zaaktype: zaakzaaktype.id,
     zaaktypeLabel: zaakzaaktype.onderwerp,
     zaaktypeOmschrijving: zaakzaaktype.omschrijving,
-    status: zaak.status.statustoelichting,
+    status: await getStatus(zaak.status),
     behandelaar: getNamePerRoltype(rollen, "behandelaar"),
     aanvrager: getNamePerRoltype(rollen, "initiator"),
     startdatum,

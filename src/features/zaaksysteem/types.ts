@@ -60,3 +60,23 @@ export type betrokkeneIdentificatieType = {
   voorletters: string;
   voorvoegselAchternaam: string;
 };
+
+// export type StatusType = {
+//   url: string;
+//   uuid: string;
+//   zaak: string;
+//   statustype: string;
+//   datumStatusGezet: string;
+//   statustoelichting: string;
+// };
+
+// export type StatusTypeType = {
+//   url: string;
+//   omschrijving: string;
+//   omschrijvingGeneriek: string;
+//   statustekst: string;
+//   zaaktype: string;
+//   volgnummer: string;
+//   isEindstatus: string;
+//   informeren: string;
+// };
