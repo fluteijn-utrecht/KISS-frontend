@@ -4,37 +4,31 @@ import {
   parsePagination,
   ServiceResult,
   throwIfNotOk,
-  type Paginated,
   type PaginatedResult,
 } from "@/services";
-import type {
-  InformatieObject,
-  ZaakDetails,
-  ZaakDocument,
-  ZaakType,
-} from "./types";
+import type { RolType, ZaakDetails, ZaakDocument, ZaakType } from "./types";
 import type { Ref } from "vue";
 import { mutate } from "swrv";
-import { formatIsoDate } from "@/helpers/date";
-import { splitListItemBefore } from "@ckeditor/ckeditor5-list/src/documentlist/utils/model";
 
-type Roltype = "behandelaar" | "initiator";
-const ONBEKEND = "Onbekend";
+const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
+  const ONBEKEND = "Onbekend";
 
-const getNamePerRoltype = (zaak: any, roletype: Roltype) => {
-  if (!Array.isArray(zaak?.embedded?.rollen)) return ONBEKEND;
-  const rolesArr = typeof roletype === "string" ? [roletype] : roletype;
-  const behandelaar = zaak.embedded.rollen.find((rol: any) =>
-    rolesArr.includes(rol?.embedded?.roltype?.omschrijvingGeneriek)
+  if (!rollen) {
+    return ONBEKEND;
+  }
+
+  const rol = rollen.find(
+    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam
   );
-  const { voorletters, voornamen, voorvoegselGeslachtsnaam, geslachtsnaam } =
-    behandelaar?.embedded?.betrokkeneIdentificatie ?? {};
 
-  const name = [
-    voornamen || voorletters,
-    voorvoegselGeslachtsnaam,
-    geslachtsnaam,
-  ]
+  if (!rol) {
+    return ONBEKEND;
+  }
+
+  const { voorletters, voorvoegselAchternaam, achternaam, geslachtsnaam } =
+    rol.betrokkeneIdentificatie ?? {};
+
+  const name = [voorletters, voorvoegselAchternaam, achternaam || geslachtsnaam]
     .filter(Boolean)
     .join(" ");
 
@@ -60,7 +54,6 @@ const mapZaakDetails = async (zaak: any) => {
     10
   );
 
-  //temp. todo fix
   const fataleDatum =
     startdatum &&
     DateTime.fromJSDate(startdatum)
@@ -79,6 +72,8 @@ const mapZaakDetails = async (zaak: any) => {
 
   const documenten = await getDocumenten(zaak.url);
 
+  const rollen = await getRollen(zaak.url);
+
   const id = zaak.url.split("/").pop();
 
   return {
@@ -88,8 +83,8 @@ const mapZaakDetails = async (zaak: any) => {
     zaaktypeLabel: zaakzaaktype.onderwerp,
     zaaktypeOmschrijving: zaakzaaktype.omschrijving,
     status: zaak.status.statustoelichting,
-    behandelaar: getNamePerRoltype(zaak, "behandelaar"),
-    aanvrager: getNamePerRoltype(zaak, "initiator"),
+    behandelaar: getNamePerRoltype(rollen, "behandelaar"),
+    aanvrager: getNamePerRoltype(rollen, "initiator"),
     startdatum,
     fataleDatum: fataleDatum,
     streefDatum: streefDatum,
@@ -119,8 +114,6 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
 const getDocumenten = async (
   zaakurl: string
 ): Promise<Array<ZaakDocument | null>> => {
-  //let docs: Array<ZaakDocument | null> = [];
-
   const infoObjecten = await fetchLoggedIn(
     `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
   )
@@ -133,7 +126,7 @@ const getDocumenten = async (
 
       const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
       return fetchLoggedIn(docUrl)
-        .then(throwIfNotOk) //todo 404 afvanengen
+        .then(throwIfNotOk) //todo 404 afvanengen?
         .then((x) => x.json())
         .then((x) => mapDocument(x, docUrl));
     });
@@ -142,6 +135,30 @@ const getDocumenten = async (
   }
 
   return [];
+};
+
+const mapRol = async (rol: any) => {
+  return {
+    ...rol,
+  } as RolType;
+};
+
+const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
+  // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
+  // het lijkt extreem onwaarschijnlijk dat er meer dan 1 pagina met rollen zal zijn.
+  // we kijken dus (voorlopig) alleen naar de eerste pagina
+
+  const rollen = await fetchLoggedIn(
+    `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`
+  )
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) => parsePagination(json, mapRol))
+    .then((rollen) => {
+      return rollen;
+    });
+
+  return rollen?.page;
 };
 
 const getZaakType = (zaaktype: string): Promise<ZaakType> => {
@@ -174,19 +191,13 @@ export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   const getUrl = () => {
     if (!zaaknummer.value) return "";
     return `${zaaksysteemBaseUri}/zaken?identificatie=${zaaknummer.value}`;
-    //const url = new URL(zaaksysteemBaseUri);
-    //url.searchParams.set("identificatie", zaaknummer.value);
-    //return url.toString();
   };
-
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
 const getZaakUrl = (id: string) => {
   if (!id) return "";
   return `${zaaksysteemBaseUri}/zaken/${id}`;
-  //const url = new URL(`${zaaksysteemBaseUri}/${id}`);
-  //return url.toString();
 };
 
 export const useZaakById = (id: Ref<string>) => {
@@ -227,8 +238,6 @@ export async function updateToelichting(
 }
 
 const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
-  console.log("ewerwerwerwe", xx);
-
   if (!rawDocumenten) return null;
 
   const doc = {
@@ -238,18 +247,17 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     creatiedatum: new Date(rawDocumenten.creatiedatum),
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,
-    downloadUrl: xx + "/download?versie=1",
+    downloadUrl: xx + "/download?versie=1", //werkt nog niet
     // downloadUrl:
-    //  "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
+    // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
 
     // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1",
-    //"https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
+    // "https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
 
-    //                                        https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1
+    // https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1
 
     // rawDocumenten.inhoud?.split("/").pop(), //https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1
   };
-  console.log("mapDocument:", doc);
   return doc;
 };
 

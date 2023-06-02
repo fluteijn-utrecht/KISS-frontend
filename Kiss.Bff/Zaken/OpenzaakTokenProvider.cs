@@ -33,10 +33,10 @@ namespace Kiss.Bff.Zaken
         public string GenerateToken(string? userId, string? userRepresentation)
         {
 
-            var secretKey = _apiKey; // "eensleutelvanminimaal16karakters";
-            var client_id = _clientId; //"test";
-            var iss = _clientId; //"test";
-            var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); //1602857301;
+            var secretKey = _apiKey; // "een sleutel van minimaal 16 karakters";
+            var client_id = _clientId; 
+            var iss = _clientId; 
+            var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); 
             var user_id = userId ?? string.Empty;
             var user_representation = userRepresentation ?? string.Empty;
 
@@ -51,7 +51,7 @@ namespace Kiss.Bff.Zaken
                 };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(secretKey);
+            var key = Encoding.UTF8.GetBytes(secretKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Claims = claims,

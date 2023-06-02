@@ -27,7 +27,6 @@ export interface ZaakDocument {
   creatiedatum: Date;
   vertrouwelijkheidaanduiding: string;
   formaat: string;
-
   downloadUrl: string;
 }
 
@@ -39,9 +38,25 @@ export type ZaakType = {
   servicenorm: string;
 };
 
-export type InformatieObject = {
-  //uuid: string;
-  informatieobjectId: string;
-  // titel: string;
-  // beschrijving: string;
+export type RolType = {
+  url: string;
+  uuid: string;
+  zaak: string;
+  betrokkene: string;
+  betrokkeneType: string;
+  roltype: string;
+  omschrijving: string;
+  omschrijvingGeneriek: string;
+  roltoelichting: string;
+  registratiedatum: string;
+  indicatieMachtiging: string;
+  betrokkeneIdentificatie: betrokkeneIdentificatieType;
+};
+
+export type betrokkeneIdentificatieType = {
+  achternaam: string;
+  geslachtsnaam: string;
+  identificatie: string;
+  voorletters: string;
+  voorvoegselAchternaam: string;
 };
