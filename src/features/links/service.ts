@@ -1,10 +1,4 @@
-import {
-  fetchLoggedIn,
-  parsePagination,
-  ServiceResult,
-  throwIfNotOk,
-} from "@/services";
-import type { Link } from "./types";
+import { fetchLoggedIn, ServiceResult, throwIfNotOk } from "@/services";
 
 const linksUrl = (function () {
   return "/api/links";

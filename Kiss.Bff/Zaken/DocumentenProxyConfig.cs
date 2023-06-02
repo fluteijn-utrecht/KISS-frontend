@@ -50,7 +50,6 @@ namespace Kiss.Bff.Zaken
 
                 return new();
             }
-
          
         }
     }

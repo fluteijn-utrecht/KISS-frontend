@@ -6,6 +6,12 @@ export interface PaginatedResult<T> {
   page: T[];
 }
 
+//Dit is aangepast in de context van OpenZaak.
+//Het is nog onduidelijk of een generieke pagination functie bruikbaar blijft.
+//De data komt namelijk niet langer een enkele gateway.
+//Mogelijk refactoren naar api specifieke paginerings functies.
+//oude situatie hebben we ter referentie nog even uitgecommentarieerd laten staan
+
 export async function parsePagination<T>(
   json: unknown,
   map: (jObj: unknown) => T
@@ -44,8 +50,6 @@ export async function parsePagination<T>(
     page: await Promise.all(promises),
     next: next ?? null,
     previous: previous ?? null,
-    //paginering werkt anders in de openzaak api dan bij de gateway.. is dit respresntatief voor alle api's?
-    //anders heeft deze gedeelde functie geen bestaansrecht meer... beoordelen bij het implementeren van de volgende api's
     //pageNumber: page,
     //pageSize: limit,
     //totalPages: pages,

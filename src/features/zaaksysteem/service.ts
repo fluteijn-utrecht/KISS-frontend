@@ -77,23 +77,7 @@ const mapZaakDetails = async (zaak: any) => {
       })
       .toJSDate();
 
-  ///api/zaken/zaken/api/v1/zaken/zaakinformatieobjecten?zaak=https://open-zaak.dev.kiss-demo.nl/zaken/api/v1/zaken/2711ffff-95d6-4476-acbd-5951298c07d2
-  //console.log(`${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaak.url}`);
-
   const documenten = await getDocumenten(zaak.url);
-  //nb de echte donload links zitten hier nog niet in
-  //de informatieobject link moet gebruikt worden om het https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/{uuid} op te vragen
-  //daarin zit een veld ' inhoud' dat is de download link. het veld formaat bevat de mime  type.
-
-  // informatieobject
-  // :
-  // "https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f"
-  // registratiedatum
-  // :
-  // "2023-05-26T15:23:45.952059Z"
-  // titel
-  // :
-  // "KvK Uittreksel 69599084"
 
   const id = zaak.url.split("/").pop();
 
@@ -117,31 +101,8 @@ const mapZaakDetails = async (zaak: any) => {
   } as ZaakDetails;
 };
 
-// const mapInformatieObject = (informatieObjectenRaw: any) => {
-//   if (!Array.isArray(informatieObjectenRaw)) {
-//     return [];
-//   }
-
-//   const informatieObjecten: Array<InformatieObject> = [];
-
-//   informatieObjectenRaw.forEach((item: any) => {
-//     informatieObjecten.push({
-//       informatieobjectId: item.informatieobject.split("/").pop(),
-//       // informatieobject: item.informatieobject,
-//       // titel: item.titel,
-//       // beschrijving: item.beschrijving,
-//     });
-//   });
-//   //console.log("------informatieObjecten", informatieObjecten);
-//   return {
-//     informatieObjecten,
-//   };
-// };
-
-//zaken/api/v1/
 const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
 const documentenBaseUri = `/api/documenten/documenten/api/v1`;
-//const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1/zaken`;
 
 const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
   fetchLoggedIn(url)
