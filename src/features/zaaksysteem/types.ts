@@ -38,6 +38,33 @@ export type ZaakType = {
   servicenorm: string;
 };
 
+export type OrganisatorischeEenheidType = {
+  naam: string;
+};
+
+export type VestigingType = {
+  naam: string;
+  vestigingsNummer: string;
+};
+
+export type NietNatuurlijkPersoonType = {
+  statutaireNaam: string;
+};
+
+export type NatuurlijkPersoonType = {
+  voornamen: string;
+  voorvoegselGeslachtsnaam: string;
+  geslachtsnaam: string;
+};
+
+export type MedewerkerType = {
+  achternaam: string;
+  geslachtsnaam: string;
+  identificatie: string;
+  voorletters: string;
+  voorvoegselAchternaam: string;
+};
+
 export type RolType = {
   url: string;
   uuid: string;
@@ -50,15 +77,12 @@ export type RolType = {
   roltoelichting: string;
   registratiedatum: string;
   indicatieMachtiging: string;
-  betrokkeneIdentificatie: betrokkeneIdentificatieType;
-};
-
-export type betrokkeneIdentificatieType = {
-  achternaam: string;
-  geslachtsnaam: string;
-  identificatie: string;
-  voorletters: string;
-  voorvoegselAchternaam: string;
+  betrokkeneIdentificatie:
+    | MedewerkerType
+    | OrganisatorischeEenheidType
+    | VestigingType
+    | NietNatuurlijkPersoonType
+    | NatuurlijkPersoonType;
 };
 
 // export type StatusType = {

@@ -7,9 +7,12 @@ import {
   type PaginatedResult,
 } from "@/services";
 import type {
+  MedewerkerType,
+  NatuurlijkPersoonType,
+  NietNatuurlijkPersoonType,
+  OrganisatorischeEenheidType,
   RolType,
-  StatusType,
-  StatusTypeType,
+  VestigingType,
   ZaakDetails,
   ZaakDocument,
   ZaakType,
@@ -24,22 +27,38 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
     return ONBEKEND;
   }
 
+  //we gaan er in de interface vanuit dat een rol maar 1 keer voorkomt bij een zaak
   const rol = rollen.find(
     (rol: RolType) => rol.omschrijvingGeneriek === roleNaam
   );
 
-  if (!rol) {
+  if (!rol || !rol.betrokkeneIdentificatie) {
     return ONBEKEND;
   }
 
-  const { voorletters, voorvoegselAchternaam, achternaam, geslachtsnaam } =
-    rol.betrokkeneIdentificatie ?? {};
+  if (rol.betrokkeneType === "natuurlijk_persoon") {
+    const x = rol.betrokkeneIdentificatie as NatuurlijkPersoonType;
+    return [x.voornamen, x.voorvoegselGeslachtsnaam, x.geslachtsnaam]
+      .filter(Boolean)
+      .join(" ");
+  } else if (rol.betrokkeneType === "niet_natuurlijk_persoon") {
+    const x = rol.betrokkeneIdentificatie as NietNatuurlijkPersoonType;
+    return x.statutaireNaam;
+  } else if (rol.betrokkeneType === "vestiging") {
+    const x = rol.betrokkeneIdentificatie as VestigingType;
+    return [x.naam, x.vestigingsNummer].filter(Boolean).join(" ");
+  } else if (rol.betrokkeneType === "organisatorische_eenheid") {
+    const x = rol.betrokkeneIdentificatie as OrganisatorischeEenheidType;
+    return x.naam;
+  } else if (rol.betrokkeneType === "medewerker") {
+    const x = rol.betrokkeneIdentificatie as MedewerkerType;
+    return [x.voorletters, x.voorvoegselAchternaam, x.achternaam]
+      .filter(Boolean)
+      .join(" ");
+  }
+  //
 
-  const name = [voorletters, voorvoegselAchternaam, achternaam || geslachtsnaam]
-    .filter(Boolean)
-    .join(" ");
-
-  return name || ONBEKEND;
+  return ONBEKEND;
 };
 
 const getStatus = async (statusUrl: string) => {
@@ -170,28 +189,51 @@ const getDocumenten = async (
   return [];
 };
 
-const mapRol = async (rol: any) => {
-  return {
-    ...rol,
-  } as RolType;
-};
+// const mapRol = async (rol: any) => {
+//   return {
+//     ...rol,
+//   } as RolType;
+// };
 
 const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
   // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
   // het lijkt extreem onwaarschijnlijk dat er meer dan 1 pagina met rollen zal zijn.
   // we kijken dus (voorlopig) alleen naar de eerste pagina
 
-  const rollen = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`
-  )
-    .then(throwIfNotOk)
-    .then((x) => x.json())
-    .then((json) => parsePagination(json, mapRol))
-    .then((rollen) => {
-      return rollen;
-    });
+  let pageIndex = 0;
+  const rollen: Array<RolType> = [];
+  const rollenUrl = `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`;
 
-  return rollen?.page;
+  const getPage = async (url: string) => {
+    const page = await fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((x) => x.json())
+      .then((json) => parsePagination(json, async (x: any) => x as RolType));
+
+    rollen.push(...page.page);
+    if (page.next) {
+      pageIndex++;
+      const nextUrl = `${rollenUrl}&page=${pageIndex}`;
+      await getPage(nextUrl);
+    }
+  };
+
+  await getPage(rollenUrl);
+
+  console.log("rollen", rollen);
+
+  return rollen;
+  // const rollen = await fetchLoggedIn(
+  //   `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`
+  // )
+  //   .then(throwIfNotOk)
+  //   .then((x) => x.json())
+  //   .then((json) => parsePagination(json, mapRol))
+  //   .then((rollen) => {
+  //     return rollen;
+  //   });
+
+  // return rollen?.page;
 };
 
 const getZaakType = (zaaktype: string): Promise<ZaakType> => {
