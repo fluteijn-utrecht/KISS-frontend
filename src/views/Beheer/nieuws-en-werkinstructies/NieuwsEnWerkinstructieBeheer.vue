@@ -43,7 +43,7 @@
 
       <!-- <div class="editorWithPreview">
         <div> -->
-      <ck-editor v-model="bericht.inhoud" />
+      <ck-editor v-model="bericht.inhoud" required />
       <!-- </div>
         <div class="preview" v-html="bericht.inhoud"></div>
       </div> -->
@@ -146,8 +146,19 @@ type Skill = {
 const router = useRouter();
 
 const loading = ref<boolean>(true);
+const initBericht = (): BerichtDetail => {
+  const now = new Date();
+  const nextYear = new Date();
+  nextYear.setFullYear(now.getFullYear() + 1);
+  return {
+    publicatieDatum: toHtmlInputDateTime(now),
+    publicatieEinddatum: toHtmlInputDateTime(nextYear),
+    skills: [],
+  };
+};
 
-const bericht = ref<BerichtDetail | null>(null);
+const bericht = ref(initBericht());
+
 const skills = ref<Array<Skill>>([]);
 
 const addTimezone = (s?: string) => (s ? new Date(s).toISOString() : undefined);
@@ -167,10 +178,6 @@ const handleSuccess = () => {
 };
 
 const submit = async () => {
-  if (!bericht.value?.inhoud) {
-    alert("De inhoud van het bericht mag niet leeg zijn");
-    return;
-  }
   loading.value = true;
   try {
     bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);
@@ -236,7 +243,7 @@ async function load() {
         jsonData.dateUpdated && new Date(jsonData.dateUpdated);
       bericht.value = jsonData;
     } else {
-      bericht.value = { skills: [] };
+      bericht.value = initBericht();
     }
 
     //load skils
@@ -258,7 +265,7 @@ async function load() {
   loading.value = false;
 }
 
-function toHtmlInputDateTime(datumString?: string) {
+function toHtmlInputDateTime(datumString?: string | Date) {
   if (!datumString) return datumString;
   const datum = new Date(datumString);
 
@@ -279,11 +286,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-default);
-}
-
-:deep(.ck-editor ol),
-:deep(.ck-editor ul) {
-  padding-left: var(--spacing-default);
 }
 
 menu {

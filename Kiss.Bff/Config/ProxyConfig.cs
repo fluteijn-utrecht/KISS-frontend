@@ -95,7 +95,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         Address = x.Destination
                     }
+                },
+                // TODO: discuss if we need to get a valid certificate for Enterprise Search
+                HttpClient = x.Route == EnterpriseSearchProxyConfig.ROUTE
+                ? new HttpClientConfig
+                {
+                    DangerousAcceptAnyServerCertificate = true
                 }
+                : null
+
             }).ToArray();
 
             _config = new SimpleProxyConfig(routes, clusters);
