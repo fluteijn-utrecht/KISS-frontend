@@ -7,12 +7,12 @@ import {
   type PaginatedResult,
 } from "@/services";
 import type {
-  MedewerkerType,
-  NatuurlijkPersoonType,
-  NietNatuurlijkPersoonType,
-  OrganisatorischeEenheidType,
+  Medewerker,
+  NatuurlijkPersoon,
+  NietNatuurlijkPersoon,
+  OrganisatorischeEenheid,
   RolType,
-  VestigingType,
+  Vestiging,
   ZaakDetails,
   ZaakDocument,
   ZaakType,
@@ -86,21 +86,21 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
   }
 
   if (rol.betrokkeneType === "natuurlijk_persoon") {
-    const x = rol.betrokkeneIdentificatie as NatuurlijkPersoonType;
+    const x = rol.betrokkeneIdentificatie as NatuurlijkPersoon;
     return [x.voornamen, x.voorvoegselGeslachtsnaam, x.geslachtsnaam]
       .filter(Boolean)
       .join(" ");
   } else if (rol.betrokkeneType === "niet_natuurlijk_persoon") {
-    const x = rol.betrokkeneIdentificatie as NietNatuurlijkPersoonType;
+    const x = rol.betrokkeneIdentificatie as NietNatuurlijkPersoon;
     return x.statutaireNaam;
   } else if (rol.betrokkeneType === "vestiging") {
-    const x = rol.betrokkeneIdentificatie as VestigingType;
+    const x = rol.betrokkeneIdentificatie as Vestiging;
     return [x.naam, x.vestigingsNummer].filter(Boolean).join(" ");
   } else if (rol.betrokkeneType === "organisatorische_eenheid") {
-    const x = rol.betrokkeneIdentificatie as OrganisatorischeEenheidType;
+    const x = rol.betrokkeneIdentificatie as OrganisatorischeEenheid;
     return x.naam;
   } else if (rol.betrokkeneType === "medewerker") {
-    const x = rol.betrokkeneIdentificatie as MedewerkerType;
+    const x = rol.betrokkeneIdentificatie as Medewerker;
     return [x.voorletters, x.voorvoegselAchternaam, x.achternaam]
       .filter(Boolean)
       .join(" ");
@@ -317,7 +317,8 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     creatiedatum: new Date(rawDocumenten.creatiedatum),
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,
-    downloadUrl: xx + "/download?versie=1", //werkt nog niet
+    downloadUrl: xx + "/download?versie=1",
+    //werkt nog niet, wordt in een volgende story oafgemaakt
     // downloadUrl:
     // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
 
