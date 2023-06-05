@@ -96,12 +96,13 @@ namespace Microsoft.Extensions.DependencyInjection
                         Address = x.Destination
                     }
                 },
-#if DEBUG
-                HttpClient = new HttpClientConfig
+                // TODO: discuss if we need to get a valid certificate for Enterprise Search
+                HttpClient = x.Route == EnterpriseSearchProxyConfig.ROUTE
+                ? new HttpClientConfig
                 {
                     DangerousAcceptAnyServerCertificate = true
                 }
-#endif
+                : null
 
             }).ToArray();
 

@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public class EnterpriseSearchProxyConfig : IKissProxyRoute
     {
+        public const string ROUTE = "enterprisesearch";
+
         private readonly string _apiKey;
 
         public EnterpriseSearchProxyConfig(string destination, string apiKey)
@@ -23,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
             _apiKey = apiKey;
         }
 
-        public string Route => "enterprisesearch";
+        public string Route => ROUTE;
 
         public string Destination { get; }
 
