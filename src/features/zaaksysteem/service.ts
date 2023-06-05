@@ -189,12 +189,6 @@ const getDocumenten = async (
   return [];
 };
 
-// const mapRol = async (rol: any) => {
-//   return {
-//     ...rol,
-//   } as RolType;
-// };
-
 const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
   // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
   // het lijkt extreem onwaarschijnlijk dat er meer dan 1 pagina met rollen zal zijn.
@@ -220,20 +214,7 @@ const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
 
   await getPage(rollenUrl);
 
-  console.log("rollen", rollen);
-
   return rollen;
-  // const rollen = await fetchLoggedIn(
-  //   `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`
-  // )
-  //   .then(throwIfNotOk)
-  //   .then((x) => x.json())
-  //   .then((json) => parsePagination(json, mapRol))
-  //   .then((rollen) => {
-  //     return rollen;
-  //   });
-
-  // return rollen?.page;
 };
 
 const getZaakType = (zaaktype: string): Promise<ZaakType> => {
