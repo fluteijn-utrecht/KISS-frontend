@@ -1,12 +1,12 @@
 import {
   ServiceResult,
   fetchLoggedIn,
-  type Paginated,
   parsePagination,
   throwIfNotOk,
   parseJson,
   type ServiceData,
   enforceOneOrZero,
+  type PaginatedResult,
 } from "@/services";
 import { mutate } from "swrv";
 import type { Ref } from "vue";
@@ -37,10 +37,8 @@ type QueryDictionary = {
 };
 
 const queryDictionary: QueryDictionary = {
-  email: (search) => [["embedded.emails.email[like]", search]],
-  telefoonnummer: (search) => [
-    ["embedded.telefoonnummers.telefoonnummer[like]", search],
-  ],
+  email: (search) => [["emailadres", search]],
+  telefoonnummer: (search) => [["telefoonnummer", search]],
 };
 
 export type KlantSearch<K extends KlantSearchField> = {
@@ -57,25 +55,22 @@ function getQueryParams<K extends KlantSearchField>(params: KlantSearch<K>) {
 type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
   query: Ref<KlantSearch<K> | undefined>;
   page: Ref<number | undefined>;
+  subjectType?: KlantType;
 };
 
-const klantRootUrl = `${window.gatewayBaseUri}/api/klanten`;
-
-function setExtend(url: URL) {
-  url.searchParams.set("extend[]", "all");
-}
+const klantRootUrl = new URL(document.location.href);
+klantRootUrl.pathname = "/api/klanten/api/v1/klanten";
 
 function getKlantSearchUrl<K extends KlantSearchField>(
   search: KlantSearch<K> | undefined,
+  subjectType: KlantType,
   page: number | undefined
 ) {
   if (!search?.query) return "";
 
   const url = new URL(klantRootUrl);
-  setExtend(url);
-  url.searchParams.set("_order[achternaam]", "asc");
-  url.searchParams.set("_page", page?.toString() ?? "1");
-  url.searchParams.append("subjectType", KlantType.Persoon);
+  url.searchParams.set("page", page?.toString() ?? "1");
+  url.searchParams.append("subjectType", subjectType);
 
   getQueryParams(search).forEach((tuple) => {
     url.searchParams.set(...tuple);
@@ -85,25 +80,20 @@ function getKlantSearchUrl<K extends KlantSearchField>(
 }
 
 function mapKlant(obj: any): Klant {
-  const { subjectIdentificatie, emails, telefoonnummers } = obj?.embedded ?? {};
-  const { inpBsn, verblijfsadres, geboortedatum, vestigingsNummer } =
-    subjectIdentificatie ?? {};
-  const { aoaHuisnummer, aoaPostcode } = verblijfsadres ?? {};
+  const { subjectIdentificatie, url } = obj ?? {};
+  const { inpBsn, vestigingsNummer } = subjectIdentificatie ?? {};
+  const urlSplit: string[] = url?.split("/") ?? [];
 
   return {
     ...obj,
+    id: urlSplit[urlSplit.length - 1],
     _typeOfKlant: "klant",
-    emails: emails ?? [],
-    telefoonnummers: telefoonnummers ?? [],
     bsn: inpBsn,
-    postcode: aoaPostcode,
-    huisnummer: aoaHuisnummer,
-    geboortedatum: geboortedatum && new Date(geboortedatum),
     vestigingsnummer: vestigingsNummer,
   };
 }
 
-function searchKlanten(url: string): Promise<Paginated<Klant>> {
+function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
@@ -127,15 +117,13 @@ function searchKlanten(url: string): Promise<Paginated<Klant>> {
 function getKlantIdUrl(id?: string) {
   if (!id) return "";
   const url = new URL(`${klantRootUrl}/${id}`);
-  setExtend(url);
   return url.toString();
 }
 
 function getKlantBsnUrl(bsn?: string) {
   if (!bsn) return "";
   const url = new URL(klantRootUrl);
-  setExtend(url);
-  url.searchParams.set("embedded.subjectIdentificatie.inpBsn", bsn);
+  url.searchParams.set("subjectNatuurlijkPersoon__inpBsn", bsn);
   return url.toString();
 }
 
@@ -161,8 +149,8 @@ export function useKlantById(id: Ref<string>) {
 
 function updateContactgegevens({
   id,
-  telefoonnummers,
-  emails,
+  telefoonnummer,
+  emailadres,
 }: UpdateContactgegevensParams): Promise<UpdateContactgegevensParams> {
   const url = klantRootUrl + "/" + id;
   return fetchLoggedIn(url + "?fields[]=klantnummer&fields[]=bronorganisatie")
@@ -177,8 +165,8 @@ function updateContactgegevens({
         body: JSON.stringify({
           ...klant,
           embedded: {
-            telefoonnummers,
-            emails,
+            telefoonnummer,
+            emailadres,
           },
         }),
       })
@@ -195,8 +183,14 @@ function updateContactgegevens({
 export function useSearchKlanten<K extends KlantSearchField>({
   query,
   page,
+  subjectType,
 }: KlantSearchParameters<K>) {
-  const getUrl = () => getKlantSearchUrl(query.value, page.value);
+  const getUrl = () =>
+    getKlantSearchUrl(
+      query.value,
+      subjectType ?? KlantType.Persoon,
+      page.value
+    );
   return ServiceResult.fromFetcher(getUrl, searchKlanten);
 }
 
@@ -268,11 +262,7 @@ export async function ensureKlantForBsn({
 const getKlantByVestigingsnummerUrl = (vestigingsnummer: string) => {
   if (!vestigingsnummer) return "";
   const url = new URL(klantRootUrl);
-  url.searchParams.set("extend[]", "all");
-  url.searchParams.set(
-    "embedded.subjectIdentificatie.vestigingsNummer",
-    vestigingsnummer
-  );
+  url.searchParams.set("subjectVestiging__vestigingsNummer", vestigingsnummer);
   url.searchParams.set("subjectType", KlantType.Bedrijf);
   return url.toString();
 };

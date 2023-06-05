@@ -34,8 +34,6 @@ export type SearchCategoryTypes = {
   handelsnaam: string;
   kvkNummer: string;
   postcodeHuisnummer: PostcodeHuisnummer;
-  emailadres: string;
-  telefoonnummer: string;
 };
 
 export type SearchCategories = keyof SearchCategoryTypes;

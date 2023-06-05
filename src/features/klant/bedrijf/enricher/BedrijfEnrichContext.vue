@@ -12,12 +12,8 @@ const [vestigingsnummer, klantData, handelsregisterData] = useEnrichedBedrijf(
   () => props.record
 );
 
-const klantEmail = mapServiceData(klantData, (k) =>
-  k?.emails?.map(({ email }) => email).find(Boolean)
-);
-const klantTelefoon = mapServiceData(klantData, (k) =>
-  k?.telefoonnummers?.map(({ telefoonnummer }) => telefoonnummer).find(Boolean)
-);
+const klantEmail = mapServiceData(klantData, (k) => k?.emailadres);
+const klantTelefoon = mapServiceData(klantData, (k) => k?.telefoonnummer);
 const handelsEmail = mapServiceData(handelsregisterData, (h) => h?.email);
 const handelsTelefoon = mapServiceData(
   handelsregisterData,
