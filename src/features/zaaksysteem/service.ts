@@ -20,6 +20,55 @@ import type {
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 
+export const useZakenByBsn = (bsn: Ref<string>) => {
+  const getUrl = () => {
+    if (!bsn.value) return "";
+    const url = new URL(zaaksysteemBaseUri + "/zaken");
+    url.searchParams.set(
+      "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
+      bsn.value
+    );
+    return url.toString();
+  };
+
+  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
+};
+
+export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
+  const getUrl = () => {
+    if (!zaaknummer.value) return "";
+    return `${zaaksysteemBaseUri}/zaken?identificatie=${zaaknummer.value}`;
+  };
+  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
+};
+
+export const useZaakById = (id: Ref<string>) => {
+  const getUrl = () => getZaakUrl(id.value);
+
+  function fetcher(url: string): Promise<ZaakDetails> {
+    return fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((x) => x.json())
+      .then(mapZaakDetails);
+  }
+
+  return ServiceResult.fromFetcher(getUrl, fetcher);
+};
+
+export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
+  const getUrl = () => {
+    if (!vestigingsnummer.value) return "";
+    const url = new URL(zaaksysteemBaseUri + "/zaken");
+    url.searchParams.set(
+      "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
+      vestigingsnummer.value
+    );
+    return url.toString();
+  };
+
+  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
+};
+
 const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
   const ONBEKEND = "Onbekend";
 
@@ -85,6 +134,77 @@ const getStatus = async (statusUrl: string) => {
     .then((json) => json.omschrijving);
 
   return statusOmschrijving;
+};
+
+const getDocumenten = async (
+  zaakurl: string
+): Promise<Array<ZaakDocument | null>> => {
+  const infoObjecten = await fetchLoggedIn(
+    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
+  )
+    .then(throwIfNotOk)
+    .then((x) => x.json());
+
+  if (Array.isArray(infoObjecten)) {
+    const promises = infoObjecten.map(async (item: any) => {
+      const id = item.informatieobject.split("/").pop();
+
+      const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
+      return fetchLoggedIn(docUrl)
+        .then(throwIfNotOk) //todo 404 afvanengen?
+        .then((x) => x.json())
+        .then((x) => mapDocument(x, docUrl));
+    });
+
+    return await Promise.all(promises);
+  }
+
+  return [];
+};
+
+const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
+  // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
+  // het lijkt extreem onwaarschijnlijk dat er meer dan 1 pagina met rollen zal zijn.
+  // we kijken dus (voorlopig) alleen naar de eerste pagina
+
+  let pageIndex = 0;
+  const rollen: Array<RolType> = [];
+  const rollenUrl = `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`;
+
+  const getPage = async (url: string) => {
+    const page = await fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((x) => x.json())
+      .then((json) => parsePagination(json, async (x: any) => x as RolType));
+
+    rollen.push(...page.page);
+    if (page.next) {
+      pageIndex++;
+      const nextUrl = `${rollenUrl}&page=${pageIndex}`;
+      await getPage(nextUrl);
+    }
+  };
+
+  await getPage(rollenUrl);
+
+  return rollen;
+};
+
+const getZaakType = (zaaktype: string): Promise<ZaakType> => {
+  const zaaktypeid = zaaktype.split("/").pop();
+  const url = `/api/zaken/catalogi/api/v1/zaaktypen/${zaaktypeid}`;
+
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) => {
+      return json;
+    });
+};
+
+const getZaakUrl = (id: string) => {
+  if (!id) return "";
+  return `${zaaksysteemBaseUri}/zaken/${id}`;
 };
 
 const mapZaakDetails = async (zaak: any) => {
@@ -163,112 +283,6 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
       return zaken;
     });
 
-const getDocumenten = async (
-  zaakurl: string
-): Promise<Array<ZaakDocument | null>> => {
-  const infoObjecten = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
-  )
-    .then(throwIfNotOk)
-    .then((x) => x.json());
-
-  if (Array.isArray(infoObjecten)) {
-    const promises = infoObjecten.map(async (item: any) => {
-      const id = item.informatieobject.split("/").pop();
-
-      const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
-      return fetchLoggedIn(docUrl)
-        .then(throwIfNotOk) //todo 404 afvanengen?
-        .then((x) => x.json())
-        .then((x) => mapDocument(x, docUrl));
-    });
-
-    return await Promise.all(promises);
-  }
-
-  return [];
-};
-
-const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
-  // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
-  // het lijkt extreem onwaarschijnlijk dat er meer dan 1 pagina met rollen zal zijn.
-  // we kijken dus (voorlopig) alleen naar de eerste pagina
-
-  let pageIndex = 0;
-  const rollen: Array<RolType> = [];
-  const rollenUrl = `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`;
-
-  const getPage = async (url: string) => {
-    const page = await fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then((x) => x.json())
-      .then((json) => parsePagination(json, async (x: any) => x as RolType));
-
-    rollen.push(...page.page);
-    if (page.next) {
-      pageIndex++;
-      const nextUrl = `${rollenUrl}&page=${pageIndex}`;
-      await getPage(nextUrl);
-    }
-  };
-
-  await getPage(rollenUrl);
-
-  return rollen;
-};
-
-const getZaakType = (zaaktype: string): Promise<ZaakType> => {
-  const zaaktypeid = zaaktype.split("/").pop();
-  const url = `/api/zaken/catalogi/api/v1/zaaktypen/${zaaktypeid}`;
-
-  return fetchLoggedIn(url)
-    .then(throwIfNotOk)
-    .then((x) => x.json())
-    .then((json) => {
-      return json;
-    });
-};
-
-export const useZakenByBsn = (bsn: Ref<string>) => {
-  const getUrl = () => {
-    if (!bsn.value) return "";
-    const url = new URL(zaaksysteemBaseUri + "/zaken");
-    url.searchParams.set(
-      "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
-      bsn.value
-    );
-    return url.toString();
-  };
-
-  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
-};
-
-export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
-  const getUrl = () => {
-    if (!zaaknummer.value) return "";
-    return `${zaaksysteemBaseUri}/zaken?identificatie=${zaaknummer.value}`;
-  };
-  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
-};
-
-const getZaakUrl = (id: string) => {
-  if (!id) return "";
-  return `${zaaksysteemBaseUri}/zaken/${id}`;
-};
-
-export const useZaakById = (id: Ref<string>) => {
-  const getUrl = () => getZaakUrl(id.value);
-
-  function fetcher(url: string): Promise<ZaakDetails> {
-    return fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then((x) => x.json())
-      .then(mapZaakDetails);
-  }
-
-  return ServiceResult.fromFetcher(getUrl, fetcher);
-};
-
 export async function updateToelichting(
   zaak: ZaakDetails,
   toelichting: string
@@ -315,18 +329,4 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     // rawDocumenten.inhoud?.split("/").pop(), //https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1
   };
   return doc;
-};
-
-export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
-  const getUrl = () => {
-    if (!vestigingsnummer.value) return "";
-    const url = new URL(zaaksysteemBaseUri + "/zaken");
-    url.searchParams.set(
-      "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
-      vestigingsnummer.value
-    );
-    return url.toString();
-  };
-
-  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
