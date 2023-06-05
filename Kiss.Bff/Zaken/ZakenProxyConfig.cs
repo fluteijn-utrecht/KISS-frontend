@@ -40,8 +40,7 @@ namespace Kiss.Bff.Zaken
 
             public string Route => "zaken";
             public string Destination { get; }
-
-            public IServiceProvider ServiceProvider => throw new NotImplementedException();
+                    
 
             //documentatie: https://open-zaak.readthedocs.io/en/latest/client-development/authentication.html
             public ValueTask ApplyRequestTransform(RequestTransformContext context)
