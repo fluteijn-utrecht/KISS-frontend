@@ -7,29 +7,34 @@
     <form class="container" @submit.prevent="submit">
       <label for="naam" class="utrecht-form-label"
         ><span>Naam</span>
-        <input type="text" id="naam" v-model="skill.naam" required
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          type="text"
+          id="naam"
+          v-model="skill.naam"
+          required
       /></label>
-    </form>
-
-    <menu>
-      <li>
-        <router-link to="/Beheer/Skills/">
-          <utrecht-button appearance="secondary-action-button" type="button">
+      <menu>
+        <li>
+          <router-link
+            to="/Beheer/Skills/"
+            class="utrecht-button utrecht-button--secondary-action"
+          >
             Annuleren
-          </utrecht-button>
-        </router-link>
-      </li>
+          </router-link>
+        </li>
 
-      <li>
-        <utrecht-button
-          appearance="primary-action-button"
-          type="submit"
-          @click="submit"
-        >
-          Opslaan
-        </utrecht-button>
-      </li>
-    </menu>
+        <li>
+          <utrecht-button
+            appearance="primary-action-button"
+            type="submit"
+            @click="submit"
+          >
+            Opslaan
+          </utrecht-button>
+        </li>
+      </menu>
+    </form>
   </template>
 </template>
 
@@ -130,9 +135,9 @@ onMounted(async () => {
 
 <style>
 menu {
-  margin-top: 2rem;
+  margin-top: var(--spacing-large);
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-default);
   justify-content: flex-end;
 }
 

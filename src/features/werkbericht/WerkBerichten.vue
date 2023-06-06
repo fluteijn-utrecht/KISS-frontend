@@ -110,7 +110,7 @@ watch([() => props.search, () => props.skillIds, () => props.type], () => {
 section {
   display: grid;
   align-content: start;
-  gap: 1rem;
+  gap: var(--spacing-default);
 }
 
 ul + nav {

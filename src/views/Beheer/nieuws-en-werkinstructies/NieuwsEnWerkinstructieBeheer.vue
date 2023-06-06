@@ -1,8 +1,19 @@
 <template>
   <utrecht-heading :level="1">Nieuws of werkinstructie</utrecht-heading>
-
   <template v-if="loading"> <simple-spinner /></template>
   <template v-else-if="bericht">
+    <p v-if="bericht.dateCreated">
+      Aangemaakt op
+      <time :datetime="bericht.dateCreated.toISOString()">
+        {{ formatDateAndTime(bericht.dateCreated) }}
+      </time>
+    </p>
+    <p v-if="bericht.dateUpdated">
+      Gewijzigd op
+      <time :datetime="bericht.dateUpdated.toISOString()">
+        {{ formatDateAndTime(bericht.dateUpdated) }}
+      </time>
+    </p>
     <form class="container" @submit.prevent="submit">
       <fieldset>
         <legend>Type</legend>
@@ -20,13 +31,19 @@
 
       <label class="utrecht-form-label" for="titel"
         ><span>Titel</span>
-        <input required type="text" id="titel" v-model="bericht.titel" />
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          required
+          type="text"
+          id="titel"
+          v-model="bericht.titel"
+        />
       </label>
       <label class="utrecht-form-label" for="inhoud">Inhoud</label>
 
       <!-- <div class="editorWithPreview">
         <div> -->
-      <ck-editor v-model="bericht.inhoud" />
+      <ck-editor v-model="bericht.inhoud" required />
       <!-- </div>
         <div class="preview" v-html="bericht.inhoud"></div>
       </div> -->
@@ -44,6 +61,7 @@
 
         <input
           type="datetime-local"
+          class="utrecht-textbox utrecht-textbox--html-input"
           id="publicatieDatum"
           v-model="bericht.publicatieDatum"
           required
@@ -53,7 +71,11 @@
       <label class="utrecht-form-label">
         <span>Publicatie-einddatum</span>
 
-        <input type="datetime-local" v-model="bericht.publicatieEinddatum" />
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          type="datetime-local"
+          v-model="bericht.publicatieEinddatum"
+        />
       </label>
 
       <fieldset>
@@ -68,18 +90,13 @@
         >
       </fieldset>
 
-      <ul>
-        <li></li>
-      </ul>
-
-      <!-- <input type="submit" value="ok" @click="submit" /> -->
-
       <menu>
         <li>
-          <router-link to="/Beheer/NieuwsEnWerkinstructies/">
-            <utrecht-button appearance="secondary-action-button" type="button">
-              Annuleren
-            </utrecht-button>
+          <router-link
+            to="/Beheer/NieuwsEnWerkinstructies/"
+            class="utrecht-button utrecht-button--secondary-action"
+          >
+            Annuleren
           </router-link>
         </li>
 
@@ -105,9 +122,9 @@ import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
 import CkEditor from "@/components/ckeditor";
+import { formatDateAndTime } from "@/helpers/date";
 
 const props = defineProps(["id"]);
-
 type BerichtDetail = {
   id?: number;
   type?: Berichttype;
@@ -115,6 +132,8 @@ type BerichtDetail = {
   inhoud?: string;
   publicatieDatum?: string;
   publicatieEinddatum?: string;
+  dateCreated?: Date;
+  dateUpdated?: Date;
   isBelangrijk?: boolean;
   skills: Array<number>;
 };
@@ -127,11 +146,22 @@ type Skill = {
 const router = useRouter();
 
 const loading = ref<boolean>(true);
+const initBericht = (): BerichtDetail => {
+  const now = new Date();
+  const nextYear = new Date();
+  nextYear.setFullYear(now.getFullYear() + 1);
+  return {
+    publicatieDatum: toHtmlInputDateTime(now),
+    publicatieEinddatum: toHtmlInputDateTime(nextYear),
+    skills: [],
+  };
+};
 
-const bericht = ref<BerichtDetail | null>(null);
+const bericht = ref(initBericht());
+
 const skills = ref<Array<Skill>>([]);
 
-const addTimezone = (s?: string) => s && new Date(s).toISOString();
+const addTimezone = (s?: string) => (s ? new Date(s).toISOString() : undefined);
 
 const showError = () => {
   toast({
@@ -148,10 +178,6 @@ const handleSuccess = () => {
 };
 
 const submit = async () => {
-  if (!bericht.value?.inhoud) {
-    alert("De inhoud van het bericht mag niet leeg zijn");
-    return;
-  }
   loading.value = true;
   try {
     bericht.value.publicatieDatum = addTimezone(bericht.value.publicatieDatum);
@@ -212,9 +238,12 @@ async function load() {
       jsonData.publicatieEinddatum = toHtmlInputDateTime(
         jsonData.publicatieEinddatum
       );
+      jsonData.dateCreated = new Date(jsonData.dateCreated);
+      jsonData.dateUpdated =
+        jsonData.dateUpdated && new Date(jsonData.dateUpdated);
       bericht.value = jsonData;
     } else {
-      bericht.value = { skills: [] };
+      bericht.value = initBericht();
     }
 
     //load skils
@@ -236,7 +265,7 @@ async function load() {
   loading.value = false;
 }
 
-function toHtmlInputDateTime(datumString?: string) {
+function toHtmlInputDateTime(datumString?: string | Date) {
   if (!datumString) return datumString;
   const datum = new Date(datumString);
 
@@ -258,28 +287,11 @@ onMounted(() => {
   flex-direction: column;
   gap: var(--spacing-default);
 }
-// .preview {
-//   background-color: var(--color-secondary);
-//   padding: var(--spacing-default);
-// }
-// .editorWithPreview {
-//   width: 100%;
-//   display: flex;
-//   gap: var(--spacing-default);
-//   * {
-//     flex: 1 1 0;
-//   }
-// }
-
-:deep(.ck-editor ol),
-:deep(.ck-editor ul) {
-  padding-left: var(--spacing-default);
-}
 
 menu {
-  margin-top: 2rem;
+  margin-top: var(--spacing-large);
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-default);
   justify-content: flex-end;
 }
 

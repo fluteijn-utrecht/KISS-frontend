@@ -150,7 +150,7 @@ h2 {
 
     input,
     select {
-        padding: 0.5rem;
+        padding: var(--spacing-small);
     }
 
     label {
@@ -168,7 +168,7 @@ h2 {
     }
 
     input[type="search"] {
-        padding-inline-start: 1rem;
+        padding-inline-start: var(--spacing-default);
         &::placeholder {
             color: black;
         }
@@ -291,6 +291,11 @@ tr.row-link {
 
 th.row-link-header {
     font-size: 0;
+}
+
+.table-wrapper {
+    max-inline-size: 100%;
+    overflow-x: auto;
 }
 
 .details-block {

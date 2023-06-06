@@ -4,7 +4,7 @@
   <div v-else-if="error">Er is een fout opgetreden.</div>
 
   <ul v-else>
-    <li v-for="skill in skills" :key="skill.id">
+    <li v-for="skill in skills" :key="skill.id" class="listItem">
       <router-link :to="'/Beheer/Skill/' + skill.id">{{
         skill.naam
       }}</router-link>
@@ -19,14 +19,11 @@
     </li>
   </ul>
   <menu>
-    <router-link to="/Beheer/Skill/">
-      <utrecht-button
-        appearance="primary-action-button"
-        title="toevoegen"
-        type="button"
-        class="icon icon-after plus icon-only"
-      >
-      </utrecht-button>
+    <router-link
+      to="/Beheer/Skill/"
+      title="toevoegen"
+      class="utrecht-button utrecht-button--primary-action icon icon-after plus icon-only"
+    >
     </router-link>
   </menu>
 </template>
@@ -105,7 +102,7 @@ const verwijder = async (id: number) => {
 };
 
 const confirmVerwijder = (id: number) => {
-  if (confirm("weet u zeker dat u deze skill wilt verwijderen?")) {
+  if (confirm("Weet u zeker dat u deze skill wilt verwijderen?")) {
     verwijder(id);
   }
 };
@@ -115,18 +112,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="scss">
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-block: var(--spacing-small);
-}
-li:not(:last-child) {
-  border-bottom: 2px solid var(--color-tertiary);
-}
-
-menu {
-  margin-block-start: var(--spacing-default);
-}
-</style>
+<style scoped lang="scss"></style>

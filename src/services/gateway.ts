@@ -1,32 +1,59 @@
 import type { Paginated } from "./pagination";
 
+export interface PaginatedResult<T> {
+  next: string | null;
+  previous: string | null;
+  page: T[];
+}
+
+//Dit is aangepast in de context van OpenZaak.
+//Het is nog onduidelijk of een generieke pagination functie bruikbaar blijft.
+//De data komt namelijk niet langer een enkele gateway.
+//Mogelijk refactoren naar api specifieke paginerings functies.
+//oude situatie hebben we ter referentie nog even uitgecommentarieerd laten staan
+
 export async function parsePagination<T>(
   json: unknown,
   map: (jObj: unknown) => T
-): Promise<Paginated<Awaited<T>>> {
-  const { results, limit, total, page, pages } = json as {
+): Promise<PaginatedResult<Awaited<T>>> {
+  const { count, next, previous, results } = json as {
     [key: string]: unknown;
   };
   if (
     !Array.isArray(results) ||
-    typeof limit !== "number" ||
-    typeof total !== "number" ||
-    typeof page !== "number" ||
-    typeof pages !== "number"
+    typeof count !== "number" ||
+    (typeof next != "string" && next != null) ||
+    (typeof previous != "string" && previous != null)
   )
     throw new Error(
-      "unexpected in gateway json. expected pagination: " + JSON.stringify(json)
+      "unexpected format. expected pagination: " + JSON.stringify(json)
     );
+
+  // const { results, limit, total, page, pages } = json as {
+  //   [key: string]: unknown;
+  // };
+  // if (
+  //   !Array.isArray(results) ||
+  //   typeof limit !== "number" ||
+  //   typeof total !== "number" ||
+  //   typeof page !== "number" ||
+  //   typeof pages !== "number"
+  // )
+  //   throw new Error(
+  //     "unexpected in gateway json. expected pagination: " + JSON.stringify(json)
+  //   );
 
   // just in case the mapper is async, we wrap the result in a Promise
   const promises = results.map((x) => Promise.resolve(map(x)));
 
   return {
     page: await Promise.all(promises),
-    pageNumber: page,
-    pageSize: limit,
-    totalPages: pages,
-    totalRecords: total,
+    next: next ?? null,
+    previous: previous ?? null,
+    //pageNumber: page,
+    //pageSize: limit,
+    //totalPages: pages,
+    //totalRecords: total,
   };
 }
 

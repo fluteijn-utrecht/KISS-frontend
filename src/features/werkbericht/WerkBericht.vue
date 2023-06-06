@@ -11,9 +11,17 @@
 
     <div class="heading-container">
       <div class="heading-top-row">
-        <time :datetime="bericht.date.toISOString()">{{
-          localeString(bericht.date)
-        }}</time>
+        <p>
+          <time :datetime="bericht.date.toISOString()">{{
+            localeString(bericht.date)
+          }}</time>
+          <small v-if="bericht.modified"
+            >Bewerkt op
+            <time :datetime="bericht.modified.toISOString()">
+              {{ localeString(bericht.modified) }}
+            </time>
+          </small>
+        </p>
 
         <menu>
           <li>
@@ -116,9 +124,11 @@ const berichtSelectedInContactmoment = computed(() => {
 
 const read = ref<boolean>(props.bericht.read);
 watch(
-  () => props.bericht.read,
-  (newValue) => {
-    read.value = newValue;
+  () => props.bericht,
+  (b) => {
+    if (!toggleReadIsLoading.value) {
+      read.value = b.read;
+    }
   }
 );
 
@@ -197,7 +207,6 @@ article {
 
   time {
     color: var(--color-primary);
-    display: block;
   }
 
   .heading-container {
@@ -208,6 +217,14 @@ article {
       display: flex;
       justify-content: space-between;
       align-items: center;
+
+      p {
+        inline-size: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--color-primary);
+      }
 
       menu {
         display: flex;
@@ -253,7 +270,7 @@ article {
   :deep(ul) {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-extrasmall);
     list-style-type: disc;
     padding-left: var(--text-margin);
     line-height: var(--line-height-default);
