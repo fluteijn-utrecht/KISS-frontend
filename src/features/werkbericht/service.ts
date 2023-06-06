@@ -111,7 +111,7 @@ export function useWerkberichten(
     const json = await r.json();
 
     if (!Array.isArray(json))
-      throw new Error("expected a list, input: " + JSON.stringify(page));
+      throw new Error("expected a list, input: " + JSON.stringify(json));
 
     const page = json.map(parseWerkbericht);
 

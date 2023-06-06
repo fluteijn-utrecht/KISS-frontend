@@ -8,14 +8,23 @@
 </template>
 
 <script setup lang="ts">
-import type { Paginated } from "@/services";
+import type { Paginated, PaginatedResult } from "@/services";
 import { computed } from "vue";
 
-const props = defineProps<{ results: Paginated<unknown> }>();
+const props = defineProps<{
+  results: Paginated<unknown> | PaginatedResult<unknown>;
+}>();
 
-const resultCount = computed(
-  () => props.results.totalRecords ?? props.results.page.length
-);
+const resultCount = computed(() => {
+  if (
+    "totalRecords" in props.results &&
+    typeof props.results.totalRecords === "number"
+  )
+    return props.results.totalRecords;
+  if ("count" in props.results && typeof props.results.count === "number")
+    return props.results.count;
+  return props.results.page.length;
+});
 </script>
 
 <style lang="scss" scoped>

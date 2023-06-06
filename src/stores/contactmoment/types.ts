@@ -5,8 +5,8 @@ export type NieuweKlant = Pick<
   | "voornaam"
   | "voorvoegselAchternaam"
   | "achternaam"
-  | "telefoonnummers"
-  | "emails"
+  | "telefoonnummer"
+  | "emailadres"
 >;
 
 export interface Medewerker {

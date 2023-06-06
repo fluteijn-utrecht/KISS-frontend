@@ -1,18 +1,16 @@
-﻿using Kiss.Bff.Zaken.Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
-namespace Kiss.Bff.Zaken
+namespace Kiss.Bff.ZaakGerichtWerken
 {
 
     public static class ZgwTokenExtensions
     {
         public static IServiceCollection AddZgwTokenProvider(this IServiceCollection services, string apiKey, string clientId)
         {
-            services.AddSingleton<ZgwTokenProvider>(new ZgwTokenProvider(apiKey, clientId));
+            services.AddSingleton(new ZgwTokenProvider(apiKey, clientId));
             return services;
         }
     }
@@ -34,9 +32,9 @@ namespace Kiss.Bff.Zaken
         {
 
             var secretKey = _apiKey; // "een sleutel van minimaal 16 karakters";
-            var client_id = _clientId; 
-            var iss = _clientId; 
-            var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds(); 
+            var client_id = _clientId;
+            var iss = _clientId;
+            var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var user_id = userId ?? string.Empty;
             var user_representation = userRepresentation ?? string.Empty;
 

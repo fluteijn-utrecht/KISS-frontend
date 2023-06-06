@@ -3,6 +3,7 @@ import type { Paginated } from "./pagination";
 export interface PaginatedResult<T> {
   next: string | null;
   previous: string | null;
+  count: number;
   page: T[];
 }
 
@@ -50,6 +51,7 @@ export async function parsePagination<T>(
     page: await Promise.all(promises),
     next: next ?? null,
     previous: previous ?? null,
+    count,
     //pageNumber: page,
     //pageSize: limit,
     //totalPages: pages,

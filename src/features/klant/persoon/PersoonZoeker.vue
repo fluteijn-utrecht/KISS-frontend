@@ -49,11 +49,6 @@
             <SearchResultsCaption :results="klanten.data" />
           </template>
         </personen-overzicht>
-        <pagination
-          class="pagination"
-          :pagination="klanten.data"
-          @navigate="navigate"
-        />
       </template>
       <application-message
         v-if="klanten.error"
