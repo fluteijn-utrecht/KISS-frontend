@@ -109,7 +109,7 @@ function mapPersoon(json: any): Persoon {
 }
 
 function getPersoonUniqueBsnId(bsn: string | undefined) {
-  return zoekUrl + "_single" + bsn;
+  return bsn ? zoekUrl + "_single" + bsn : "";
 }
 
 const searchSinglePersoon = (bsn: string) =>
