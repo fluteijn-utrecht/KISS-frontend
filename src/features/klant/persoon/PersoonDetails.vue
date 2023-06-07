@@ -52,7 +52,6 @@
               type="email"
               name="E-mail"
               aria-label="E-mail"
-              required
               class="utrecht-textbox utrecht-textbox--html-input"
             />
           </fieldset>
@@ -70,7 +69,6 @@
               type="tel"
               name="Telefoonnummer"
               aria-label="Telefoonnummer"
-              required
               class="utrecht-textbox utrecht-textbox--html-input"
             />
           </fieldset>

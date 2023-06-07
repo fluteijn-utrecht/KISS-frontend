@@ -16,6 +16,7 @@ import {
   type Klant,
   KlantType,
 } from "./types";
+import { nanoid } from "nanoid";
 
 type QueryParam = [string, string][];
 
@@ -147,6 +148,16 @@ export function useKlantById(id: Ref<string>) {
   );
 }
 
+const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {
+  if (subjectType === KlantType.Persoon)
+    return subjectIdentificatie || { inpBsn: "" };
+
+  const { handelsnaam, ...rest } = subjectIdentificatie ?? {};
+  if (Array.isArray(handelsnaam) && handelsnaam.length)
+    return subjectIdentificatie;
+  return rest;
+};
+
 function updateContactgegevens({
   id,
   telefoonnummer,
@@ -156,7 +167,7 @@ function updateContactgegevens({
   return fetchLoggedIn(endpoint)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(({ subjectIdentificatie, subjectType, ...klant }) =>
+    .then((klant) =>
       fetchLoggedIn(endpoint, {
         method: "PUT",
         headers: {
@@ -164,12 +175,7 @@ function updateContactgegevens({
         },
         body: JSON.stringify({
           ...klant,
-          subjectIdentificatie: subjectIdentificatie
-            ? subjectIdentificatie
-            : subjectType === KlantType.Persoon
-            ? { inpBsn: "" }
-            : { vestigingsNummer: "" },
-          subjectType,
+          subjectIdentificatie: getValidIdentificatie(klant),
           telefoonnummer,
           emailadres,
         }),
@@ -177,10 +183,10 @@ function updateContactgegevens({
     )
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(({ embedded }) => ({
+    .then(({ telefoonnummer, emailadres }) => ({
       id,
-      telefoonnummers: embedded?.telefoonnummers ?? [],
-      emails: embedded?.emails ?? [],
+      telefoonnummer,
+      emailadres,
     }));
 }
 
@@ -239,10 +245,11 @@ export async function ensureKlantForBsn({
 
   const response = await fetchLoggedIn(klantRootUrl, {
     method: "POST",
+    headers: { "content-type": "application/json" },
     body: JSON.stringify({
       bronorganisatie: window.organisatieIds[0],
       // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: "123",
+      klantnummer: nanoid(8),
       subjectIdentificatie: { inpBsn: bsn },
       subjectType: KlantType.Persoon,
       voornaam,
@@ -310,10 +317,13 @@ export async function ensureKlantForVestigingsnummer({
 
   const response = await fetchLoggedIn(klantRootUrl, {
     method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
       bronorganisatie: window.organisatieIds[0],
       // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: "123",
+      klantnummer: nanoid(8),
       subjectIdentificatie: { vestigingsNummer: vestigingsnummer },
       subjectType: KlantType.Bedrijf,
       bedrijfsnaam,
