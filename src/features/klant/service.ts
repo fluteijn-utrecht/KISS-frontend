@@ -152,22 +152,26 @@ function updateContactgegevens({
   telefoonnummer,
   emailadres,
 }: UpdateContactgegevensParams): Promise<UpdateContactgegevensParams> {
-  const url = klantRootUrl + "/" + id;
-  return fetchLoggedIn(url + "?fields[]=klantnummer&fields[]=bronorganisatie")
+  const endpoint = klantRootUrl + "/" + id;
+  return fetchLoggedIn(endpoint)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((klant) =>
-      fetchLoggedIn(url, {
+    .then(({ subjectIdentificatie, subjectType, ...klant }) =>
+      fetchLoggedIn(endpoint, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...klant,
-          embedded: {
-            telefoonnummer,
-            emailadres,
-          },
+          subjectIdentificatie: subjectIdentificatie
+            ? subjectIdentificatie
+            : subjectType === KlantType.Persoon
+            ? { inpBsn: "" }
+            : { vestigingsNummer: "" },
+          subjectType,
+          telefoonnummer,
+          emailadres,
         }),
       })
     )
