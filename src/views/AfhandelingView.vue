@@ -289,6 +289,10 @@
               required
               v-if="gespreksresultaten.success"
             >
+              <option>
+                tijdelijke optie omdat het contactmoment anders niet opgeslagen
+                kan worden
+              </option>
               <option
                 v-for="gespreksresultaat in gespreksresultaten.data"
                 :key="gespreksresultaat.id"
@@ -517,22 +521,29 @@ const koppelContactverzoek = (
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const contactmoment: Contactmoment = {
-    gespreksId,
-    vorigContactmoment: undefined,
-    voorkeurskanaal: "",
-    voorkeurstaal: "",
-    tekst: vraag.notitie,
-    onderwerpLinks: [],
-    initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    medewerker: "",
-    medewerkerIdentificatie: undefined,
-    resultaat: vraag.resultaat,
-    kanaal: vraag.kanaal,
     bronorganisatie:
       Array.isArray(window.organisatieIds) && window.organisatieIds[0]
         ? window.organisatieIds[0]
         : "",
-    registratiedatum: getFormattedUtcDate(),
+    registratiedatum: new Date().toISOString(), //"2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), //todo check of dit nog het juiste format is. lijkt iso te moeten zijn
+    kanaal: vraag.kanaal,
+    tekst: vraag.notitie,
+    onderwerpLinks: [],
+    initiatiefnemer: "klant", //enum "gemeente" of "klant"
+    medewerkerIdentificatie: {
+      identificatie: "todo",
+      achternaam: "todo",
+      voorletters: "todo",
+      voorvoegselAchternaam: "todo",
+    }, //serverside?
+
+    //overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
+    gespreksId,
+    vorigContactmoment: undefined,
+    voorkeurskanaal: "",
+    voorkeurstaal: "",
+    medewerker: "",
+    resultaat: vraag.resultaat,
     startdatum: vraag.startdatum,
     einddatum: getFormattedUtcDate(),
     primaireVraag: vraag.primaireVraag?.url,

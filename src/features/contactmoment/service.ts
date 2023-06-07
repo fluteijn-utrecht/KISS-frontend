@@ -15,10 +15,13 @@ import type {
   ContactverzoekDetail,
 } from "./types";
 
+//const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
+//const documentenBaseUri = `/api/documenten/documenten/api/v1`;
+
 export const saveContactmoment = (
   data: Contactmoment
 ): Promise<{ id: string; url: string; gespreksId: string }> =>
-  fetchLoggedIn(window.gatewayBaseUri + "/api/contactmomenten", {
+  fetchLoggedIn("/api/contactmomenten/contactmomenten/api/v1/contactmomenten", {
     method: "POST",
     headers: {
       Accept: "application/json",
