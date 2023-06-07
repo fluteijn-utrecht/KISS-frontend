@@ -45,8 +45,6 @@ const bedrijfQueryDictionary: BedrijfQueryDictionary = {
     ["postcode", postcode.numbers + postcode.digits],
     ["huisnummer", huisnummer],
   ],
-  emailadres: (search) => [["emailAdres[like]", search]],
-  telefoonnummer: (search) => [["telefoonnummer[like]", search]],
   kvkNummer: (search) => [["kvkNummer", search]],
   handelsnaam: (search) => [["handelsnaam", search]],
 };

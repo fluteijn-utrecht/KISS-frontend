@@ -1,10 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Serilog;
-using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Zaken.Microsoft.Extensions.DependencyInjection;
+﻿using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.ZaakGerichtWerken;
+using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.Zaken;
-using IdentityModel;
-using Kiss.Bff;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,14 +34,15 @@ try
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
 
     builder.Services.AddZgwTokenProvider(builder.Configuration["ZAKEN_API_KEY"], builder.Configuration["ZAKEN_API_CLIENT_ID"]);
-    builder.Services.AddZaken( builder.Configuration["ZAKEN_BASE_URL"]);
+    builder.Services.AddZaken(builder.Configuration["ZAKEN_BASE_URL"]);
     builder.Services.AddDocumenten(builder.Configuration["ZAKEN_BASE_URL"]);
 
-    
+
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
     builder.Services.AddDbContext<BeheerDbContext>(o => o.UseNpgsql(connStr));
     builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PUBLIC_API_KEY"]);
 
+    builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)

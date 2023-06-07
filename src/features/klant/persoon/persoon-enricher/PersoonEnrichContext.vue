@@ -28,23 +28,11 @@ function mapNaam(klantOrPersoon: Klant | Persoon | null) {
 }
 
 function mapTelefoonnummers(klant: Klant | null) {
-  return (
-    klant &&
-    klant.telefoonnummers
-      .map(({ telefoonnummer }) => telefoonnummer)
-      .filter(Boolean)
-      .join(", ")
-  );
+  return klant?.telefoonnummer ?? null;
 }
 
 function mapEmails(klant: Klant | null) {
-  return (
-    klant &&
-    klant.emails
-      .map(({ email }) => email)
-      .filter(Boolean)
-      .join(", ")
-  );
+  return klant?.emailadres ?? null;
 }
 
 function mapLink(klant: Klant | null, naam: string | null) {
