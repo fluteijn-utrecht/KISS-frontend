@@ -1,4 +1,5 @@
 ﻿using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Config;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.Zaken;
@@ -43,6 +44,8 @@ try
     builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PUBLIC_API_KEY"]);
 
     builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
+
+    builder.Services.AddSmtpClient(builder.Configuration["EMAIL_HOST"], int.Parse(builder.Configuration["EMAIL_PORT"]), builder.Configuration["EMAIL_USERNAME"], builder.Configuration["EMAIL_PASSWORD"]);
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)

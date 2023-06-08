@@ -7,7 +7,7 @@ export function useFeedbackService() {
     console.error("contactmomentenBaseUri missing");
   }
 
-  const feedbackUrl = window.gatewayBaseUri + "/api/reviews";
+  const feedbackUrl = "/api/feedback";
 
   const postFeedback = (data: Feedback) => {
     const promise = fetchLoggedIn(feedbackUrl, {
@@ -21,7 +21,6 @@ export function useFeedbackService() {
       if (!r.ok) {
         throw new Error();
       }
-      return r.json();
     });
 
     const state = ServiceResult.fromPromise(promise);
@@ -37,7 +36,7 @@ export function useFeedbackService() {
 }
 
 function mapModel(feedbackModel: Feedback) {
-  const fields = [
+  const sections: [string, string][] = [
     [
       "De sectie waar het om gaat",
       `${feedbackModel.currentSection.label} (${feedbackModel.currentSection.id})`,
@@ -48,11 +47,9 @@ function mapModel(feedbackModel: Feedback) {
     ["Contactgegevens", feedbackModel.contactgegevens],
   ];
 
-  const description = fields.map((x) => x.join(":\r\n")).join("\r\n\r\n");
-
   return {
     topic: feedbackModel.url,
     name: feedbackModel.naam,
-    description,
+    sections,
   };
 }
