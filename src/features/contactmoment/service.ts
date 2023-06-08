@@ -13,9 +13,10 @@ import type {
   ContactmomentObject,
   Contactmoment,
   ContactverzoekDetail,
+  ZaakContactmoment,
 } from "./types";
 
-//const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
+const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
 //const documentenBaseUri = `/api/documenten/documenten/api/v1`;
 
 export const saveContactmoment = (
@@ -51,12 +52,25 @@ export const useGespreksResultaten = () => {
 
   return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
 };
+const contactmomentenBaseUrl = "/api/contactmomenten/contactmomenten/api/v1/";
 
 const objectcontactmomentenUrl =
-  window.gatewayBaseUri + "/api/objectcontactmomenten";
+  contactmomentenBaseUrl + "objectcontactmomenten";
 
 export const koppelObject = (data: ContactmomentObject) =>
   fetchLoggedIn(objectcontactmomentenUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  }).then(throwIfNotOk);
+
+const zaakcontactmomentUrl = zaaksysteemBaseUri + "/zaakcontactmomenten";
+
+export const koppelZaakContactmoment = (data: ZaakContactmoment) =>
+  fetchLoggedIn(zaakcontactmomentUrl, {
     method: "POST",
     headers: {
       Accept: "application/json",

@@ -458,6 +458,7 @@ import {
   koppelObject,
   useGespreksResultaten,
   type Contactmoment,
+  koppelZaakContactmoment,
 } from "@/features/contactmoment";
 
 import { useUserStore } from "@/stores/user";
@@ -492,6 +493,13 @@ const zakenToevoegenAanContactmoment = async (
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
+      //wat als een van beiden mislukt....
+
+      await koppelZaakContactmoment({
+        contactmoment: contactmomentId,
+        zaak: zaak.self,
+      });
+
       await koppelObject({
         contactmoment: contactmomentId,
         object: zaak.self,
@@ -580,7 +588,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
 
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.id);
+  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
   await koppelKlanten(vraag, savedContactmoment.id);
 
   if (contactverzoekUrl) {

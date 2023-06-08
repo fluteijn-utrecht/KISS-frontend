@@ -40,6 +40,11 @@ export interface ContactmomentObject {
   objectType: string;
 }
 
+export interface ZaakContactmoment {
+  contactmoment: string;
+  zaak: string;
+}
+
 export interface ContactverzoekDetail {
   id: string;
   datum: string;
