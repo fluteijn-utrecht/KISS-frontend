@@ -120,6 +120,12 @@ env:
   KLANTEN_BASE_URL: ""
   KLANTEN_CLIENT_ID: ""
   KLANTEN_CLIENT_SECRET: ""
+  EMAIL_HOST: ""
+  EMAIL_PORT: ""
+  EMAIL_USERNAME: ""
+  EMAIL_PASSWORD: ""
+  FEEDBACK_EMAIL_FROM: ""
+  FEEDBACK_EMAIL_TO: ""
 
 postgresql:
   enabled: true

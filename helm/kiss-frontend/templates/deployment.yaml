@@ -105,6 +105,18 @@ spec:
             value: {{ .Values.env.KLANTEN_CLIENT_ID | quote }}
           - name: KLANTEN_CLIENT_SECRET
             value: {{ .Values.env.KLANTEN_CLIENT_SECRET | quote }}
+          - name: EMAIL_HOST
+            value: {{ .Values.env.EMAIL_HOST | quote }}
+          - name: EMAIL_PORT
+            value: {{ .Values.env.EMAIL_PORT | quote }}
+          - name: EMAIL_USERNAME
+            value: {{ .Values.env.EMAIL_USERNAME | quote }}
+          - name: EMAIL_PASSWORD
+            value: {{ .Values.env.EMAIL_PASSWORD | quote }}
+          - name: FEEDBACK_EMAIL_FROM
+            value: {{ .Values.env.FEEDBACK_EMAIL_FROM | quote }}
+          - name: FEEDBACK_EMAIL_TO
+            value: {{ .Values.env.FEEDBACK_EMAIL_TO | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
