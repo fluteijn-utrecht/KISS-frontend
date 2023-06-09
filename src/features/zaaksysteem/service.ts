@@ -212,35 +212,36 @@ const mapZaakDetails = async (zaak: any) => {
 
   const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
 
-  const doorlooptijd = parseInt(
-    zaakzaaktype.doorlooptijd
-      ? zaakzaaktype.doorlooptijd.replace(/^\D+/g, "")
-      : "0",
-    10
-  );
+  // voorlopig disabled: openzaakbrondata is niet conform de standaard
+  // const doorlooptijd = parseInt(
+  //   zaakzaaktype.doorlooptijd
+  //     ? zaakzaaktype.doorlooptijd.replace(/^\D+/g, "")
+  //     : "0",
+  //   10
+  // );
 
-  const servicenorm = parseInt(
-    zaakzaaktype.servicenorm
-      ? zaakzaaktype.servicenorm.replace(/^\D+/g, "")
-      : "0",
-    10
-  );
+  // const servicenorm = parseInt(
+  //   zaakzaaktype.servicenorm
+  //     ? zaakzaaktype.servicenorm.replace(/^\D+/g, "")
+  //     : "0",
+  //   10
+  // );
 
-  const fataleDatum =
-    startdatum &&
-    DateTime.fromJSDate(startdatum)
-      .plus({
-        days: isNaN(doorlooptijd) ? 0 : doorlooptijd,
-      })
-      .toJSDate();
+  // const fataleDatum =
+  //   startdatum &&
+  //   DateTime.fromJSDate(startdatum)
+  //     .plus({
+  //       days: isNaN(doorlooptijd) ? 0 : doorlooptijd,
+  //     })
+  //     .toJSDate();
 
-  const streefDatum =
-    startdatum &&
-    DateTime.fromJSDate(startdatum)
-      .plus({
-        days: isNaN(servicenorm) ? 0 : servicenorm,
-      })
-      .toJSDate();
+  // const streefDatum =
+  //   startdatum &&
+  //   DateTime.fromJSDate(startdatum)
+  //     .plus({
+  //       days: isNaN(servicenorm) ? 0 : servicenorm,
+  //     })
+  //     .toJSDate();
 
   const documenten = await getDocumenten(zaak.url);
 
@@ -258,8 +259,8 @@ const mapZaakDetails = async (zaak: any) => {
     behandelaar: getNamePerRoltype(rollen, "behandelaar"),
     aanvrager: getNamePerRoltype(rollen, "initiator"),
     startdatum,
-    fataleDatum: fataleDatum,
-    streefDatum: streefDatum,
+    // fataleDatum: fataleDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
+    // streefDatum: streefDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
     indienDatum: zaak.publicatiedatum && new Date(zaak.publicatiedatum),
     registratieDatum: zaak.registratiedatum && new Date(zaak.registratiedatum),
     self: zaak.url,

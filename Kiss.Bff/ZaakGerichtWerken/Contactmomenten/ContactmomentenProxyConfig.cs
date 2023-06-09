@@ -16,6 +16,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         }
     }
 
+    //todo vervangen voor custom endpoint ivm medewerker identitifactie
     public class ContactmomentenProxyConfig : IKissProxyRoute
     {
         private readonly ZgwTokenProvider _tokenProvider;

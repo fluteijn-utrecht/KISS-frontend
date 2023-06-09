@@ -493,18 +493,16 @@ const zakenToevoegenAanContactmoment = async (
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
-      //wat als een van beiden mislukt....
-
       await koppelZaakContactmoment({
         contactmoment: contactmomentId,
         zaak: zaak.self,
-      });
-
-      await koppelObject({
-        contactmoment: contactmomentId,
-        object: zaak.self,
-        objectType: "zaak",
-      });
+      }).then(() =>
+        koppelObject({
+          contactmoment: contactmomentId,
+          object: zaak.self,
+          objectType: "zaak",
+        })
+      );
     }
   }
 };
