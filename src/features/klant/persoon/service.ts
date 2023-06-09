@@ -100,8 +100,8 @@ function mapPersoon(json: any): Persoon {
     voornaam: voornamen,
     voorvoegselAchternaam: voorvoegsel,
     achternaam: geslachtsnaam,
-    geboorteplaats: plaats,
-    geboorteland: land,
+    geboorteplaats: plaats?.omschrijving,
+    geboorteland: land?.omschrijving,
     adresregel1,
     adresregel2,
     adresregel3,
@@ -109,7 +109,7 @@ function mapPersoon(json: any): Persoon {
 }
 
 function getPersoonUniqueBsnId(bsn: string | undefined) {
-  return zoekUrl + "_single" + bsn;
+  return bsn ? zoekUrl + "_single" + bsn : "";
 }
 
 const searchSinglePersoon = (bsn: string) =>

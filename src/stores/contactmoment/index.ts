@@ -27,8 +27,8 @@ export type ContactmomentKlant = {
   voorvoegselAchternaam?: string;
   achternaam: string;
   bedrijfsnaam?: string;
-  telefoonnummers: { telefoonnummer: string }[];
-  emails: { email: string }[];
+  telefoonnummer?: string;
+  email?: string;
   hasContactInformation: boolean;
 };
 
