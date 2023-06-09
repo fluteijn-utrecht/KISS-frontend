@@ -10,10 +10,6 @@
       <dd>
         {{ bedrijf.vestigingsnummer }}
       </dd>
-      <dt>E-mailadres</dt>
-      <dd>{{ bedrijf.email }}</dd>
-      <dt>Telefoonnummer</dt>
-      <dd>{{ bedrijf.telefoonnummer }}</dd>
       <dt>Adres</dt>
       <dd>
         {{

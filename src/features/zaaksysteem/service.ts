@@ -23,7 +23,8 @@ import { mutate } from "swrv";
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
     if (!bsn.value) return "";
-    const url = new URL(zaaksysteemBaseUri + "/zaken");
+    const url = new URL(location.href);
+    url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
       "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
       bsn.value
@@ -58,7 +59,8 @@ export const useZaakById = (id: Ref<string>) => {
 export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
   const getUrl = () => {
     if (!vestigingsnummer.value) return "";
-    const url = new URL(zaaksysteemBaseUri + "/zaken");
+    const url = new URL(location.href);
+    url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
       "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
       vestigingsnummer.value

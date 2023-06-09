@@ -7,8 +7,6 @@ export interface Bedrijf {
   bedrijfsnaam: string;
   postcode?: string;
   huisnummer?: string;
-  telefoonnummer?: string;
-  email?: string;
   straatnaam: string;
   huisletter?: string;
   huisnummertoevoeging?: string;

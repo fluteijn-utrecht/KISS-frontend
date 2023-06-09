@@ -23,7 +23,6 @@
       <dd>{{ persoon.geboorteplaats }}</dd>
       <dt>Geboorteland</dt>
       <dd>{{ persoon.geboorteland }}</dd>
-      <dt>Adres</dt>
       <template v-if="persoon.adresregel1">
         <dt>Adresregel 1</dt>
         <dd>{{ persoon.adresregel1 }}</dd>

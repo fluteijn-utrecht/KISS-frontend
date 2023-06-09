@@ -124,8 +124,7 @@ watch(
     if (!k) return;
     contactmomentStore.setKlant({
       ...k,
-      hasContactInformation:
-        k.emails.length > 0 || k.telefoonnummers.length > 0,
+      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
   { immediate: true }

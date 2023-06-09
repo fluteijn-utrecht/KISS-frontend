@@ -12,29 +12,11 @@ const [vestigingsnummer, klantData, handelsregisterData] = useEnrichedBedrijf(
   () => props.record
 );
 
-const klantEmail = mapServiceData(klantData, (k) => k?.emailadres);
-const klantTelefoon = mapServiceData(klantData, (k) => k?.telefoonnummer);
-const handelsEmail = mapServiceData(handelsregisterData, (h) => h?.email);
-const handelsTelefoon = mapServiceData(
-  handelsregisterData,
-  (h) => h?.telefoonnummer
+const email = mapServiceData(klantData, (k) => k?.emailadres || "");
+const telefoonnummer = mapServiceData(
+  klantData,
+  (k) => k?.telefoonnummer || ""
 );
-
-const email = computed(() => {
-  if (handelsEmail.success && handelsEmail.data) return handelsEmail;
-  if (klantEmail.success && klantEmail.data) return klantEmail;
-  if (handelsEmail.loading || klantEmail.loading)
-    return ServiceResult.loading();
-  return handelsEmail;
-});
-
-const telefoonnummer = computed(() => {
-  if (handelsTelefoon.success && handelsTelefoon.data) return handelsTelefoon;
-  if (klantTelefoon.success && klantTelefoon.data) return klantTelefoon;
-  if (klantTelefoon.loading || handelsTelefoon.loading)
-    return ServiceResult.loading();
-  return klantTelefoon;
-});
 
 const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
 
