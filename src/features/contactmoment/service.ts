@@ -22,7 +22,8 @@ const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
 export const saveContactmoment = (
   data: Contactmoment
 ): Promise<{ id: string; url: string; gespreksId: string }> =>
-  fetchLoggedIn("/api/contactmomenten/contactmomenten/api/v1/contactmomenten", {
+  fetchLoggedIn("/api/postcontactmoment", {
+    ///was: "/api/contactmomenten/contactmomenten/api/v1/contactmomenten"
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -86,7 +87,7 @@ export function koppelKlant({
   klantId: string;
   contactmomentId: string;
 }) {
-  return fetchLoggedIn(window.gatewayBaseUri + "/api/klantcontactmomenten", {
+  return fetchLoggedIn(contactmomentenBaseUrl + "klantcontactmomenten", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

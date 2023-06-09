@@ -510,7 +510,7 @@ const zakenToevoegenAanContactmoment = async (
 const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore) {
-      await koppelKlant({ contactmomentId, klantId: klant.id });
+      await koppelKlant({ contactmomentId, klantId: klant.url });
     }
   }
 };
@@ -587,7 +587,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   const savedContactmoment = await saveContactmoment(contactmoment);
   await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
-  await koppelKlanten(vraag, savedContactmoment.id);
+  await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
     await koppelContactverzoek(savedContactmoment.id, contactverzoekUrl);
