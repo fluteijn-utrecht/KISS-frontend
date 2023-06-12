@@ -45,7 +45,13 @@ try
 
     builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
 
-    builder.Services.AddSmtpClient(builder.Configuration["EMAIL_HOST"], int.Parse(builder.Configuration["EMAIL_PORT"]), builder.Configuration["EMAIL_USERNAME"], builder.Configuration["EMAIL_PASSWORD"]);
+    builder.Services.AddSmtpClient(
+        builder.Configuration["EMAIL_HOST"],
+        int.Parse(builder.Configuration["EMAIL_PORT"]),
+        builder.Configuration["EMAIL_USERNAME"],
+        builder.Configuration["EMAIL_PASSWORD"],
+        bool.TryParse(builder.Configuration["EMAIL_ENABLE_SSL"], out var enableSsl) && enableSsl
+    );
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
