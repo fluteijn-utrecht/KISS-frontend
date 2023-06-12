@@ -113,6 +113,8 @@ spec:
             value: {{ .Values.env.EMAIL_USERNAME | quote }}
           - name: EMAIL_PASSWORD
             value: {{ .Values.env.EMAIL_PASSWORD | quote }}
+          - name: EMAIL_ENABLE_SSL
+            value: {{ .Values.env.EMAIL_ENABLE_SSL | quote }}
           - name: FEEDBACK_EMAIL_FROM
             value: {{ .Values.env.FEEDBACK_EMAIL_FROM | quote }}
           - name: FEEDBACK_EMAIL_TO
