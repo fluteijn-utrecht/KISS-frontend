@@ -437,6 +437,7 @@
       </menu>
     </template>
   </form>
+  {{ kl }}
 </template>
 
 <script setup lang="ts">
@@ -464,7 +465,7 @@ import {
 import { useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
-import { getFormattedUtcDate } from "@/services";
+import { fetchLoggedIn, getFormattedUtcDate } from "@/services";
 import { nanoid } from "nanoid";
 import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
 import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
@@ -475,7 +476,14 @@ const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
 
+const kl = ref({});
 onMounted(() => {
+  fetchLoggedIn(
+    "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5" //"/api/klanten/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
+  )
+    .then((x) => x.json())
+    .then((x) => console.log(x));
+
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
@@ -541,7 +549,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       achternaam: "todo",
       voorletters: "todo",
       voorvoegselAchternaam: "todo",
-    }, //serverside?
+    }, //todo weer uitzetten, moet serverside?
 
     //overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
     gespreksId,
