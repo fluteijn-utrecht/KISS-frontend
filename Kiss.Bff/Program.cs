@@ -3,6 +3,9 @@ using Kiss.Bff.Config;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.Zaken;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -52,6 +55,14 @@ try
         builder.Configuration["EMAIL_PASSWORD"],
         bool.TryParse(builder.Configuration["EMAIL_ENABLE_SSL"], out var enableSsl) && enableSsl
     );
+
+    builder.Services.AddDataProtection()
+        .PersistKeysToDbContext<BeheerDbContext>()
+        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration()
+        {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC, // default
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256, // default
+        });
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
