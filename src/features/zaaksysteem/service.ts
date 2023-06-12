@@ -74,9 +74,14 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
       .then(parseJson)
       .then((r) =>
         parsePagination(r, async (x) => {
-          const split = (x as RolType).zaak.split("/");
+          const split = (x as RolType)?.zaak?.split("/") || [];
           const id = split[split.length - 1];
           const url = getZaakUrl(id);
+          if (!url) {
+            throw new Error(
+              "kan url van zaak niet ophalen obv rol: " + x && JSON.stringify(x)
+            );
+          }
           const result = await singleZaakFetcher(url);
           mutate(url, result);
           return result;
