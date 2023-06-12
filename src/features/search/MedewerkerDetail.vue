@@ -100,20 +100,14 @@ const currentFeedbackSection: CurrentFeedbackSection = {
 };
 
 const availabilities = computed(() => {
-  if (!props.medewerkerRaw?.availabilities) return null;
+  const rawAvailabilities =
+    props.medewerkerRaw?.availabilities ??
+    props.medewerkerRaw?.calendar?.availabilities;
+
+  if (!rawAvailabilities) return null;
 
   const days = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag"];
-
-  let availabilities = {};
-
-  days.forEach((day) => {
-    availabilities = {
-      ...availabilities,
-      [day]: props.medewerkerRaw.availabilities[day],
-    };
-  });
-
-  return availabilities as any;
+  return Object.fromEntries(days.map((x) => [x, rawAvailabilities[x] || {}]));
 });
 
 const telefoonnummers = computed(() =>
