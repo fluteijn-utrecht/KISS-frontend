@@ -26,7 +26,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
     const url = new URL(location.href);
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
-      "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
+      "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
       bsn.value
     );
     return url.toString();
