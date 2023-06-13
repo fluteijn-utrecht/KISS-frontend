@@ -36,7 +36,7 @@ namespace Kiss.Bff.Beheer.Verwerking
                     {
                         // query string could contain sensitive data
                         Query = string.Empty
-                    }.ToString();
+                    }.Uri.ToString();
 
                     var userId = context?.User.GetId();
                     var logging = new VerwerkingsLog { ApiEndpoint = apiEndpoint, Method = request.Method.Method, UserId = userId };
