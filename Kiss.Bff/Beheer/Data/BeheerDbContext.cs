@@ -1,5 +1,6 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
+using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -31,10 +32,12 @@ namespace Kiss.Bff.Beheer.Data
                 g.HasKey(x => new { x.UserId, x.BerichtId });
             });
 
-            modelBuilder.Entity<Gespreksresultaat>(r => 
+            modelBuilder.Entity<Gespreksresultaat>(r =>
             {
                 r.HasIndex(x => x.Definitie).IsUnique();
             });
+
+            modelBuilder.Entity<VerwerkingsLog>(r => r.Property(l => l.InsertedAt).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd());
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;
@@ -43,5 +46,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<Link> Links { get; set; } = null!;
         public DbSet<Gespreksresultaat> Gespreksresultaten { get; set; } = null!;
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+        public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
     }
 }

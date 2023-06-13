@@ -1,6 +1,7 @@
 ﻿using Kiss.Bff;
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
@@ -13,6 +14,13 @@ namespace Kiss.Bff
 
         ValueTask ApplyRequestTransform(RequestTransformContext context);
     }
+
+    public interface IKissHttpClientMiddleware
+    {
+        Task<HttpResponseMessage> SendAsync(SendRequestMessageAsync next, HttpRequestMessage request, CancellationToken cancellationToken);
+    }
+
+    public delegate Task<HttpResponseMessage> SendRequestMessageAsync(HttpRequestMessage request, CancellationToken cancellationToken);
 }
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -24,6 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddReverseProxy();
             services.AddSingleton<IProxyConfigProvider, ProxyConfigProvider>();
             services.AddSingleton<ITransformProvider, KissTransformProvider>();
+            services.AddTransient<IForwarderHttpClientFactory, KissHttpClientFactory>();
             return services;
         }
 
@@ -127,6 +136,38 @@ namespace Microsoft.Extensions.DependencyInjection
             public IReadOnlyList<ClusterConfig> Clusters { get; }
 
             public IChangeToken ChangeToken { get; }
+        }
+    }
+
+    public class KissHttpClientFactory : ForwarderHttpClientFactory
+    {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public KissHttpClientFactory(IHttpContextAccessor httpContextAccessor) => _httpContextAccessor = httpContextAccessor;
+
+        protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) => new KissDelegatingHandler(handler, _httpContextAccessor);
+    }
+
+    public class KissDelegatingHandler : DelegatingHandler
+    {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public KissDelegatingHandler(HttpMessageHandler inner, IHttpContextAccessor httpContextAccessor) : base(inner)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var middlewares = _httpContextAccessor.HttpContext?.RequestServices.GetServices<IKissHttpClientMiddleware>() ?? Enumerable.Empty<IKissHttpClientMiddleware>();
+            SendRequestMessageAsync inner = base.SendAsync;
+
+            var handler = middlewares.Aggregate(inner, (next, middleware) =>
+            {
+                return (req, token) => middleware.SendAsync(next, req, token);
+            });
+
+            return handler(request, cancellationToken);
         }
     }
 }
