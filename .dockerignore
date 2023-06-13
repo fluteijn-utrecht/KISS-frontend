@@ -21,7 +21,5 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-certificates
-Private_Chain_api_kvk_nl.zip
 LICENSE
 README.md

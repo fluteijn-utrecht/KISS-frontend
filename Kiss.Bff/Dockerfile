@@ -3,7 +3,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 8080
-EXPOSE 4433
 ENV ASPNETCORE_URLS=http://*:8080
 RUN addgroup --group kiss --gid 2000 \
     && adduser \    
