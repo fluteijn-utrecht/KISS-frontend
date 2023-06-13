@@ -4,11 +4,5 @@ services:
   kiss.bff:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
     ports:
-      - "80"
-      - "${BFF_SSL_PORT}:443"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
-      - ./certificates:/usr/local/share/ca-certificates:ro
+      - "${BFF_SSL_PORT}:8080"
