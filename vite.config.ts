@@ -11,9 +11,12 @@ const getProxy = (
 ): Record<string, ProxyOptions> | undefined => {
   const targetPort = env?.BFF_SSL_PORT;
   if (!targetPort) return undefined;
-  const redirectOpts = {
-    target: `https://localhost:${targetPort}`,
+  const redirectOpts: ProxyOptions = {
+    target: `http://localhost:${targetPort}`,
     secure: false,
+    headers: {
+      "x-forwarded-proto": "https",
+    },
   };
   return {
     "/api": redirectOpts,
