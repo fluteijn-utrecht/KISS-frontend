@@ -8,7 +8,6 @@
           <span id="datum-header">Datum</span>
           <span id="medewerker-header">Medewerker</span>
           <span id="kanaal-header">Kanaal</span>
-          <span id="gespreksresultaat-header">Gespreksresultaat</span>
         </li>
         <li v-for="contactmoment in contactmomenten" :key="contactmoment.id">
           <details @click="toggleDetails">
@@ -17,26 +16,34 @@
                 formatDateOnly(contactmoment.registratiedatum)
               }}</span>
               <span aria-describedby="medewerker-header">{{
-                contactmoment["_self"].owner
+                contactmoment.medewerkerIdentificatie?.identificatie
               }}</span>
               <span aria-describedby="kanaal-header">{{
                 contactmoment.kanaal
               }}</span>
-              <span aria-describedby="gespreksresultaat-header">{{
+              <!-- 
+                niet standaard
+                <span aria-describedby="gespreksresultaat-header">{{
                 contactmoment.resultaat
-              }}</span>
+              }}</span> -->
             </summary>
             <dl>
-              <dt>Starttijd</dt>
-              <dd>{{ formatTimeOnly(contactmoment.registratiedatum) }}</dd>
-              <template v-if="contactmoment.primaireVraagWeergave">
+              <!-- 
+                niet standaard
+                <dt>Starttijd</dt>
+                <dd>{{ formatTimeOnly(contactmoment.registratiedatum) }}</dd> -->
+              <!-- 
+                niet standaard
+                <template v-if="contactmoment.primaireVraagWeergave">
                 <dt>Vraag</dt>
                 <dd>{{ contactmoment.primaireVraagWeergave }}</dd>
-              </template>
-              <template v-if="contactmoment.afwijkendOnderwerp">
+              </template> -->
+              <!-- 
+                 niet standaard
+                 <template v-if="contactmoment.afwijkendOnderwerp">
                 <dt>Specificatie</dt>
                 <dd>{{ contactmoment.afwijkendOnderwerp }}</dd>
-              </template>
+              </template> -->
               <template
                 v-for="zaak in contactmoment.zaken"
                 :key="zaak.zaaknummer"
@@ -121,7 +128,7 @@ dt {
 .header-row,
 summary {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 2fr 1rem;
+  grid-template-columns: 1fr 2fr 1fr 1rem;
   gap: var(--gap);
 }
 

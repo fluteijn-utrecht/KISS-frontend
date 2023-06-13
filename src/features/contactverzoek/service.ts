@@ -65,6 +65,9 @@ interface Afdeling {
 }
 
 export function useAfdelingen() {
+  //temp disabled ...
+  return ServiceResult.init();
+
   const url = `${window.gatewayBaseUri}/api/ref/afdelingsnamen`;
 
   const mapOrganisatie = (x: unknown): Afdeling => x as any;

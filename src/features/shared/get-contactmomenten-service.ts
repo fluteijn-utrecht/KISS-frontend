@@ -167,14 +167,6 @@ export function useContactmomentenByKlantId(
         for (const item of page) {
           const relUrl = new URL(item.contactmoment).pathname; //https://open-klant.dev.kiss-demo.nl/
 
-          // fetchLoggedIn("/api/contactmomenten" + relUrl)
-          //   .then((x) => {
-          //     console.log("------------------>", x);
-          //     return x;
-          //   })
-          //   .then((r) => r.json())
-          //   .then((x) => console.log("------------------>", x));
-
           const b = fetchLoggedIn("/api/contactmomenten" + relUrl)
             .then(throwIfNotOk)
             .then((r) => r.json())
@@ -187,16 +179,15 @@ export function useContactmomentenByKlantId(
           t.push(b);
         }
 
-        return Promise.all(t);
+        return Promise.all(t).then((x) => {
+          console.log("KLAAR");
+          return x;
+        });
       });
 
     return klantContactmomentPage;
     //dit haalt eerst de klantcontactmomenten open. is een gepaginerder set (we gan uit van pagina 1, per item moeten we het contactmoment ophalen.
   }
 
-  return ServiceResult.fromFetcher(getUrl, fetchKlantContactmomenten, {
-    //  getUniqueId() {
-    //    return getUrl() + "contactmoment";
-    //  },
-  });
+  return ServiceResult.fromFetcher(getUrl, fetchKlantContactmomenten, {});
 }

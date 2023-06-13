@@ -74,17 +74,13 @@
       message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
       messageType="error"
     />
-    {{ contactmomenten.error }}
-    <template v-if="contactmomenten.success">
-      {{ contactmomenten.data }}
-    </template>
 
-    <template
-      v-if="contactmomenten.success && contactmomenten.data.page.length"
-    >
+    <!-- [ { "url": "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/contactmomenten/3b8993c6-6e04-434a-9a61-af6acad88b46", "vorigContactmoment": null, "volgendContactmoment": null, "bronorganisatie": "999990639", "registratiedatum": "2023-06-08T12:23:42.467000Z", "kanaal": "Twitter", "voorkeurskanaal": "", "voorkeurstaal": "", "tekst": "asadsd....", "onderwerpLinks": [], "initiatiefnemer": "klant", "medewerker": "", "medewerkerIdentificatie": { "identificatie": "todo", "achternaam": "todo", "voorletters": "todo", "voorvoegselAchternaam": "todo" }, "klantcontactmomenten": [ "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/klantcontactmomenten/805c22b2-3fe0-4a4a-b4dd-dead1b025d8b" ], "objectcontactmomenten": [ "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/objectcontactmomenten/56dc0a99-29aa-447d-899f-aa1590536803" ] } ] -->
+
+    <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page" />
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data" />
 
       <pagination
         class="pagination"

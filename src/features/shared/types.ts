@@ -15,6 +15,14 @@ export interface ContactmomentViewModel {
   primaireVraag?: string;
   primaireVraagWeergave?: string;
   afwijkendOnderwerp?: string;
+  medewerkerIdentificatie: MedewerkerIdentificatie;
+}
+
+export interface MedewerkerIdentificatie {
+  identificatie: string;
+  achternaam: string;
+  voorletters: string;
+  voorvoegselAchternaam: string;
 }
 
 export interface ContactmomentZaak {

@@ -42,6 +42,9 @@ export function useGlobalSearch(
     filters: Source[];
   }>
 ) {
+  //temp disabled ...
+  return ServiceResult.init();
+
   function groupBy<K, V>(array: V[], grouper: (item: V) => K) {
     return array.reduce((store, item) => {
       const key = grouper(item);
@@ -114,6 +117,9 @@ export function useGlobalSearch(
 }
 
 export function useSources() {
+  //temp disabled ...
+  return ServiceResult.init();
+
   async function fetcher(): Promise<Source[]> {
     const r = await fetchLoggedIn(searchUrl, {
       method: "POST",
@@ -161,6 +167,9 @@ export function useSources() {
 }
 
 export function useSuggestions(input: Ref<string>) {
+  //temp disabled ...
+  return ServiceResult.init();
+
   function mapSuggestions(json: any): string[] {
     if (!Array.isArray(json?.results?.documents)) return [];
     return json.results.documents.map(({ suggestion }: any) => suggestion);
