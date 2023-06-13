@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -14,7 +16,8 @@ namespace Kiss
 
     public static class UserExtensions
     {
-        public static string? GetId(this ClaimsPrincipal? user) => user?.FindFirstValue(ClaimTypes.NameIdentifier);
+        private const string ObjectIdentitifier = "http://schemas.microsoft.com/identity/claims/objectidentifier";
+        public static string? GetId(this ClaimsPrincipal? user) => user?.FindFirstValue(ObjectIdentitifier) ?? user?.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 }
 
@@ -69,7 +72,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.SignedOutRedirectUri = SignOutCallback;
                 options.ResponseType = OidcConstants.ResponseTypes.Code;
                 options.UsePkce = true;
-                options.GetClaimsFromUserInfoEndpoint = false;
+                options.GetClaimsFromUserInfoEndpoint = true;
+
+
+                options.ClaimActions.Add(new FakeclaimAction());
 
                 options.Scope.Clear();
                 options.Scope.Add(OidcConstants.StandardScopes.OpenId);
@@ -97,6 +103,18 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             return services;
+        }
+
+        private class FakeclaimAction: ClaimAction
+        {
+            public FakeclaimAction() : base(null, null)
+            {
+            }
+
+            public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
+            {
+                
+            }
         }
 
         public static IApplicationBuilder UseKissAuthMiddlewares(this IApplicationBuilder app)
