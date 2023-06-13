@@ -74,6 +74,10 @@
       message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
       messageType="error"
     />
+    {{ contactmomenten.error }}
+    <template v-if="contactmomenten.success">
+      {{ contactmomenten.data }}
+    </template>
 
     <template
       v-if="contactmomenten.success && contactmomenten.data.page.length"

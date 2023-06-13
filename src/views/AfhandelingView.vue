@@ -478,11 +478,11 @@ const gespreksresultaten = useGespreksResultaten();
 
 const kl = ref({});
 onMounted(() => {
-  fetchLoggedIn(
-    "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5" //"/api/klanten/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
-  )
-    .then((x) => x.json())
-    .then((x) => console.log(x));
+  // fetchLoggedIn(
+  //   "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5" //"/api/klanten/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
+  // )
+  //   .then((x) => x.json())
+  //   .then((x) => console.log(x));
 
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {

@@ -4,9 +4,14 @@ import {
   ServiceResult,
   throwIfNotOk,
   type Paginated,
+  type ServiceData,
 } from "@/services";
 import type { Ref } from "vue";
-import type { ContactmomentZaak, ContactmomentViewModel } from "./types";
+import type {
+  ContactmomentZaak,
+  ContactmomentViewModel,
+  KlantContactmoment,
+} from "./types";
 
 const mapZaak = (json: any): ContactmomentZaak => ({
   status: json?.embedded?.status?.statustoelichting,
@@ -108,24 +113,90 @@ export function useContactmomentenByKlantId(
   id: Ref<string>,
   page: Ref<number>
 ) {
+  //get url for klantcontactmomenten
+
   function getUrl() {
-    const url = new URL(window.gatewayBaseUri + "/api/klantcontactmomenten");
-    url.searchParams.set(
-      "_order[embedded.contactmoment.registratiedatum]",
-      "desc"
+    // const url = new URL("/api/contactmomenten/api/v1/klantcontactmomenten");
+
+    // url.searchParams.set(
+    //   "klant",
+    //   "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
+    // );
+
+    const searchParams = new URLSearchParams();
+    searchParams.set(
+      "klant",
+      "https://open-klant.dev.kiss-demo.nl/klanten/api/v1/klanten/" + id.value
     );
-    url.searchParams.append("extend[]", "medewerker");
-    url.searchParams.append("extend[]", "embedded._self.owner");
-    url.searchParams.append("extend[]", "embedded.contactmoment.todo");
-    url.searchParams.set("_limit", "10");
-    url.searchParams.set("_page", page.value.toString());
-    url.searchParams.set("embedded.klant._self.id", id.value);
-    url.searchParams.set("embedded.contactmoment.todo", "IS NULL");
+
+    const url = `/api/contactmomenten/contactmomenten/api/v1/klantcontactmomenten?${searchParams.toString()}`;
+
+    // url.searchParams.append("extend[]", "medewerker");
+    // url.searchParams.append("extend[]", "embedded._self.owner");
+    // url.searchParams.append("extend[]", "embedded.contactmoment.todo");
+    // url.searchParams.set("_limit", "10");
+    // url.searchParams.set("_page", page.value.toString());
+    // url.searchParams.set("embedded.klant._self.id", id.value);
+    // url.searchParams.set("embedded.contactmoment.todo", "IS NULL");
+
     return url.toString();
   }
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten, {
-    getUniqueId() {
-      return getUrl() + "contactmoment";
-    },
+
+  const mapKlantContactmoment = async (
+    r: any
+  ): Promise<KlantContactmoment | undefined> => {
+    return {
+      ...r,
+    };
+  };
+
+  function fetchKlantContactmomenten(url: any) {
+    // const fetchContactmomentenByUrl = fetchLoggedIn(url)
+    //   .then(throwIfNotOk)
+    //   .then((r) => r.json())
+    //   .then((x) => mapContactmoment(x));
+
+    const klantContactmomentPage = fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((r) => r.json())
+      .then((x) => parsePagination(x, mapKlantContactmoment))
+      .then((paginated) => {
+        const page = paginated.page.filter(Boolean) as KlantContactmoment[];
+
+        const t: Array<Promise<any>> = [];
+        for (const item of page) {
+          const relUrl = new URL(item.contactmoment).pathname; //https://open-klant.dev.kiss-demo.nl/
+
+          // fetchLoggedIn("/api/contactmomenten" + relUrl)
+          //   .then((x) => {
+          //     console.log("------------------>", x);
+          //     return x;
+          //   })
+          //   .then((r) => r.json())
+          //   .then((x) => console.log("------------------>", x));
+
+          const b = fetchLoggedIn("/api/contactmomenten" + relUrl)
+            .then(throwIfNotOk)
+            .then((r) => r.json())
+            .then((r) => {
+              const x = r as ContactmomentViewModel;
+              console.log(x);
+              return x;
+            });
+
+          t.push(b);
+        }
+
+        return Promise.all(t);
+      });
+
+    return klantContactmomentPage;
+    //dit haalt eerst de klantcontactmomenten open. is een gepaginerder set (we gan uit van pagina 1, per item moeten we het contactmoment ophalen.
+  }
+
+  return ServiceResult.fromFetcher(getUrl, fetchKlantContactmomenten, {
+    //  getUniqueId() {
+    //    return getUrl() + "contactmoment";
+    //  },
   });
 }

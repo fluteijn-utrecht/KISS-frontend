@@ -27,3 +27,10 @@ export interface ContactmomentContactverzoek {
   medewerker: string;
   completed?: Date;
 }
+
+export interface KlantContactmoment {
+  url: string;
+  contactmoment: string;
+  klant: string;
+  rol: string;
+}
