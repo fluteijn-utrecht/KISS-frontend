@@ -1,8 +1,8 @@
 image:
-    pullPolicy: Always
+  pullPolicy: Always
 config:
-    gatewayBaseUri: https://dev.kiss-demo.nl
-    organizationIds: ["999990639"]
+  gatewayBaseUri: https://dev.kiss-demo.nl
+  organizationIds: ["999990639"]
 ingress:
   enabled: true
   className: "nginx"
@@ -14,35 +14,35 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
           serviceName: kiss-frontend
-          servicePort: 80
+          servicePort: 8080
   tls:
     - hosts:
         - dev.kiss-demo.nl
       secretName: wildcard-kiss-tls
 elasticstack:
-    elasticHost: https://elastic.dev.kiss-demo.nl
-    kibanaHost: https://kibana.dev.kiss-demo.nl
-    elasticsearch:
-        ingress:
-            hosts:
-              - host: elastic.dev.kiss-demo.nl
-                paths:
-                - path: /
-            tls:
-              - hosts:
-                  - elastic.dev.kiss-demo.nl
-                secretName: wildcard-kiss-tls
-    kibana:
-        elasticsearchHost: https://elasticsearch-master:9200
-        ingress:
-            hosts:
-              - host: kibana.dev.kiss-demo.nl
-                paths:
-                  - path: /
-            tls:
-              - hosts:
-                  - kibana.dev.kiss-demo.nl
-                secretName: wildcard-kiss-tls
-    credentials:
-        username: elastic
-        password: password
+  elasticHost: https://elastic.dev.kiss-demo.nl
+  kibanaHost: https://kibana.dev.kiss-demo.nl
+  elasticsearch:
+    ingress:
+      hosts:
+        - host: elastic.dev.kiss-demo.nl
+          paths:
+            - path: /
+      tls:
+        - hosts:
+            - elastic.dev.kiss-demo.nl
+          secretName: wildcard-kiss-tls
+  kibana:
+    elasticsearchHost: https://elasticsearch-master:9200
+    ingress:
+      hosts:
+        - host: kibana.dev.kiss-demo.nl
+          paths:
+            - path: /
+      tls:
+        - hosts:
+            - kibana.dev.kiss-demo.nl
+          secretName: wildcard-kiss-tls
+  credentials:
+    username: elastic
+    password: password
