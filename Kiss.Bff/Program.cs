@@ -87,9 +87,12 @@ try
     app.MapKissProxy();
     app.MapFallbackToIndexHtml();
 
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
-    await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
+        await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+    }
+
     app.Run();
 }
 catch (Exception ex)
