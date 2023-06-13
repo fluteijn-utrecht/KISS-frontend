@@ -4,6 +4,16 @@
 ### Register for access
 https://app.snyk.io/invite/link/accept?invite=2293c621-01b0-4a56-bd91-d022ce60f945&utm_source=link_invite&utm_medium=referral&utm_campaign=product-link-invite&from=link_invite
 
+## Settings
+Snyk is configured to automatically check every Pull Request on new vulnerabilities
+
+### Vulnerabilities
+#### Anti-forgery token validation disabled 
+Details: https://app.snyk.io/org/klantinteractie-servicesysteem/project/9d7a9bac-d697-48c5-b542-03de24e608d1</br > Addendum: In razor these tokens are part of the framework, we use VueJs3</br >
+Impact: Very low, we use Same-Site strict policy and this site is not exposed to the internet</br >
+
+Fix? Later. Date?
+
 ## OWASP Docker Top 10
 ### Introduction
 The 10 most common and exploited docker vulnerabilities are maintained by the OWASP Docker Top 10. The overview shows a quicksummary of these including the title, description and how / if we have implemented this.
