@@ -15,7 +15,7 @@ RUN chown kiss:kiss  /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 RUN apt-get update
 RUN apt-get install unzip
-WORKDIR /app/certs
+WORKDIR /custom-certs
 RUN wget https://developers.kvk.nl/cms/api/uploads/Private_Chain_api_kvk_nl.zip
 RUN unzip -j Private_Chain_api_kvk_nl.zip
 WORKDIR /src
@@ -38,7 +38,7 @@ RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=publish /app/certs /usr/local/share/ca-certificates
+COPY --from=publish /custom-certs /usr/local/share/ca-certificates
 RUN update-ca-certificates
 USER kiss:kiss
 ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
