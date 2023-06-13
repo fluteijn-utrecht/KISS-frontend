@@ -33,7 +33,7 @@
         </li>
         <li>
           <span class="label">Indiendatum</span>
-          <time-or-onbekend class="value" :date="zaak.indienDatum" />
+          <time-or-onbekend class="value" :date="zaak.startdatum" />
         </li>
         <li>
           <span class="label">Registratiedatum</span>
