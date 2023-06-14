@@ -56,7 +56,7 @@ jobs:
             });
 
             // Extract branch name and date from GitHub context
-            let branch = process.env.BRANCH;
+            let branch = process.env.BRANCH_NAME;
             let date = process.env.DATE;
 
             // Create prefix for the current branch and date
