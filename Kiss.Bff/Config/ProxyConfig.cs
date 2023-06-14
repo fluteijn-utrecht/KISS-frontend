@@ -164,6 +164,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var clusterId = context?.GetReverseProxyFeature()?.Cluster?.Config?.ClusterId;
 
+            if (clusterId == null)
+            {
+                return base.SendAsync(request, cancellationToken);
+            }
+
             var middlewares = context?.RequestServices
                 .GetServices<IKissHttpClientMiddleware>()
                 .Where(x => x.IsEnabled(clusterId))
