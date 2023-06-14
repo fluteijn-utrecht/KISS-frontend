@@ -77,7 +77,7 @@ jobs:
         id: releasecode
         run: |
           VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
-          RELEASE=$BRANCH-$DATE-${{ steps.version.outputs.result }}
+          RELEASE=$BRANCH_NAME-$DATE-${{ steps.version.outputs.result }}
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
           echo "APP_ENV=prod">> $GITHUB_ENV
           echo "APP_BUILD=latest">> $GITHUB_ENV
