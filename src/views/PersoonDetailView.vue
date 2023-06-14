@@ -66,7 +66,6 @@
     </template>
 
     <!-- Contactmomenten -->
-
     <simple-spinner v-if="contactmomenten.loading" />
 
     <application-message
@@ -79,16 +78,9 @@
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
       <contactmomenten-overzicht :contactmomenten="contactmomenten.data">
-        <template v-slot:zaken="{ id }">
-          <template v-for="z in zakenDict[id]" :key="z">
-            <template v-if="z.success && z.data">
-              <dt>Zaaknummer</dt>
-              <dd>{{ z.data.identificatie }}</dd>
-              <dt>Zaaktype</dt>
-              <dd>{{ z.data.zaaktypeLabel }}</dd>
-              <dt>Status</dt>
-              <dd>{{ z.data.status }}</dd>
-            </template>
+        <template v-slot:zaken="{ zaken }">
+          <template v-for="zaakurl in zaken" :key="zaakurl">
+            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
           </template>
         </template>
       </contactmomenten-overzicht>
@@ -120,9 +112,10 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/shared/get-contactmomenten-service";
+import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useZakenByBsn, useZakenSummaryByUrl } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import type { ContactmomentViewModel } from "@/features/shared/types";
 
 const props = defineProps<{ persoonId: string }>();
@@ -154,23 +147,29 @@ const contactmomenten = useContactmomentenByKlantId(
   contactmomentenPage
 );
 
-const zakenDict = ref<any>({});
+//const zakenDict = ref<any>({});
 
-watch(
-  () => contactmomenten.success && contactmomenten.data,
-  (c) => {
-    if (!c) return;
+// watch(
+//   () => contactmomenten.success && contactmomenten.data,
+//   (c) => {
+//     if (!c) return;
 
-    for (const contactmoment of c) {
-      zakenDict.value[contactmoment.url] = [];
-      for (const zaakUrl of contactmoment.zaken) {
-        const zaak = useZakenSummaryByUrl(ref<string>(zaakUrl));
-        zakenDict.value[contactmoment.url].push(zaak);
-      }
-    }
-  },
-  { immediate: true }
-);
+//     for (const contactmoment of c) {
+//       zakenDict.value[contactmoment.url] = [];
+//       for (const zaakUrl of contactmoment.zaken) {
+//         try {
+//           const p = useZakenSummaryByUrl(ref<string>(zaakUrl));
+//         } catch (e) {
+//           console.log("eeror", e);
+//         }
+
+//         const zaak = useZakenSummaryByUrl(ref<string>(zaakUrl));
+//         zakenDict.value[contactmoment.url].push(zaak);
+//       }
+//     }
+//   },
+//   { immediate: true }
+// );
 
 const onContactmomentenNavigate = (page: number) => {
   contactmomentenPage.value = page;

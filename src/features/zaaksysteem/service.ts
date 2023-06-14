@@ -15,10 +15,14 @@ import type {
   Vestiging,
   ZaakDetails,
   ZaakDocument,
+  ZaakPreview,
   ZaakType,
 } from "./types";
 import type { Ref } from "vue";
 import { mutate } from "swrv";
+import { toRelativeProxyUrl } from "@/helpers/url";
+
+const zakenProxyRoot = "/api/zaken";
 
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
@@ -35,19 +39,18 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
-export const useZakenSummaryByUrl = (url: Ref<string>) => {
+export const useZakenPreviewByUrl = (url: Ref<string>) => {
   const getUrl = () => {
-    const path = new URL(url.value)?.pathname;
-    return `/api/zaken${path}`;
+    return toRelativeProxyUrl(url.value, zakenProxyRoot) ?? "";
   };
 
   return ServiceResult.fromFetcher(
     getUrl,
-    (url: string): Promise<ZaakDetails> =>
+    (url: string): Promise<any> =>
       fetchLoggedIn(url)
         .then(throwIfNotOk)
         .then((x) => x.json())
-        .then((json) => mapZaakDetailsSummary(json))
+        .then((json) => mapZaakDetailsPreview(json))
   );
 };
 
@@ -287,60 +290,14 @@ const mapZaakDetails = async (zaak: any) => {
   } as ZaakDetails;
 };
 
-const mapZaakDetailsSummary = async (zaak: any) => {
+const mapZaakDetailsPreview = async (zaak: any) => {
   const zaakzaaktype = await getZaakType(zaak.zaaktype);
 
-  const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
-
-  // voorlopig disabled: openzaakbrondata is niet conform de standaard
-  // const doorlooptijd = parseInt(
-  //   zaakzaaktype.doorlooptijd
-  //     ? zaakzaaktype.doorlooptijd.replace(/^\D+/g, "")
-  //     : "0",
-  //   10
-  // );
-
-  // const servicenorm = parseInt(
-  //   zaakzaaktype.servicenorm
-  //     ? zaakzaaktype.servicenorm.replace(/^\D+/g, "")
-  //     : "0",
-  //   10
-  // );
-
-  // const fataleDatum =
-  //   startdatum &&
-  //   DateTime.fromJSDate(startdatum)
-  //     .plus({
-  //       days: isNaN(doorlooptijd) ? 0 : doorlooptijd,
-  //     })
-  //     .toJSDate();
-
-  // const streefDatum =
-  //   startdatum &&
-  //   DateTime.fromJSDate(startdatum)
-  //     .plus({
-  //       days: isNaN(servicenorm) ? 0 : servicenorm,
-  //     })
-  //     .toJSDate();
-
-  const id = zaak.url.split("/").pop();
-
   return {
-    ...zaak,
-    id: id,
-    zaaktype: zaakzaaktype.id,
+    identificatie: zaak.identificatie,
     zaaktypeLabel: zaakzaaktype.onderwerp,
-    zaaktypeOmschrijving: zaakzaaktype.omschrijving,
     status: await getStatus(zaak.status),
-    startdatum,
-    // fataleDatum: fataleDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
-    // streefDatum: streefDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
-    indienDatum: zaak.publicatiedatum && new Date(zaak.publicatiedatum),
-    registratieDatum: zaak.registratiedatum && new Date(zaak.registratiedatum),
-    self: zaak.url,
-
-    omschrijving: zaak.omschrijving,
-  } as ZaakDetails;
+  } as ZaakPreview;
 };
 
 const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;

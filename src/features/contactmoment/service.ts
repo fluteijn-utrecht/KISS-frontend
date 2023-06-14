@@ -14,10 +14,22 @@ import type {
   Contactmoment,
   ContactverzoekDetail,
   ZaakContactmoment,
+  ObjectContactmoment,
+  KlantContactmoment,
 } from "./types";
+import type { ContactmomentViewModel } from "../shared/types";
+import { toRelativeProxyUrl } from "@/helpers/url";
 
-const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
-//const documentenBaseUri = `/api/documenten/documenten/api/v1`;
+const contactmomentenProxyRoot = "/api/contactmomenten";
+const contactmomentenApiRoot = "/contactmomenten/api/v1";
+const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
+const objectcontactmomentenUrl = `${contactmomentenBaseUrl}"/objectcontactmomenten`;
+const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
+
+const zaaksysteemProxyRoot = `/api/zaken`;
+const zaaksysteemApiRoot = `/zaken/api/v1`;
+const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
+const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
 export const saveContactmoment = (
   data: Contactmoment
@@ -52,10 +64,6 @@ export const useGespreksResultaten = () => {
 
   return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
 };
-const contactmomentenBaseUrl = "/api/contactmomenten/contactmomenten/api/v1/";
-
-const objectcontactmomentenUrl =
-  contactmomentenBaseUrl + "objectcontactmomenten";
 
 export const koppelObject = (data: ContactmomentObject) =>
   fetchLoggedIn(objectcontactmomentenUrl, {
@@ -66,8 +74,6 @@ export const koppelObject = (data: ContactmomentObject) =>
     },
     body: JSON.stringify(data),
   }).then(throwIfNotOk);
-
-const zaakcontactmomentUrl = zaaksysteemBaseUri + "/zaakcontactmomenten";
 
 export const koppelZaakContactmoment = (data: ZaakContactmoment) =>
   fetchLoggedIn(zaakcontactmomentUrl, {
@@ -104,14 +110,18 @@ export function useContactverzoekenByKlantId(
   page: Ref<number>
 ) {
   function getUrl() {
-    const searchParams = new URLSearchParams();
-    searchParams.set(
-      "klant",
-      "https://open-klant.dev.kiss-demo.nl/klanten/api/v1/klanten/" + id.value
+    const url = new URL(window.gatewayBaseUri + "/api/klantcontactmomenten");
+    url.searchParams.set(
+      "_order[embedded.contactmoment.registratiedatum]",
+      "desc"
     );
-
-    const url = `/api/contactmomenten/contactmomenten/api/v1/klantcontactmomenten?${searchParams.toString()}`;
-
+    url.searchParams.append("extend[]", "medewerker");
+    url.searchParams.append("extend[]", "embedded._self.owner");
+    url.searchParams.append("extend[]", "embedded.contactmoment.todo");
+    url.searchParams.set("_limit", "10");
+    url.searchParams.set("_page", page.value.toString());
+    url.searchParams.set("embedded.klant._self.id", id.value);
+    url.searchParams.set("embedded.contactmoment.todo", "IS NOT NULL");
     return url.toString();
   }
 
@@ -120,6 +130,99 @@ export function useContactverzoekenByKlantId(
       return getUrl() + "contactverzoek";
     },
   });
+}
+
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  page: Ref<number>
+) {
+  //get url for klantcontactmomenten
+
+  function getUrl() {
+    const searchParams = new URLSearchParams();
+    searchParams.set(
+      "klant",
+      "https://open-klant.dev.kiss-demo.nl/klanten/api/v1/klanten/" + id.value
+    );
+    return `${klantcontactmomentenUrl}?${searchParams.toString()}`;
+  }
+
+  const mapObjectContactmoment = (a: any) => {
+    return a as ObjectContactmoment;
+  };
+
+  const objectcontactmomenten = async (
+    x: any,
+    objectcontactmomenten: Array<any>
+  ) => {
+    const zaken = [];
+
+    for (const item of objectcontactmomenten) {
+      const relUrl = toRelativeProxyUrl(item, contactmomentenProxyRoot);
+      if (relUrl) {
+        const objectcontactmoment = await fetchLoggedIn(relUrl)
+          .then(throwIfNotOk)
+          .then((r) => r.json())
+          .then((x) => mapObjectContactmoment(x));
+
+        if (objectcontactmoment.objectType === "zaak") {
+          zaken.push(objectcontactmoment.object);
+        }
+      }
+    }
+
+    return { ...x, zaken };
+  };
+
+  const mapKlantContactmoment = async (
+    r: any
+  ): Promise<KlantContactmoment | undefined> => {
+    return {
+      ...r,
+    };
+  };
+
+  const fetchContactMomenten = (url: string) => {
+    let relUrl;
+
+    try {
+      relUrl = new URL(url).pathname;
+    } catch {
+      return;
+    }
+
+    return fetchLoggedIn("/api/contactmomenten" + relUrl)
+      .then(throwIfNotOk)
+      .then((r) => r.json())
+      .then((r) => objectcontactmomenten(r, r.objectcontactmomenten))
+      .then((r) => r as ContactmomentViewModel);
+  };
+
+  function fetchKlantContactmomenten(url: any) {
+    const klantContactmomentPage = fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((r) => r.json())
+      .then((x) => parsePagination(x, mapKlantContactmoment))
+      .then((paginated) => {
+        const page = paginated.page.filter(Boolean) as KlantContactmoment[];
+
+        const contactmomentenFetches: Array<Promise<ContactmomentViewModel>> =
+          [];
+        for (const item of page) {
+          const contactmomentenFetch = fetchContactMomenten(item.contactmoment);
+          if (contactmomentenFetch) {
+            contactmomentenFetches.push(contactmomentenFetch);
+          }
+        }
+
+        return Promise.all(contactmomentenFetches);
+      });
+
+    return klantContactmomentPage;
+    //dit haalt eerst de klantcontactmomenten open. is een gepaginerder set (we gan uit van pagina 1, per item moeten we het contactmoment ophalen.
+  }
+
+  return ServiceResult.fromFetcher(getUrl, fetchKlantContactmomenten, {});
 }
 
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {

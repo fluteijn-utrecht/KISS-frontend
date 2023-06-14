@@ -57,3 +57,17 @@ export interface ContactverzoekDetail {
   primaireVraagWeergave?: string;
   afwijkendOnderwerp?: string;
 }
+
+export interface ObjectContactmoment {
+  url: string;
+  contactmoment: string;
+  object: string;
+  objectType: string;
+}
+
+export interface KlantContactmoment {
+  url: string;
+  contactmoment: string;
+  klant: string;
+  rol: string;
+}

@@ -45,7 +45,7 @@
                 <dd>{{ contactmoment.afwijkendOnderwerp }}</dd>
               </template> -->
 
-              <slot name="zaken" :id="contactmoment.url"></slot>
+              <slot name="zaken" :zaken="contactmoment.zaken"></slot>
 
               <dt>Notitie</dt>
               <dd class="tekst">{{ contactmoment.tekst }}</dd>

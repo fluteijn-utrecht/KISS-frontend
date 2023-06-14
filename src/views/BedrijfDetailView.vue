@@ -109,7 +109,7 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/shared/get-contactmomenten-service";
+import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import {
   useZakenByVestigingsnummer,
   ZakenOverzicht,
