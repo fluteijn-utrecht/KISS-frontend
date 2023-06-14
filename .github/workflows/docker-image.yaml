@@ -33,8 +33,14 @@ jobs:
           echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Get branch name
+        id: branch
         run: |
-          echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          BRANCH_NAME="${{ github.head_ref }}"
+          if [[ -z "$BRANCH_NAME" ]]; then
+            BRANCH_NAME="${{ github.ref#refs/heads/ }}"
+          fi
+          BRANCH_NAME=$(echo $BRANCH_NAME | tr / -)
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
       
       - name: Auto increment version
         id: version
