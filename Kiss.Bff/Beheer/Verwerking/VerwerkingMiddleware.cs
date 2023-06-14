@@ -17,23 +17,13 @@ namespace Kiss.Bff.Beheer.Verwerking
                 _httpContextAccessor = httpContextAccessor;
             }
 
+            public bool IsEnabled(string? clusterId) => clusterId != EnterpriseSearchProxyConfig.ROUTE;
+
             public async Task<HttpResponseMessage> SendAsync(SendRequestMessageAsync next, HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 var result = await next(request, cancellationToken);
 
-                if (!result.IsSuccessStatusCode)
-                {
-                    return result;
-                }
-
-                var context = _httpContextAccessor.HttpContext;
-                var cluster = context?.GetReverseProxyFeature()?.Cluster?.Config?.ClusterId;
-
-                // no need to log calls to elasticsearch
-                if (cluster == null || cluster == EnterpriseSearchProxyConfig.ROUTE)
-                {
-                    return result;
-                }
+                if (!result.IsSuccessStatusCode) return result;
 
                 var apiEndpoint = new UriBuilder(request.RequestUri!)
                 {
@@ -41,7 +31,7 @@ namespace Kiss.Bff.Beheer.Verwerking
                     Query = string.Empty
                 }.Uri.ToString();
 
-                var userId = context?.User.GetId();
+                var userId = _httpContextAccessor.HttpContext?.User.GetId();
                 var logging = new VerwerkingsLog { ApiEndpoint = apiEndpoint, Method = request.Method.Method, UserId = userId };
                 await _db.AddAsync(logging, cancellationToken);
                 await _db.SaveChangesAsync(cancellationToken);

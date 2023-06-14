@@ -17,6 +17,7 @@ namespace Kiss.Bff
 
     public interface IKissHttpClientMiddleware
     {
+        bool IsEnabled(string? clusterId);
         Task<HttpResponseMessage> SendAsync(SendRequestMessageAsync next, HttpRequestMessage request, CancellationToken cancellationToken);
     }
 
@@ -159,15 +160,23 @@ namespace Microsoft.Extensions.DependencyInjection
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var middlewares = _httpContextAccessor.HttpContext?.RequestServices.GetServices<IKissHttpClientMiddleware>() ?? Enumerable.Empty<IKissHttpClientMiddleware>();
+            var context = _httpContextAccessor.HttpContext;
+
+            var clusterId = context?.GetReverseProxyFeature()?.Cluster?.Config?.ClusterId;
+
+            var middlewares = context?.RequestServices
+                .GetServices<IKissHttpClientMiddleware>()
+                .Where(x => x.IsEnabled(clusterId))
+                ?? Enumerable.Empty<IKissHttpClientMiddleware>();
+
             SendRequestMessageAsync inner = base.SendAsync;
 
-            var handler = middlewares.Aggregate(inner, (next, middleware) =>
+            var sendAsync = middlewares.Aggregate(inner, (next, middleware) =>
             {
                 return (req, token) => middleware.SendAsync(next, req, token);
             });
 
-            return handler(request, cancellationToken);
+            return sendAsync(request, cancellationToken);
         }
     }
 }
