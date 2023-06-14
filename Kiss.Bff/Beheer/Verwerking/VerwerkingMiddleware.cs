@@ -11,11 +11,13 @@ namespace Kiss.Bff.Beheer.Verwerking
         {
             private readonly BeheerDbContext _db;
             private readonly ClaimsPrincipal _user;
+            private readonly ILogger<VerwerkingsHttpClientMiddleware> _logger;
 
-            public VerwerkingsHttpClientMiddleware(BeheerDbContext db, ClaimsPrincipal user)
+            public VerwerkingsHttpClientMiddleware(BeheerDbContext db, ClaimsPrincipal user, ILogger<VerwerkingsHttpClientMiddleware> logger)
             {
                 _db = db;
                 _user = user;
+                _logger = logger;
             }
 
             public bool IsEnabled(string? clusterId) => clusterId != EnterpriseSearchProxyConfig.ROUTE;
@@ -26,16 +28,24 @@ namespace Kiss.Bff.Beheer.Verwerking
 
                 if (!result.IsSuccessStatusCode) return result;
 
-                var apiEndpoint = new UriBuilder(request.RequestUri!)
+                try
                 {
-                    // query string could contain sensitive data
-                    Query = string.Empty
-                }.Uri.ToString();
+                    var apiEndpoint = new UriBuilder(request.RequestUri!)
+                    {
+                        // query string could contain sensitive data
+                        Query = string.Empty
+                    }.Uri.ToString();
 
-                var userId = _user?.GetId();
-                var logging = new VerwerkingsLog { ApiEndpoint = apiEndpoint, Method = request.Method.Method, UserId = userId };
-                await _db.AddAsync(logging, cancellationToken);
-                await _db.SaveChangesAsync(cancellationToken);
+                    var userId = _user?.GetId();
+                    var logging = new VerwerkingsLog { ApiEndpoint = apiEndpoint, Method = request.Method.Method, UserId = userId };
+                    await _db.AddAsync(logging, cancellationToken);
+                    await _db.SaveChangesAsync(cancellationToken);
+                }
+                // the request should not fail if we can't log (for now)
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Could not save VerwerkingsLog");
+                }
 
                 return result;
             }
