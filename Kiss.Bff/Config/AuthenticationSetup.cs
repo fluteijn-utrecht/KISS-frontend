@@ -1,9 +1,7 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
 using IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -74,9 +72,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.UsePkce = true;
                 options.GetClaimsFromUserInfoEndpoint = true;
 
-
-                options.ClaimActions.Add(new FakeclaimAction());
-
                 options.Scope.Clear();
                 options.Scope.Add(OidcConstants.StandardScopes.OpenId);
                 options.Scope.Add(OidcConstants.StandardScopes.Profile);
@@ -96,25 +91,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     .RequireRole(klantcontactmedewerkerRole)
                     .Build();
 
-                options.AddPolicy(Policies.RedactiePolicy, 
+                options.AddPolicy(Policies.RedactiePolicy,
                     new AuthorizationPolicyBuilder()
                         .RequireRole(redacteurRole)
                         .Build());
             });
 
             return services;
-        }
-
-        private class FakeclaimAction: ClaimAction
-        {
-            public FakeclaimAction() : base(null, null)
-            {
-            }
-
-            public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
-            {
-                
-            }
         }
 
         public static IApplicationBuilder UseKissAuthMiddlewares(this IApplicationBuilder app)
