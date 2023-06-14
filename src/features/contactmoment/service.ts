@@ -22,8 +22,6 @@ const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
 export const saveContactmoment = (
   data: Contactmoment
 ): Promise<{ id: string; url: string; gespreksId: string }> =>
-  /// wordt fetchLoggedIn("/api/postcontactmoment", {
-  ///was: "/api/contactmomenten/contactmomenten/api/v1/contactmomenten"
   fetchLoggedIn("/api/contactmomenten/contactmomenten/api/v1/contactmomenten", {
     method: "POST",
     headers: {
@@ -106,19 +104,6 @@ export function useContactverzoekenByKlantId(
   page: Ref<number>
 ) {
   function getUrl() {
-    // const url = new URL(window.gatewayBaseUri + "/api/klantcontactmomenten");
-    // url.searchParams.set(
-    //   "_order[embedded.contactmoment.registratiedatum]",
-    //   "desc"
-    // );
-    // url.searchParams.append("extend[]", "medewerker");
-    // url.searchParams.append("extend[]", "embedded._self.owner");
-    // url.searchParams.append("extend[]", "embedded.contactmoment.todo");
-    // url.searchParams.set("_limit", "10");
-    // url.searchParams.set("_page", page.value.toString());
-    // url.searchParams.set("embedded.klant._self.id", id.value);
-    // url.searchParams.set("embedded.contactmoment.todo", "IS NOT NULL");
-
     const searchParams = new URLSearchParams();
     searchParams.set(
       "klant",

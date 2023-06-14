@@ -12,7 +12,7 @@ export interface Contactmoment {
   tekst: string;
   onderwerpLinks: string[];
   initiatiefnemer: string;
-  medewerkerIdentificatie: MedewerkerIdentificatie | undefined; // todo weer uitzetten, moet serverside?
+
   //bovenstaande slaan we op bij een contactmoment.
   //de rest is mogelijk obsolete.
   //wellicht nog te gebruiken voor oa contactverzoeken

@@ -22,56 +22,31 @@
                 contactmoment.kanaal
               }}</span>
               <!-- 
-                niet standaard
+                niet conform api standaard
                 <span aria-describedby="gespreksresultaat-header">{{
                 contactmoment.resultaat
               }}</span> -->
             </summary>
             <dl>
               <!-- 
-                niet standaard
+                niet conform api standaard
                 <dt>Starttijd</dt>
                 <dd>{{ formatTimeOnly(contactmoment.registratiedatum) }}</dd> -->
               <!-- 
-                niet standaard
+                niet conform api standaard
                 <template v-if="contactmoment.primaireVraagWeergave">
                 <dt>Vraag</dt>
                 <dd>{{ contactmoment.primaireVraagWeergave }}</dd>
               </template> -->
               <!-- 
-                 niet standaard
-                 <template v-if="contactmoment.afwijkendOnderwerp">
+                niet conform api standaard
+                <template v-if="contactmoment.afwijkendOnderwerp">
                 <dt>Specificatie</dt>
                 <dd>{{ contactmoment.afwijkendOnderwerp }}</dd>
               </template> -->
 
-              <!-- <template
-                v-for="zaak in contactmomentZaken[contactmoment.id]"
-                :key="zaak"
-              >
-                <dt>Zaaknummer</dt>
-                <dd>{{ zaak.zaaknummer }}</dd>
-                <dt>Zaaktype</dt>
-                <dd>{{ zaak.zaaktype }}</dd>
-                <dt>Status</dt>
-                <dd>{{ zaak.status }}</dd>
-              </template> -->
-
               <slot name="zaken" :id="contactmoment.url"></slot>
-              <!--
-                todo:
-                
-                <template
-                v-for="zaak in contactmoment.zaken"
-                :key="zaak.zaaknummer"
-              >
-                <dt>Zaaknummer</dt>
-                <dd>{{ zaak.zaaknummer }}</dd>
-                <dt>Zaaktype</dt>
-                <dd>{{ zaak.zaaktype }}</dd>
-                <dt>Status</dt>
-                <dd>{{ zaak.status }}</dd>
-              </template> -->
+
               <dt>Notitie</dt>
               <dd class="tekst">{{ contactmoment.tekst }}</dd>
             </dl>
@@ -102,20 +77,10 @@ defineProps<{
   contactmomenten: ContactmomentViewModel[];
 }>();
 
-// const emit = defineEmits<{
-//   (e: "openContactmoment", val: string): void;
-// }>();
-
-const contactmomentZaken = ref<any>({});
-
 // toggle <details> open status on click anywhere within <details>, not only on <summary>
 const toggleDetails = (e: Event) => {
   e.preventDefault();
   if (e.currentTarget instanceof HTMLDetailsElement) {
-    // if (e.currentTarget.open) {
-    //   emit("openContactmoment", id);
-    // }
-
     e.currentTarget.open = !e.currentTarget.open;
   }
 };

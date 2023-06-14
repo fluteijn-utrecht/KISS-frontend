@@ -544,12 +544,6 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     tekst: vraag.notitie,
     onderwerpLinks: [],
     initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    medewerkerIdentificatie: {
-      identificatie: "todo",
-      achternaam: "todo",
-      voorletters: "todo",
-      voorvoegselAchternaam: "todo",
-    }, //todo weer uitzetten, moet serverside?
 
     //overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
     gespreksId,

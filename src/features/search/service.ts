@@ -42,9 +42,6 @@ export function useGlobalSearch(
     filters: Source[];
   }>
 ) {
-  //temp disabled ...
-  return ServiceResult.init();
-
   function groupBy<K, V>(array: V[], grouper: (item: V) => K) {
     return array.reduce((store, item) => {
       const key = grouper(item);
