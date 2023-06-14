@@ -54,6 +54,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo
             });
+            console.log("Tags:", tags.data.map(tag => tag.name));
 
             // Extract branch name and date from GitHub context
             let branch = process.env.BRANCH_NAME;
@@ -64,6 +65,8 @@ jobs:
 
             // Filter the tags for the current branch and date
             let branchTags = tags.data.filter(tag => tag.name.startsWith(prefix));
+            console.log("Prefix:", prefix);
+            console.log("Filtered tags:", branchTags.map(tag => tag.name));
 
             // If there are no tags for the current branch and date, version is 1
             // Otherwise, find the highest version number tag for the current branch and date, and increment it
