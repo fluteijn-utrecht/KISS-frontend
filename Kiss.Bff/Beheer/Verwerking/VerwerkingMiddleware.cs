@@ -27,6 +27,7 @@ namespace Kiss.Bff.Beheer.Verwerking
             {
                 var result = await next(request, cancellationToken);
 
+                // no need to log unsuccessful calls
                 if (!result.IsSuccessStatusCode) return result;
 
                 try
