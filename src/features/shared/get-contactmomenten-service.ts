@@ -58,20 +58,17 @@ const mapContactmoment = async (
   contactmoment.startdatum = new Date(contactmoment.startdatum);
   contactmoment.registratiedatum = new Date(contactmoment.registratiedatum);
 
-  const objectcontactmomenten: any[] =
-    r.embedded?.contactmoment?.embedded?.objectcontactmomenten ?? [];
+  //disabled in afwachting van verdere refactoring
+  // const objectcontactmomenten: any[] =
+  //   r.embedded?.contactmoment?.embedded?.objectcontactmomenten ?? [];
 
-  const zakenPromises = objectcontactmomenten
-    .filter(({ objectType }: any) => objectType === "zaak")
-    .map((x) => fetchObject(x, ["status", "zaaktype"]).then(mapZaak));
-
-  const contactverzoekPromises = objectcontactmomenten
-    .filter(({ objectType }: any) => objectType === "contactmomentobject")
-    .map((x) => fetchObject(x, ["todo"]).then(mapContactverzoek));
+  // const contactverzoekPromises = objectcontactmomenten
+  //   .filter(({ objectType }: any) => objectType === "contactmomentobject")
+  //   .map((x) => fetchObject(x, ["todo"]).then(mapContactverzoek));
 
   return {
     ...contactmoment,
-    //zaken: await Promise.all(zakenPromises),
+
     //contactverzoeken: await Promise.all(contactverzoekPromises),
   };
 };

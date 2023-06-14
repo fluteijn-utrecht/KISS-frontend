@@ -30,7 +30,7 @@
       messageType="error"
     />
 
-    <!-- <simple-spinner v-if="contactverzoeken.loading" />
+    <simple-spinner v-if="contactverzoeken.loading" />
     <application-message
       v-if="contactverzoeken.error"
       message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
@@ -44,11 +44,11 @@
       <contactverzoeken-overzicht
         :contactverzoeken="contactverzoeken.data.page"
       />
-    </template> -->
+    </template>
 
     <!-- Zaken -->
 
-    <!-- <simple-spinner v-if="zaken.loading" />
+    <simple-spinner v-if="zaken.loading" />
 
     <application-message
       v-if="zaken.error"
@@ -63,7 +63,7 @@
         :zaken="zaken.data.page"
         :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
       />
-    </template> -->
+    </template>
 
     <!-- Contactmomenten -->
 
@@ -142,13 +142,11 @@ watch(
   { immediate: true }
 );
 
-//contactmomenten.data
-
-// const contactverzoekenPage = ref(1);
-// const contactverzoeken = useContactverzoekenByKlantId(
-//   klantId,
-//   contactverzoekenPage
-// );
+const contactverzoekenPage = ref(1);
+const contactverzoeken = useContactverzoekenByKlantId(
+  klantId,
+  contactverzoekenPage
+);
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
@@ -181,7 +179,7 @@ const onContactmomentenNavigate = (page: number) => {
 const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
 const klantBsn = computed(getBsn);
 
-// const zaken = useZakenByBsn(klantBsn);
+const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
 </script>
 

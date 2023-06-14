@@ -2,7 +2,7 @@ import type { PaginatedResult } from "./gateway";
 
 export interface Paginated<T> {
   pageSize?: number;
-  pageNumber: number | string;
+  pageNumber?: number | string;
   totalPages?: number;
   totalRecords?: number;
   page: T[];

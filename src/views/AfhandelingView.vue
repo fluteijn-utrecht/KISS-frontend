@@ -437,7 +437,6 @@
       </menu>
     </template>
   </form>
-  {{ kl }}
 </template>
 
 <script setup lang="ts">
@@ -476,8 +475,8 @@ const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
 
-const kl = ref({});
 onMounted(() => {
+  // nog even laten voor een test: rechtstreeks opvragen van een klant.
   // fetchLoggedIn(
   //   "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5" //"/api/klanten/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
   // )
@@ -517,7 +516,7 @@ const zakenToevoegenAanContactmoment = async (
 
 const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore) {
+    if (shouldStore && klant.url) {
       await koppelKlant({ contactmomentId, klantId: klant.url });
     }
   }
