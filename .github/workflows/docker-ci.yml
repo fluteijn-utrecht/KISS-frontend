@@ -1,0 +1,133 @@
+name: Docker CI
+
+on:
+  pull_request:
+    branches:
+    - main
+
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+  
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      # run: npm test
+      
+      - name: Get branch name
+        id: branch
+        run: |
+          echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+      
+      - name: Auto increment version
+        id: version
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Fetch tags from the repository
+            let tags = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            // Extract branch name and date from GitHub context
+            let branch = "${{ steps.branch.outputs.branch }}";
+            let date = "$(date --utc +%Y%m%d)";
+
+            // Create prefix for the current branch and date
+            let prefix = `${branch}-${date}-`;
+
+            // Filter the tags for the current branch and date
+            let branchTags = tags.data.filter(tag => tag.name.startsWith(prefix));
+
+            // If there are no tags for the current branch and date, version is 1
+            // Otherwise, find the highest version number tag for the current branch and date, and increment it
+            let version = branchTags.length === 0 ? 1 : branchTags.map(tag => parseInt(tag.name.split('-').pop())).reduce((max, curr) => curr > max ? curr : max, 0) + 1;
+
+            // Return the version number
+            return version;
+
+      - name: Set release code
+        if: (success() || failure())
+        id: releasecode #version number in a more comprehensible format: 0.1.YearMonthDay in UTC
+        run: |
+          export VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
+          export RELEASE=${{ steps.branch.outputs.branch }}-${{ steps.date.outputs.date }}-${{ steps.version.outputs.result }}
+          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+          echo "##[set-output name=releasename]$RELEASE"
+      - name: Set APP_BUILD to latest
+        run: |
+          echo "APP_ENV=prod">> $GITHUB_ENV
+          echo "APP_BUILD=latest">> $GITHUB_ENV
+          echo "set APP_ENV to $APP_ENV"
+      - name: Print Build
+        run: echo "This build creates a container with tag $APP_BUILD"
+
+      - name: Setting CONTAINER_PROJECT_NAME
+        run: |
+          export NAME=$(grep CONTAINER_PROJECT_NAME= .env | cut -d '=' -f2)
+          echo "CONTAINER_PROJECT_NAME=$NAME" >> $GITHUB_ENV
+      - name: Setting CONTAINER_REGISTRY_BASE
+        run: |
+          export NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
+          echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
+
+      - name: Run Docker image
+        run: docker-compose -f docker-compose.deploy.yaml up -d
+      - name: Pause for the container to come up
+        run: sleep 10
+
+      - name: Show docker logs
+        run: docker-compose -f docker-compose.deploy.yaml logs
+
+      - name: Add docker tags
+        run: |
+          images=$(docker-compose -f docker-compose.deploy.yaml images -q | xargs docker inspect --format='{{ index .RepoTags 0}}' | cut -d':' -f1 | grep $CONTAINER_PROJECT_NAME)
+          for image in $images
+          do
+           docker tag "${image}":latest "${image}":"${APP_BUILD}" "${image}":"${RELEASE}"
+          done
+          echo 'IMAGES=$images' >> $GITHUB_ENV
+
+      - name: Login to Container Registry
+        id: containerregistry-login
+        run: |
+          if [ "${{ secrets.GITHUB_TOKEN }}" != "" ]; then
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $(cut -d'/' -f1 <<< $GITHUB_REPOSITORY) --password-stdin
+            echo "##[set-output name=success;]true"
+          else
+            echo "##[set-output name=success;]false"
+          fi
+      - name: Push docker images
+        run: docker-compose -f docker-compose.deploy.yaml push
+      - if: steps.containerregistry-login.outputs.success == 'true'
+        name: Push versioned containers to Container Registry
+        id: version-push
+        run: |
+         images=$(docker-compose -f docker-compose.deploy.yaml images -q | xargs docker inspect --format='{{ index .RepoTags 0}}' | cut -d':' -f1 | grep $CONTAINER_PROJECT_NAME)
+         for image in $images
+         do
+           docker push "${image}":"${APP_BUILD}"
+         done
+
+      - name: Chores
+        run: docker-compose -f docker-compose.deploy.yaml down -v
