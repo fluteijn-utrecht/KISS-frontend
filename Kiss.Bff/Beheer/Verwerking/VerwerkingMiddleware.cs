@@ -1,4 +1,5 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Security.Claims;
+using Kiss.Bff.Beheer.Data;
 
 namespace Kiss.Bff.Beheer.Verwerking
 {
@@ -9,12 +10,12 @@ namespace Kiss.Bff.Beheer.Verwerking
         private class VerwerkingsHttpClientMiddleware : IKissHttpClientMiddleware
         {
             private readonly BeheerDbContext _db;
-            private readonly IHttpContextAccessor _httpContextAccessor;
+            private readonly ClaimsPrincipal _user;
 
-            public VerwerkingsHttpClientMiddleware(BeheerDbContext db, IHttpContextAccessor httpContextAccessor)
+            public VerwerkingsHttpClientMiddleware(BeheerDbContext db, ClaimsPrincipal user)
             {
                 _db = db;
-                _httpContextAccessor = httpContextAccessor;
+                _user = user;
             }
 
             public bool IsEnabled(string? clusterId) => clusterId != EnterpriseSearchProxyConfig.ROUTE;
@@ -31,7 +32,7 @@ namespace Kiss.Bff.Beheer.Verwerking
                     Query = string.Empty
                 }.Uri.ToString();
 
-                var userId = _httpContextAccessor.HttpContext?.User.GetId();
+                var userId = _user?.GetId();
                 var logging = new VerwerkingsLog { ApiEndpoint = apiEndpoint, Method = request.Method.Method, UserId = userId };
                 await _db.AddAsync(logging, cancellationToken);
                 await _db.SaveChangesAsync(cancellationToken);

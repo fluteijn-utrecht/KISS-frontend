@@ -1,4 +1,5 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Security.Claims;
+using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
 using Kiss.Bff.ZaakGerichtWerken;
@@ -66,6 +67,7 @@ try
         });
 
     builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
     builder.Services.AddVerwerkingMiddleware();
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
