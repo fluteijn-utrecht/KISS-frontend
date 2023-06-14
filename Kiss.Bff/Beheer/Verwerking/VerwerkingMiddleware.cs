@@ -4,14 +4,14 @@ namespace Kiss.Bff.Beheer.Verwerking
 {
     public static class VerwerkingMiddleware
     {
-        public static IServiceCollection AddVerwerkingMiddleware(this IServiceCollection services) => services.AddScoped<IKissHttpClientMiddleware, VerwerkingHandlerWrapper>();
+        public static IServiceCollection AddVerwerkingMiddleware(this IServiceCollection services) => services.AddScoped<IKissHttpClientMiddleware, VerwerkingsHttpClientMiddleware>();
 
-        private class VerwerkingHandlerWrapper : IKissHttpClientMiddleware
+        private class VerwerkingsHttpClientMiddleware : IKissHttpClientMiddleware
         {
             private readonly BeheerDbContext _db;
             private readonly IHttpContextAccessor _httpContextAccessor;
 
-            public VerwerkingHandlerWrapper(BeheerDbContext db, IHttpContextAccessor httpContextAccessor)
+            public VerwerkingsHttpClientMiddleware(BeheerDbContext db, IHttpContextAccessor httpContextAccessor)
             {
                 _db = db;
                 _httpContextAccessor = httpContextAccessor;
