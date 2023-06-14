@@ -37,7 +37,8 @@ jobs:
         run: |
           BRANCH_NAME="${{ github.head_ref }}"
           if [[ -z "$BRANCH_NAME" ]]; then
-            BRANCH_NAME="${{ github.ref#refs/heads/ }}"
+            BRANCH_NAME="${{ github.ref }}"
+            BRANCH_NAME="${BRANCH_NAME#refs/heads/}"
           fi
           BRANCH_NAME=$(echo $BRANCH_NAME | tr / -)
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
