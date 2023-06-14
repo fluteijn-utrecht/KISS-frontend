@@ -172,8 +172,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var clusterId = context?.GetReverseProxyFeature().Cluster.Config.ClusterId;
 
+            // if we are in a request, re-use scoped services
             if (context != null) return await SendAsync(clusterId, context.RequestServices, request, cancellationToken);
 
+            // if we are not in a request, create a scope here
             await using var scope = _serviceScopeFactory.CreateAsyncScope();
             return await SendAsync(clusterId, scope.ServiceProvider, request, cancellationToken);
         }
