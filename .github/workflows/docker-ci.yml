@@ -16,7 +16,6 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
       - uses: actions/checkout@v3
@@ -27,12 +26,15 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build --if-present
-      # run: npm test
-      
-      - name: Get branch name
-        id: branch
+
+      - name: Get date
+        id: date
         run: |
-          echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Get branch name
+        run: |
+          echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
       
       - name: Auto increment version
         id: version
@@ -47,8 +49,8 @@ jobs:
             });
 
             // Extract branch name and date from GitHub context
-            let branch = "${{ steps.branch.outputs.branch }}";
-            let date = "$(date --utc +%Y%m%d)";
+            let branch = process.env.BRANCH;
+            let date = process.env.DATE;
 
             // Create prefix for the current branch and date
             let prefix = `${branch}-${date}-`;
@@ -65,27 +67,23 @@ jobs:
 
       - name: Set release code
         if: (success() || failure())
-        id: releasecode #version number in a more comprehensible format: 0.1.YearMonthDay in UTC
+        id: releasecode
         run: |
-          export VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
-          export RELEASE=${{ steps.branch.outputs.branch }}-${{ steps.date.outputs.date }}-${{ steps.version.outputs.result }}
+          VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
+          RELEASE=$BRANCH-$DATE-${{ steps.version.outputs.result }}
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
-          echo "##[set-output name=releasename]$RELEASE"
-      - name: Set APP_BUILD to latest
-        run: |
           echo "APP_ENV=prod">> $GITHUB_ENV
           echo "APP_BUILD=latest">> $GITHUB_ENV
           echo "set APP_ENV to $APP_ENV"
-      - name: Print Build
-        run: echo "This build creates a container with tag $APP_BUILD"
 
       - name: Setting CONTAINER_PROJECT_NAME
         run: |
-          export NAME=$(grep CONTAINER_PROJECT_NAME= .env | cut -d '=' -f2)
+          NAME=$(grep CONTAINER_PROJECT_NAME= .env | cut -d '=' -f2)
           echo "CONTAINER_PROJECT_NAME=$NAME" >> $GITHUB_ENV
+
       - name: Setting CONTAINER_REGISTRY_BASE
         run: |
-          export NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
+          NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
           echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
 
       - name: Build Docker image
@@ -104,7 +102,8 @@ jobs:
           images=$(docker-compose -f docker-compose.deploy.yaml images -q | xargs docker inspect --format='{{ index .RepoTags 0}}' | cut -d':' -f1 | grep $CONTAINER_PROJECT_NAME)
           for image in $images
           do
-           docker tag "${image}":latest "${image}":"${APP_BUILD}" "${image}":"${RELEASE}"
+            docker tag "${image}":latest "${image}":$RELEASE
+            docker tag "${image}":latest "${image}":"${APP_BUILD}"
           done
           echo 'IMAGES=$images' >> $GITHUB_ENV
 
@@ -113,19 +112,22 @@ jobs:
         run: |
           if [ "${{ secrets.GITHUB_TOKEN }}" != "" ]; then
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $(cut -d'/' -f1 <<< $GITHUB_REPOSITORY) --password-stdin
-            echo "##[set-output name=success;]true"
+            echo "SUCCESS=true" >> $GITHUB_ENV
           else
-            echo "##[set-output name=success;]false"
+            echo "SUCCESS=false" >> $GITHUB_ENV
           fi
+
       - name: Push docker images
         run: docker-compose -f docker-compose.deploy.yaml push
-      - if: steps.containerregistry-login.outputs.success == 'true'
+
+      - if: $SUCCESS == 'true'
         name: Push versioned containers to Container Registry
         id: version-push
         run: |
          images=$(docker-compose -f docker-compose.deploy.yaml images -q | xargs docker inspect --format='{{ index .RepoTags 0}}' | cut -d':' -f1 | grep $CONTAINER_PROJECT_NAME)
          for image in $images
          do
+           docker push "${image}":$RELEASE
            docker push "${image}":"${APP_BUILD}"
          done
 
