@@ -20,6 +20,7 @@ namespace Kiss.Bff.Beheer.Verwerking
                 _logger = logger;
             }
 
+            // we don't need to log elasticsearch calls
             public bool IsEnabled(string? clusterId) => clusterId != EnterpriseSearchProxyConfig.ROUTE;
 
             public async Task<HttpResponseMessage> SendAsync(SendRequestMessageAsync next, HttpRequestMessage request, CancellationToken cancellationToken)
