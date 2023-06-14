@@ -30,7 +30,7 @@ jobs:
       - name: Get date
         id: date
         run: |
-          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "DATE=$(date +'%Y%m%d%H%M%S')-$(echo $GITHUB_SHA | head -c 7)" >> $GITHUB_ENV
 
       - name: Get branch name
         id: branch
@@ -42,45 +42,13 @@ jobs:
           fi
           BRANCH_NAME=$(echo $BRANCH_NAME | tr / -)
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-      
-      - name: Auto increment version
-        id: version
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // Fetch tags from the repository
-            let tags = await github.rest.repos.listTags({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            console.log("Tags:", tags.data.map(tag => tag.name));
-
-            // Extract branch name and date from GitHub context
-            let branch = process.env.BRANCH_NAME;
-            let date = process.env.DATE;
-
-            // Create prefix for the current branch and date
-            let prefix = `${branch}-${date}-`;
-
-            // Filter the tags for the current branch and date
-            let branchTags = tags.data.filter(tag => tag.name.startsWith(prefix));
-            console.log("Prefix:", prefix);
-            console.log("Filtered tags:", branchTags.map(tag => tag.name));
-
-            // If there are no tags for the current branch and date, version is 1
-            // Otherwise, find the highest version number tag for the current branch and date, and increment it
-            let version = branchTags.length === 0 ? 1 : branchTags.map(tag => parseInt(tag.name.split('-').pop())).reduce((max, curr) => curr > max ? curr : max, 0) + 1;
-
-            // Return the version number
-            return version;
 
       - name: Set release code
         if: (success() || failure())
         id: releasecode
         run: |
           VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
-          RELEASE=$BRANCH_NAME-$DATE-${{ steps.version.outputs.result }}
+          RELEASE=$BRANCH_NAME-$DATE
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
           echo "APP_ENV=prod">> $GITHUB_ENV
           echo "APP_BUILD=latest">> $GITHUB_ENV
