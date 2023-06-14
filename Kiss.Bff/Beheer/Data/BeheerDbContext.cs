@@ -43,5 +43,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<Link> Links { get; set; } = null!;
         public DbSet<Gespreksresultaat> Gespreksresultaten { get; set; } = null!;
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+        public DbSet<Management.ContactmomentManagementLog> ContactmomentManagementLogs { get; set; } = null!;
     }
 }

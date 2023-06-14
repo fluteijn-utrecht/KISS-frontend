@@ -15,6 +15,7 @@ namespace Kiss
     public static class UserExtensions
     {
         public static string? GetId(this ClaimsPrincipal? user) => user?.FindFirstValue(ClaimTypes.NameIdentifier);
+        public static string? GetEmail(this ClaimsPrincipal? user) => user.FindFirstValue(JwtClaimTypes.Email) ?? user.FindFirstValue(JwtClaimTypes.PreferredUserName);
     }
 }
 
@@ -156,13 +157,13 @@ namespace Microsoft.Extensions.DependencyInjection
         private static KissUser GetMe(HttpContext httpContext)
         {
             var isLoggedIn = httpContext.User.Identity?.IsAuthenticated ?? false;
-            var email = httpContext.User.FindFirstValue(JwtClaimTypes.Email) ?? httpContext.User.FindFirstValue(JwtClaimTypes.PreferredUserName);
+            var email = httpContext.User.GetEmail();
             var isRedacteur = httpContext.RequestServices.GetService<IsRedacteur>()?.Invoke(httpContext.User) ?? false;
 
             return new KissUser(email, isLoggedIn, isRedacteur);
         }
 
-        private readonly record struct KissUser(string Email, bool IsLoggedIn, bool IsRedacteur);
+        private readonly record struct KissUser(string? Email, bool IsLoggedIn, bool IsRedacteur);
 
 
         private static Task ChallengeAsync(HttpContext httpContext)
