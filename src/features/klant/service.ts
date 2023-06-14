@@ -91,6 +91,7 @@ function mapKlant(obj: any): Klant {
     _typeOfKlant: "klant",
     bsn: inpBsn,
     vestigingsnummer: vestigingsNummer,
+    url: url,
   };
 }
 

@@ -11,6 +11,7 @@ import type {
   ContactmomentZaak,
   ContactmomentViewModel,
   KlantContactmoment,
+  ObjectContactmoment,
 } from "./types";
 
 const mapZaak = (json: any): ContactmomentZaak => ({
@@ -70,8 +71,8 @@ const mapContactmoment = async (
 
   return {
     ...contactmoment,
-    zaken: await Promise.all(zakenPromises),
-    contactverzoeken: await Promise.all(contactverzoekPromises),
+    //zaken: await Promise.all(zakenPromises),
+    //contactverzoeken: await Promise.all(contactverzoekPromises),
   };
 };
 
@@ -142,6 +143,39 @@ export function useContactmomentenByKlantId(
     return url.toString();
   }
 
+  const mapObjectContactmoment = (a: any) => {
+    return a as ObjectContactmoment;
+  };
+
+  const objectcontactmomenten = async (
+    x: any,
+    objectcontactmomenten: Array<any>
+  ) => {
+    //objectcontactmomenten
+
+    const zaken = [];
+
+    for (const item of objectcontactmomenten) {
+      let relUrl;
+      try {
+        relUrl = "/api/contactmomenten" + new URL(item).pathname;
+      } catch {
+        return x;
+      }
+
+      const objectcontactmoment = await fetchLoggedIn(relUrl)
+        .then(throwIfNotOk)
+        .then((r) => r.json())
+        .then((x) => mapObjectContactmoment(x));
+
+      if (objectcontactmoment.objectType === "zaak") {
+        zaken.push(objectcontactmoment.object);
+      }
+    }
+
+    return { ...x, zaken };
+  };
+
   const mapKlantContactmoment = async (
     r: any
   ): Promise<KlantContactmoment | undefined> => {
@@ -150,12 +184,23 @@ export function useContactmomentenByKlantId(
     };
   };
 
-  function fetchKlantContactmomenten(url: any) {
-    // const fetchContactmomentenByUrl = fetchLoggedIn(url)
-    //   .then(throwIfNotOk)
-    //   .then((r) => r.json())
-    //   .then((x) => mapContactmoment(x));
+  const fetchContactMomenten = (url: string) => {
+    let relUrl;
 
+    try {
+      relUrl = new URL(url).pathname;
+    } catch {
+      return;
+    }
+
+    return fetchLoggedIn("/api/contactmomenten" + relUrl)
+      .then(throwIfNotOk)
+      .then((r) => r.json())
+      .then((r) => objectcontactmomenten(r, r.objectcontactmomenten))
+      .then((r) => r as ContactmomentViewModel);
+  };
+
+  function fetchKlantContactmomenten(url: any) {
     const klantContactmomentPage = fetchLoggedIn(url)
       .then(throwIfNotOk)
       .then((r) => r.json())
@@ -163,26 +208,16 @@ export function useContactmomentenByKlantId(
       .then((paginated) => {
         const page = paginated.page.filter(Boolean) as KlantContactmoment[];
 
-        const t: Array<Promise<any>> = [];
+        const contactmomentenFetches: Array<Promise<ContactmomentViewModel>> =
+          [];
         for (const item of page) {
-          const relUrl = new URL(item.contactmoment).pathname; //https://open-klant.dev.kiss-demo.nl/
-
-          const b = fetchLoggedIn("/api/contactmomenten" + relUrl)
-            .then(throwIfNotOk)
-            .then((r) => r.json())
-            .then((r) => {
-              const x = r as ContactmomentViewModel;
-              console.log(x);
-              return x;
-            });
-
-          t.push(b);
+          const contactmomentenFetch = fetchContactMomenten(item.contactmoment);
+          if (contactmomentenFetch) {
+            contactmomentenFetches.push(contactmomentenFetch);
+          }
         }
 
-        return Promise.all(t).then((x) => {
-          console.log("KLAAR");
-          return x;
-        });
+        return Promise.all(contactmomentenFetches);
       });
 
     return klantContactmomentPage;

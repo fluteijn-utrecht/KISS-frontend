@@ -30,7 +30,7 @@
       messageType="error"
     />
 
-    <simple-spinner v-if="contactverzoeken.loading" />
+    <!-- <simple-spinner v-if="contactverzoeken.loading" />
     <application-message
       v-if="contactverzoeken.error"
       message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
@@ -44,11 +44,11 @@
       <contactverzoeken-overzicht
         :contactverzoeken="contactverzoeken.data.page"
       />
-    </template>
+    </template> -->
 
     <!-- Zaken -->
 
-    <simple-spinner v-if="zaken.loading" />
+    <!-- <simple-spinner v-if="zaken.loading" />
 
     <application-message
       v-if="zaken.error"
@@ -63,7 +63,7 @@
         :zaken="zaken.data.page"
         :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
       />
-    </template>
+    </template> -->
 
     <!-- Contactmomenten -->
 
@@ -75,12 +75,23 @@
       messageType="error"
     />
 
-    <!-- [ { "url": "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/contactmomenten/3b8993c6-6e04-434a-9a61-af6acad88b46", "vorigContactmoment": null, "volgendContactmoment": null, "bronorganisatie": "999990639", "registratiedatum": "2023-06-08T12:23:42.467000Z", "kanaal": "Twitter", "voorkeurskanaal": "", "voorkeurstaal": "", "tekst": "asadsd....", "onderwerpLinks": [], "initiatiefnemer": "klant", "medewerker": "", "medewerkerIdentificatie": { "identificatie": "todo", "achternaam": "todo", "voorletters": "todo", "voorvoegselAchternaam": "todo" }, "klantcontactmomenten": [ "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/klantcontactmomenten/805c22b2-3fe0-4a4a-b4dd-dead1b025d8b" ], "objectcontactmomenten": [ "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/objectcontactmomenten/56dc0a99-29aa-447d-899f-aa1590536803" ] } ] -->
-
     <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data" />
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data">
+        <template v-slot:zaken="{ id }">
+          <template v-for="z in zakenDict[id]" :key="z">
+            <template v-if="z.success && z.data">
+              <dt>Zaaknummer</dt>
+              <dd>{{ z.data.identificatie }}</dd>
+              <dt>Zaaktype</dt>
+              <dd>{{ z.data.zaaktypeLabel }}</dd>
+              <dt>Status</dt>
+              <dd>{{ z.data.status }}</dd>
+            </template>
+          </template>
+        </template>
+      </contactmomenten-overzicht>
 
       <pagination
         class="pagination"
@@ -110,8 +121,9 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/shared/get-contactmomenten-service";
-import { useZakenByBsn } from "@/features/zaaksysteem";
+import { useZakenByBsn, useZakenSummaryByUrl } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
+import type { ContactmomentViewModel } from "@/features/shared/types";
 
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
@@ -130,16 +142,36 @@ watch(
   { immediate: true }
 );
 
-const contactverzoekenPage = ref(1);
-const contactverzoeken = useContactverzoekenByKlantId(
-  klantId,
-  contactverzoekenPage
-);
+//contactmomenten.data
+
+// const contactverzoekenPage = ref(1);
+// const contactverzoeken = useContactverzoekenByKlantId(
+//   klantId,
+//   contactverzoekenPage
+// );
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
   klantId,
   contactmomentenPage
+);
+
+const zakenDict = ref<any>({});
+
+watch(
+  () => contactmomenten.success && contactmomenten.data,
+  (c) => {
+    if (!c) return;
+
+    for (const contactmoment of c) {
+      zakenDict.value[contactmoment.url] = [];
+      for (const zaakUrl of contactmoment.zaken) {
+        const zaak = useZakenSummaryByUrl(ref<string>(zaakUrl));
+        zakenDict.value[contactmoment.url].push(zaak);
+      }
+    }
+  },
+  { immediate: true }
 );
 
 const onContactmomentenNavigate = (page: number) => {
@@ -149,7 +181,7 @@ const onContactmomentenNavigate = (page: number) => {
 const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
 const klantBsn = computed(getBsn);
 
-const zaken = useZakenByBsn(klantBsn);
+// const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
 </script>
 

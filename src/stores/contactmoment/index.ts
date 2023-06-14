@@ -30,7 +30,7 @@ export type ContactmomentKlant = {
   telefoonnummer?: string;
   email?: string;
   hasContactInformation: boolean;
-  url: string;
+  url?: string;
 };
 
 export interface Vraag {

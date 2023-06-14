@@ -7,7 +7,7 @@ export interface ContactmomentViewModel {
   kanaal: string;
   resultaat: string;
   tekst: string;
-  zaken: ContactmomentZaak[];
+  zaken: string[];
   contactverzoeken: ContactmomentContactverzoek[];
   _self: {
     owner: string;
@@ -41,4 +41,11 @@ export interface KlantContactmoment {
   contactmoment: string;
   klant: string;
   rol: string;
+}
+
+export interface ObjectContactmoment {
+  url: string;
+  contactmoment: string;
+  object: string;
+  objectType: string;
 }

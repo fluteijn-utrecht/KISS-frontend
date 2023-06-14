@@ -44,7 +44,24 @@
                 <dt>Specificatie</dt>
                 <dd>{{ contactmoment.afwijkendOnderwerp }}</dd>
               </template> -->
-              <template
+
+              <!-- <template
+                v-for="zaak in contactmomentZaken[contactmoment.id]"
+                :key="zaak"
+              >
+                <dt>Zaaknummer</dt>
+                <dd>{{ zaak.zaaknummer }}</dd>
+                <dt>Zaaktype</dt>
+                <dd>{{ zaak.zaaktype }}</dd>
+                <dt>Status</dt>
+                <dd>{{ zaak.status }}</dd>
+              </template> -->
+
+              <slot name="zaken" :id="contactmoment.url"></slot>
+              <!--
+                todo:
+                
+                <template
                 v-for="zaak in contactmoment.zaken"
                 :key="zaak.zaaknummer"
               >
@@ -54,7 +71,7 @@
                 <dd>{{ zaak.zaaktype }}</dd>
                 <dt>Status</dt>
                 <dd>{{ zaak.status }}</dd>
-              </template>
+              </template> -->
               <dt>Notitie</dt>
               <dd class="tekst">{{ contactmoment.tekst }}</dd>
             </dl>
@@ -79,15 +96,26 @@
 <script lang="ts" setup>
 import { formatDateOnly, formatTimeOnly } from "@/helpers/date";
 import type { ContactmomentViewModel } from "../shared/types";
+import { ref } from "vue";
 
 defineProps<{
   contactmomenten: ContactmomentViewModel[];
 }>();
 
+// const emit = defineEmits<{
+//   (e: "openContactmoment", val: string): void;
+// }>();
+
+const contactmomentZaken = ref<any>({});
+
 // toggle <details> open status on click anywhere within <details>, not only on <summary>
 const toggleDetails = (e: Event) => {
   e.preventDefault();
   if (e.currentTarget instanceof HTMLDetailsElement) {
+    // if (e.currentTarget.open) {
+    //   emit("openContactmoment", id);
+    // }
+
     e.currentTarget.open = !e.currentTarget.open;
   }
 };
