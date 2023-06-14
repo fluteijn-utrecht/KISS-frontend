@@ -143,36 +143,46 @@ namespace Microsoft.Extensions.DependencyInjection
     public class KissHttpClientFactory : ForwarderHttpClientFactory
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public KissHttpClientFactory(IHttpContextAccessor httpContextAccessor) => _httpContextAccessor = httpContextAccessor;
+        public KissHttpClientFactory(IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory)
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
+        }
 
-        protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) => new KissDelegatingHandler(handler, _httpContextAccessor);
+        protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) 
+            => new KissDelegatingHandler(handler, _httpContextAccessor, _serviceScopeFactory);
     }
 
     public class KissDelegatingHandler : DelegatingHandler
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public KissDelegatingHandler(HttpMessageHandler inner, IHttpContextAccessor httpContextAccessor) : base(inner)
+        public KissDelegatingHandler(HttpMessageHandler inner, IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory) : base(inner)
         {
             _httpContextAccessor = httpContextAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var context = _httpContextAccessor.HttpContext;
 
-            var clusterId = context?.GetReverseProxyFeature()?.Cluster?.Config?.ClusterId;
+            var clusterId = context?.GetReverseProxyFeature().Cluster.Config.ClusterId;
 
-            if (clusterId == null)
-            {
-                return base.SendAsync(request, cancellationToken);
-            }
+            if (context != null) return await SendAsync(clusterId, context.RequestServices, request, cancellationToken);
 
-            var middlewares = context?.RequestServices
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            return await SendAsync(clusterId, scope.ServiceProvider, request, cancellationToken);
+        }
+
+        private Task<HttpResponseMessage> SendAsync(string? clusterId, IServiceProvider services, HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var middlewares = services
                 .GetServices<IKissHttpClientMiddleware>()
-                .Where(x => x.IsEnabled(clusterId))
-                ?? Enumerable.Empty<IKissHttpClientMiddleware>();
+                .Where(x => x.IsEnabled(clusterId));
 
             SendRequestMessageAsync inner = base.SendAsync;
 
