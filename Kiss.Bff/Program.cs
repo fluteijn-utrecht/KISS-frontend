@@ -1,12 +1,14 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Security.Claims;
+using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.Zaken;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -66,6 +68,10 @@ try
             EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC, // default
             ValidationAlgorithm = ValidationAlgorithm.HMACSHA256, // default
         });
+
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
+    builder.Services.AddVerwerkingMiddleware();
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)

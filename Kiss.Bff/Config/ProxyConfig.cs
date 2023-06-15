@@ -1,6 +1,7 @@
 ﻿using Kiss.Bff;
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
@@ -13,6 +14,14 @@ namespace Kiss.Bff
 
         ValueTask ApplyRequestTransform(RequestTransformContext context);
     }
+
+    public interface IKissHttpClientMiddleware
+    {
+        bool IsEnabled(string? clusterId);
+        Task<HttpResponseMessage> SendAsync(SendRequestMessageAsync next, HttpRequestMessage request, CancellationToken cancellationToken);
+    }
+
+    public delegate Task<HttpResponseMessage> SendRequestMessageAsync(HttpRequestMessage request, CancellationToken cancellationToken);
 }
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -24,6 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddReverseProxy();
             services.AddSingleton<IProxyConfigProvider, ProxyConfigProvider>();
             services.AddSingleton<ITransformProvider, KissTransformProvider>();
+            services.AddTransient<IForwarderHttpClientFactory, KissHttpClientFactory>();
             return services;
         }
 
@@ -142,6 +152,63 @@ namespace Microsoft.Extensions.DependencyInjection
             public IReadOnlyList<ClusterConfig> Clusters { get; }
 
             public IChangeToken ChangeToken { get; }
+        }
+    }
+
+    public class KissHttpClientFactory : ForwarderHttpClientFactory
+    {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
+        public KissHttpClientFactory(IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory)
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
+        }
+
+        protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) 
+            => new KissDelegatingHandler(handler, _httpContextAccessor, _serviceScopeFactory);
+    }
+
+    public class KissDelegatingHandler : DelegatingHandler
+    {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
+        public KissDelegatingHandler(HttpMessageHandler inner, IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory) : base(inner)
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _serviceScopeFactory = serviceScopeFactory;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var context = _httpContextAccessor.HttpContext;
+
+            var clusterId = context?.GetReverseProxyFeature().Cluster.Config.ClusterId;
+
+            // if we are in a request, re-use scoped services
+            if (context != null) return await SendAsync(clusterId, context.RequestServices, request, cancellationToken);
+
+            // if we are not in a request, create a scope here
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            return await SendAsync(clusterId, scope.ServiceProvider, request, cancellationToken);
+        }
+
+        private Task<HttpResponseMessage> SendAsync(string? clusterId, IServiceProvider services, HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var middlewares = services
+                .GetServices<IKissHttpClientMiddleware>()
+                .Where(x => x.IsEnabled(clusterId));
+
+            SendRequestMessageAsync inner = base.SendAsync;
+
+            var sendAsync = middlewares.Aggregate(inner, (next, middleware) =>
+            {
+                return (req, token) => middleware.SendAsync(next, req, token);
+            });
+
+            return sendAsync(request, cancellationToken);
         }
     }
 }
