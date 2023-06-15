@@ -20,14 +20,12 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var clientId = configuration["CONTACTMOMENTEN_API_CLIENT_ID"];
             var apiKey = configuration["CONTACTMOMENTEN_API_KEY"];
 
-            _defaultClient = factory.CreateClient();
+            _defaultClient = factory.CreateClient("default");
             _tokenProvider = new ZgwTokenProvider(apiKey, clientId);
-
-
         }
 
         [HttpPost]
-        public async Task Post([FromBody] System.Text.Json.Nodes.JsonObject parsedModel, CancellationToken token)
+        public async Task Post([FromBody] JsonObject parsedModel, CancellationToken token)
         {
             var userId = Request.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;

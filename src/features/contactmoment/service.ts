@@ -92,7 +92,7 @@ export function koppelKlant({
   klantId: string;
   contactmomentId: string;
 }) {
-  return fetchLoggedIn(contactmomentenBaseUrl + "klantcontactmomenten", {
+  return fetchLoggedIn(klantcontactmomentenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

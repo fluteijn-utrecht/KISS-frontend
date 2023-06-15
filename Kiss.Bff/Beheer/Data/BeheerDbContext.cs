@@ -2,6 +2,7 @@
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +39,12 @@ namespace Kiss.Bff.Beheer.Data
             });
 
             modelBuilder.Entity<VerwerkingsLog>(r => r.Property(l => l.InsertedAt).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd());
+
+            modelBuilder.Entity<KlantContactmoment>(e =>
+            {
+                e.HasKey(x => new { x.Klant, x.Contactmoment, x.Rol });
+                e.HasIndex(x => x.Klant);
+            });
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;
@@ -47,5 +54,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<Gespreksresultaat> Gespreksresultaten { get; set; } = null!;
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
+        public DbSet<KlantContactmoment> KlantContactmomenten { get; set; } = null!;
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
+using Yarp.ReverseProxy.Model;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
@@ -167,7 +168,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) 
-            => new KissDelegatingHandler(handler, _httpContextAccessor, _serviceScopeFactory);
+            => new KissDelegatingHandler(_httpContextAccessor, _serviceScopeFactory) { InnerHandler = handler };
     }
 
     public class KissDelegatingHandler : DelegatingHandler
@@ -175,7 +176,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public KissDelegatingHandler(HttpMessageHandler inner, IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory) : base(inner)
+        public KissDelegatingHandler(IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory)
         {
             _httpContextAccessor = httpContextAccessor;
             _serviceScopeFactory = serviceScopeFactory;
@@ -185,7 +186,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var context = _httpContextAccessor.HttpContext;
 
-            var clusterId = context?.GetReverseProxyFeature().Cluster.Config.ClusterId;
+            var clusterId = context?.Features.Get<IReverseProxyFeature>()?.Cluster.Config.ClusterId;
 
             // if we are in a request, re-use scoped services
             if (context != null) return await SendAsync(clusterId, context.RequestServices, request, cancellationToken);
