@@ -75,12 +75,16 @@
       messageType="error"
     />
 
-    <template
-      v-if="contactmomenten.success && contactmomenten.data.page.length"
-    >
+    <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page" />
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data">
+        <template v-slot:zaken="{ zaken }">
+          <template v-for="zaakurl in zaken" :key="zaakurl">
+            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+          </template>
+        </template>
+      </contactmomenten-overzicht>
 
       <pagination
         class="pagination"
