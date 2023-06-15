@@ -118,7 +118,10 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
     return x.statutaireNaam;
   } else if (rol.betrokkeneType === "vestiging") {
     const x = rol.betrokkeneIdentificatie as Vestiging;
-    return [x.naam, x.vestigingsNummer].filter(Boolean).join(" ");
+    const naam = Array.isArray(x.handelsnaam)
+      ? x.handelsnaam.find(Boolean)
+      : "";
+    return [naam, x.vestigingsNummer].filter(Boolean).join(" ");
   } else if (rol.betrokkeneType === "organisatorische_eenheid") {
     const x = rol.betrokkeneIdentificatie as OrganisatorischeEenheid;
     return x.naam;

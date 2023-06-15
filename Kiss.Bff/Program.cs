@@ -1,8 +1,13 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Security.Claims;
+using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.Zaken;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -53,6 +58,18 @@ try
         bool.TryParse(builder.Configuration["EMAIL_ENABLE_SSL"], out var enableSsl) && enableSsl
     );
 
+    builder.Services.AddDataProtection()
+        .PersistKeysToDbContext<BeheerDbContext>()
+        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration()
+        {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC, // default
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256, // default
+        });
+
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped(s => s.GetService<IHttpContextAccessor>()?.HttpContext?.User ?? new ClaimsPrincipal());
+    builder.Services.AddVerwerkingMiddleware();
+
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .Enrich.FromLogContext());
@@ -76,11 +93,10 @@ try
     app.MapKissProxy();
     app.MapFallbackToIndexHtml();
 
-    if (builder.Environment.IsDevelopment())
+    using (var scope = app.Services.CreateScope())
     {
-        using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
-        db.Database.Migrate(); // apply the migrations
+        await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
     }
 
     app.Run();
