@@ -64,14 +64,8 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var url = "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/contactmomenten";
 
 
-            //   using var newRequest = new HttpRequestMessage(new System.Net.Http.HttpMethod(Request.Method), url);
-
-            //  newRequest.Content = new StreamContent(Request.HttpContext.Request.Body);
-
             _defaultClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            //  return await httpClient.PostAsync(url);
-
-            //     return await _defaultClient.PostAsJsonAsync(url, xx );
+         
 
             return await _defaultClient.PostAsJsonAsync(url, parsedModel);
 
