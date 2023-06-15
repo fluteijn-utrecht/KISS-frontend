@@ -12,9 +12,6 @@ name: Lint Code Base
 on:
   pull_request:
     branches: [main]
-    
-env:
-  VALIDATE_MARKDOWN: false
 
 ###############
 # Set the Job #
@@ -57,3 +54,5 @@ jobs:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_MARKDOWN: false
+          VALIDATE_NATURAL_LANGUAGE: false
