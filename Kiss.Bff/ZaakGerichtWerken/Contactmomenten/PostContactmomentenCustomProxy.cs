@@ -6,7 +6,7 @@ using IdentityModel;
 using System.Security.Claims;
 using System.Net;
 using AngleSharp.Io;
-using Newtonsoft.Json.Linq;
+
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
@@ -35,12 +35,12 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
 
 
-            var x  = entity.GetRawText();
-            var xx = JObject.Parse(x);
+          //  var x  = entity.GetRawText();
+          //  var xx = JObject.Parse(x);
             //  var xxx = xx.SelectToken("registratiedatum")?.Value<string>();
 
         //    medewerkerIdentificatie komt niet mee : badrequest
-            xx.Add("medewerkerIdentificatie", JObject.FromObject(new { achternaam =  userRepresentation, identificatie = userId, voorletters ="", voorvoegselAchternaam="" }));
+         //   xx.Add("medewerkerIdentificatie", JObject.FromObject(new { achternaam =  userRepresentation, identificatie = userId, voorletters ="", voorvoegselAchternaam="" }));
 
  
 
@@ -60,9 +60,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             _defaultClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             //  return await httpClient.PostAsync(url);
 
-            return await _defaultClient.PostAsJsonAsync(url, xx );
+       //     return await _defaultClient.PostAsJsonAsync(url, xx );
 
-
+            return await _defaultClient.PostAsJsonAsync(url, new { } );
 
 
 
