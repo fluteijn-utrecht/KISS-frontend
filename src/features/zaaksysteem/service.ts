@@ -5,6 +5,7 @@ import {
   ServiceResult,
   throwIfNotOk,
   type PaginatedResult,
+  parseJson,
 } from "@/services";
 import type {
   Medewerker,
@@ -26,7 +27,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
     const url = new URL(location.href);
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
-      "embedded.rollen.embedded.betrokkeneIdentificatie.inpBsn",
+      "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
       bsn.value
     );
     return url.toString();
@@ -43,32 +44,52 @@ export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
+const singleZaakFetcher = function fetcher(url: string): Promise<ZaakDetails> {
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then(mapZaakDetails);
+};
+
 export const useZaakById = (id: Ref<string>) => {
   const getUrl = () => getZaakUrl(id.value);
-
-  function fetcher(url: string): Promise<ZaakDetails> {
-    return fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then((x) => x.json())
-      .then(mapZaakDetails);
-  }
-
-  return ServiceResult.fromFetcher(getUrl, fetcher);
+  return ServiceResult.fromFetcher(getUrl, singleZaakFetcher);
 };
 
 export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
   const getUrl = () => {
     if (!vestigingsnummer.value) return "";
     const url = new URL(location.href);
-    url.pathname = zaaksysteemBaseUri + "/zaken";
+    url.pathname = zaaksysteemBaseUri + "/rollen";
     url.searchParams.set(
-      "embedded.rollen.embedded.betrokkeneIdentificatie.vestigingsNummer",
+      "betrokkeneIdentificatie__vestiging__vestigingsNummer",
       vestigingsnummer.value
     );
     return url.toString();
   };
 
-  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
+  const fetcher = (url: string) =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((r) =>
+        parsePagination(r, async (x) => {
+          const split = (x as RolType)?.zaak?.split("/");
+          if (!Array.isArray(split) || !split.length) {
+            throw new Error(
+              "kan url van zaak niet ophalen obv rol: " + x && JSON.stringify(x)
+            );
+          }
+          const id = split[split.length - 1];
+          const url = getZaakUrl(id);
+
+          const result = await singleZaakFetcher(url);
+          mutate(url, result);
+          return result;
+        })
+      );
+
+  return ServiceResult.fromFetcher(getUrl, fetcher);
 };
 
 const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
@@ -97,7 +118,10 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
     return x.statutaireNaam;
   } else if (rol.betrokkeneType === "vestiging") {
     const x = rol.betrokkeneIdentificatie as Vestiging;
-    return [x.naam, x.vestigingsNummer].filter(Boolean).join(" ");
+    const naam = Array.isArray(x.handelsnaam)
+      ? x.handelsnaam.find(Boolean)
+      : "";
+    return [naam, x.vestigingsNummer].filter(Boolean).join(" ");
   } else if (rol.betrokkeneType === "organisatorische_eenheid") {
     const x = rol.betrokkeneIdentificatie as OrganisatorischeEenheid;
     return x.naam;

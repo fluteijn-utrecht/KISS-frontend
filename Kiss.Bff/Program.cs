@@ -4,6 +4,9 @@ using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.Zaken;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -48,7 +51,21 @@ try
     builder.Services.AddContactmomentenProxy(builder.Configuration["CONTACTMOMENTEN_BASE_URL"], builder.Configuration["CONTACTMOMENTEN_API_CLIENT_ID"], builder.Configuration["CONTACTMOMENTEN_API_KEY"]);
     builder.Services.AddScoped<PostContactmomentenCustomProxy>();
 
-    builder.Services.AddSmtpClient(builder.Configuration["EMAIL_HOST"], int.Parse(builder.Configuration["EMAIL_PORT"]), builder.Configuration["EMAIL_USERNAME"], builder.Configuration["EMAIL_PASSWORD"]);
+    builder.Services.AddSmtpClient(
+        builder.Configuration["EMAIL_HOST"],
+        int.Parse(builder.Configuration["EMAIL_PORT"]),
+        builder.Configuration["EMAIL_USERNAME"],
+        builder.Configuration["EMAIL_PASSWORD"],
+        bool.TryParse(builder.Configuration["EMAIL_ENABLE_SSL"], out var enableSsl) && enableSsl
+    );
+
+    builder.Services.AddDataProtection()
+        .PersistKeysToDbContext<BeheerDbContext>()
+        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration()
+        {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC, // default
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256, // default
+        });
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -73,11 +90,10 @@ try
     app.MapKissProxy();
     app.MapFallbackToIndexHtml();
 
-    if (builder.Environment.IsDevelopment())
+    using (var scope = app.Services.CreateScope())
     {
-        using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
-        db.Database.Migrate(); // apply the migrations
+        await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
     }
 
     app.Run();

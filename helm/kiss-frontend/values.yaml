@@ -51,7 +51,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8080
 
 ingress:
   enabled: false
@@ -110,7 +110,7 @@ env:
   POSTGRES_USER: ""
   POSTGRES_DB: ""
   POSTGRES_HOST: kiss-ci-release-postgresql
-  ASPNETCORE_ENVIRONMENT: Development
+  ASPNETCORE_ENVIRONMENT: Production
   ENTERPRISE_SEARCH_ENGINE: kiss-engine
   ENTERPRISE_SEARCH_BASE_URL: ""
   ENTERPRISE_SEARCH_PUBLIC_API_KEY: ""
@@ -124,6 +124,7 @@ env:
   EMAIL_PORT: ""
   EMAIL_USERNAME: ""
   EMAIL_PASSWORD: ""
+  EMAIL_ENABLE_SSL: ""
   FEEDBACK_EMAIL_FROM: ""
   FEEDBACK_EMAIL_TO: ""
 
