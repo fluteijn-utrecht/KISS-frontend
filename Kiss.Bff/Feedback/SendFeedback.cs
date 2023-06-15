@@ -11,7 +11,7 @@ namespace Kiss.Bff.Feedback
     [ApiController]
     public class SendFeedback : ControllerBase
     {
-        private static readonly HtmlSanitizer s_sanitizer = new();
+        private static readonly HtmlSanitizer _sanitizer = new();
         private readonly SmtpClient _smtpClient;
         private readonly IConfiguration _configuration;
 
@@ -29,7 +29,7 @@ namespace Kiss.Bff.Feedback
 
             var userEmail = User.FindFirstValue(JwtClaimTypes.Email) ?? User.FindFirstValue(JwtClaimTypes.PreferredUserName);
             var userName = User?.Identity?.Name ?? userEmail;
-            var name = s_sanitizer.Sanitize(model.Name);
+            var name = _sanitizer.Sanitize(model.Name);
             var subject = $"KISS feedback: {name}";
 
             var stringBuilder = new StringBuilder(@"
@@ -48,9 +48,9 @@ namespace Kiss.Bff.Feedback
 <p>
 ");
             stringBuilder
-                .Append(s_sanitizer.Sanitize(userName))
+                .Append(_sanitizer.Sanitize(userName))
                 .Append(" heeft feedback gegeven op: <a href=\"")
-                .Append(s_sanitizer.Sanitize(model.Topic))
+                .Append(_sanitizer.Sanitize(model.Topic))
                 .Append("\">")
                 .Append(name)
                 .Append("</a></p>");
@@ -67,7 +67,7 @@ namespace Kiss.Bff.Feedback
                     itemCount++;
                     if (itemCount >= 10) break;
                     stringBuilder.Append(itemCount == 1 ? "<dt>" : "<dd>");
-                    stringBuilder.Append(s_sanitizer.Sanitize(item));
+                    stringBuilder.Append(_sanitizer.Sanitize(item));
                     stringBuilder.Append(itemCount == 1 ? "</dt>" : "</dd>");
                 }
                 stringBuilder.Append("</dl>");
