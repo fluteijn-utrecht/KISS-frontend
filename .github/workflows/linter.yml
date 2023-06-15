@@ -62,7 +62,9 @@ jobs:
           dotnet-version: '6.x.x'
 
       - name: Install dotnet-format tool
+        working-directory: ./Kiss.Bff
         run: dotnet tool install -g dotnet-format
 
       - name: Run dotnet format
+        working-directory: ./Kiss.Bff
         run: dotnet format '.\' --folder --check --verbosity diagnostic
