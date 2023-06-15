@@ -1,3 +1,5 @@
+[![GitHub Super-Linter](https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+
 # kiss-frontend
 
 This template should help get you started developing with Vue 3 in Vite.
