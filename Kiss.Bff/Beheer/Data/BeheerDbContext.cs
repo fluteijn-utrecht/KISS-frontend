@@ -1,12 +1,13 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Kiss.Bff.Beheer.Data
 {
-    public class BeheerDbContext : DbContext
+    public class BeheerDbContext : DbContext, IDataProtectionKeyContext
     {
 
         public BeheerDbContext(DbContextOptions<BeheerDbContext> options)
@@ -41,5 +42,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<BerichtGelezen> Gelezen { get; set; } = null!;
         public DbSet<Link> Links { get; set; } = null!;
         public DbSet<Gespreksresultaat> Gespreksresultaten { get; set; } = null!;
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     }
 }

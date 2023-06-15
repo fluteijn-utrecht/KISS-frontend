@@ -49,7 +49,7 @@ export type OrganisatorischeEenheid = {
 };
 
 export type Vestiging = {
-  naam: string;
+  handelsnaam?: string[];
   vestigingsNummer: string;
 };
 
