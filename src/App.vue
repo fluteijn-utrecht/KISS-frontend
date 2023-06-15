@@ -29,7 +29,6 @@ import { SwitchableStoreProvider } from "./stores/switchable-store";
 
 const contactmomentStore = useContactmomentStore();
 const route = useRoute();
-// test lint
 </script>
 
 <style lang="scss">
