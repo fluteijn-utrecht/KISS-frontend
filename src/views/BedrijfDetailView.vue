@@ -118,6 +118,7 @@ import {
   useZakenByVestigingsnummer,
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
