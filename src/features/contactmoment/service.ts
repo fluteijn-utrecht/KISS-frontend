@@ -34,7 +34,7 @@ const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 export const saveContactmoment = (
   data: Contactmoment
 ): Promise<{ id: string; url: string; gespreksId: string }> =>
-  fetchLoggedIn(`${contactmomentenBaseUrl}/contactmomenten`, {
+  fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {
       Accept: "application/json",

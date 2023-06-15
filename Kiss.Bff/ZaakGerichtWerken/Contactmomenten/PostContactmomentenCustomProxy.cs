@@ -6,17 +6,19 @@ using IdentityModel;
 using System.Security.Claims;
 using System.Net;
 using AngleSharp.Io;
-
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using System.Xml;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
-    [Route("api/postcontactmoment")]
+    [Route("api/postcontactmomenten")]
     [ApiController]
     public class PostContactmomentenCustomProxy : ControllerBase
     {
         private readonly HttpClient _defaultClient;
         private readonly ZgwTokenProvider _tokenProvider;
-        public PostContactmomentenCustomProxy( IConfiguration configuration, IHttpClientFactory factory)
+        public PostContactmomentenCustomProxy(IConfiguration configuration, IHttpClientFactory factory)
         {
             var destination = configuration["CONTACTMOMENTEN_BASE_URL"];
             var clientId = configuration["CONTACTMOMENTEN_API_CLIENT_ID"];
@@ -35,34 +37,43 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
 
 
-          //  var x  = entity.GetRawText();
-          //  var xx = JObject.Parse(x);
-            //  var xxx = xx.SelectToken("registratiedatum")?.Value<string>();
+            var model = entity.GetRawText();
+            var parsedModel = JsonNode.Parse(model);
 
-        //    medewerkerIdentificatie komt niet mee : badrequest
-         //   xx.Add("medewerkerIdentificatie", JObject.FromObject(new { achternaam =  userRepresentation, identificatie = userId, voorletters ="", voorvoegselAchternaam="" }));
 
- 
+            if (parsedModel != null)
+            {
+
+                parsedModel["medewerkerIdentificatie"] = new JsonObject
+                {
+                    ["achternaam"] = userRepresentation,
+                    ["identificatie"] = userId,
+                    ["voorletters"] = "",
+                    ["voorvoegselAchternaam"] = "",
+
+                };
+
+            }
+
+
 
             var accessToken = _tokenProvider.GenerateToken(userId, userRepresentation);
 
-            //read the body...
-            //add medewerker info 
-            //pass to openklant
+          
 
             var url = "https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/contactmomenten";
 
 
-         //   using var newRequest = new HttpRequestMessage(new System.Net.Http.HttpMethod(Request.Method), url);
+            //   using var newRequest = new HttpRequestMessage(new System.Net.Http.HttpMethod(Request.Method), url);
 
-          //  newRequest.Content = new StreamContent(Request.HttpContext.Request.Body);
+            //  newRequest.Content = new StreamContent(Request.HttpContext.Request.Body);
 
             _defaultClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             //  return await httpClient.PostAsync(url);
 
-       //     return await _defaultClient.PostAsJsonAsync(url, xx );
+            //     return await _defaultClient.PostAsJsonAsync(url, xx );
 
-            return await _defaultClient.PostAsJsonAsync(url, new { } );
+            return await _defaultClient.PostAsJsonAsync(url, parsedModel);
 
 
 

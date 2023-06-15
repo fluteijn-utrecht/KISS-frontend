@@ -48,8 +48,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
 
             //context.Query.Collection["klant"] = "sdfsdfsdfd";
 
-            var klantQuerystringParams = context.Query.Collection;
-         //   context.ProxyRequest.RequestUri
+
 
             return new();
         }
