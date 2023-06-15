@@ -123,6 +123,8 @@ const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+
 watch(
   () => klant.success && klant.data,
   (k) => {
@@ -143,33 +145,9 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantId,
+  klantUrl,
   contactmomentenPage
 );
-
-//const zakenDict = ref<any>({});
-
-// watch(
-//   () => contactmomenten.success && contactmomenten.data,
-//   (c) => {
-//     if (!c) return;
-
-//     for (const contactmoment of c) {
-//       zakenDict.value[contactmoment.url] = [];
-//       for (const zaakUrl of contactmoment.zaken) {
-//         try {
-//           const p = useZakenSummaryByUrl(ref<string>(zaakUrl));
-//         } catch (e) {
-//           console.log("eeror", e);
-//         }
-
-//         const zaak = useZakenSummaryByUrl(ref<string>(zaakUrl));
-//         zakenDict.value[contactmoment.url].push(zaak);
-//       }
-//     }
-//   },
-//   { immediate: true }
-// );
 
 const onContactmomentenNavigate = (page: number) => {
   contactmomentenPage.value = page;

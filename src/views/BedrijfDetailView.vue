@@ -124,6 +124,7 @@ const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 watch(
   () => klant.success && klant.data,
@@ -145,7 +146,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantId,
+  klantUrl,
   contactmomentenPage
 );
 

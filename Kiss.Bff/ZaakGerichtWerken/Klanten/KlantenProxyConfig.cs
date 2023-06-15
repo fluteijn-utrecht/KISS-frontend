@@ -1,6 +1,8 @@
 ﻿using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using IdentityModel;
+using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Transforms;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Klanten
@@ -11,6 +13,8 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
         {
             var tokenProvider = new ZgwTokenProvider(apiKey, clientId);
             var config = new KlantenProxyConfig(destination, tokenProvider);
+     
+
             services.AddSingleton<IKissProxyRoute>(config);
             return services;
         }
@@ -30,6 +34,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
 
         public string Destination { get; }
 
+        
+
+   
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
             var userId = context.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
@@ -38,6 +45,11 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
             var token = _tokenProvider.GenerateToken(userId, userRepresentation);
 
             context.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //context.Query.Collection["klant"] = "sdfsdfsdfd";
+
+            var klantQuerystringParams = context.Query.Collection;
+         //   context.ProxyRequest.RequestUri
 
             return new();
         }

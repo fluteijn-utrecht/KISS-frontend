@@ -374,16 +374,6 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,
     downloadUrl: xx + "/download?versie=1",
-    //werkt nog niet, wordt in een volgende story oafgemaakt
-    // downloadUrl:
-    // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
-
-    // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1",
-    // "https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
-
-    // https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1
-
-    // rawDocumenten.inhoud?.split("/").pop(), //https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1
   };
   return doc;
 };

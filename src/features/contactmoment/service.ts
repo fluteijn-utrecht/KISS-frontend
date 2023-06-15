@@ -34,7 +34,7 @@ const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 export const saveContactmoment = (
   data: Contactmoment
 ): Promise<{ id: string; url: string; gespreksId: string }> =>
-  fetchLoggedIn("/api/contactmomenten/contactmomenten/api/v1/contactmomenten", {
+  fetchLoggedIn(`${contactmomentenBaseUrl}/contactmomenten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -136,14 +136,9 @@ export function useContactmomentenByKlantId(
   id: Ref<string>,
   page: Ref<number>
 ) {
-  //get url for klantcontactmomenten
-
   function getUrl() {
     const searchParams = new URLSearchParams();
-    searchParams.set(
-      "klant",
-      "https://open-klant.dev.kiss-demo.nl/klanten/api/v1/klanten/" + id.value
-    );
+    searchParams.set("klant", id.value);
     return `${klantcontactmomentenUrl}?${searchParams.toString()}`;
   }
 

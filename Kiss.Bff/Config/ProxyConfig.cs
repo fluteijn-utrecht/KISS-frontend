@@ -48,6 +48,13 @@ namespace Microsoft.Extensions.DependencyInjection
             var match = _proxyRoutes.FirstOrDefault(x => x.Route == context?.Cluster?.ClusterId);
             if (match != null)
             {
+                var klantParam = context?.Route?.Match?.QueryParameters?.FirstOrDefault(x => x.Name == "klant");
+                var klantPramValue = klantParam?.Values?.FirstOrDefault();
+
+                _ = (context?.Route.WithTransformQueryValue("klant", value: $"hhhhhhh{klantPramValue}"));
+
+
+              //  context.AddQueryRouteValue("klant", "gggg");
                 context.AddRequestTransform(match.ApplyRequestTransform);
             }
         }
@@ -72,7 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 RouteId = x.Route,
                 ClusterId = x.Route,
                 Match = new RouteMatch { Path = $"/api/{x.Route.Trim('/')}/{{*any}}" },
-
+                
                 Transforms = new[]
                 {
                     new Dictionary<string, string>
@@ -82,8 +89,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     new Dictionary<string, string>
                     {
                         ["RequestHeaderRemove"] = "Cookie",
-                    }
+                    },
+                    //   new Dictionary<string, string>
+                    //{
+                    //    ["QueryValueParameter"] = "klant",
+                    //    ["Append"] = "bar"
+                    //}
                 }
+
+
             }).ToArray();
 
             var clusters = proxyRoutes.Select(x => new ClusterConfig
@@ -107,6 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }).ToArray();
 
             _config = new SimpleProxyConfig(routes, clusters);
+ 
         }
 
         public IProxyConfig GetConfig() => _config;
