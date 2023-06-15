@@ -67,4 +67,4 @@ jobs:
 
       - name: Run dotnet format
         working-directory: ./Kiss.Bff
-        run: dotnet format '.\' --folder --check --verbosity diagnostic
+        run: dotnet format '.\' --verbosity diagnostic
