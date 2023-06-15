@@ -56,3 +56,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_MARKDOWN: false
           VALIDATE_NATURAL_LANGUAGE: false
+          TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
+          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.cjs
+          LINTER_RULES_PATH: /
+          VALIDATE_JAVASCRIPT_STANDARD: false
