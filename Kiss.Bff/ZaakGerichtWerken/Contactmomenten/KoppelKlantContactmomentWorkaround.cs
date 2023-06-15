@@ -8,7 +8,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
     [ApiController]
     [Route("api/contactmomenten/contactmomenten/api/v1/klantcontactmomenten")]
-    //"/api/contactmomenten/contactmomenten/api/v1/"
     public class KoppelKlantContactmomentWorkaround : ControllerBase
     {
         private readonly BeheerDbContext _db;
