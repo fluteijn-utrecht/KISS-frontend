@@ -20,7 +20,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         [HttpGet]
         public async Task<ActionResult<ZgwPagination<KlantContactmoment>>> Get([FromQuery] KlantContactmomentQuery model, CancellationToken token)
         {
-            var dbQuery = _db.Set<KlantContactmoment>().Where(x => x.Klant == model.Klant);
+            var dbQuery = _db.KlantContactmomenten.Where(x => x.Klant == model.Klant);
             var count = await dbQuery.CountAsync(token);
             const int PageSize = 15;
             var page = model.Page.HasValue
