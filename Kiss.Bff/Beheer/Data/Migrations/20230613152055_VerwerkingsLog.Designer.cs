@@ -3,6 +3,7 @@ using System;
 using Kiss.Bff.Beheer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
     [DbContext(typeof(BeheerDbContext))]
-    partial class BeheerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230613152055_VerwerkingsLog")]
+    partial class VerwerkingsLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,24 +206,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Skills");
-                });
-
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.KlantContactmoment", b =>
-                {
-                    b.Property<string>("Klant")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Contactmoment")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Rol")
-                        .HasColumnType("text");
-
-                    b.HasKey("Klant", "Contactmoment", "Rol");
-
-                    b.HasIndex("Klant");
-
-                    b.ToTable("KlantContactmomenten");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>

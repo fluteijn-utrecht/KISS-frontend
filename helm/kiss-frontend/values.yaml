@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+replicaCount: 2
 
 config:
   organizationIds: []
@@ -96,17 +96,22 @@ nodeSelector: {}
 
 tolerations: []
 
-affinity: {}
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - kiss-frontend
+      topologyKey: "kubernetes.io/hostname"
 
 env:
-  OIDC_CLIENT_SECRET: ""
   OIDC_CLIENT_ID: ""
   OIDC_AUTHORITY: ""
   KVK_BASE_URL: ""
-  KVK_API_KEY: ""
   HAAL_CENTRAAL_BASE_URL: ""
-  HAAL_CENTRAAL_API_KEY: ""
-  POSTGRES_PASSWORD: ""
   POSTGRES_USER: ""
   POSTGRES_DB: ""
   POSTGRES_HOST: kiss-ci-release-postgresql
@@ -115,20 +120,27 @@ env:
   ENTERPRISE_SEARCH_BASE_URL: ""
   ENTERPRISE_SEARCH_PUBLIC_API_KEY: ""
   ZAKEN_BASE_URL: ""
-  ZAKEN_API_KEY: ""
   ZAKEN_API_CLIENT_ID: ""
   KLANTEN_BASE_URL: ""
   KLANTEN_CLIENT_ID: ""
-  KLANTEN_CLIENT_SECRET: ""
   EMAIL_HOST: ""
   EMAIL_PORT: ""
   EMAIL_USERNAME: ""
-  EMAIL_PASSWORD: ""
   EMAIL_ENABLE_SSL: ""
   FEEDBACK_EMAIL_FROM: ""
   FEEDBACK_EMAIL_TO: ""
+  CONTACTMOMENTEN_BASE_URL: ""
+  CONTACTMOMENTEN_API_CLIENT_ID: ""
 
 postgresql:
   enabled: true
   service:
     port: 5432
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+cronjobs: []
