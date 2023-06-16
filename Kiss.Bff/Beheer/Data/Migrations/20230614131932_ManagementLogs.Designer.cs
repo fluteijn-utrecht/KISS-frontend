@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
     [DbContext(typeof(BeheerDbContext))]
-    [Migration("20230616134422_ManagementLogs")]
+    [Migration("20230614131932_ManagementLogs")]
     partial class ManagementLogs
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -122,33 +122,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.ToTable("ContactmomentManagementLogs");
                 });
 
-            modelBuilder.Entity("Kiss.Bff.Beheer.Verwerking.VerwerkingsLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ApiEndpoint")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("InsertedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VerwerkingsLogs");
-                });
-
             modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", b =>
                 {
                     b.Property<int>("Id")
@@ -234,24 +207,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Skills");
-                });
-
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.KlantContactmoment", b =>
-                {
-                    b.Property<string>("Klant")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Contactmoment")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Rol")
-                        .HasColumnType("text");
-
-                    b.HasKey("Klant", "Contactmoment", "Rol");
-
-                    b.HasIndex("Klant");
-
-                    b.ToTable("KlantContactmomenten");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
