@@ -584,7 +584,10 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
 
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await upsertContactmomentManagementInfo(contactmoment, savedContactmoment.id);
+  await upsertContactmomentManagementInfo(
+    contactmoment,
+    savedContactmoment.url
+  );
 
   try {
     await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
@@ -596,7 +599,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
-    await koppelContactverzoek(savedContactmoment.id, contactverzoekUrl);
+    await koppelContactverzoek(savedContactmoment.url, contactverzoekUrl);
   }
 
   return savedContactmoment;
