@@ -21,10 +21,8 @@ function _getKlantInfo(klant: ContactmomentKlant) {
       .filter(Boolean)
       .join(" ") || klant.bedrijfsnaam;
 
-  const email = klant.emails.map(({ email }) => email).find(Boolean);
-  const phone = klant.telefoonnummers
-    .map(({ telefoonnummer }) => telefoonnummer)
-    .find(Boolean);
+  const email = klant.emailadres;
+  const phone = klant.telefoonnummer;
 
   const contact = email || phone;
 

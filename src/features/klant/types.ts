@@ -15,6 +15,7 @@ export interface Klant {
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
+  url?: string;
 }
 
 export enum KlantType {
