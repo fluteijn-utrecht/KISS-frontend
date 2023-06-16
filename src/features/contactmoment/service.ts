@@ -23,7 +23,7 @@ import { toRelativeProxyUrl } from "@/helpers/url";
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
-const objectcontactmomentenUrl = `${contactmomentenBaseUrl}"/objectcontactmomenten`;
+const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
 const zaaksysteemProxyRoot = `/api/zaken`;

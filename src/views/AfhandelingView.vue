@@ -587,7 +587,13 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
 
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+  try {
+    await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+  } catch (e) {
+    //zaken toevoegen aan een contactmoment retourneert soms een error terwijl de data wel correct opgelsagen is.
+    //toch maar verder gaan dus
+    console.error(e);
+  }
   await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
