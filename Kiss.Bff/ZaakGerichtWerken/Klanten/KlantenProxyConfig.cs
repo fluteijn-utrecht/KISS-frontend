@@ -34,8 +34,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
 
         public string Destination { get; }
 
-        
-
    
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
@@ -45,11 +43,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
             var token = _tokenProvider.GenerateToken(userId, userRepresentation);
 
             context.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-            //context.Query.Collection["klant"] = "sdfsdfsdfd";
-
-
-
+           
             return new();
         }
     }

@@ -51,7 +51,6 @@ try
 
     builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
     builder.Services.AddContactmomentenProxy(builder.Configuration["CONTACTMOMENTEN_BASE_URL"], builder.Configuration["CONTACTMOMENTEN_API_CLIENT_ID"], builder.Configuration["CONTACTMOMENTEN_API_KEY"]);
-    builder.Services.AddScoped<PostContactmomentenCustomProxy>();
 
     builder.Services.AddSmtpClient(
         builder.Configuration["EMAIL_HOST"],
