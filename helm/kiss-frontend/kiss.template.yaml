@@ -46,4 +46,5 @@ elasticstack:
   credentials:
     username: elastic
     password: password
+
 cronjobs: []
