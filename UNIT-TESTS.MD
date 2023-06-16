@@ -15,7 +15,7 @@ Unit tests for the front-end are written if deemed appropriate by the developer 
 - **Exhaustive**: unit tests should target an exhaustive range of scenarios.
 - **Maintainable**: unit tests should NOT be tightly coupled to the implementation of the unit of code it is meant to test.
 
-## Current candidates for unit tests
+## Current candidates for Front-end unit tests
 In order of priority:
 - [ ] [`/src/services/service-data.ts`](/src/services/service-data.ts)
   - [ ] `ServiceResult.fromPromise`: test if the correct result type is returned for a pending, a resolved and an rejected Promise.
@@ -45,3 +45,25 @@ In order of priority:
 ## Less priority:
 - [ ] all code in [`/src/helpers`](/src/helpers)
 - [ ] all code in [`/src/features/shared`](/src/features/shared)
+
+
+## Current candidates for Back-end unit tests
+Bestaat grotendeels uit (proxy)configuratie en daardoor beperkt geschikt voor unittests 
+
+In order of priority:
+### Verwerkingslog middleware
+Belangrijke functionaliteit die bij elk contactmoment uitgevoerd moet worden. daardoor waardevol om te testen
+### ZGW api's
+Grotendeels proxyconfiguratie die niet geschikt is voor unittests. een paar uitzonderingen:
+- het verrijken van een op te slaan contactmoment met de gegevens van de gebruiker
+- het creeeren van een autorisatie token
+### Beheerfucntionaliteit
+- Gespreksresultaten CRUD acties
+- Links CRUD acties
+- Skills CRUD acties 
+- Nieuws en werkinstruncties CRUD acties
+- Belangrijke berichten aantal ophalen
+- Berichten als gelezenmarkeren
+- Berichten zoeken 
+### Feedbackversturen
+- Het opstellen van de mail is testbaar. het versturen niet
