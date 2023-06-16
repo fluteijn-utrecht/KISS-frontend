@@ -464,6 +464,7 @@ import { fetchLoggedIn, getFormattedUtcDate } from "@/services";
 import { nanoid } from "nanoid";
 import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
 import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
+import { upsertContactmomentManagementInfo } from "@/features/contactmoment/upsert-contactmoment-management";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -548,7 +549,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     medewerker: "",
     resultaat: vraag.resultaat,
     startdatum: vraag.startdatum,
-    einddatum: getFormattedUtcDate(),
+    einddatum: new Date().toISOString(),
     primaireVraag: vraag.primaireVraag?.url,
     primaireVraagWeergave: vraag.primaireVraag?.title,
     afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
@@ -583,6 +584,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
 
   const savedContactmoment = await saveContactmoment(contactmoment);
+  await upsertContactmomentManagementInfo(contactmoment, savedContactmoment.id);
+
   try {
     await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
   } catch (e) {

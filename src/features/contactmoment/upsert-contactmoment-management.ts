@@ -10,7 +10,7 @@ export type ContactmomentManagementInfo = Pick<
   | "afwijkendOnderwerp"
 >;
 
-export const upsert = (
+export const upsertContactmomentManagementInfo = (
   contactmoment: ContactmomentManagementInfo,
   id: string
 ): Promise<unknown> =>
