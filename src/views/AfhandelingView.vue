@@ -289,10 +289,6 @@
               required
               v-if="gespreksresultaten.success"
             >
-              <option>
-                tijdelijke optie omdat het contactmoment anders niet opgeslagen
-                kan worden
-              </option>
               <option
                 v-for="gespreksresultaat in gespreksresultaten.data"
                 :key="gespreksresultaat.id"
