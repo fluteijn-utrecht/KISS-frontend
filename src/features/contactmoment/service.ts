@@ -169,14 +169,6 @@ export function useContactmomentenByKlantId(
     return { ...x, zaken };
   };
 
-  const mapKlantContactmoment = async (
-    r: any
-  ): Promise<KlantContactmoment | undefined> => {
-    return {
-      ...r,
-    };
-  };
-
   const fetchContactMomenten = (url: string) => {
     let relUrl;
 
@@ -197,7 +189,7 @@ export function useContactmomentenByKlantId(
     const klantContactmomentPage = fetchLoggedIn(url)
       .then(throwIfNotOk)
       .then((r) => r.json())
-      .then((x) => parsePagination(x, mapKlantContactmoment))
+      .then((x) => parsePagination(x, (r) => r))
       .then((paginated) => {
         const page = paginated.page.filter(Boolean) as KlantContactmoment[];
 
