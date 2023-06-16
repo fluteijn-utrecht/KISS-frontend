@@ -92,6 +92,34 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.ToTable("Links");
                 });
 
+            modelBuilder.Entity("Kiss.Bff.Beheer.Management.ContactmomentManagementLog", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AfwijkendOnderwerp")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Einddatum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EmailadresKcm")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrimaireVraagWeergave")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Resultaat")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Startdatum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ContactmomentManagementLogs");
+                });
+
             modelBuilder.Entity("Kiss.Bff.Beheer.Verwerking.VerwerkingsLog", b =>
                 {
                     b.Property<Guid>("Id")
