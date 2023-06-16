@@ -129,6 +129,8 @@ env:
   EMAIL_ENABLE_SSL: ""
   FEEDBACK_EMAIL_FROM: ""
   FEEDBACK_EMAIL_TO: ""
+  CONTACTMOMENTEN_BASE_URL: ""
+  CONTACTMOMENTEN_API_CLIENT_ID: ""
 
 postgresql:
   enabled: true
@@ -141,21 +143,4 @@ strategy:
     maxUnavailable: 0
     maxSurge: 1
 
-cronjobs:
-- name: kiss-elastic-sync-job-smoelenboek
-  schedule: "*/59 * * * *"
-  image:
-    repository: ghcr.io/klantinteractie-servicesysteem/kiss-elastic-sync
-    pullPolicy: Always
-    tag: latest
-  secretName: kiss-elastic-env
-  restartPolicy: Never
-  type: smoelenboek
-- name: kiss-elastic-sync-job-kennisartikelen
-  schedule: "*/59 * * * *"
-  image:
-    repository: ghcr.io/klantinteractie-servicesysteem/kiss-elastic-sync
-    pullPolicy: Always
-    tag: latest
-  secretName: kiss-elastic-env
-  restartPolicy: Never
+cronjobs: []
