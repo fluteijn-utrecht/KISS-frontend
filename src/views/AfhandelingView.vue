@@ -685,7 +685,13 @@ const addNieuwsberichtToContactmoment = (
   vraag.nieuwsberichten.forEach((nieuwsbericht) => {
     if (!nieuwsbericht.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(nieuwsbericht.nieuwsbericht.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      nieuwsbericht.nieuwsbericht.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 
@@ -698,7 +704,7 @@ const addWerkinstructiesToContactmoment = (
   vraag.werkinstructies.forEach((werkinstructie) => {
     if (!werkinstructie.shouldStore) return;
 
-    //make absolute if not already     
+    //make absolute if not already
     const absoluteUrl = new URL(
       werkinstructie.werkinstructie.url,
       window.location.origin
