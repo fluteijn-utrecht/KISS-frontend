@@ -142,19 +142,24 @@ const fetchContactmoment = (u: string) =>
   fetchLoggedIn(u)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(async (x) => {
-      const objects = await Promise.all(
-        (x.objectcontactmomenten as string[]).map((x) => {
-          const oUrl = toRelativeProxyUrl(x, contactmomentenProxyRoot);
-          if (!oUrl) throw new Error("invalid url: " + x);
-          return fetchObject(oUrl);
-        })
-      );
+    .then(async (cm) => {
+      const { objectcontactmomenten } = cm || {};
+      if (!Array.isArray(objectcontactmomenten)) return cm;
+
+      const promises = objectcontactmomenten.map((x: string) => {
+        const oUrl = toRelativeProxyUrl(x, contactmomentenProxyRoot);
+        if (!oUrl) throw new Error("invalid url: " + x);
+        return fetchObject(oUrl);
+      });
+
+      const objects = await Promise.all(promises);
+
       const zaken = objects
         .filter((x) => x.objectType === "zaak")
         .map((x) => x.object);
+
       return {
-        ...x,
+        ...cm,
         zaken,
       } as ContactmomentViewModel;
     });
@@ -222,10 +227,9 @@ const mapContactverzoekDetail = (
 export function useContactmomentenByObjectUrl(url: Ref<string>) {
   const getUrl = () => {
     if (!url.value) return "";
-    const fullUrl = new URL(document.location.href);
-    fullUrl.pathname = objectcontactmomentenUrl;
-    fullUrl.searchParams.append("object", url.value);
-    return fullUrl.toString();
+    const params = new URLSearchParams();
+    params.set("object", url.value);
+    return `${objectcontactmomentenUrl}?${params}`;
   };
 
   return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
