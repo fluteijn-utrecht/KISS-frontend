@@ -20,11 +20,11 @@
 
       <tabs-component v-model="activeTab">
         <template #[Tabs.algemeen]>
-          <zaak-algemeen :zaak="zaak" />
+          <zaak-algemeen :zaak="zaak.data" />
         </template>
 
         <template #[Tabs.documenten]>
-          <zaak-documenten :zaak="zaak" />
+          <zaak-documenten :zaak="zaak.data" />
         </template>
 
         <template #[Tabs.contactmomenten]>
