@@ -33,7 +33,7 @@ const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
 export const saveContactmoment = (
   data: Contactmoment
-): Promise<{ id: string; url: string; gespreksId: string }> =>
+): Promise<{ url: string; gespreksId: string }> =>
   fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {

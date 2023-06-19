@@ -61,7 +61,7 @@ function initVraag(): Vraag {
       notitie: "",
       isActive: false,
     },
-    startdatum: getFormattedUtcDate(),
+    startdatum: new Date().toISOString(),
     kanaal: "",
     resultaat: "",
     klanten: [],
