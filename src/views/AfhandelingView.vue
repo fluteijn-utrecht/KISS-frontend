@@ -698,7 +698,13 @@ const addWerkinstructiesToContactmoment = (
   vraag.werkinstructies.forEach((werkinstructie) => {
     if (!werkinstructie.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(werkinstructie.werkinstructie.url);
+    //make absolute if not already     
+    const absoluteUrl = new URL(
+      werkinstructie.werkinstructie.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 
