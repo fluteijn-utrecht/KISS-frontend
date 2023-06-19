@@ -69,6 +69,7 @@ import {
   ContactmomentenOverzicht,
   useContactmomentenByObjectUrl,
 } from "@/features/contactmoment";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
