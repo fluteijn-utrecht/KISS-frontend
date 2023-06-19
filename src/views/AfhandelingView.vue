@@ -692,16 +692,7 @@ const addWerkinstructiesToContactmoment = (
   vraag.werkinstructies.forEach((werkinstructie) => {
     if (!werkinstructie.shouldStore) return;
 
-    try {
-      //make absolute if not already
-      const s = new URL(
-        werkinstructie.werkinstructie.url,
-        window.location.origin
-      );
-    } catch (e) {
-      console.log(e);
-    }
-
+    //make absolute if not already     
     const absoluteUrl = new URL(
       werkinstructie.werkinstructie.url,
       window.location.origin
