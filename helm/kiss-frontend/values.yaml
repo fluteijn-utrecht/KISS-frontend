@@ -1,6 +1,7 @@
 # Default values for kiss-frontend.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+environment: dev
 
 replicaCount: 2
 
@@ -129,6 +130,8 @@ env:
   EMAIL_ENABLE_SSL: ""
   FEEDBACK_EMAIL_FROM: ""
   FEEDBACK_EMAIL_TO: ""
+  CONTACTMOMENTEN_BASE_URL: ""
+  CONTACTMOMENTEN_API_CLIENT_ID: ""
 
 postgresql:
   enabled: true
@@ -140,3 +143,5 @@ strategy:
   rollingUpdate:
     maxUnavailable: 0
     maxSurge: 1
+
+cronjobs: []
