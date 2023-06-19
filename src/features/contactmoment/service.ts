@@ -4,6 +4,7 @@ import {
   ServiceResult,
   type Paginated,
   parsePagination,
+  parseJson,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -243,3 +244,32 @@ const mapContactverzoekDetail = (
     afwijkendOnderwerp: contactmoment.afwijkendOnderwerp,
   };
 };
+
+export function useContactmomentenByObjectUrl(url: Ref<string>) {
+  const getUrl = () => {
+    if (!url.value) return "";
+    const fullUrl = new URL(document.location.href);
+    fullUrl.pathname = objectcontactmomentenUrl;
+    fullUrl.searchParams.append("object", url.value);
+    return fullUrl.toString();
+  };
+
+  const fetcher = (u: string) =>
+    fetchLoggedIn(u)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((p) =>
+        parsePagination(p, (x: any) => {
+          const i = toRelativeProxyUrl(
+            x?.contactmoment,
+            contactmomentenProxyRoot
+          );
+          if (!i) throw new Error("invalide url: " + x?.contactmoment);
+          return fetchLoggedIn(i)
+            .then(throwIfNotOk)
+            .then(parseJson) as Promise<ContactmomentViewModel>;
+        })
+      );
+
+  return ServiceResult.fromFetcher(getUrl, fetcher);
+}
