@@ -361,10 +361,6 @@ export async function updateToelichting(
 
   if (!res.ok)
     throw new Error(`Expected to update toelichting: ${res.status.toString()}`);
-
-  const json = await res.json();
-  const updatedZaak = mapZaakDetails(json);
-  mutate(url, updatedZaak);
 }
 
 const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {

@@ -71,32 +71,35 @@ export const ServiceResult = {
       submitted: true,
     };
   },
-  loading(): ServiceData<any> {
+  loading() {
     return {
       state: "loading",
+      data: undefined,
       error: false,
       success: false,
       loading: true,
       submitted: true,
-    };
+    } as ServiceData<any>;
   },
-  error(error: Error): ServiceData<any> {
-    return reactive({
+  error(error: Error) {
+    return {
       state: "error",
+      data: undefined,
       error,
       success: false,
       loading: false,
       submitted: true,
-    });
+    } as ServiceData<any>;
   },
-  init(): ServiceData<any> {
+  init() {
     return {
       state: "init",
+      data: undefined,
       error: false,
       success: false,
       loading: false,
       submitted: false,
-    };
+    } as ServiceData<any>;
   },
 
   fromPromise<T = unknown>(
@@ -106,23 +109,13 @@ export const ServiceResult = {
 
     promise
       .then((r) => {
-        Object.assign(result, {
-          state: "success",
-          data: r,
-          loading: false,
-          error: false,
-          success: true,
-          submitted: true,
-        });
+        Object.assign(result, ServiceResult.success(r));
       })
       .catch((e) => {
-        Object.assign(result, {
-          state: "error",
-          error: e instanceof Error ? e : new Error(e),
-          loading: false,
-          success: false,
-          submitted: true,
-        });
+        Object.assign(
+          result,
+          ServiceResult.error(e instanceof Error ? e : new Error(e))
+        );
       });
 
     return Object.assign(result, promise);
@@ -133,43 +126,20 @@ export const ServiceResult = {
 
     return Object.assign(result, {
       reset() {
-        Object.assign(result, {
-          state: "init",
-          data: undefined,
-          error: false,
-          success: false,
-          loading: false,
-          submitted: false,
-        });
+        Object.assign(result, ServiceResult.init());
       },
       submit(params: TIn): Promise<TOut> {
-        Object.assign(result, {
-          state: "loading",
-          data: undefined,
-          error: false,
-          success: false,
-          loading: true,
-          submitted: true,
-        });
+        Object.assign(result, ServiceResult.loading());
         return submitter(params)
           .then((r) => {
-            Object.assign(result, {
-              state: "success",
-              data: r,
-              loading: false,
-              error: false,
-              success: true,
-            });
+            Object.assign(result, ServiceResult.success(r));
             return r;
           })
           .catch((e) => {
-            Object.assign(result, {
-              state: "error",
-              data: undefined,
-              error: e instanceof Error ? e : new Error(e),
-              loading: false,
-              success: false,
-            });
+            Object.assign(
+              result,
+              ServiceResult.error(e instanceof Error ? e : new Error(e))
+            );
             throw e;
           });
       },
@@ -190,7 +160,7 @@ export const ServiceResult = {
     const getRequestUniqueId = config?.getUniqueId || getUrl;
     const fetcherWithoutParameters = () => fetcher(getUrl());
 
-    const { data, error, isValidating, mutate } = useSWRV<NotUndefined<T>, any>(
+    const { data, error, mutate } = useSWRV<NotUndefined<T>, any>(
       getRequestUniqueId,
       fetcherWithoutParameters,
       {
@@ -226,8 +196,13 @@ export const ServiceResult = {
       return ServiceResult.success(data.value);
     }
 
-    const comp = computed(getResult);
-    const result = Object.assign(toReactive(comp), { refresh: () => mutate() });
+    const result = reactive({
+      ...ServiceResult.init(),
+      refresh: () => mutate(),
+    });
+
+    watch(getResult, (r) => Object.assign(result, r), { immediate: true });
+
     return result;
   },
 };
