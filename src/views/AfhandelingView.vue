@@ -500,13 +500,18 @@ const zakenToevoegenAanContactmoment = async (
       await koppelZaakContactmoment({
         contactmoment: contactmomentId,
         zaak: zaak.self,
-      }).then(() =>
-        koppelObject({
+      });
+      try {
+        await koppelObject({
           contactmoment: contactmomentId,
           object: zaak.self,
           objectType: "zaak",
-        })
-      );
+        });
+      } catch (e) {
+        //zaken toevoegen aan een contactmoment retourneert soms een error terwijl de data wel correct opgelsagen is.
+        //toch maar verder gaan dus
+        console.error(e);
+      }
     }
   }
 };
@@ -589,13 +594,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     savedContactmoment.url
   );
 
-  try {
-    await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
-  } catch (e) {
-    //zaken toevoegen aan een contactmoment retourneert soms een error terwijl de data wel correct opgelsagen is.
-    //toch maar verder gaan dus
-    console.error(e);
-  }
+  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+
   await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
