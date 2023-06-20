@@ -41,7 +41,7 @@
     "@utrecht/component-library-css": "1.0.0-alpha.361",
     "@utrecht/component-library-vue": "1.0.0-alpha.138",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
-    "@vitejs/plugin-vue": "^4.1.0",
+    "@vitejs/plugin-vue": "^4.2.3",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^10.0.0",
     "@vue/test-utils": "^2.0.0-rc.20",
