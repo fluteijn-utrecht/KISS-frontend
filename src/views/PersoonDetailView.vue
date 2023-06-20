@@ -66,7 +66,6 @@
     </template>
 
     <!-- Contactmomenten -->
-
     <simple-spinner v-if="contactmomenten.loading" />
 
     <application-message
@@ -75,18 +74,22 @@
       messageType="error"
     />
 
-    <template
-      v-if="contactmomenten.success && contactmomenten.data.page.length"
-    >
+    <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page" />
-
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
+        <template v-slot:zaken="{ zaken }">
+          <template v-for="zaakurl in zaken" :key="zaakurl">
+            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+          </template>
+        </template>
+      </contactmomenten-overzicht>
+      <!-- 
       <pagination
         class="pagination"
         :pagination="contactmomenten.data"
         @navigate="onContactmomentenNavigate"
-      />
+      /> -->
     </template>
   </section>
 </template>
@@ -109,14 +112,18 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/shared/get-contactmomenten-service";
+import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import type { ContactmomentViewModel } from "@/features/shared/types";
 
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
+
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 watch(
   () => klant.success && klant.data,
@@ -138,7 +145,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantId,
+  klantUrl,
   contactmomentenPage
 );
 

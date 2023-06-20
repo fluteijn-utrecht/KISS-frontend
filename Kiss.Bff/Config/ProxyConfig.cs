@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
+using Yarp.ReverseProxy.Model;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
@@ -58,6 +59,13 @@ namespace Microsoft.Extensions.DependencyInjection
             var match = _proxyRoutes.FirstOrDefault(x => x.Route == context?.Cluster?.ClusterId);
             if (match != null)
             {
+                var klantParam = context?.Route?.Match?.QueryParameters?.FirstOrDefault(x => x.Name == "klant");
+                var klantPramValue = klantParam?.Values?.FirstOrDefault();
+
+                _ = (context?.Route.WithTransformQueryValue("klant", value: $"hhhhhhh{klantPramValue}"));
+
+
+              //  context.AddQueryRouteValue("klant", "gggg");
                 context.AddRequestTransform(match.ApplyRequestTransform);
             }
         }
@@ -82,7 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 RouteId = x.Route,
                 ClusterId = x.Route,
                 Match = new RouteMatch { Path = $"/api/{x.Route.Trim('/')}/{{*any}}" },
-
+                
                 Transforms = new[]
                 {
                     new Dictionary<string, string>
@@ -92,8 +100,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     new Dictionary<string, string>
                     {
                         ["RequestHeaderRemove"] = "Cookie",
-                    }
+                    },
+                    //   new Dictionary<string, string>
+                    //{
+                    //    ["QueryValueParameter"] = "klant",
+                    //    ["Append"] = "bar"
+                    //}
                 }
+
+
             }).ToArray();
 
             var clusters = proxyRoutes.Select(x => new ClusterConfig
@@ -117,6 +132,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }).ToArray();
 
             _config = new SimpleProxyConfig(routes, clusters);
+ 
         }
 
         public IProxyConfig GetConfig() => _config;
@@ -152,7 +168,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) 
-            => new KissDelegatingHandler(handler, _httpContextAccessor, _serviceScopeFactory);
+            => new KissDelegatingHandler(_httpContextAccessor, _serviceScopeFactory) { InnerHandler = handler };
     }
 
     public class KissDelegatingHandler : DelegatingHandler
@@ -160,7 +176,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public KissDelegatingHandler(HttpMessageHandler inner, IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory) : base(inner)
+        public KissDelegatingHandler(IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory)
         {
             _httpContextAccessor = httpContextAccessor;
             _serviceScopeFactory = serviceScopeFactory;
@@ -170,7 +186,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var context = _httpContextAccessor.HttpContext;
 
-            var clusterId = context?.GetReverseProxyFeature().Cluster.Config.ClusterId;
+            var clusterId = context?.Features.Get<IReverseProxyFeature>()?.Cluster.Config.ClusterId;
 
             // if we are in a request, re-use scoped services
             if (context != null) return await SendAsync(clusterId, context.RequestServices, request, cancellationToken);

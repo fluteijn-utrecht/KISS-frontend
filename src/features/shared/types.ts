@@ -7,14 +7,22 @@ export interface ContactmomentViewModel {
   kanaal: string;
   resultaat: string;
   tekst: string;
-  zaken: ContactmomentZaak[];
-  contactverzoeken: ContactmomentContactverzoek[];
+  zaken: string[];
+  //contactverzoeken: ContactmomentContactverzoek[];
   _self: {
     owner: string;
   };
   primaireVraag?: string;
   primaireVraagWeergave?: string;
   afwijkendOnderwerp?: string;
+  medewerkerIdentificatie: MedewerkerIdentificatie;
+}
+
+export interface MedewerkerIdentificatie {
+  identificatie: string;
+  achternaam: string;
+  voorletters: string;
+  voorvoegselAchternaam: string;
 }
 
 export interface ContactmomentZaak {
