@@ -16,10 +16,14 @@ import type {
   Vestiging,
   ZaakDetails,
   ZaakDocument,
+  ZaakPreview,
   ZaakType,
 } from "./types";
 import type { Ref } from "vue";
 import { mutate } from "swrv";
+import { toRelativeProxyUrl } from "@/helpers/url";
+
+const zakenProxyRoot = "/api/zaken";
 
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
@@ -34,6 +38,25 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
   };
 
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
+};
+
+export const useZakenPreviewByUrl = (url: Ref<string>) => {
+  const getUrl = () => {
+    return toRelativeProxyUrl(url.value, zakenProxyRoot) ?? "";
+  };
+
+  const fetchPreview = (url: string): Promise<any> =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((x) => x.json())
+      .then((json) => mapZaakDetailsPreview(json));
+
+  return ServiceResult.fromFetcher(getUrl, fetchPreview, {
+    getUniqueId() {
+      const url = getUrl();
+      return url && `${url}_preview`;
+    },
+  });
 };
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
@@ -238,35 +261,36 @@ const mapZaakDetails = async (zaak: any) => {
 
   const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
 
-  const doorlooptijd = parseInt(
-    zaakzaaktype.doorlooptijd
-      ? zaakzaaktype.doorlooptijd.replace(/^\D+/g, "")
-      : "0",
-    10
-  );
+  // voorlopig disabled: openzaakbrondata is niet conform de standaard
+  // const doorlooptijd = parseInt(
+  //   zaakzaaktype.doorlooptijd
+  //     ? zaakzaaktype.doorlooptijd.replace(/^\D+/g, "")
+  //     : "0",
+  //   10
+  // );
 
-  const servicenorm = parseInt(
-    zaakzaaktype.servicenorm
-      ? zaakzaaktype.servicenorm.replace(/^\D+/g, "")
-      : "0",
-    10
-  );
+  // const servicenorm = parseInt(
+  //   zaakzaaktype.servicenorm
+  //     ? zaakzaaktype.servicenorm.replace(/^\D+/g, "")
+  //     : "0",
+  //   10
+  // );
 
-  const fataleDatum =
-    startdatum &&
-    DateTime.fromJSDate(startdatum)
-      .plus({
-        days: isNaN(doorlooptijd) ? 0 : doorlooptijd,
-      })
-      .toJSDate();
+  // const fataleDatum =
+  //   startdatum &&
+  //   DateTime.fromJSDate(startdatum)
+  //     .plus({
+  //       days: isNaN(doorlooptijd) ? 0 : doorlooptijd,
+  //     })
+  //     .toJSDate();
 
-  const streefDatum =
-    startdatum &&
-    DateTime.fromJSDate(startdatum)
-      .plus({
-        days: isNaN(servicenorm) ? 0 : servicenorm,
-      })
-      .toJSDate();
+  // const streefDatum =
+  //   startdatum &&
+  //   DateTime.fromJSDate(startdatum)
+  //     .plus({
+  //       days: isNaN(servicenorm) ? 0 : servicenorm,
+  //     })
+  //     .toJSDate();
 
   const documenten = await getDocumenten(zaak.url);
 
@@ -284,14 +308,24 @@ const mapZaakDetails = async (zaak: any) => {
     behandelaar: getNamePerRoltype(rollen, "behandelaar"),
     aanvrager: getNamePerRoltype(rollen, "initiator"),
     startdatum,
-    fataleDatum: fataleDatum,
-    streefDatum: streefDatum,
+    // fataleDatum: fataleDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
+    // streefDatum: streefDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
     indienDatum: zaak.publicatiedatum && new Date(zaak.publicatiedatum),
     registratieDatum: zaak.registratiedatum && new Date(zaak.registratiedatum),
     self: zaak.url,
     documenten: documenten,
     omschrijving: zaak.omschrijving,
   } as ZaakDetails;
+};
+
+const mapZaakDetailsPreview = async (zaak: any) => {
+  const zaakzaaktype = await getZaakType(zaak.zaaktype);
+
+  return {
+    identificatie: zaak.identificatie,
+    zaaktypeLabel: zaakzaaktype.onderwerp,
+    status: await getStatus(zaak.status),
+  } as ZaakPreview;
 };
 
 const zaaksysteemBaseUri = `/api/zaken/zaken/api/v1`;
@@ -327,10 +361,6 @@ export async function updateToelichting(
 
   if (!res.ok)
     throw new Error(`Expected to update toelichting: ${res.status.toString()}`);
-
-  const json = await res.json();
-  const updatedZaak = mapZaakDetails(json);
-  mutate(url, updatedZaak);
 }
 
 const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
@@ -344,16 +374,6 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,
     downloadUrl: xx + "/download?versie=1",
-    //werkt nog niet, wordt in een volgende story oafgemaakt
-    // downloadUrl:
-    // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
-
-    // "/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1",
-    // "https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1",
-
-    // https://localhost:3000/api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/adcdddd9-3d90-4488-b7c8-96ff017195a9/download?versie=1
-
-    // rawDocumenten.inhoud?.split("/").pop(), //https://open-zaak.dev.kiss-demo.nl/documenten/api/v1/enkelvoudiginformatieobjecten/c733e749-2dc5-4d29-a45f-165094e21d6f/download?versie=1
   };
   return doc;
 };
