@@ -78,19 +78,19 @@
     <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data">
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
         <template v-slot:zaken="{ zaken }">
           <template v-for="zaakurl in zaken" :key="zaakurl">
             <zaak-preview :zaakurl="zaakurl"></zaak-preview>
           </template>
         </template>
       </contactmomenten-overzicht>
-
+      <!-- 
       <pagination
         class="pagination"
         :pagination="contactmomenten.data"
         @navigate="onContactmomentenNavigate"
-      />
+      /> -->
     </template>
   </section>
 </template>

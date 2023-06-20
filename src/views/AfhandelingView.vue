@@ -497,16 +497,65 @@ const zakenToevoegenAanContactmoment = async (
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
-      await koppelZaakContactmoment({
-        contactmoment: contactmomentId,
-        zaak: zaak.self,
-      }).then(() =>
-        koppelObject({
-          contactmoment: contactmomentId,
-          object: zaak.self,
-          objectType: "zaak",
-        })
-      );
+      try {
+        //dit is voorlopige, hopelijk tijdelijke, code om uit te proberen of dit een nuttige manier is om met de instabiliteit van openzaak en openklant om te gaan
+        //derhalve bewust nog niet geoptimaliseerd
+        try {
+          await koppelZaakContactmoment({
+            contactmoment: contactmomentId,
+            zaak: zaak.self,
+          });
+        } catch (e) {
+          try {
+            console.log(
+              "koppelZaakContactmoment in openzaak attempt 1 failed",
+              e
+            );
+            await koppelZaakContactmoment({
+              contactmoment: contactmomentId,
+              zaak: zaak.self,
+            });
+          } catch (e) {
+            try {
+              console.log(
+                "koppelZaakContactmoment in openzaak attempt 2 failed",
+                e
+              );
+              await koppelZaakContactmoment({
+                contactmoment: contactmomentId,
+                zaak: zaak.self,
+              });
+            } catch (e) {
+              console.log(
+                "koppelZaakContactmoment in openzaak attempt 3 failed",
+                e
+              );
+            }
+          }
+        }
+
+        //de tweede call gaat vaak mis, maar geeft dan bijna altijd ten onterechte een error response.
+        //de data is dan wel correct opgeslagen
+        //wellicht een timing issue. voor de zekerheid even wachten
+
+        try {
+          setTimeout(
+            async () =>
+              await koppelObject({
+                contactmoment: contactmomentId,
+                object: zaak.self,
+                objectType: "zaak",
+              }),
+            1000
+          );
+        } catch (e) {
+          console.log("koppelZaakContactmoment in openklant", e);
+        }
+      } catch (e) {
+        //zaken toevoegen aan een contactmoment en anedrsom retourneert soms een error terwijl de data meetal wel correct opgelsagen is.
+        //toch maar verder gaan dus
+        console.error(e);
+      }
     }
   }
 };
@@ -589,13 +638,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     savedContactmoment.url
   );
 
-  try {
-    await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
-  } catch (e) {
-    //zaken toevoegen aan een contactmoment retourneert soms een error terwijl de data wel correct opgelsagen is.
-    //toch maar verder gaan dus
-    console.error(e);
-  }
+  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+
   await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
@@ -685,7 +729,13 @@ const addNieuwsberichtToContactmoment = (
   vraag.nieuwsberichten.forEach((nieuwsbericht) => {
     if (!nieuwsbericht.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(nieuwsbericht.nieuwsbericht.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      nieuwsbericht.nieuwsbericht.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 
@@ -698,7 +748,13 @@ const addWerkinstructiesToContactmoment = (
   vraag.werkinstructies.forEach((werkinstructie) => {
     if (!werkinstructie.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(werkinstructie.werkinstructie.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      werkinstructie.werkinstructie.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 

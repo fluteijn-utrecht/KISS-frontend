@@ -77,19 +77,19 @@
     <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data">
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
         <template v-slot:zaken="{ zaken }">
           <template v-for="zaakurl in zaken" :key="zaakurl">
             <zaak-preview :zaakurl="zaakurl"></zaak-preview>
           </template>
         </template>
       </contactmomenten-overzicht>
-
+      <!-- 
       <pagination
         class="pagination"
         :pagination="contactmomenten.data"
         @navigate="onContactmomentenNavigate"
-      />
+      /> -->
     </template>
   </section>
 </template>
@@ -113,7 +113,7 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
-import { useZakenByBsn, useZakenSummaryByUrl } from "@/features/zaaksysteem";
+import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import type { ContactmomentViewModel } from "@/features/shared/types";

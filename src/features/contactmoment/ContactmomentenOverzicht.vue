@@ -28,10 +28,8 @@
               }}</span> -->
             </summary>
             <dl>
-              <!-- 
-                niet conform api standaard
-                <dt>Starttijd</dt>
-                <dd>{{ formatTimeOnly(contactmoment.registratiedatum) }}</dd> -->
+              <dt>Starttijd</dt>
+              <dd>{{ formatTimeOnly(contactmoment.registratiedatum) }}</dd>
               <!-- 
                 niet conform api standaard
                 <template v-if="contactmoment.primaireVraagWeergave">
