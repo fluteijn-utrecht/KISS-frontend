@@ -233,13 +233,13 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
-        (m) => m.medewerker.id === medewerker._self.id
+        (m) => m.medewerker.id === medewerker.id
       );
 
       if (newMedewerkerIndex === -1) {
         huidigeVraag.medewerkers.push({
           medewerker: {
-            id: medewerker._self.id,
+            id: medewerker.id,
             voornaam: medewerker.contact.voornaam,
             voorvoegselAchternaam: medewerker.contact.voorvoegselAchternaam,
             achternaam: medewerker.contact.achternaam,
