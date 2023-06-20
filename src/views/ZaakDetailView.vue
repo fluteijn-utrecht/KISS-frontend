@@ -48,7 +48,7 @@
       </tabs-component>
 
       <div class="toelichting">
-        <zaak-toelichting :zaak="zaak.data" />
+        <zaak-toelichting :zaak="zaak.data" @success="onNotitieUpdate" />
       </div>
     </section>
   </article>
@@ -98,6 +98,8 @@ watch(
   },
   { immediate: true }
 );
+
+const onNotitieUpdate = () => zaak.refresh();
 </script>
 
 <style lang="scss" scoped>
