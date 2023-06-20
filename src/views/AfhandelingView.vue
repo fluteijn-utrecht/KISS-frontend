@@ -454,15 +454,17 @@ import {
   koppelObject,
   useGespreksResultaten,
   type Contactmoment,
+  koppelZaakContactmoment,
 } from "@/features/contactmoment";
 
 import { useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
-import { getFormattedUtcDate } from "@/services";
+import { fetchLoggedIn, getFormattedUtcDate } from "@/services";
 import { nanoid } from "nanoid";
 import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
 import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
+import { upsertContactmomentManagementInfo } from "@/features/contactmoment/upsert-contactmoment-management";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -471,6 +473,13 @@ const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
 
 onMounted(() => {
+  // nog even laten voor een test: rechtstreeks opvragen van een klant.
+  // fetchLoggedIn(
+  //   "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5" //"/api/klanten/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
+  // )
+  //   .then((x) => x.json())
+  //   .then((x) => console.log(x));
+
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
@@ -488,19 +497,73 @@ const zakenToevoegenAanContactmoment = async (
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
-      await koppelObject({
-        contactmoment: contactmomentId,
-        object: zaak.self,
-        objectType: "zaak",
-      });
+      try {
+        //dit is voorlopige, hopelijk tijdelijke, code om uit te proberen of dit een nuttige manier is om met de instabiliteit van openzaak en openklant om te gaan
+        //derhalve bewust nog niet geoptimaliseerd
+        try {
+          await koppelZaakContactmoment({
+            contactmoment: contactmomentId,
+            zaak: zaak.self,
+          });
+        } catch (e) {
+          try {
+            console.log(
+              "koppelZaakContactmoment in openzaak attempt 1 failed",
+              e
+            );
+            await koppelZaakContactmoment({
+              contactmoment: contactmomentId,
+              zaak: zaak.self,
+            });
+          } catch (e) {
+            try {
+              console.log(
+                "koppelZaakContactmoment in openzaak attempt 2 failed",
+                e
+              );
+              await koppelZaakContactmoment({
+                contactmoment: contactmomentId,
+                zaak: zaak.self,
+              });
+            } catch (e) {
+              console.log(
+                "koppelZaakContactmoment in openzaak attempt 3 failed",
+                e
+              );
+            }
+          }
+        }
+
+        //de tweede call gaat vaak mis, maar geeft dan bijna altijd ten onterechte een error response.
+        //de data is dan wel correct opgeslagen
+        //wellicht een timing issue. voor de zekerheid even wachten
+
+        try {
+          setTimeout(
+            async () =>
+              await koppelObject({
+                contactmoment: contactmomentId,
+                object: zaak.self,
+                objectType: "zaak",
+              }),
+            1000
+          );
+        } catch (e) {
+          console.log("koppelZaakContactmoment in openklant", e);
+        }
+      } catch (e) {
+        //zaken toevoegen aan een contactmoment en anedrsom retourneert soms een error terwijl de data meetal wel correct opgelsagen is.
+        //toch maar verder gaan dus
+        console.error(e);
+      }
     }
   }
 };
 
 const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore) {
-      await koppelKlant({ contactmomentId, klantId: klant.id });
+    if (shouldStore && klant.url) {
+      await koppelKlant({ contactmomentId, klantId: klant.url });
     }
   }
 };
@@ -517,24 +580,25 @@ const koppelContactverzoek = (
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const contactmoment: Contactmoment = {
-    gespreksId,
-    vorigContactmoment: undefined,
-    voorkeurskanaal: "",
-    voorkeurstaal: "",
-    tekst: vraag.notitie,
-    onderwerpLinks: [],
-    initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    medewerker: "",
-    medewerkerIdentificatie: undefined,
-    resultaat: vraag.resultaat,
-    kanaal: vraag.kanaal,
     bronorganisatie:
       Array.isArray(window.organisatieIds) && window.organisatieIds[0]
         ? window.organisatieIds[0]
         : "",
-    registratiedatum: getFormattedUtcDate(),
+    registratiedatum: new Date().toISOString(), //"2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), //todo check of dit nog het juiste format is. lijkt iso te moeten zijn
+    kanaal: vraag.kanaal,
+    tekst: vraag.notitie,
+    onderwerpLinks: [],
+    initiatiefnemer: "klant", //enum "gemeente" of "klant"
+
+    //overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
+    gespreksId,
+    vorigContactmoment: undefined,
+    voorkeurskanaal: "",
+    voorkeurstaal: "",
+    medewerker: "",
+    resultaat: vraag.resultaat,
     startdatum: vraag.startdatum,
-    einddatum: getFormattedUtcDate(),
+    einddatum: new Date().toISOString(),
     primaireVraag: vraag.primaireVraag?.url,
     primaireVraagWeergave: vraag.primaireVraag?.title,
     afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
@@ -569,11 +633,17 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
 
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.id);
-  await koppelKlanten(vraag, savedContactmoment.id);
+  await upsertContactmomentManagementInfo(
+    contactmoment,
+    savedContactmoment.url
+  );
+
+  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+
+  await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
-    await koppelContactverzoek(savedContactmoment.id, contactverzoekUrl);
+    await koppelContactverzoek(savedContactmoment.url, contactverzoekUrl);
   }
 
   return savedContactmoment;
@@ -659,7 +729,13 @@ const addNieuwsberichtToContactmoment = (
   vraag.nieuwsberichten.forEach((nieuwsbericht) => {
     if (!nieuwsbericht.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(nieuwsbericht.nieuwsbericht.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      nieuwsbericht.nieuwsbericht.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 
@@ -672,7 +748,13 @@ const addWerkinstructiesToContactmoment = (
   vraag.werkinstructies.forEach((werkinstructie) => {
     if (!werkinstructie.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(werkinstructie.werkinstructie.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      werkinstructie.werkinstructie.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 

@@ -28,8 +28,9 @@ export type ContactmomentKlant = {
   achternaam: string;
   bedrijfsnaam?: string;
   telefoonnummer?: string;
-  email?: string;
+  emailadres?: string;
   hasContactInformation: boolean;
+  url?: string;
 };
 
 export interface Vraag {
@@ -60,7 +61,7 @@ function initVraag(): Vraag {
       notitie: "",
       isActive: false,
     },
-    startdatum: getFormattedUtcDate(),
+    startdatum: new Date().toISOString(),
     kanaal: "",
     resultaat: "",
     klanten: [],
@@ -232,13 +233,13 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
-        (m) => m.medewerker.id === medewerker._self.id
+        (m) => m.medewerker.id === medewerker.id
       );
 
       if (newMedewerkerIndex === -1) {
         huidigeVraag.medewerkers.push({
           medewerker: {
-            id: medewerker._self.id,
+            id: medewerker.id,
             voornaam: medewerker.contact.voornaam,
             voorvoegselAchternaam: medewerker.contact.voorvoegselAchternaam,
             achternaam: medewerker.contact.achternaam,

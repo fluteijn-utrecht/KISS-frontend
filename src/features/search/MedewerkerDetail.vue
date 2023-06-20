@@ -180,10 +180,6 @@ dl {
   row-gap: var(--spacing-small);
 }
 
-dt {
-  font-weight: bold;
-}
-
 dd,
 dt {
   line-height: normal;
