@@ -22,6 +22,7 @@ namespace Kiss.Bff.Zaken
 
     public sealed class ZakenProxyConfig : IKissProxyRoute
     {
+        private const string DefaultCrs = "EPSG:4326";
         private readonly ZgwTokenProvider _zgwTokenProvider;
 
         public ZakenProxyConfig(string destination, ZgwTokenProvider zgwTokenProvider)
@@ -45,9 +46,10 @@ namespace Kiss.Bff.Zaken
 
             context.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            context.ProxyRequest.Headers.Add("Accept-Crs", "EPSG:4326"); //voorlopig eignelijk niet nodig. wordt pas relevant wanneer we geografische coordinaten gaan opvragen
+            context.ProxyRequest.Headers.Add("Content-Crs", DefaultCrs);
+			context.ProxyRequest.Headers.Add("Accept-Crs", DefaultCrs); //voorlopig eignelijk niet nodig. wordt pas relevant wanneer we geografische coordinaten gaan opvragen
 
-            return new();
+			return new();
         }
 
     }

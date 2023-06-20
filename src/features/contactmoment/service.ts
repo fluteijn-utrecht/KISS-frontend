@@ -4,6 +4,7 @@ import {
   ServiceResult,
   type Paginated,
   parsePagination,
+  parseJson,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -13,12 +14,28 @@ import type {
   ContactmomentObject,
   Contactmoment,
   ContactverzoekDetail,
+  ZaakContactmoment,
+  ObjectContactmoment,
+  KlantContactmoment,
 } from "./types";
+import type { ContactmomentViewModel } from "../shared/types";
+import { toRelativeProxyUrl } from "@/helpers/url";
+
+const contactmomentenProxyRoot = "/api/contactmomenten";
+const contactmomentenApiRoot = "/contactmomenten/api/v1";
+const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
+const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
+const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
+
+const zaaksysteemProxyRoot = `/api/zaken`;
+const zaaksysteemApiRoot = `/zaken/api/v1`;
+const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
+const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
 export const saveContactmoment = (
   data: Contactmoment
-): Promise<{ id: string; url: string; gespreksId: string }> =>
-  fetchLoggedIn(window.gatewayBaseUri + "/api/contactmomenten", {
+): Promise<{ url: string; gespreksId: string }> =>
+  fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -49,11 +66,18 @@ export const useGespreksResultaten = () => {
   return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
 };
 
-const objectcontactmomentenUrl =
-  window.gatewayBaseUri + "/api/objectcontactmomenten";
-
 export const koppelObject = (data: ContactmomentObject) =>
   fetchLoggedIn(objectcontactmomentenUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  }).then(throwIfNotOk);
+
+export const koppelZaakContactmoment = (data: ZaakContactmoment) =>
+  fetchLoggedIn(zaakcontactmomentUrl, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -69,7 +93,7 @@ export function koppelKlant({
   klantId: string;
   contactmomentId: string;
 }) {
-  return fetchLoggedIn(window.gatewayBaseUri + "/api/klantcontactmomenten", {
+  return fetchLoggedIn(klantcontactmomentenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -109,6 +133,65 @@ export function useContactverzoekenByKlantId(
   });
 }
 
+const fetchObject = (u: string) =>
+  fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson) as Promise<ObjectContactmoment>;
+
+const fetchContactmoment = (u: string) =>
+  fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(async (cm) => {
+      const { objectcontactmomenten } = cm || {};
+      if (!Array.isArray(objectcontactmomenten)) return cm;
+
+      const promises = objectcontactmomenten.map((x: string) => {
+        const oUrl = toRelativeProxyUrl(x, contactmomentenProxyRoot);
+        if (!oUrl) throw new Error("invalid url: " + x);
+        return fetchObject(oUrl);
+      });
+
+      const objects = await Promise.all(promises);
+
+      const zaken = objects
+        .filter((x) => x.objectType === "zaak")
+        .map((x) => x.object);
+
+      return {
+        ...cm,
+        zaken,
+      } as ContactmomentViewModel;
+    });
+
+const fetchContactmomenten = (u: string) =>
+  fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((p) =>
+      parsePagination(p, (x: any) => {
+        const i = toRelativeProxyUrl(
+          x?.contactmoment,
+          contactmomentenProxyRoot
+        );
+        if (!i) throw new Error("invalide url: " + x?.contactmoment);
+        return fetchContactmoment(i);
+      })
+    );
+
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  page: Ref<number>
+) {
+  function getUrl() {
+    const searchParams = new URLSearchParams();
+    searchParams.set("klant", id.value);
+    return `${klantcontactmomentenUrl}?${searchParams.toString()}`;
+  }
+
+  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+}
+
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
@@ -140,3 +223,14 @@ const mapContactverzoekDetail = (
     afwijkendOnderwerp: contactmoment.afwijkendOnderwerp,
   };
 };
+
+export function useContactmomentenByObjectUrl(url: Ref<string>) {
+  const getUrl = () => {
+    if (!url.value) return "";
+    const params = new URLSearchParams();
+    params.set("object", url.value);
+    return `${objectcontactmomentenUrl}?${params}`;
+  };
+
+  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+}

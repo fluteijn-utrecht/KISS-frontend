@@ -40,7 +40,7 @@
                   source,
                   jsonObject,
                   url,
-                  self,
+                  documentUrl,
                 } in searchResults.data.page"
                 :key="'nav_' + id"
               >
@@ -49,7 +49,13 @@
                   :id="'nav_' + id"
                   :href="`#searchResult_${id}`"
                   @click.prevent="
-                    selectSearchResult(id, source, jsonObject, title, self)
+                    selectSearchResult(
+                      id,
+                      source,
+                      jsonObject,
+                      title,
+                      documentUrl
+                    )
                   "
                   class="icon-after chevron-down"
                 >
@@ -196,6 +202,7 @@ const emit = defineEmits<{
       title: string;
       jsonObject: any;
       source: string;
+      documentUrl: URL;
     }
   ): void;
 }>();
@@ -271,13 +278,13 @@ const selectSearchResult = (
   source: string,
   jsonObject: any,
   title: string,
-  self: string | undefined
+  documentUrl: URL
 ) => {
   state.value.currentId = id;
 
   if (contactmomentStore.contactmomentLoopt) {
     if (source === "Smoelenboek")
-      handleSmoelenboekSelected(jsonObject, self ?? "");
+      handleSmoelenboekSelected(jsonObject, documentUrl.toString());
   }
 
   emit("result-selected", {
@@ -285,6 +292,7 @@ const selectSearchResult = (
     title,
     source,
     jsonObject,
+    documentUrl,
   });
 
   nextTick(() => {

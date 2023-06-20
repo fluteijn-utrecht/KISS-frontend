@@ -54,6 +54,9 @@ const props = defineProps<{
   zaak: ZaakDetails;
 }>();
 
+const SUCCESS = "success";
+const emit = defineEmits<{ (e: typeof SUCCESS): void }>();
+
 const toelichtingen = ref<string[]>(props.zaak.toelichting.split("\n\n"));
 const formIsLoading = ref<boolean>(false);
 const newToelichtingInputValue = ref<string>("");
@@ -61,10 +64,9 @@ const newToelichtingInputValue = ref<string>("");
 watch(
   () => props.zaak.toelichting,
   (toelichting) => {
-    newToelichtingInputValue.value = toelichting;
+    toelichtingen.value = toelichting.split("\n\n");
   }
 );
-
 const submit = async () => {
   formIsLoading.value = true;
 
@@ -77,12 +79,14 @@ const submit = async () => {
   updateToelichting(props.zaak, newToelichtingen)
     .then(() => {
       toast({ text: "De toelichting is opgeslagen." });
-      toelichtingen.value = props.zaak.toelichting.split("\n\n");
+      toelichtingen.value = [
+        ...toelichtingen.value,
+        newToelichtingInputValue.value,
+      ];
       newToelichtingInputValue.value = "";
+      emit(SUCCESS);
     })
     .catch(() => {
-      newToelichtingInputValue.value = props.zaak.toelichting;
-
       toast({
         type: "error",
         text: "Oeps het lukt niet om deze toelichting op te slaan. Probeer het later opnieuw.",

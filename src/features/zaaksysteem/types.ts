@@ -20,6 +20,12 @@ export type ZaakDetails = {
   omschrijving: string;
 };
 
+export interface ZaakPreview {
+  identificatie: string;
+  zaaktypeLabel: string;
+  status: string;
+}
+
 export interface ZaakDocument {
   id: string;
   titel: string;
