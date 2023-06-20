@@ -28,8 +28,9 @@ export type ContactmomentKlant = {
   achternaam: string;
   bedrijfsnaam?: string;
   telefoonnummer?: string;
-  email?: string;
+  emailadres?: string;
   hasContactInformation: boolean;
+  url?: string;
 };
 
 export interface Vraag {
@@ -60,7 +61,7 @@ function initVraag(): Vraag {
       notitie: "",
       isActive: false,
     },
-    startdatum: getFormattedUtcDate(),
+    startdatum: new Date().toISOString(),
     kanaal: "",
     resultaat: "",
     klanten: [],

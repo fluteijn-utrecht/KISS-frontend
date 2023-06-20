@@ -3,6 +3,7 @@ using System;
 using Kiss.Bff.Beheer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
     [DbContext(typeof(BeheerDbContext))]
-    partial class BeheerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230615145757_KlantContactmomentWorkaround")]
+    partial class KlantContactmomentWorkaround
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,34 +92,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Links");
-                });
-
-            modelBuilder.Entity("Kiss.Bff.Beheer.Management.ContactmomentManagementLog", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AfwijkendOnderwerp")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Einddatum")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EmailadresKcm")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PrimaireVraagWeergave")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Resultaat")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Startdatum")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ContactmomentManagementLogs");
                 });
 
             modelBuilder.Entity("Kiss.Bff.Beheer.Verwerking.VerwerkingsLog", b =>
