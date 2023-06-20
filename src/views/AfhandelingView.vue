@@ -497,16 +497,22 @@ const zakenToevoegenAanContactmoment = async (
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
-      await koppelZaakContactmoment({
-        contactmoment: contactmomentId,
-        zaak: zaak.self,
-      }).then(() =>
-        koppelObject({
+      try {
+        await koppelZaakContactmoment({
+          contactmoment: contactmomentId,
+          zaak: zaak.self,
+        });
+
+        await koppelObject({
           contactmoment: contactmomentId,
           object: zaak.self,
           objectType: "zaak",
-        })
-      );
+        });
+      } catch (e) {
+        //zaken toevoegen aan een contactmoment en anedrsom retourneert soms een error terwijl de data meetal wel correct opgelsagen is.
+        //toch maar verder gaan dus
+        console.error(e);
+      }
     }
   }
 };
@@ -589,13 +595,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     savedContactmoment.url
   );
 
-  try {
-    await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
-  } catch (e) {
-    //zaken toevoegen aan een contactmoment retourneert soms een error terwijl de data wel correct opgelsagen is.
-    //toch maar verder gaan dus
-    console.error(e);
-  }
+  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+
   await koppelKlanten(vraag, savedContactmoment.url);
 
   if (contactverzoekUrl) {
