@@ -11,9 +11,17 @@
 
     <div class="heading-container">
       <div class="heading-top-row">
-        <time :datetime="bericht.date.toISOString()">{{
-          localeString(bericht.date)
-        }}</time>
+        <p>
+          <time :datetime="bericht.date.toISOString()">{{
+            localeString(bericht.date)
+          }}</time>
+          <small v-if="bericht.modified"
+            >Bewerkt op
+            <time :datetime="bericht.modified.toISOString()">
+              {{ localeString(bericht.modified) }}
+            </time>
+          </small>
+        </p>
 
         <menu>
           <li>
@@ -50,10 +58,10 @@
     <div class="skills-container">
       <small
         v-for="(skill, i) in bericht.skills"
-        :class="`category-${skill.split(' ').join('-')}`"
+        :class="`category-${skill.naam.split(' ').join('-')}`"
         :key="i"
       >
-        {{ skill }}
+        {{ skill.naam }}
       </small>
     </div>
 
@@ -71,7 +79,7 @@ import {
   Document as UtrechtDocument,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
-import { readBericht, unreadBericht } from "./service";
+import { putBerichtRead } from "./service";
 import { sanitizeHtmlToBerichtFormat, increaseHeadings } from "@/helpers/html";
 import { toast } from "@/stores/toast";
 import { useContactmomentStore } from "@/stores/contactmoment";
@@ -116,38 +124,31 @@ const berichtSelectedInContactmoment = computed(() => {
 
 const read = ref<boolean>(props.bericht.read);
 watch(
-  () => props.bericht.read,
-  (newValue) => {
-    read.value = newValue;
+  () => props.bericht,
+  (b) => {
+    if (!toggleReadIsLoading.value) {
+      read.value = b.read;
+    }
   }
 );
 
 const toggleReadIsLoading = ref<boolean>(false);
 
-const toggleRead = async (): Promise<void> => {
-  let toggleReadError = false;
+const toggleRead = (): Promise<void> => {
   toggleReadIsLoading.value = true;
-
-  if (read.value) {
-    await unreadBericht(props.bericht.id).catch(() => (toggleReadError = true));
-  }
-
-  if (!read.value) {
-    await readBericht(props.bericht.id).catch(() => (toggleReadError = true));
-  }
-
-  toggleReadIsLoading.value = false;
-
-  if (!toggleReadError) {
-    read.value = !read.value;
-  }
-
-  if (toggleReadError) {
-    toast({
-      text: "Oeps het lukt niet om dit bericht te markeren. Probeer het later opnieuw.",
-      type: "error",
+  const wasRead = read.value;
+  read.value = !wasRead;
+  return putBerichtRead(props.bericht.id, !wasRead)
+    .catch(() => {
+      read.value = wasRead;
+      toast({
+        text: "Oeps het lukt niet om dit bericht te markeren. Probeer het later opnieuw.",
+        type: "error",
+      });
+    })
+    .finally(() => {
+      toggleReadIsLoading.value = false;
     });
-  }
 };
 
 const localeString = (d: Date) =>
@@ -172,8 +173,8 @@ const handleToggleBerichtInContactmoment = (): void => {
   const type = props.bericht.type;
   const bericht = { url: props.bericht.url, title: props.bericht.title };
 
-  type === "nieuws" && contactmomentStore.toggleNieuwsbericht(bericht);
-  type === "werkinstructie" && contactmomentStore.toggleWerkinstructie(bericht);
+  type === "Nieuws" && contactmomentStore.toggleNieuwsbericht(bericht);
+  type === "Werkinstructie" && contactmomentStore.toggleWerkinstructie(bericht);
 };
 </script>
 
@@ -206,7 +207,6 @@ article {
 
   time {
     color: var(--color-primary);
-    display: block;
   }
 
   .heading-container {
@@ -217,6 +217,14 @@ article {
       display: flex;
       justify-content: space-between;
       align-items: center;
+
+      p {
+        inline-size: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--color-primary);
+      }
 
       menu {
         display: flex;
@@ -262,7 +270,7 @@ article {
   :deep(ul) {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-extrasmall);
     list-style-type: disc;
     padding-left: var(--text-margin);
     line-height: var(--line-height-default);

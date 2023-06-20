@@ -75,18 +75,22 @@
       messageType="error"
     />
 
-    <template
-      v-if="contactmomenten.success && contactmomenten.data.page.length"
-    >
+    <template v-if="contactmomenten.success && contactmomenten.data">
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page" />
-
+      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
+        <template v-slot:zaken="{ zaken }">
+          <template v-for="zaakurl in zaken" :key="zaakurl">
+            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+          </template>
+        </template>
+      </contactmomenten-overzicht>
+      <!-- 
       <pagination
         class="pagination"
         :pagination="contactmomenten.data"
         @navigate="onContactmomentenNavigate"
-      />
+      /> -->
     </template>
   </section>
 </template>
@@ -109,16 +113,18 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/shared/get-contactmomenten-service";
+import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import {
   useZakenByVestigingsnummer,
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 watch(
   () => klant.success && klant.data,
@@ -126,7 +132,7 @@ watch(
     if (!k) return;
     contactmomentStore.setKlant({
       ...k,
-      hasContactInformation: !k.emails.length || !k.telefoonnummers.length,
+      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
   { immediate: true }
@@ -140,7 +146,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantId,
+  klantUrl,
   contactmomentenPage
 );
 
@@ -157,17 +163,6 @@ const klantVestigingsnummer = computed(getVestigingsnummer);
 const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
-
-watch(
-  () => bedrijf.success && bedrijf.data,
-  (bedrijf) => {
-    if (!bedrijf || (!bedrijf.telefoonnummer && !bedrijf.email)) return;
-    if (!klant.success || !klant.data) return;
-
-    contactmomentStore.setKlantHasContactgegevens(klant.data.id);
-  },
-  { immediate: true }
-);
 </script>
 
 <style scoped lang="scss">

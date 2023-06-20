@@ -7,14 +7,11 @@ export interface Persoon {
   voornaam: string;
   voorvoegselAchternaam?: string;
   achternaam: string;
-  geboorteplaats: string;
-  geboorteland: string;
-  postcode?: string;
-  huisnummer?: string;
-  straat?: string;
-  woonplaats?: string;
-  huisletter?: string;
-  huisnummertoevoeging?: string;
+  geboorteplaats?: string;
+  geboorteland?: string;
+  adresregel1?: string;
+  adresregel2?: string;
+  adresregel3?: string;
 }
 
 export interface EnrichedPersoon {
@@ -23,7 +20,9 @@ export interface EnrichedPersoon {
   telefoonnummers: ServiceData<string | null>;
   emails: ServiceData<string | null>;
   geboortedatum: ServiceData<Date | null | undefined>;
-  postcodeHuisnummer: ServiceData<string | null>;
+  adresregel1: ServiceData<string | null>;
+  adresregel2: ServiceData<string | null>;
+  adresregel3: ServiceData<string | null>;
   create: () => Promise<void>;
   detailLink: ServiceData<{
     to: string;

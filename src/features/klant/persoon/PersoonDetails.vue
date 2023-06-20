@@ -44,77 +44,35 @@
       <dl>
         <dt>Klantnummer</dt>
         <dd>{{ klant.klantnummer }}</dd>
-        <dt>E-mailadres{{ emails.length > 1 ? "sen" : "" }}</dt>
-        <dd v-for="(email, idx) in emails" :key="idx">
+        <dt>E-mailadres</dt>
+        <dd>
           <fieldset v-if="showForm">
             <input
-              v-model="email.email"
+              v-model="email"
               type="email"
-              :name="`E-mail ${idx + 1}`"
-              :aria-label="`E-mail ${idx + 1}`"
-              required
+              name="E-mail"
+              aria-label="E-mail"
               class="utrecht-textbox utrecht-textbox--html-input"
             />
-            <utrecht-button
-              appearance="subtle-button"
-              @click="removeEmail(idx)"
-              type="button"
-              title="E-mail verwijderen"
-              class="icon-before xmark remove-item icon-only"
-            />
           </fieldset>
-          <template v-else>{{ email.email }}</template>
+          <template v-else>{{ email }}</template>
         </dd>
-        <dd v-if="showForm">
-          <utrecht-button
-            appearance="primary-action-button"
-            :title="
-              canAddEmail ? 'E-mail toevoegen' : 'Vul eerst het lege veld in'
-            "
-            :disabled="!canAddEmail"
-            type="button"
-            @click="addEmail"
-            class="add-item icon-after plus icon-only"
-          />
-        </dd>
-        <dt>Telefoonnummer{{ telefoonnummers.length > 1 ? "s" : "" }}</dt>
-        <dd v-for="(tel, idx) in telefoonnummers" :key="idx">
+        <dt>Telefoonnummer</dt>
+        <dd>
           <fieldset v-if="showForm">
             <non-blocking-errors
-              :value="tel.telefoonnummer"
+              :value="telefoonnummer || ''"
               :validate="customPhoneValidator"
             />
             <input
-              v-model="tel.telefoonnummer"
+              v-model="telefoonnummer"
               type="tel"
-              :name="`Telefoonnummer ${idx + 1}`"
-              :aria-label="`Telefoonnummer ${idx + 1}`"
-              required
+              name="Telefoonnummer"
+              aria-label="Telefoonnummer"
               class="utrecht-textbox utrecht-textbox--html-input"
             />
-            <utrecht-button
-              appearance="subtle-button"
-              @click="removePhoneNumber(idx)"
-              type="button"
-              title="Telefoonnummer verwijderen"
-              class="icon-before xmark remove-item icon-only"
-            />
           </fieldset>
-          <template v-else>{{ tel.telefoonnummer }}</template>
-        </dd>
-        <dd v-if="showForm">
-          <utrecht-button
-            appearance="primary-action-button"
-            :title="
-              canAddPhone
-                ? 'Telefoonnummer toevoegen'
-                : 'Vul eerst het lege veld in'
-            "
-            :disabled="!canAddPhone"
-            type="button"
-            @click="addPhoneNumber"
-            class="add-item icon-after plus icon-only"
-          />
+          <template v-else>{{ telefoonnummer }}</template>
         </dd>
       </dl>
     </non-blocking-form>
@@ -122,7 +80,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, ref, watch, type PropType } from "vue";
+import { ref, watch, type PropType } from "vue";
 import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
@@ -149,33 +107,12 @@ const props = defineProps({
   },
 });
 
-// we clone the emails and phone numbers, so we don't directly edit the Klant object on the contactmoment store.
-// this means we can easily reset unsaved changes
-function clone<T>(val: T[]): T[] {
-  return val.map((x) => Object.assign({}, x));
-}
-
-const emails = ref(clone(props.klant.emails));
-const telefoonnummers = ref(clone(props.klant.telefoonnummers));
+const email = ref(props.klant.emailadres);
+const telefoonnummer = ref(props.klant.telefoonnummer);
 
 function populate() {
-  emails.value = clone(props.klant.emails);
-  telefoonnummers.value = clone(props.klant.telefoonnummers);
-}
-
-function focusLastInput(e: Event) {
-  nextTick(() => {
-    if (
-      e.target instanceof HTMLElement &&
-      e.target.parentElement instanceof HTMLElement
-    ) {
-      const inputs = e.target.parentElement.getElementsByTagName("input");
-      const last = inputs[inputs.length - 1];
-      if (last instanceof HTMLElement) {
-        last.focus();
-      }
-    }
-  });
+  email.value = props.klant.emailadres;
+  telefoonnummer.value = props.klant.telefoonnummer;
 }
 
 watch(
@@ -200,44 +137,14 @@ const reset = () => {
   editing.value = false;
 };
 
-const addEmail = (e: Event): void => {
-  emails.value.push({ email: "" });
-  focusLastInput(e);
-};
-
-const removeEmail = (i: number): void => {
-  emails.value.splice(i, 1);
-};
-
-const canAddEmail = computed(() => {
-  const emailArr = emails.value;
-  return !emailArr.length || emailArr[emailArr.length - 1]?.email !== "";
-});
-
-const addPhoneNumber = (e: Event): void => {
-  telefoonnummers.value.push({ telefoonnummer: "" });
-  focusLastInput(e);
-};
-
-const removePhoneNumber = (i: number): void => {
-  telefoonnummers.value.splice(i, 1);
-};
-
-const canAddPhone = computed(() => {
-  const phoneArr = telefoonnummers.value;
-  return (
-    !phoneArr.length || phoneArr[phoneArr.length - 1]?.telefoonnummer !== ""
-  );
-});
-
 const submitter = useUpdateContactGegevens();
 
 const submit = () =>
   submitter
     .submit({
       id: props.klant.id,
-      telefoonnummers: telefoonnummers.value,
-      emails: emails.value,
+      telefoonnummer: telefoonnummer.value,
+      emailadres: email.value,
     })
     .then((response) => {
       Object.assign(props.klant, response);

@@ -23,7 +23,7 @@
             </td>
             <td>
               <a
-                :href="`data:${document.formaat}; base64, ${document.inhoud}`"
+                :href="document.downloadUrl"
                 target="_blank"
                 :download="document.titel"
                 >> Downloaden</a

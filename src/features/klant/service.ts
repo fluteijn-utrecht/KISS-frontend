@@ -1,12 +1,12 @@
 import {
   ServiceResult,
   fetchLoggedIn,
-  type Paginated,
   parsePagination,
   throwIfNotOk,
   parseJson,
   type ServiceData,
   enforceOneOrZero,
+  type PaginatedResult,
 } from "@/services";
 import { mutate } from "swrv";
 import type { Ref } from "vue";
@@ -16,6 +16,7 @@ import {
   type Klant,
   KlantType,
 } from "./types";
+import { nanoid } from "nanoid";
 
 type QueryParam = [string, string][];
 
@@ -23,6 +24,8 @@ type FieldParams = {
   email: string;
   telefoonnummer: string;
 };
+
+const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
 export function createKlantQuery<K extends KlantSearchField>(
   args: KlantSearch<K>
@@ -37,10 +40,8 @@ type QueryDictionary = {
 };
 
 const queryDictionary: QueryDictionary = {
-  email: (search) => [["emails.email", `%${search}%`]],
-  telefoonnummer: (search) => [
-    ["telefoonnummers.telefoonnummer", `%${search}%`],
-  ],
+  email: (search) => [["emailadres", search]],
+  telefoonnummer: (search) => [["telefoonnummer", search]],
 };
 
 export type KlantSearch<K extends KlantSearchField> = {
@@ -57,25 +58,22 @@ function getQueryParams<K extends KlantSearchField>(params: KlantSearch<K>) {
 type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
   query: Ref<KlantSearch<K> | undefined>;
   page: Ref<number | undefined>;
+  subjectType?: KlantType;
 };
 
-const klantRootUrl = `${window.gatewayBaseUri}/api/klanten`;
-
-function setExtend(url: URL) {
-  url.searchParams.set("extend[]", "all");
-}
+const klantRootUrl = new URL(document.location.href);
+klantRootUrl.pathname = klantenBaseUrl;
 
 function getKlantSearchUrl<K extends KlantSearchField>(
   search: KlantSearch<K> | undefined,
+  subjectType: KlantType,
   page: number | undefined
 ) {
   if (!search?.query) return "";
 
   const url = new URL(klantRootUrl);
-  setExtend(url);
-  url.searchParams.set("order[achternaam]", "asc");
   url.searchParams.set("page", page?.toString() ?? "1");
-  url.searchParams.append("subjectType", KlantType.Persoon);
+  url.searchParams.append("subjectType", subjectType);
 
   getQueryParams(search).forEach((tuple) => {
     url.searchParams.set(...tuple);
@@ -85,25 +83,21 @@ function getKlantSearchUrl<K extends KlantSearchField>(
 }
 
 function mapKlant(obj: any): Klant {
-  const { subjectIdentificatie, emails, telefoonnummers } = obj?.embedded ?? {};
-  const { inpBsn, verblijfsadres, geboortedatum, vestigingsNummer } =
-    subjectIdentificatie ?? {};
-  const { aoaHuisnummer, aoaPostcode } = verblijfsadres ?? {};
+  const { subjectIdentificatie, url } = obj ?? {};
+  const { inpBsn, vestigingsNummer } = subjectIdentificatie ?? {};
+  const urlSplit: string[] = url?.split("/") ?? [];
 
   return {
     ...obj,
+    id: urlSplit[urlSplit.length - 1],
     _typeOfKlant: "klant",
-    emails: emails ?? [],
-    telefoonnummers: telefoonnummers ?? [],
     bsn: inpBsn,
-    postcode: aoaPostcode,
-    huisnummer: aoaHuisnummer,
-    geboortedatum: geboortedatum && new Date(geboortedatum),
     vestigingsnummer: vestigingsNummer,
+    url: url,
   };
 }
 
-function searchKlanten(url: string): Promise<Paginated<Klant>> {
+function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
@@ -127,15 +121,13 @@ function searchKlanten(url: string): Promise<Paginated<Klant>> {
 function getKlantIdUrl(id?: string) {
   if (!id) return "";
   const url = new URL(`${klantRootUrl}/${id}`);
-  setExtend(url);
   return url.toString();
 }
 
 function getKlantBsnUrl(bsn?: string) {
   if (!bsn) return "";
   const url = new URL(klantRootUrl);
-  setExtend(url);
-  url.searchParams.set("subjectIdentificatie.inpBsn", bsn);
+  url.searchParams.set("subjectNatuurlijkPersoon__inpBsn", bsn);
   return url.toString();
 }
 
@@ -159,43 +151,59 @@ export function useKlantById(id: Ref<string>) {
   );
 }
 
+const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {
+  if (subjectType === KlantType.Persoon)
+    return subjectIdentificatie || { inpBsn: "" };
+
+  const { handelsnaam, ...rest } = subjectIdentificatie ?? {};
+  if (Array.isArray(handelsnaam) && handelsnaam.length)
+    return subjectIdentificatie;
+  return rest;
+};
+
 function updateContactgegevens({
   id,
-  telefoonnummers,
-  emails,
+  telefoonnummer,
+  emailadres,
 }: UpdateContactgegevensParams): Promise<UpdateContactgegevensParams> {
-  const url = klantRootUrl + "/" + id;
-  return fetchLoggedIn(url + "?fields[]=klantnummer&fields[]=bronorganisatie")
+  const endpoint = klantRootUrl + "/" + id;
+  return fetchLoggedIn(endpoint)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(({ klantnummer, bronorganisatie }) =>
-      fetchLoggedIn(url, {
+    .then((klant) =>
+      fetchLoggedIn(endpoint, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          telefoonnummers,
-          emails,
-          klantnummer,
-          bronorganisatie,
+          ...klant,
+          subjectIdentificatie: getValidIdentificatie(klant),
+          telefoonnummer,
+          emailadres,
         }),
       })
     )
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(({ embedded }) => ({
+    .then(({ telefoonnummer, emailadres }) => ({
       id,
-      telefoonnummers: embedded?.telefoonnummers ?? [],
-      emails: embedded?.emails ?? [],
+      telefoonnummer,
+      emailadres,
     }));
 }
 
 export function useSearchKlanten<K extends KlantSearchField>({
   query,
   page,
+  subjectType,
 }: KlantSearchParameters<K>) {
-  const getUrl = () => getKlantSearchUrl(query.value, page.value);
+  const getUrl = () =>
+    getKlantSearchUrl(
+      query.value,
+      subjectType ?? KlantType.Persoon,
+      page.value
+    );
   return ServiceResult.fromFetcher(getUrl, searchKlanten);
 }
 
@@ -240,10 +248,11 @@ export async function ensureKlantForBsn({
 
   const response = await fetchLoggedIn(klantRootUrl, {
     method: "POST",
+    headers: { "content-type": "application/json" },
     body: JSON.stringify({
       bronorganisatie: window.organisatieIds[0],
       // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: "123",
+      klantnummer: nanoid(8),
       subjectIdentificatie: { inpBsn: bsn },
       subjectType: KlantType.Persoon,
       voornaam,
@@ -267,11 +276,7 @@ export async function ensureKlantForBsn({
 const getKlantByVestigingsnummerUrl = (vestigingsnummer: string) => {
   if (!vestigingsnummer) return "";
   const url = new URL(klantRootUrl);
-  url.searchParams.set("extend[]", "all");
-  url.searchParams.set(
-    "subjectIdentificatie.vestigingsNummer",
-    vestigingsnummer
-  );
+  url.searchParams.set("subjectVestiging__vestigingsNummer", vestigingsnummer);
   url.searchParams.set("subjectType", KlantType.Bedrijf);
   return url.toString();
 };
@@ -315,10 +320,13 @@ export async function ensureKlantForVestigingsnummer({
 
   const response = await fetchLoggedIn(klantRootUrl, {
     method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({
       bronorganisatie: window.organisatieIds[0],
       // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: "123",
+      klantnummer: nanoid(8),
       subjectIdentificatie: { vestigingsNummer: vestigingsnummer },
       subjectType: KlantType.Bedrijf,
       bedrijfsnaam,

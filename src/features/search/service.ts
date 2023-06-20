@@ -29,7 +29,7 @@ function mapResult(obj: any): SearchResult {
 }
 
 const globalSearchBaseUri =
-  window.gatewayBaseUri + "/api/elastic/api/as/v1/engines/kiss-engine";
+  "/api/enterprisesearch/api/as/v1/engines/kiss-engine";
 
 const searchUrl = globalSearchBaseUri + "/search";
 
@@ -168,6 +168,9 @@ export function useSuggestions(input: Ref<string>) {
   function fetchSuggestions() {
     return fetchLoggedIn(suggestionUrl, {
       method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
       body: JSON.stringify({
         query: input.value,
         size: 10,

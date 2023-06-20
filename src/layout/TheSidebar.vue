@@ -158,7 +158,7 @@ aside {
 
   :deep([role="tab"]) {
     margin: 0;
-    padding: 1rem;
+    padding: var(--spacing-default);
     display: flex;
     align-items: center;
     justify-content: center;

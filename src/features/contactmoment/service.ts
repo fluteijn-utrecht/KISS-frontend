@@ -4,6 +4,7 @@ import {
   ServiceResult,
   type Paginated,
   parsePagination,
+  parseJson,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -13,12 +14,28 @@ import type {
   ContactmomentObject,
   Contactmoment,
   ContactverzoekDetail,
+  ZaakContactmoment,
+  ObjectContactmoment,
+  KlantContactmoment,
 } from "./types";
+import type { ContactmomentViewModel } from "../shared/types";
+import { toRelativeProxyUrl } from "@/helpers/url";
+
+const contactmomentenProxyRoot = "/api/contactmomenten";
+const contactmomentenApiRoot = "/contactmomenten/api/v1";
+const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
+const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
+const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
+
+const zaaksysteemProxyRoot = `/api/zaken`;
+const zaaksysteemApiRoot = `/zaken/api/v1`;
+const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
+const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
 export const saveContactmoment = (
   data: Contactmoment
-): Promise<{ id: string; url: string; gespreksId: string }> =>
-  fetchLoggedIn(window.gatewayBaseUri + "/api/contactmomenten", {
+): Promise<{ url: string; gespreksId: string }> =>
+  fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -28,9 +45,6 @@ export const saveContactmoment = (
   })
     .then(throwIfNotOk)
     .then((r) => r.json());
-
-const gespreksResultatenBaseUri =
-  window.gatewayBaseUri + "/api/ref/resultaattypeomschrijvingen";
 
 export const useGespreksResultaten = () => {
   const fetchBerichten = (url: string) =>
@@ -43,21 +57,27 @@ export const useGespreksResultaten = () => {
         }
         return r.json();
       })
-      .then((json) => {
-        const results = json?.results;
+      .then((results) => {
         if (!Array.isArray(results))
-          throw new Error("unexpected json result: " + JSON.stringify(json));
+          throw new Error("unexpected json result: " + JSON.stringify(results));
         return results as Array<Gespreksresultaat>;
       });
 
-  return ServiceResult.fromFetcher(gespreksResultatenBaseUri, fetchBerichten);
+  return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
 };
-
-const objectcontactmomentenUrl =
-  window.gatewayBaseUri + "/api/objectcontactmomenten";
 
 export const koppelObject = (data: ContactmomentObject) =>
   fetchLoggedIn(objectcontactmomentenUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  }).then(throwIfNotOk);
+
+export const koppelZaakContactmoment = (data: ZaakContactmoment) =>
+  fetchLoggedIn(zaakcontactmomentUrl, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -73,7 +93,7 @@ export function koppelKlant({
   klantId: string;
   contactmomentId: string;
 }) {
-  return fetchLoggedIn(window.gatewayBaseUri + "/api/klantcontactmomenten", {
+  return fetchLoggedIn(klantcontactmomentenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -92,14 +112,17 @@ export function useContactverzoekenByKlantId(
 ) {
   function getUrl() {
     const url = new URL(window.gatewayBaseUri + "/api/klantcontactmomenten");
-    url.searchParams.set("order[contactmoment.registratiedatum]", "desc");
+    url.searchParams.set(
+      "_order[embedded.contactmoment.registratiedatum]",
+      "desc"
+    );
     url.searchParams.append("extend[]", "medewerker");
-    url.searchParams.append("extend[]", "x-commongateway-metadata.owner");
-    url.searchParams.append("extend[]", "contactmoment.todo");
-    url.searchParams.set("limit", "10");
-    url.searchParams.set("page", page.value.toString());
-    url.searchParams.set("klant.id", id.value);
-    url.searchParams.set("contactmoment.todo", "IS NOT NULL");
+    url.searchParams.append("extend[]", "embedded._self.owner");
+    url.searchParams.append("extend[]", "embedded.contactmoment.todo");
+    url.searchParams.set("_limit", "10");
+    url.searchParams.set("_page", page.value.toString());
+    url.searchParams.set("embedded.klant._self.id", id.value);
+    url.searchParams.set("embedded.contactmoment.todo", "IS NOT NULL");
     return url.toString();
   }
 
@@ -108,6 +131,65 @@ export function useContactverzoekenByKlantId(
       return getUrl() + "contactverzoek";
     },
   });
+}
+
+const fetchObject = (u: string) =>
+  fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson) as Promise<ObjectContactmoment>;
+
+const fetchContactmoment = (u: string) =>
+  fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(async (cm) => {
+      const { objectcontactmomenten } = cm || {};
+      if (!Array.isArray(objectcontactmomenten)) return cm;
+
+      const promises = objectcontactmomenten.map((x: string) => {
+        const oUrl = toRelativeProxyUrl(x, contactmomentenProxyRoot);
+        if (!oUrl) throw new Error("invalid url: " + x);
+        return fetchObject(oUrl);
+      });
+
+      const objects = await Promise.all(promises);
+
+      const zaken = objects
+        .filter((x) => x.objectType === "zaak")
+        .map((x) => x.object);
+
+      return {
+        ...cm,
+        zaken,
+      } as ContactmomentViewModel;
+    });
+
+const fetchContactmomenten = (u: string) =>
+  fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((p) =>
+      parsePagination(p, (x: any) => {
+        const i = toRelativeProxyUrl(
+          x?.contactmoment,
+          contactmomentenProxyRoot
+        );
+        if (!i) throw new Error("invalide url: " + x?.contactmoment);
+        return fetchContactmoment(i);
+      })
+    );
+
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  page: Ref<number>
+) {
+  function getUrl() {
+    const searchParams = new URLSearchParams();
+    searchParams.set("klant", id.value);
+    return `${klantcontactmomentenUrl}?${searchParams.toString()}`;
+  }
+
+  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
 }
 
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
@@ -135,9 +217,20 @@ const mapContactverzoekDetail = (
     behandelaar: todo.attendees?.[0] ?? "-",
     afgerond: todo.completed ? formatDateOnly(new Date(todo.completed)) : "-",
     starttijd: formatTimeOnly(new Date(contactmoment.registratiedatum)),
-    aanmaker: contactmoment["x-commongateway-metadata"].owner,
+    aanmaker: contactmoment["_self"].owner,
     notitie: todo.description,
     primaireVraagWeergave: contactmoment.primaireVraagWeergave,
     afwijkendOnderwerp: contactmoment.afwijkendOnderwerp,
   };
 };
+
+export function useContactmomentenByObjectUrl(url: Ref<string>) {
+  const getUrl = () => {
+    if (!url.value) return "";
+    const params = new URLSearchParams();
+    params.set("object", url.value);
+    return `${objectcontactmomentenUrl}?${params}`;
+  };
+
+  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+}

@@ -43,6 +43,7 @@ import Paragraph from "@/nl-design-system/components/Paragraph.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useWerkberichten } from "./service";
 import WerkBericht from "./WerkBericht.vue";
+import type { Berichttype } from "./types";
 
 const props = defineProps({
   header: {
@@ -57,8 +58,8 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  typeId: {
-    type: Number,
+  type: {
+    type: String as PropType<Berichttype | undefined>,
     default: undefined,
   },
   skillIds: {
@@ -94,13 +95,13 @@ const onNavigate = (pageNum: number) => {
 const parameters = computed(() => ({
   search: props.search,
   skillIds: props.skillIds,
-  typeId: props.typeId,
+  type: props.type,
   page: props.currentPage,
 }));
 
 const berichten = useWerkberichten(parameters);
 
-watch([() => props.search, () => props.skillIds, () => props.typeId], () => {
+watch([() => props.search, () => props.skillIds, () => props.type], () => {
   emit("navigate", 1);
 });
 </script>
@@ -109,7 +110,7 @@ watch([() => props.search, () => props.skillIds, () => props.typeId], () => {
 section {
   display: grid;
   align-content: start;
-  gap: 1rem;
+  gap: var(--spacing-default);
 }
 
 ul + nav {

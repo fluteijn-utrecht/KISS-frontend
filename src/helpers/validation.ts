@@ -20,6 +20,11 @@ export interface PostcodeHuisnummer {
   huisnummer: string;
 }
 
+export interface GeslachtsnaamGeboortedatum {
+  geslachtsnaam: string;
+  geboortedatum: Date;
+}
+
 export function parsePostcodeHuisnummer(
   input: string
 ): PostcodeHuisnummer | Error {
@@ -42,22 +47,32 @@ export function parsePostcodeHuisnummer(
   };
 }
 
-export function parseDutchDate(input: string): Date | Error {
-  const dateRegex =
-    /^(([0-9]{2})([0-9]{2})([0-9]{4}))|(([0-9]{1,2})[/|-]([0-9]{1,2})[/|-]([0-9]{4}))$/;
-  const matches = input?.trim().match(dateRegex);
+const dateRegex =
+  /((?<day1>[0-9]{2})(?<month1>[0-9]{2})(?<year1>[0-9]{4}))|((?<day2>[0-9]{1,2})[/|-](?<month2>[0-9]{1,2})[/|-](?<year2>[0-9]{4}))/;
 
-  if (matches?.length !== 9) {
+const matchDutchDate = (input: string) => {
+  const trimmed = input?.trim();
+  const matches = trimmed.match(dateRegex);
+
+  const { year1, month1, day1, year2, month2, day2 } = matches?.groups ?? {};
+  const year = year1 || year2;
+  const month = month1 || month2;
+  const day = day1 || day2;
+
+  if (!year || !month || !day)
     return new Error(
       "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
     );
-  }
 
-  const year = +(matches[4] || matches[8]);
-  const month = +(matches[3] || matches[7]) - 1;
-  const day = +(matches[2] || matches[6]);
+  return {
+    date: new Date(+year, +month - 1, +day),
+    matchedString: matches?.[0] ?? "",
+  };
+};
 
-  return new Date(year, month, day);
+export function parseDutchDate(input: string): Date | Error {
+  const result = matchDutchDate(input);
+  return result instanceof Error ? result : result.date;
 }
 
 const multipliers = [9, 8, 7, 6, 5, 4, 3, 2, -1] as const;
@@ -86,4 +101,20 @@ export function parseKvkNummer(input: string): string | Error {
   return !matches || matches.length < 2
     ? new Error("Vul de 8 cijfers van het KvK-nummer in, bijvoorbeeld 12345678")
     : matches[1];
+}
+
+export function parseGeslachtsnaamGeboortedatum(
+  input: string
+): GeslachtsnaamGeboortedatum | Error {
+  const result = matchDutchDate(input);
+
+  if (result instanceof Error) return result;
+
+  const geslachtsnaam = input.replace(result.matchedString, "").trim();
+
+  if (!geslachtsnaam) return new Error("Vul een achternaam in");
+  return {
+    geboortedatum: result.date,
+    geslachtsnaam,
+  };
 }

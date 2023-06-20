@@ -2,22 +2,20 @@ import type { ServiceData } from "@/services";
 
 export interface Bedrijf {
   _typeOfKlant: "bedrijf";
-  kvknummer: string;
+  kvkNummer: string;
   vestigingsnummer: string;
   bedrijfsnaam: string;
-  postcode: string;
-  huisnummer: string;
-  telefoonnummer: string;
-  email: string;
+  postcode?: string;
+  huisnummer?: string;
   straatnaam: string;
-  huisletter: string;
-  huisnummertoevoeging: string;
-  woonplaats: string;
+  huisletter?: string;
+  huisnummertoevoeging?: string;
+  woonplaats?: string;
 }
 
 export interface EnrichedBedrijf {
   bedrijfsnaam: ServiceData<string>;
-  kvknummer: ServiceData<string>;
+  kvkNummer: ServiceData<string>;
   postcodeHuisnummer: ServiceData<string>;
   email: ServiceData<string>;
   telefoonnummer: ServiceData<string>;
@@ -34,8 +32,6 @@ export type SearchCategoryTypes = {
   handelsnaam: string;
   kvkNummer: string;
   postcodeHuisnummer: PostcodeHuisnummer;
-  emailadres: string;
-  telefoonnummer: string;
 };
 
 export type SearchCategories = keyof SearchCategoryTypes;

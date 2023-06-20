@@ -1,4 +1,7 @@
-import type { ContactmomentState } from "@/stores/contactmoment";
+import type {
+  ContactmomentKlant,
+  ContactmomentState,
+} from "@/stores/contactmoment";
 import type { Klant } from "../klant/types";
 
 export function getKlantInfo(contactmoment: ContactmomentState) {
@@ -12,16 +15,14 @@ export function getKlantInfo(contactmoment: ContactmomentState) {
   return infos.find((info) => info.name || info.contact);
 }
 
-function _getKlantInfo(klant: Klant) {
+function _getKlantInfo(klant: ContactmomentKlant) {
   const name =
     [klant.voornaam, klant.voorvoegselAchternaam, klant.achternaam]
       .filter(Boolean)
       .join(" ") || klant.bedrijfsnaam;
 
-  const email = klant.emails.map(({ email }) => email).find(Boolean);
-  const phone = klant.telefoonnummers
-    .map(({ telefoonnummer }) => telefoonnummer)
-    .find(Boolean);
+  const email = klant.emailadres;
+  const phone = klant.telefoonnummer;
 
   const contact = email || phone;
 

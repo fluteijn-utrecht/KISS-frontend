@@ -18,7 +18,7 @@
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
 
-    <a @click="$router.back()" href="#"> terug </a>
+    <a @click="$router.back()" href="#">{{ "< Terug" }}</a>
 
     <application-message
       v-if="errorMessage != ''"
@@ -301,6 +301,27 @@
               <label />
 
               <div class="contactverzoek-container">
+                <div v-if="afdelingen.success && afdelingen.data.length">
+                  <label
+                    class="utrecht-form-label"
+                    :for="'verzoek-afdeling' + idx"
+                    >Afdeling</label
+                  >
+                  <select
+                    v-model="vraag.contactverzoek.afdeling"
+                    class="utrecht-select utrecht-select--html-select"
+                    :id="'verzoek-afdeling' + idx"
+                  >
+                    <option
+                      v-for="afdeling in afdelingen.data"
+                      :key="idx + afdeling.id"
+                      :value="afdeling.name"
+                    >
+                      {{ afdeling.name }}
+                    </option>
+                  </select>
+                </div>
+
                 <div>
                   <label
                     class="utrecht-form-label required"
@@ -433,15 +454,17 @@ import {
   koppelObject,
   useGespreksResultaten,
   type Contactmoment,
+  koppelZaakContactmoment,
 } from "@/features/contactmoment";
 
 import { useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
-import { getFormattedUtcDate } from "@/services";
+import { fetchLoggedIn, getFormattedUtcDate } from "@/services";
 import { nanoid } from "nanoid";
 import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
-import { saveContactverzoek } from "@/features/contactverzoek";
+import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
+import { upsertContactmomentManagementInfo } from "@/features/contactmoment/upsert-contactmoment-management";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -450,6 +473,13 @@ const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
 
 onMounted(() => {
+  // nog even laten voor een test: rechtstreeks opvragen van een klant.
+  // fetchLoggedIn(
+  //   "api/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5" //"/api/klanten/klanten/api/v1/klanten/1561a8f4-0d7d-48df-8bf1-e6cf23afc9e5"
+  // )
+  //   .then((x) => x.json())
+  //   .then((x) => console.log(x));
+
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
@@ -461,34 +491,38 @@ onMounted(() => {
   }
 });
 
-const zakenToevoegenAanContactmoment = (
+const zakenToevoegenAanContactmoment = async (
   vraag: Vraag,
   contactmomentId: string
 ) => {
-  const promises =
-    vraag.zaken
-      .filter(({ shouldStore }) => shouldStore)
-      .map(({ zaak }) =>
-        koppelObject({
+  for (const { zaak, shouldStore } of vraag.zaken) {
+    if (shouldStore) {
+      try {
+        await koppelZaakContactmoment({
+          contactmoment: contactmomentId,
+          zaak: zaak.self,
+        });
+
+        await koppelObject({
           contactmoment: contactmomentId,
           object: zaak.self,
           objectType: "zaak",
-        })
-      ) ?? [];
-  return Promise.all(promises);
+        });
+      } catch (e) {
+        //zaken toevoegen aan een contactmoment en anedrsom retourneert soms een error terwijl de data meetal wel correct opgelsagen is.
+        //toch maar verder gaan dus
+        console.error(e);
+      }
+    }
+  }
 };
 
-const koppelKlanten = (vraag: Vraag, contactmomentId: string) => {
-  const promises =
-    vraag.klanten
-      .filter(({ shouldStore }) => shouldStore)
-      .map(({ klant }) =>
-        koppelKlant({
-          contactmomentId,
-          klantId: klant.id,
-        })
-      ) ?? [];
-  return Promise.all(promises);
+const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
+  for (const { shouldStore, klant } of vraag.klanten) {
+    if (shouldStore && klant.url) {
+      await koppelKlant({ contactmomentId, klantId: klant.url });
+    }
+  }
 };
 
 const koppelContactverzoek = (
@@ -503,24 +537,25 @@ const koppelContactverzoek = (
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const contactmoment: Contactmoment = {
-    gespreksId,
-    vorigContactmoment: undefined,
-    voorkeurskanaal: "",
-    voorkeurstaal: "",
-    tekst: vraag.notitie,
-    onderwerpLinks: [],
-    initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    medewerker: "",
-    medewerkerIdentificatie: undefined,
-    resultaat: vraag.resultaat,
-    kanaal: vraag.kanaal,
     bronorganisatie:
       Array.isArray(window.organisatieIds) && window.organisatieIds[0]
         ? window.organisatieIds[0]
         : "",
-    registratiedatum: getFormattedUtcDate(),
+    registratiedatum: new Date().toISOString(), //"2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), //todo check of dit nog het juiste format is. lijkt iso te moeten zijn
+    kanaal: vraag.kanaal,
+    tekst: vraag.notitie,
+    onderwerpLinks: [],
+    initiatiefnemer: "klant", //enum "gemeente" of "klant"
+
+    //overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
+    gespreksId,
+    vorigContactmoment: undefined,
+    voorkeurskanaal: "",
+    voorkeurstaal: "",
+    medewerker: "",
+    resultaat: vraag.resultaat,
     startdatum: vraag.startdatum,
-    einddatum: getFormattedUtcDate(),
+    einddatum: new Date().toISOString(),
     primaireVraag: vraag.primaireVraag?.url,
     primaireVraagWeergave: vraag.primaireVraag?.title,
     afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
@@ -532,33 +567,43 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   addNieuwsberichtToContactmoment(contactmoment, vraag);
   addWerkinstructiesToContactmoment(contactmoment, vraag);
 
+  let contactverzoekUrl: string | undefined;
+
   if (vraag.resultaat === "Contactverzoek gemaakt") {
     const contactverzoek = await saveContactverzoek({
       bronorganisatie: window.organisatieIds[0],
       todo: {
         name: "contactverzoek",
         description: vraag.contactverzoek.notitie,
-        attendees: [vraag.contactverzoek.medewerker],
+        attendees: [
+          vraag.contactverzoek.medewerker,
+          vraag.contactverzoek.afdeling,
+        ].filter(Boolean),
       },
       primaireVraagWeergave: vraag.primaireVraag?.title,
       afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
     });
 
-    koppelKlanten(vraag, contactverzoek.id);
+    await koppelKlanten(vraag, contactverzoek.id);
+
+    contactverzoekUrl = contactverzoek.url;
   }
 
-  return saveContactmoment(contactmoment).then((savedContactmoment) => {
-    const nextPromises: Promise<unknown>[] = [
-      zakenToevoegenAanContactmoment(vraag, savedContactmoment.id),
-      koppelKlanten(vraag, savedContactmoment.id),
-    ];
-    if (vraag.contactverzoek.url) {
-      nextPromises.push(
-        koppelContactverzoek(savedContactmoment.id, vraag.contactverzoek.url)
-      );
-    }
-    return Promise.all(nextPromises).then(() => savedContactmoment);
-  });
+  const savedContactmoment = await saveContactmoment(contactmoment);
+  await upsertContactmomentManagementInfo(
+    contactmoment,
+    savedContactmoment.url
+  );
+
+  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+
+  await koppelKlanten(vraag, savedContactmoment.url);
+
+  if (contactverzoekUrl) {
+    await koppelContactverzoek(savedContactmoment.url, contactverzoekUrl);
+  }
+
+  return savedContactmoment;
 };
 
 const navigateToPersonen = () => router.push({ name: "personen" });
@@ -578,7 +623,9 @@ async function submit() {
       gespreksId = nanoid();
     }
 
-    await Promise.all(otherVragen.map((v) => saveVraag(v, gespreksId)));
+    for (const vraag of otherVragen) {
+      await saveVraag(vraag, gespreksId);
+    }
 
     //klaar
     contactmomentStore.stop();
@@ -639,7 +686,13 @@ const addNieuwsberichtToContactmoment = (
   vraag.nieuwsberichten.forEach((nieuwsbericht) => {
     if (!nieuwsbericht.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(nieuwsbericht.nieuwsbericht.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      nieuwsbericht.nieuwsbericht.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 
@@ -652,7 +705,13 @@ const addWerkinstructiesToContactmoment = (
   vraag.werkinstructies.forEach((werkinstructie) => {
     if (!werkinstructie.shouldStore) return;
 
-    contactmoment.onderwerpLinks.push(werkinstructie.werkinstructie.url);
+    //make absolute if not already
+    const absoluteUrl = new URL(
+      werkinstructie.werkinstructie.url,
+      window.location.origin
+    );
+
+    contactmoment.onderwerpLinks.push(absoluteUrl.toString());
   });
 };
 
@@ -678,6 +737,8 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
+
+const afdelingen = useAfdelingen();
 </script>
 
 <style scoped lang="scss">
@@ -722,7 +783,7 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
   }
 
   input[type="checkbox"] {
-    margin: 0.25rem;
+    margin: var(--spacing-extrasmall);
     scale: 1.5;
   }
 }

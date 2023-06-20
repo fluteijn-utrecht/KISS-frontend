@@ -8,9 +8,8 @@ export type User =
     }
   | {
       isLoggedIn: true;
-      id: string;
+      isRedacteur: boolean;
       email: string;
-      roles: string[];
     };
 
 export const useUserStore = defineStore("user", {

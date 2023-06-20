@@ -24,7 +24,23 @@
     </fieldset>
   </form>
 
-  <section class="search-section">
+  <section class="search-section" v-if="state.klantSearchQuery?.query">
+    <simple-spinner v-if="klanten.loading" />
+    <template v-if="klanten.success">
+      <bedrijven-overzicht :records="klanten.data.page">
+        <template #caption>
+          <SearchResultsCaption :results="klanten.data" />
+        </template>
+      </bedrijven-overzicht>
+    </template>
+    <application-message
+      v-if="klanten.error"
+      messageType="error"
+      message="Er is een fout opgetreden"
+    />
+  </section>
+
+  <section class="search-section" v-else-if="state.query?.value">
     <simple-spinner v-if="bedrijven.loading" />
     <template v-if="bedrijven.success">
       <bedrijven-overzicht :records="bedrijven.data.page">
@@ -57,12 +73,22 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
 import type { SearchCategories, BedrijfQuery } from "./types";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
+import {
+  createKlantQuery,
+  useSearchKlanten,
+  type KlantSearch,
+  type KlantSearchField,
+} from "../service";
+import { KlantType } from "../types";
+import { useRouter } from "vue-router";
 
-const labels: { [key in SearchCategories]: string } = {
+type SearchFields = KlantSearchField | SearchCategories;
+
+const labels: { [key in SearchFields]: string } = {
   handelsnaam: "Bedrijfsnaam",
   kvkNummer: "KVK-nummer",
   postcodeHuisnummer: "Postcode + Huisnummer",
-  emailadres: "E-mailadres",
+  email: "E-mailadres",
   telefoonnummer: "Telefoonnummer",
 };
 
@@ -71,8 +97,9 @@ const state = ensureState({
   stateFactory() {
     return {
       currentSearch: "",
-      field: "handelsnaam" as SearchCategories,
+      field: "handelsnaam" as SearchFields,
       query: undefined as BedrijfQuery | undefined,
+      klantSearchQuery: undefined as KlantSearch<KlantSearchField> | undefined,
       page: 1,
     };
   },
@@ -80,8 +107,10 @@ const state = ensureState({
 
 const inputRef = ref();
 
-const currentQuery = computed(() => {
+const currentBedrijfQuery = computed(() => {
   const { currentSearch, field } = state.value;
+
+  if (field === "telefoonnummer" || field === "email") return undefined;
 
   if (field === "postcodeHuisnummer") {
     const parsed = parsePostcodeHuisnummer(currentSearch);
@@ -109,8 +138,20 @@ const currentQuery = computed(() => {
   });
 });
 
+const currentKlantQuery = computed(() => {
+  const { currentSearch, field } = state.value;
+
+  if (field === "telefoonnummer" || field === "email")
+    return createKlantQuery({
+      field,
+      query: currentSearch,
+    });
+
+  return undefined;
+});
+
 watch(
-  [currentQuery, inputRef],
+  [currentBedrijfQuery, inputRef],
   ([query, input]) => {
     if (!(input instanceof HTMLInputElement)) return;
     input.setCustomValidity(query instanceof Error ? query.message : "");
@@ -118,9 +159,16 @@ watch(
   { immediate: true }
 );
 
+const klanten = useSearchKlanten({
+  query: computed(() => state.value.klantSearchQuery),
+  page: computed(() => state.value.page),
+  subjectType: KlantType.Bedrijf,
+});
+
 const handleSearch = () => {
-  if (!(currentQuery.value instanceof Error)) {
-    state.value.query = currentQuery.value;
+  state.value.klantSearchQuery = currentKlantQuery.value;
+  if (!(currentBedrijfQuery.value instanceof Error)) {
+    state.value.query = currentBedrijfQuery.value;
   }
   state.value.page = 1;
 };
@@ -133,6 +181,24 @@ const bedrijven = useSearchBedrijven(() => ({
 const navigate = (val: number) => {
   state.value.page = val;
 };
+
+const singleKlantId = computed(() => {
+  if (klanten.success && klanten.data.page.length === 1) {
+    const first = klanten.data.page[0];
+    if (first?._typeOfKlant === "klant") {
+      return first.id;
+    }
+  }
+  return undefined;
+});
+
+const router = useRouter();
+
+watch(singleKlantId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    router.push(`/bedrijven/${newId}`);
+  }
+});
 </script>
 
 <style scoped lang="scss">

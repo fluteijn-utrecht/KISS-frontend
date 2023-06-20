@@ -1,6 +1,6 @@
 export type UpdateContactgegevensParams = Pick<
   Klant,
-  "id" | "telefoonnummers" | "emails"
+  "id" | "telefoonnummer" | "emailadres"
 >;
 
 export interface Klant {
@@ -10,11 +10,12 @@ export interface Klant {
   voornaam: string;
   voorvoegselAchternaam?: string;
   achternaam: string;
-  telefoonnummers: { telefoonnummer: string }[];
-  emails: { email: string }[];
+  telefoonnummer?: string;
+  emailadres?: string;
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
+  url?: string;
 }
 
 export enum KlantType {
