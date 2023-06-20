@@ -45,14 +45,18 @@ export const useZakenPreviewByUrl = (url: Ref<string>) => {
     return toRelativeProxyUrl(url.value, zakenProxyRoot) ?? "";
   };
 
-  return ServiceResult.fromFetcher(
-    getUrl,
-    (url: string): Promise<any> =>
-      fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then((x) => x.json())
-        .then((json) => mapZaakDetailsPreview(json))
-  );
+  const fetchPreview = (url: string): Promise<any> =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((x) => x.json())
+      .then((json) => mapZaakDetailsPreview(json));
+
+  return ServiceResult.fromFetcher(getUrl, fetchPreview, {
+    getUniqueId() {
+      const url = getUrl();
+      return url && `${url}_preview`;
+    },
+  });
 };
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
