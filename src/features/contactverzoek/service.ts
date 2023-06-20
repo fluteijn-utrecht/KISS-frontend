@@ -75,9 +75,11 @@ export function useAfdelingen() {
       .then(parseJson)
       .then((json) => parsePagination(json, mapOrganisatie))
       .then(async (current) => {
-        if (current.totalPages <= current.pageNumber) return current.page;
-        const nextPage = await fetcher(url, page + 1);
-        return [...current.page, ...nextPage];
+        //paginering model is gewijzigt daarom, vooruitlopend op de refactoring van dit deel, deze temp fix
+        return current.page;
+        // if (current.totalPages <= current.pageNumber) return current.page;
+        // const nextPage = await fetcher(url, page + 1);
+        // return [...current.page, ...nextPage];
       })
       .then((all) => all.sort((a, b) => a.name.localeCompare(b.name)));
 

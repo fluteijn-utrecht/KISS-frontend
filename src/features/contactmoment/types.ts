@@ -6,18 +6,21 @@ export interface MedewerkerIdentificatie {
 }
 
 export interface Contactmoment {
-  vorigContactmoment: string | undefined;
-  bronorganisatie: string;
-  registratiedatum: string;
+  bronorganisatie: string; //verplicht in de api
+  registratiedatum: string; //2019-08-24T14:15:22Z //serverside?
   kanaal: string;
-  voorkeurskanaal: string;
-  voorkeurstaal: string;
   tekst: string;
   onderwerpLinks: string[];
   initiatiefnemer: string;
+
+  //bovenstaande slaan we op bij een contactmoment.
+  //de rest is mogelijk obsolete.
+  //wellicht nog te gebruiken voor oa contactverzoeken
+  vorigContactmoment: string | undefined;
+  voorkeurskanaal: string;
+  voorkeurstaal: string;
   medewerker: string;
   resultaat: string;
-  medewerkerIdentificatie: MedewerkerIdentificatie | undefined;
   startdatum: string;
   einddatum: string;
   gespreksId?: string;
@@ -37,6 +40,11 @@ export interface ContactmomentObject {
   objectType: string;
 }
 
+export interface ZaakContactmoment {
+  contactmoment: string;
+  zaak: string;
+}
+
 export interface ContactverzoekDetail {
   id: string;
   datum: string;
@@ -48,4 +56,18 @@ export interface ContactverzoekDetail {
   notitie: string;
   primaireVraagWeergave?: string;
   afwijkendOnderwerp?: string;
+}
+
+export interface ObjectContactmoment {
+  url: string;
+  contactmoment: string;
+  object: string;
+  objectType: string;
+}
+
+export interface KlantContactmoment {
+  url: string;
+  contactmoment: string;
+  klant: string;
+  rol: string;
 }

@@ -25,6 +25,8 @@ type FieldParams = {
   telefoonnummer: string;
 };
 
+const klantenBaseUrl = "/api/klanten/api/v1/klanten";
+
 export function createKlantQuery<K extends KlantSearchField>(
   args: KlantSearch<K>
 ): KlantSearch<K> {
@@ -60,7 +62,7 @@ type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
 };
 
 const klantRootUrl = new URL(document.location.href);
-klantRootUrl.pathname = "/api/klanten/api/v1/klanten";
+klantRootUrl.pathname = klantenBaseUrl;
 
 function getKlantSearchUrl<K extends KlantSearchField>(
   search: KlantSearch<K> | undefined,
@@ -91,6 +93,7 @@ function mapKlant(obj: any): Klant {
     _typeOfKlant: "klant",
     bsn: inpBsn,
     vestigingsnummer: vestigingsNummer,
+    url: url,
   };
 }
 
