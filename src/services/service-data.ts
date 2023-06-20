@@ -104,8 +104,8 @@ export const ServiceResult = {
 
   fromPromise<T = unknown>(
     promise: Promise<NotUndefined<T>>
-  ): ServiceData<T> & Promise<NotUndefined<T>> {
-    const result = reactive(ServiceResult.loading());
+  ): ServiceData<NotUndefined<T>> & Promise<NotUndefined<T>> {
+    const result = reactive(Object.assign(promise, ServiceResult.loading()));
 
     promise
       .then((r) => {
@@ -118,13 +118,14 @@ export const ServiceResult = {
         );
       });
 
-    return Object.assign(result, promise);
+    return result;
   },
 
-  fromSubmitter<TIn, TOut>(submitter: (params: TIn) => Promise<TOut>) {
-    const result = reactive(ServiceResult.init());
-
-    return Object.assign(result, {
+  fromSubmitter<TIn, TOut>(
+    submitter: (params: TIn) => Promise<TOut>
+  ): Submitter<TIn, TOut> {
+    const result = reactive({
+      ...ServiceResult.init(),
       reset() {
         Object.assign(result, ServiceResult.init());
       },
@@ -143,7 +144,8 @@ export const ServiceResult = {
             throw e;
           });
       },
-    }) as Submitter<TIn, TOut>;
+    });
+    return result;
   },
 
   /**
