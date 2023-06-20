@@ -55,6 +55,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
         public DbSet<KlantContactmoment> KlantContactmomenten { get; set; } = null!;
-        public DbSet<Management.ContactmomentManagementLog> ContactmomentManagementLogs { get; set; } = null!;
+        public DbSet<Managementinfo.ContactmomentManagementinfoLog> ContactmomentManagementLogs { get; set; } = null!;
     }
 }

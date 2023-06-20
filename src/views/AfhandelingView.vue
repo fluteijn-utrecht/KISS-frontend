@@ -498,16 +498,59 @@ const zakenToevoegenAanContactmoment = async (
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
       try {
-        await koppelZaakContactmoment({
-          contactmoment: contactmomentId,
-          zaak: zaak.self,
-        });
+        //dit is voorlopige, hopelijk tijdelijke, code om uit te proberen of dit een nuttige manier is om met de instabiliteit van openzaak en openklant om te gaan
+        //derhalve bewust nog niet geoptimaliseerd
+        try {
+          await koppelZaakContactmoment({
+            contactmoment: contactmomentId,
+            zaak: zaak.self,
+          });
+        } catch (e) {
+          try {
+            console.log(
+              "koppelZaakContactmoment in openzaak attempt 1 failed",
+              e
+            );
+            await koppelZaakContactmoment({
+              contactmoment: contactmomentId,
+              zaak: zaak.self,
+            });
+          } catch (e) {
+            try {
+              console.log(
+                "koppelZaakContactmoment in openzaak attempt 2 failed",
+                e
+              );
+              await koppelZaakContactmoment({
+                contactmoment: contactmomentId,
+                zaak: zaak.self,
+              });
+            } catch (e) {
+              console.log(
+                "koppelZaakContactmoment in openzaak attempt 3 failed",
+                e
+              );
+            }
+          }
+        }
 
-        await koppelObject({
-          contactmoment: contactmomentId,
-          object: zaak.self,
-          objectType: "zaak",
-        });
+        //de tweede call gaat vaak mis, maar geeft dan bijna altijd ten onterechte een error response.
+        //de data is dan wel correct opgeslagen
+        //wellicht een timing issue. voor de zekerheid even wachten
+
+        try {
+          setTimeout(
+            async () =>
+              await koppelObject({
+                contactmoment: contactmomentId,
+                object: zaak.self,
+                objectType: "zaak",
+              }),
+            1000
+          );
+        } catch (e) {
+          console.log("koppelZaakContactmoment in openklant", e);
+        }
       } catch (e) {
         //zaken toevoegen aan een contactmoment en anedrsom retourneert soms een error terwijl de data meetal wel correct opgelsagen is.
         //toch maar verder gaan dus
