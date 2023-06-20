@@ -14,7 +14,7 @@ export const upsertContactmomentManagementInfo = (
   contactmoment: ContactmomentManagementInfo,
   id: string
 ): Promise<unknown> =>
-  fetchLoggedIn("/api/management/contactmoment", {
+  fetchLoggedIn("/api/managementinfo/contactmomenten", {
     method: "PUT",
     body: JSON.stringify({
       ...contactmoment,

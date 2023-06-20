@@ -5,7 +5,7 @@ export type SearchResult = {
   content: string;
   url?: URL;
   jsonObject: any;
-  self?: string;
+  documentUrl: URL;
 };
 
 export type Source = {

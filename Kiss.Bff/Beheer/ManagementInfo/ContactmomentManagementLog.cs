@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kiss.Bff.Beheer.Management
+namespace Kiss.Bff.Beheer.Managementinfo
 {
-    public class ContactmomentManagementLog
+    public class ContactmomentManagementinfoLog
     {
         [Required]
         public string Id { get; set; } = default!;
