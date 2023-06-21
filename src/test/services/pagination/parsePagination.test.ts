@@ -19,7 +19,7 @@ import {
 } from "vitest";
 
 describe("pagination-test", () => {
-  test("test if a synchronous mapped object ...", async () => {
+  test("test if a synchronous mapper ...", async () => {
     // type TestType = {
     //   data: string;
     // };
@@ -45,4 +45,37 @@ describe("pagination-test", () => {
     expect(result.previous).toBe(previousUrl);
     expect(result.page).toStrictEqual(pageData);
   });
+
+  test("test if a asynchronous mapper ...", async () => {
+    // type TestType = {
+    //   data: string;
+    // };
+
+    const pageData = [{ data: "a" }, { data: "b" }];
+    const nextUrl = "nextUrl";
+    const previousUrl = "previousUrl";
+
+    const result = await parsePagination(
+      {
+        count: 2,
+        next: nextUrl,
+        previous: previousUrl,
+        results: pageData,
+      },
+      (obj: unknown): unknown => {
+        return Promise.resolve(obj);
+      }
+    );
+
+    //  await flushPromises();
+
+    expect(result.count).toBe(2);
+    expect(result.next).toBe(nextUrl);
+    expect(result.previous).toBe(previousUrl);
+    expect(result.page).toStrictEqual(pageData);
+  });
+
+  //test invalid pagination object
+
+  //test empty results..
 });
