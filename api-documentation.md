@@ -2,11 +2,6 @@
 ## API components
 Here is an overview of all API's used for KISS.
 
-KISS gateway redoc:
-https://redocly.github.io/redoc/?nocors&url=https://kissdevelopment-dimpact.commonground.nu/openapi.json
-
-
-
 | Name                               | Documentation | Configuration |
 |------------------------------------|---------------|---------------|
 | Zaak registratie                   |https://zaken-api.vng.cloud/api/v1/schema/              |https://github.com/ConductionNL/zrc_publiccode/blob/main/publiccode.yaml                |

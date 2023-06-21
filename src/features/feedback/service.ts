@@ -3,10 +3,6 @@ import { ServiceResult } from "@/services";
 import { fetchLoggedIn } from "@/services";
 
 export function useFeedbackService() {
-  if (!window.gatewayBaseUri) {
-    console.error("contactmomentenBaseUri missing");
-  }
-
   const feedbackUrl = "/api/feedback";
 
   const postFeedback = (data: Feedback) => {
