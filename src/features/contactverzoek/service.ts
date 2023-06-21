@@ -40,7 +40,7 @@ export function saveContactverzoek(data: Contactverzoek) {
     .then((r) => r.json() as Promise<{ id: string; url: string }>);
 }
 
-export function createKlant(klant: NieuweKlant) {
+export function createKlant(klant: NieuweKlant, bronorganisatie: string) {
   const url = "/api/klanten";
   return fetchLoggedIn(url, {
     method: "POST",
@@ -49,7 +49,7 @@ export function createKlant(klant: NieuweKlant) {
     },
     body: JSON.stringify({
       ...klant,
-      bronorganisatie: window.organisatieIds[0],
+      bronorganisatie,
       // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: "123",
       subjectType: KlantType.Persoon,

@@ -129,6 +129,7 @@ env:
   FEEDBACK_EMAIL_TO: ""
   CONTACTMOMENTEN_BASE_URL: ""
   CONTACTMOMENTEN_API_CLIENT_ID: ""
+  ORGANISATIE_IDS: ""
 
 postgresql:
   enabled: true

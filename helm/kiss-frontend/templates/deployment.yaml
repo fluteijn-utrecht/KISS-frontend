@@ -150,6 +150,8 @@ spec:
             value: {{ .Values.env.FEEDBACK_EMAIL_FROM | quote }}
           - name: FEEDBACK_EMAIL_TO
             value: {{ .Values.env.FEEDBACK_EMAIL_TO | quote }}
+          - name: ORGANISATIE_IDS
+            value: {{ .Values.env.ORGANISATIE_IDS | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

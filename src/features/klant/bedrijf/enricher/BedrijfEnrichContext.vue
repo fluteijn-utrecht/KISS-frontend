@@ -6,6 +6,7 @@ import { useRouter } from "vue-router";
 import { ensureKlantForVestigingsnummer, type Klant } from "@/features/klant";
 import type { Bedrijf as Bedrijf, EnrichedBedrijf } from "../types";
 import { useEnrichedBedrijf } from "./bedrijf-enricher";
+import { useOrganisatieIds } from "@/stores/user";
 
 const props = defineProps<{ record: Bedrijf | Klant }>();
 const [vestigingsnummer, klantData, handelsregisterData] = useEnrichedBedrijf(
@@ -30,6 +31,7 @@ function mapLink(klant: Klant | null, naam: string | null) {
 }
 
 const router = useRouter();
+const organisatieIds = useOrganisatieIds();
 
 const klantBedrijfsnaam = mapServiceData(
   klantData,
@@ -61,10 +63,13 @@ const create = async () => {
   const bedrijfsnaam = handelsBedrijfsnaam.success
     ? handelsBedrijfsnaam.data
     : "";
-  const newKlant = await ensureKlantForVestigingsnummer({
-    vestigingsnummer: vestigingsnummer.value,
-    bedrijfsnaam,
-  });
+  const newKlant = await ensureKlantForVestigingsnummer(
+    {
+      vestigingsnummer: vestigingsnummer.value,
+      bedrijfsnaam,
+    },
+    organisatieIds.value[0] || ""
+  );
   const url = getKlantUrl(newKlant);
   router.push(url);
 };
