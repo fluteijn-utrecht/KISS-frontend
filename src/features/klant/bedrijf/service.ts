@@ -5,6 +5,7 @@ import {
   throwIfNotOk,
   type Paginated,
   enforceOneOrZero,
+  defaultPagination,
 } from "@/services";
 
 import type {
@@ -76,7 +77,11 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
   let vestiging: KvkVestiging | undefined;
 
   if (vestigingsnummer) {
-    vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
+    try {
+      vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return {
@@ -122,11 +127,27 @@ const mapVestiging = ({
   };
 };
 
+const getFoutCode = (body: unknown) => {
+  if (
+    body &&
+    typeof body === "object" &&
+    "fout" in body &&
+    Array.isArray(body.fout)
+  )
+    return (body.fout[0]?.code || undefined) as string | undefined;
+  return undefined;
+};
+
 function searchBedrijvenInHandelsRegister(url: string) {
-  return fetchLoggedIn(url)
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then(parseKvkPagination);
+  return fetchLoggedIn(url).then(async (r) => {
+    if (r.status == 404) {
+      const body = await r.json();
+      if (getFoutCode(body) === "IPD5200") return defaultPagination([]);
+    }
+    throwIfNotOk(r);
+    const body = await r.json();
+    return parseKvkPagination(body);
+  });
 }
 
 type SearchBedrijfArguments<K extends SearchCategories> = {
