@@ -23,11 +23,11 @@ describe("service-data-test", () => {
       data: string;
     };
 
-    const fromPromiseResult = await ServiceResult.fromPromise<TestType>(
+    const fromPromiseResult = ServiceResult.fromPromise<TestType>(
       Promise.resolve({ data: "value" } as TestType)
     );
 
-    await flushPromises();
+    //  await flushPromises();
 
     expectTypeOf(fromPromiseResult).toMatchTypeOf<TestType>();
   });
@@ -39,9 +39,7 @@ describe("service-data-test", () => {
       data: string;
     };
 
-    const testPromise = new Promise<TestType>(() => {
-      return { data: "value" } as TestType;
-    });
+    const testPromise = new Promise<TestType>(() => {});
 
     const y = ServiceResult.fromPromise<TestType>(testPromise);
 

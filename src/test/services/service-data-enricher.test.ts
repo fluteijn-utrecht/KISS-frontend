@@ -26,7 +26,11 @@ describe("service-data-enricher-test", () => {
 
     function left(): ServiceData<LeftType> {
       return ServiceResult.fromPromise(
-        Promise.resolve({ dataBoth: "both", dataLeftOnly: "left" } as LeftType)
+        Promise.resolve({
+          dataBoth: "both",
+          dataLeftOnly: "left",
+          _typeOf: "left",
+        })
       );
     }
 
@@ -35,7 +39,8 @@ describe("service-data-enricher-test", () => {
         Promise.resolve({
           dataBoth: "both",
           dataRightOnly: "right",
-        } as RightType)
+          _typeOf: "right",
+        })
       );
     }
 
@@ -48,7 +53,7 @@ describe("service-data-enricher-test", () => {
     const testEnricher = combineEnrichers(
       left,
       right,
-      (either) => either.dataBoth,
+      (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object
       isLeft
     );
 
@@ -57,12 +62,12 @@ describe("service-data-enricher-test", () => {
         _typeOf: "left",
         dataLeftOnly: "leftonly",
         dataBoth: "bothLeftAndRight",
-      } as LeftType;
+      };
     });
 
     expect(common.value).toMatch("bothLeftAndRight");
-
-    // expect(leftData).toMatch("sss");
+    //leftData.success
+    expect(leftData).toMatch("sss");
     //  expect(rightData).toMatch("sss");
   });
 });
