@@ -15,8 +15,11 @@ function mapResult(obj: any): SearchResult {
   const title = obj?.headings?.raw?.[0] ?? obj?.title?.raw;
   const content = obj?.body_content?.raw;
   const url = parseValidUrl(obj?.url?.raw);
+  const documentUrl = new URL(location.href);
+  documentUrl.pathname = searchUrl;
+  documentUrl.searchParams.set("query", id);
+
   const jsonObject = JSON.parse(obj?.object?.raw ?? null);
-  const self = obj?.self?.raw;
   return {
     source,
     id,
@@ -24,7 +27,7 @@ function mapResult(obj: any): SearchResult {
     content,
     url,
     jsonObject,
-    self,
+    documentUrl,
   };
 }
 
