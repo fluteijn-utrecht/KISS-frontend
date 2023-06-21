@@ -5,6 +5,7 @@ import {
   throwIfNotOk,
   type Paginated,
   enforceOneOrZero,
+  defaultPagination,
 } from "@/services";
 
 import type {
@@ -76,7 +77,11 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
   let vestiging: KvkVestiging | undefined;
 
   if (vestigingsnummer) {
-    vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
+    try {
+      vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return {
@@ -122,11 +127,33 @@ const mapVestiging = ({
   };
 };
 
+const hasFoutCode = (body: unknown, code: string) => {
+  if (
+    body &&
+    typeof body === "object" &&
+    "fout" in body &&
+    Array.isArray(body.fout)
+  ) {
+    return body.fout.some((x) => x?.code === code);
+  }
+  return false;
+};
+
+export class FriendlyError extends Error {}
+
 function searchBedrijvenInHandelsRegister(url: string) {
-  return fetchLoggedIn(url)
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then(parseKvkPagination);
+  return fetchLoggedIn(url).then(async (r) => {
+    if (r.status === 404) {
+      const body = await r.json();
+      if (hasFoutCode(body, "IPD5200")) return defaultPagination([]);
+    }
+    if (r.status === 400) {
+      throw new FriendlyError("Invalide zoekopdracht");
+    }
+    throwIfNotOk(r);
+    const body = await r.json();
+    return parseKvkPagination(body);
+  });
 }
 
 type SearchBedrijfArguments<K extends SearchCategories> = {
