@@ -9,6 +9,9 @@
     <router-link to="/Beheer/gespreksresultaten"
       >Gespreksresultaten</router-link
     >
+    <a href="/api/managementInfo/contactmomenten" target="_blank"
+      >Managementinfo</a
+    >
   </nav>
   <main>
     <router-view />
@@ -63,5 +66,23 @@ main {
 
 :deep(form) {
   max-inline-size: 40rem;
+}
+
+:deep(fieldset) {
+  display: flex;
+  flex-direction: column;
+
+  > label {
+    display: flex;
+    gap: var(--spacing-small);
+    align-items: baseline;
+
+    > input {
+      margin: 0;
+      padding: 0;
+      scale: 1.25;
+      accent-color: var(--color-primary);
+    }
+  }
 }
 </style>

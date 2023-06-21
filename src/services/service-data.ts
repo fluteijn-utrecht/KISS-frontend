@@ -104,8 +104,8 @@ export const ServiceResult = {
 
   fromPromise<T = unknown>(
     promise: Promise<NotUndefined<T>>
-  ): ServiceData<NotUndefined<T>> & Promise<NotUndefined<T>> {
-    const result = reactive(Object.assign(promise, ServiceResult.loading()));
+  ): ServiceData<NotUndefined<T>> {
+    const result = reactive(ServiceResult.loading());
 
     promise
       .then((r) => {
