@@ -13,6 +13,11 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "KISS-frontend", "KISS-front
 		{405ADD24-2966-40C5-BEA5-A8705881828C} = {405ADD24-2966-40C5-BEA5-A8705881828C}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{703D5FC2-739A-4332-B91F-A830953641AC}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
