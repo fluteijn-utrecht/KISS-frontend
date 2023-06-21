@@ -9,9 +9,6 @@
     <router-link to="/Beheer/gespreksresultaten"
       >Gespreksresultaten</router-link
     >
-    <a href="/api/managementInfo/contactmomenten" target="_blank"
-      >Managementinfo</a
-    >
   </nav>
   <main>
     <router-view />
