@@ -24,6 +24,7 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
         {
             var result = _context.Skills.Where(x => !x.IsDeleted)
                 .Select(x => new SkillViewModel { Id = x.Id, Naam = x.Naam })
+                .OrderBy(x=> x.Naam)
                 .AsAsyncEnumerable();
 
             return Ok(result);

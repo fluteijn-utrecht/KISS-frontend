@@ -127,22 +127,28 @@ const mapVestiging = ({
   };
 };
 
-const getFoutCode = (body: unknown) => {
+const hasFoutCode = (body: unknown, code: string) => {
   if (
     body &&
     typeof body === "object" &&
     "fout" in body &&
     Array.isArray(body.fout)
-  )
-    return (body.fout[0]?.code || undefined) as string | undefined;
-  return undefined;
+  ) {
+    return body.fout.some((x) => x?.code === code);
+  }
+  return false;
 };
+
+export class FriendlyError extends Error {}
 
 function searchBedrijvenInHandelsRegister(url: string) {
   return fetchLoggedIn(url).then(async (r) => {
-    if (r.status == 404) {
+    if (r.status === 404) {
       const body = await r.json();
-      if (getFoutCode(body) === "IPD5200") return defaultPagination([]);
+      if (hasFoutCode(body, "IPD5200")) return defaultPagination([]);
+    }
+    if (r.status === 400) {
+      throw new FriendlyError("Invalide zoekopdracht");
     }
     throwIfNotOk(r);
     const body = await r.json();

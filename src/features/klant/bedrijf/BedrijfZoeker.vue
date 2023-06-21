@@ -57,7 +57,11 @@
     <application-message
       v-if="bedrijven.error"
       messageType="error"
-      message="Er is een fout opgetreden"
+      :message="
+        bedrijven.error instanceof FriendlyError
+          ? bedrijven.error.message
+          : 'Er is een fout opgetreden'
+      "
     />
   </section>
 </template>
@@ -66,7 +70,7 @@
 import { parseKvkNummer, parsePostcodeHuisnummer } from "@/helpers/validation";
 import { ensureState } from "@/stores/create-store";
 import { computed, ref, watch } from "vue";
-import { bedrijfQuery, useSearchBedrijven } from "./service";
+import { bedrijfQuery, useSearchBedrijven, FriendlyError } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
@@ -81,7 +85,6 @@ import {
 } from "../service";
 import { KlantType } from "../types";
 import { useRouter } from "vue-router";
-
 type SearchFields = KlantSearchField | SearchCategories;
 
 const labels: { [key in SearchFields]: string } = {
