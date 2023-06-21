@@ -8,7 +8,8 @@
     "test:unit": "vitest --environment jsdom",
     "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "lint:style": "stylelint \"**/*.{scss,vue}\""
   },
   "dependencies": {
     "@ckeditor/ckeditor5-vue": "^5.1.0",
