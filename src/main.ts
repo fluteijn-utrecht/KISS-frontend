@@ -7,8 +7,6 @@ import { useIntersectionObserver } from "@vueuse/core";
 declare global {
   interface Window {
     organisatieIds: string[];
-    pubBeheerUrl: string;
-    gatewayBaseUri: string;
   }
 }
 

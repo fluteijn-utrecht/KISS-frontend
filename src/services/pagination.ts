@@ -1,4 +1,4 @@
-import type { PaginatedResult } from "./gateway";
+import type { PaginatedResult } from "./zgw";
 
 export interface Paginated<T> {
   pageSize?: number;

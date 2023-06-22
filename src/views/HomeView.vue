@@ -2,15 +2,6 @@
   <div class="home">
     <header>
       <utrecht-heading :level="1">Startscherm</utrecht-heading>
-      <!-- Temporarily hide -->
-      <a
-        v-if="false"
-        :href="pubBeheerUrl"
-        rel="noopener noreferrer"
-        target="_blank"
-        class="admin-link"
-        >Items beheren</a
-      >
     </header>
     <menu class="forms">
       <li>
@@ -128,8 +119,6 @@ import MultiSelect from "@/components/MultiSelect.vue";
 import { useUserStore } from "@/stores/user";
 import { ensureState } from "@/stores/create-store";
 import { type Berichttype, berichtTypes } from "@/features/werkbericht/types";
-
-const { pubBeheerUrl } = window;
 
 const state = ensureState({
   stateId: "HomeView",
@@ -263,10 +252,10 @@ form {
   border: none;
 
   &:focus-visible {
-    outline-color: var(--utrecht-focus-outline-color, transparent);
+    outline: var(--utrecht-focus-outline-color, transparent)
+      var(--utrecht-focus-outline-style, solid)
+      var(--utrecht-focus-outline-width, 0);
     outline-offset: var(--utrecht-focus-outline-offset, 0);
-    outline-style: var(--utrecht-focus-outline-style, solid);
-    outline-width: var(--utrecht-focus-outline-width, 0);
   }
 
   > :first-child {

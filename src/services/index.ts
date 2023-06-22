@@ -2,7 +2,7 @@ export * from "./service-data";
 export * from "./service-data-enricher";
 export * from "./fetch-logged-in";
 export * from "./pagination";
-export * from "./gateway";
+export * from "./zgw";
 
 export function parseValidInt(input: unknown): number | undefined {
   if (typeof input === "number") {

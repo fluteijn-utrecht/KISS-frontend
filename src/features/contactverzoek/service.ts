@@ -22,7 +22,8 @@ export interface Contactverzoek {
 }
 
 export function saveContactverzoek(data: Contactverzoek) {
-  const url = window.gatewayBaseUri + "/api/contactmomenten";
+  throw new Error("not implemented");
+  const url = "/api/contactmomenten";
   const registratiedatum = getFormattedUtcDate();
 
   return fetchLoggedIn(url, {
@@ -41,7 +42,8 @@ export function saveContactverzoek(data: Contactverzoek) {
 }
 
 export function createKlant(klant: NieuweKlant) {
-  const url = `${window.gatewayBaseUri}/api/klanten`;
+  throw new Error("not implemented");
+  const url = "/api/klanten";
   return fetchLoggedIn(url, {
     method: "POST",
     headers: {
@@ -65,7 +67,8 @@ interface Afdeling {
 }
 
 export function useAfdelingen() {
-  const url = `${window.gatewayBaseUri}/api/ref/afdelingsnamen`;
+  throw new Error("not implemented");
+  const url = "/api/ref/afdelingsnamen";
 
   const mapOrganisatie = (x: unknown): Afdeling => x as any;
 
