@@ -3,10 +3,7 @@
 If you want to contribute to this repository, we ask you to follow these guidelines.
 
 ## Reporting bugs
-If you encounter a bug in this component, please check if an issue already exists in the issue section of this repository.
-
-If such an issue does not exist you can create one [here](/../../issues/new?assignees=&labels=&template=bug_report.md&title=).
-
+If you encounter a bug in this component, please check if an issue already exists in the issue section of this repository.If such an issue does not exist you can create one [here](/../../issues/new?assignees=&labels=&template=bug_report.md&title=). 
 Make sure you answer each step in detail.
 
 ## Requesting new features
