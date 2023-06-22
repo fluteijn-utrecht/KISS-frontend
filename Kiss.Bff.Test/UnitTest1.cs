@@ -1,13 +1,16 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Nodes;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Managementinfo;
 using Kiss.Bff.ZaakGerichtWerken;
+using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -142,5 +145,29 @@ namespace Kiss.Bff.Test
             Assert.IsNotNull(principal);
         }
 
+        [TestMethod]
+        public void UpdateMedewerkerIdentificatie_AddsMedewerkerIdentificatieToParsedModel()
+        {
+
+            // Arrange
+            var parsedModel = new JsonObject();
+            var userRepresentation = "John Doe";
+            var userId = "123";
+            var configurationMock = new Mock<IConfiguration>();
+            var factoryMock = new Mock<IHttpClientFactory>();
+            var proxy = new PostContactmomentenCustomProxy(configurationMock.Object, factoryMock.Object);
+
+
+            // Act
+            proxy.UpdateMedewerkerIdentificatie(parsedModel, userRepresentation, userId);
+
+            // Assert
+            Assert.IsNotNull(parsedModel["medewerkerIdentificatie"]);
+            Assert.AreEqual(userRepresentation, parsedModel["medewerkerIdentificatie"]["achternaam"].ToString());
+            Assert.AreEqual(userId, parsedModel["medewerkerIdentificatie"]["identificatie"].ToString());
+            Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorletters"].ToString());
+            Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorvoegselAchternaam"].ToString());
+
+        }
     }
 }
