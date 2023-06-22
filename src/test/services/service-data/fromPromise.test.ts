@@ -18,7 +18,7 @@ import {
 } from "vitest";
 
 describe("service-data-test", () => {
-  test("ServiceResult.fromPromise: test if the correct result type is returned for a resolved Promise.", async () => {
+  test("ServiceResult.fromPromise: test if the correct result is returned for a resolved Promise.", async () => {
     type TestType = {
       data: string;
     };
@@ -27,32 +27,30 @@ describe("service-data-test", () => {
       Promise.resolve({ data: "value" } as TestType)
     );
 
-    //  await flushPromises();
+    expectTypeOf(fromPromiseResult).toMatchTypeOf<ServiceData<TestType>>();
 
-    expectTypeOf(fromPromiseResult).toMatchTypeOf<TestType>();
+    await flushPromises();
+
+    expect(fromPromiseResult.state).toMatch("success");
+    expect(fromPromiseResult.success).toBeTruthy();
   });
 
-  test("ServiceResult.fromPromise: test if the correct result type is returned for a pending Promise.", async () => {
-    const result = false;
-
+  test("ServiceResult.fromPromise: test if the correct result is returned for a pending Promise.", async () => {
     type TestType = {
       data: string;
     };
 
-    const testPromise = new Promise<TestType>(() => {});
+    const fromPromiseResult = ServiceResult.fromPromise<TestType>(
+      Promise.resolve({ data: "value" } as TestType)
+    );
 
-    const y = ServiceResult.fromPromise<TestType>(testPromise);
+    expectTypeOf(fromPromiseResult).toMatchTypeOf<ServiceData<TestType>>();
 
-    await flushPromises();
-
-    // expectTypeOf(y).toMatchTypeOf<TestType>();
-
-    // Promise.resolve(testPromise);
-
-    // expectTypeOf(y).toMatchTypeOf<TestType>();
+    expect(fromPromiseResult.state).toMatch("loading");
+    expect(fromPromiseResult.success).toBeFalsy();
   });
 
-  test("ServiceResult.fromPromise: test if the correct result type is returned for a rejected Promise.", async () => {
+  test("ServiceResult.fromPromise: test if the correct result  is returned for a rejected Promise.", async () => {
     type TestType = {
       data: string;
     };
