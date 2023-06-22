@@ -1,50 +1,60 @@
-﻿using Kiss.Bff.Beheer.Verwerking;
+﻿using System.Security.Claims;
+using Kiss.Bff.Beheer.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using static Kiss.Bff.Test.UnitTest1;
+using Moq;
+using static Kiss.Bff.Beheer.Verwerking.VerwerkingMiddleware;
 
 namespace Kiss.Bff.Test
 {
-    [TestClass]
-    public class UnitTest1
+    public class TestContext : DbContext
     {
-        [TestMethod]
-        public void TestMethod1()
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-
-            //  var c = new HttpRequestMessage(HttpMethod.Post, "https://www.nu.nl");
-            //  //var nepdb =....
-
-            //  var x = new  Kiss.Bff.Beheer.Verwerking.VerwerkingMiddleware.VerwerkingsHttpClientMiddleware(null, nepdb, new dummyLogger());
-
-            ////  x.SendAsync(null,c,null);
-
-
-            //  var record = nepdb.verwerkingslog.ToList()
-            //assert er is maar 1 item 
-            //assert dat ene item bevat .Post, "https://www.nu.nl", en de juiste user..
-            //  Assert.AreEqual(record.url , 1);
-
+            optionsBuilder.UseInMemoryDatabase(databaseName: "TestDatabase");
         }
-
-
-
     }
 
-    internal class dummyLogger : ILogger<VerwerkingMiddleware.VerwerkingsHttpClientMiddleware>
+    [TestClass]
+    public class UnitTest
     {
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            throw new NotImplementedException();
-        }
+        private DbContextOptions<BeheerDbContext> _dbContextOptions;
 
-        public bool IsEnabled(LogLevel logLevel)
+        [TestInitialize]
+        public void Initialize()
         {
-            throw new NotImplementedException();
+            // Initialize the in-memory database
+            _dbContextOptions = new DbContextOptionsBuilder<BeheerDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+                .Options;
         }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        [TestMethod]
+        public async Task SendAsync_LogsHttpRequestToDatabase()
         {
-            throw new NotImplementedException();
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.nu.nl");
+
+            var user = new ClaimsPrincipal();
+            var loggerMock = new Mock<ILogger<VerwerkingsHttpClientMiddleware>>();
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var middleware = new VerwerkingsHttpClientMiddleware(context, user, loggerMock.Object);
+
+                // Act
+                var response = await middleware.SendAsync(async (r, _) => new HttpResponseMessage(), request, CancellationToken.None);
+
+                // Assert
+                Assert.IsTrue(response.IsSuccessStatusCode);
+
+                var loggedRequest = context.VerwerkingsLogs.FirstOrDefault();
+                Assert.IsNotNull(loggedRequest);
+                Assert.AreEqual(request.Method.Method, loggedRequest.Method);
+                Assert.AreEqual(request.RequestUri.AbsoluteUri, loggedRequest.ApiEndpoint);
+                // Assert additional properties as needed
+            }
         }
     }
 }
