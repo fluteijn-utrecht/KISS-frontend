@@ -111,6 +111,7 @@ export function useContactverzoekenByKlantId(
   page: Ref<number>
 ) {
   function getUrl() {
+    throw new Error("not implemented");
     const url = new URL("/api/klantcontactmomenten", location.href);
     url.searchParams.set(
       "_order[embedded.contactmoment.registratiedatum]",
