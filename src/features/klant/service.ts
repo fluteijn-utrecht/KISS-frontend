@@ -221,17 +221,20 @@ export function useUpdateContactGegevens() {
   return ServiceResult.fromSubmitter(updateContactgegevens);
 }
 
-export async function ensureKlantForBsn({
-  bsn,
-  voornaam,
-  voorvoegselAchternaam,
-  achternaam,
-}: {
-  bsn: string;
-  voornaam?: string;
-  voorvoegselAchternaam?: string;
-  achternaam?: string;
-}) {
+export async function ensureKlantForBsn(
+  {
+    bsn,
+    voornaam,
+    voorvoegselAchternaam,
+    achternaam,
+  }: {
+    bsn: string;
+    voornaam?: string;
+    voorvoegselAchternaam?: string;
+    achternaam?: string;
+  },
+  bronorganisatie: string
+) {
   const bsnUrl = getKlantBsnUrl(bsn);
   const singleBsnId = getSingleBsnSearchId(bsn);
 
@@ -250,7 +253,7 @@ export async function ensureKlantForBsn({
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      bronorganisatie: window.organisatieIds[0],
+      bronorganisatie,
       // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: nanoid(8),
       subjectIdentificatie: { inpBsn: bsn },
@@ -297,13 +300,16 @@ export const useKlantByVestigingsnummer = (
   });
 };
 
-export async function ensureKlantForVestigingsnummer({
-  bedrijfsnaam,
-  vestigingsnummer,
-}: {
-  vestigingsnummer: string;
-  bedrijfsnaam: string;
-}) {
+export async function ensureKlantForVestigingsnummer(
+  {
+    bedrijfsnaam,
+    vestigingsnummer,
+  }: {
+    vestigingsnummer: string;
+    bedrijfsnaam: string;
+  },
+  bronorganisatie: string
+) {
   const url = getKlantByVestigingsnummerUrl(vestigingsnummer);
   const uniqueId = url && url + "_single";
 
@@ -324,7 +330,7 @@ export async function ensureKlantForVestigingsnummer({
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      bronorganisatie: window.organisatieIds[0],
+      bronorganisatie,
       // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: nanoid(8),
       subjectIdentificatie: { vestigingsNummer: vestigingsnummer },

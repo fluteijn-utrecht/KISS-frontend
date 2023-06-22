@@ -457,7 +457,7 @@ import {
   koppelZaakContactmoment,
 } from "@/features/contactmoment";
 
-import { useUserStore } from "@/stores/user";
+import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import { fetchLoggedIn, getFormattedUtcDate } from "@/services";
@@ -580,10 +580,7 @@ const koppelContactverzoek = (
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const contactmoment: Contactmoment = {
-    bronorganisatie:
-      Array.isArray(window.organisatieIds) && window.organisatieIds[0]
-        ? window.organisatieIds[0]
-        : "",
+    bronorganisatie: organisatieIds.value[0] || "",
     registratiedatum: new Date().toISOString(), //"2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), //todo check of dit nog het juiste format is. lijkt iso te moeten zijn
     kanaal: vraag.kanaal,
     tekst: vraag.notitie,
@@ -614,7 +611,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   if (vraag.resultaat === "Contactverzoek gemaakt") {
     const contactverzoek = await saveContactverzoek({
-      bronorganisatie: window.organisatieIds[0],
+      bronorganisatie: organisatieIds.value[0] || "",
       todo: {
         name: "contactverzoek",
         description: vraag.contactverzoek.notitie,
@@ -759,6 +756,7 @@ const addWerkinstructiesToContactmoment = (
 };
 
 const userStore = useUserStore();
+const organisatieIds = useOrganisatieIds();
 
 function setUserChannel(e: Event) {
   if (!(e.target instanceof HTMLSelectElement)) return;
@@ -787,6 +785,7 @@ const afdelingen = useAfdelingen();
 <style scoped lang="scss">
 .afhandeling {
   max-width: var(--section-width-large);
+
   //content stacked
   display: flex;
   flex-direction: column;
@@ -810,6 +809,7 @@ const afdelingen = useAfdelingen();
   ul {
     margin-top: var(--spacing-small);
   }
+
   li {
     padding: var(--spacing-small);
     border: 1px solid var(--color-tertiary);
@@ -874,6 +874,7 @@ select {
     color: var(--utrecht-form-label-color);
   }
 }
+
 .warning {
   padding: var(--spacing-default);
   margin-block-end: var(--spacing-default);

@@ -160,11 +160,17 @@ namespace Microsoft.Extensions.DependencyInjection
             var isLoggedIn = httpContext.User.Identity?.IsAuthenticated ?? false;
             var email = httpContext.User.GetEmail();
             var isRedacteur = httpContext.RequestServices.GetService<IsRedacteur>()?.Invoke(httpContext.User) ?? false;
+            
+            var organisatieIds = httpContext.RequestServices
+                .GetService<IConfiguration>()
+                ?["ORGANISATIE_IDS"]
+                ?.Split('/')
+                ?? Array.Empty<string>();
 
-            return new KissUser(email, isLoggedIn, isRedacteur);
+            return new KissUser(email, isLoggedIn, isRedacteur, organisatieIds);
         }
 
-        private readonly record struct KissUser(string? Email, bool IsLoggedIn, bool IsRedacteur);
+        private readonly record struct KissUser(string? Email, bool IsLoggedIn, bool IsRedacteur, IReadOnlyList<string> OrganisatieIds);
 
 
         private static Task ChallengeAsync(HttpContext httpContext)

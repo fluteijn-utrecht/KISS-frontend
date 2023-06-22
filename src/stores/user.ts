@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useStorage } from "@vueuse/core";
 import type { Ref } from "vue";
+import { computed } from "vue";
 
 export type User =
   | {
@@ -10,6 +11,7 @@ export type User =
       isLoggedIn: true;
       isRedacteur: boolean;
       email: string;
+      organisatieIds: string[];
     };
 
 export const useUserStore = defineStore("user", {
@@ -43,3 +45,10 @@ export const useUserStore = defineStore("user", {
     },
   },
 });
+
+export const useOrganisatieIds = () => {
+  const userStore = useUserStore();
+  return computed(() =>
+    userStore.user.isLoggedIn ? userStore.user.organisatieIds : []
+  );
+};

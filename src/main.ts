@@ -4,21 +4,6 @@ import router from "./router";
 import { createPinia } from "pinia";
 import { useIntersectionObserver } from "@vueuse/core";
 
-declare global {
-  interface Window {
-    organisatieIds: string[];
-  }
-}
-
-// HACK VOOR RARE ORGANISATIE IDS
-try {
-  window.organisatieIds = window.organisatieIds.map((x) =>
-    Number.parseFloat(x).toFixed(0)
-  );
-} catch (error) {
-  console.error(error);
-}
-
 const app = createApp(App);
 
 app.use(createPinia());
