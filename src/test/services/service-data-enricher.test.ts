@@ -9,9 +9,10 @@ import {
   test,
   type Test,
 } from "vitest";
+import { allowedNodeEnvironmentFlags } from "process";
 
 describe("service-data-enricher-test", () => {
-  test("service-data-enricher of type Left, Not having the necessary key to retrieve data of type Right, should ... ", async () => {
+  test("starting with Left, retrieving data of type Right wil be attempted", async () => {
     type LeftType = {
       _typeOf: "left";
       dataLeftOnly: string;
@@ -27,7 +28,7 @@ describe("service-data-enricher-test", () => {
     function left(): ServiceData<LeftType> {
       return ServiceResult.fromPromise(
         Promise.resolve({
-          dataBoth: "both",
+          dataBoth: "bothLeft",
           dataLeftOnly: "left",
           _typeOf: "left",
         })
@@ -37,7 +38,7 @@ describe("service-data-enricher-test", () => {
     function right(): ServiceData<RightType> {
       return ServiceResult.fromPromise(
         Promise.resolve({
-          dataBoth: "both",
+          dataBoth: "bothRight",
           dataRightOnly: "right",
           _typeOf: "right",
         })
@@ -53,21 +54,182 @@ describe("service-data-enricher-test", () => {
     const testEnricher = combineEnrichers(
       left,
       right,
-      (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object
+      (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object. afhankelijk van de input die je meegeeft aan de functie die combineEnrichers creeert is dat left of right
       isLeft
     );
 
     const [common, leftData, rightData] = testEnricher(() => {
       return {
         _typeOf: "left",
-        dataLeftOnly: "leftonly",
-        dataBoth: "bothLeftAndRight",
+        dataLeftOnly: "leftInput",
+        dataBoth: "bothLeftInput",
       };
     });
 
-    expect(common.value).toMatch("bothLeftAndRight");
-    //leftData.success
-    expect(leftData).toMatch("sss");
-    //  expect(rightData).toMatch("sss");
+    //de params die door de enricher gebruikt zijn om de andere kant op te halen
+    expect(common.value).toMatch("bothLeftInput");
+
+    //de aan de testenricher meegegeven data is gebruikt voor de leftdata
+    expect((leftData as any)["data"].dataLeftOnly).toMatch("leftInput");
+
+    //de aan de testenricher meegegeven data is gebruikt voor de leftdata
+    expect((leftData as any)["data"].dataBoth).toMatch("bothLeftInput");
+
+    //left bevat de data die aan testenricher meegegeven is. right gebruikt de data die de right functie retourneert.
+    //right retourneert een promise, die moeten we een zetje geven:
+    await flushPromises();
+
+    //de door right geretourneerde data is gebruikt voor de rightdata
+    expect((rightData as any)["data"].dataRightOnly).toMatch("right");
+
+    //de door right geretourneerde data is gebruikt voor de rightdata
+    expect((rightData as any)["data"].dataBoth).toMatch("bothRight");
+
+    //de aan de testenricher meegegeven data is gebruikt voor de leftdata
+    expect(leftData.success).toBeTruthy();
+    expect(rightData.success).toBeTruthy();
+  });
+
+  test("starting with Right, retrieving data of type Left wil be attempted", async () => {
+    type LeftType = {
+      _typeOf: "left";
+      dataLeftOnly: string;
+      dataBoth: string;
+    };
+
+    type RightType = {
+      _typeOf: "right";
+      dataRightOnly: string;
+      dataBoth: string;
+    };
+
+    function left(): ServiceData<LeftType> {
+      return ServiceResult.fromPromise(
+        Promise.resolve({
+          dataBoth: "bothLeft",
+          dataLeftOnly: "left",
+          _typeOf: "left",
+        })
+      );
+    }
+
+    function right(): ServiceData<RightType> {
+      return ServiceResult.fromPromise(
+        Promise.resolve({
+          dataBoth: "bothRight",
+          dataRightOnly: "right",
+          _typeOf: "right",
+        })
+      );
+    }
+
+    const isLeft = (
+      leftOrRight: LeftType | RightType
+    ): leftOrRight is LeftType => {
+      return leftOrRight._typeOf === "left";
+    };
+
+    const testEnricher = combineEnrichers(
+      left,
+      right,
+      (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object. afhankelijk van de input die je meegeeft aan de functie die combineEnrichers creeert is dat left of right
+      isLeft
+    );
+
+    const [common, leftData, rightData] = testEnricher(() => {
+      return {
+        _typeOf: "right",
+        dataRightOnly: "rightInput",
+        dataBoth: "bothRightInput",
+      };
+    });
+
+    //de params die door de enricher gebruikt zijn om de andere kant op te halen
+    expect(common.value).toMatch("bothRightInput");
+
+    //de door right geretourneerde data is gebruikt voor de rightdata
+    expect((rightData as any)["data"].dataRightOnly).toMatch("rightInput");
+
+    //de door right geretourneerde data is gebruikt voor de rightdata
+    expect((rightData as any)["data"].dataBoth).toMatch("bothRightInput");
+
+    //left bevat de data die aan testenricher meegegeven is. right gebruikt de data die de right functie retourneert.
+    //right retourneert een promise, die moeten we een zetje geven:
+    await flushPromises();
+
+    //de aan de testenricher meegegeven data is gebruikt voor de leftdata
+    expect((leftData as any)["data"].dataLeftOnly).toMatch("left");
+
+    //de aan de testenricher meegegeven data is gebruikt voor de leftdata
+    expect((leftData as any)["data"].dataBoth).toMatch("bothLeft");
+
+    //de aan de testenricher meegegeven data is gebruikt voor de leftdata
+    expect(leftData.success).toBeTruthy();
+    expect(rightData.success).toBeTruthy();
+  });
+
+  test("starting with Left, if isLeft returns incorrect then..", async () => {
+    type LeftType = {
+      _typeOf: "left";
+      dataLeftOnly: string;
+      dataBoth: string;
+    };
+
+    type RightType = {
+      _typeOf: "right";
+      dataRightOnly: string;
+      dataBoth: string;
+    };
+
+    function left(): ServiceData<LeftType> {
+      return ServiceResult.fromPromise(
+        Promise.resolve({
+          dataBoth: "bothLeft",
+          dataLeftOnly: "left",
+          _typeOf: "left",
+        })
+      );
+    }
+
+    function right(): ServiceData<RightType> {
+      return ServiceResult.fromPromise(
+        Promise.resolve({
+          dataBoth: "bothRight",
+          dataRightOnly: "right",
+          _typeOf: "right",
+        })
+      );
+    }
+
+    const isLeft = (
+      leftOrRight: LeftType | RightType
+    ): leftOrRight is LeftType => {
+      return leftOrRight._typeOf === "right"; //wrong!
+    };
+
+    const testEnricher = combineEnrichers(
+      left,
+      right,
+      (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object. afhankelijk van de input die je meegeeft aan de functie die combineEnrichers creeert is dat left of right
+      isLeft
+    );
+
+    const [common, leftData, rightData] = testEnricher(() => {
+      return {
+        _typeOf: "left",
+        dataLeftOnly: "leftInput",
+        dataBoth: "bothLeftInput",
+      };
+    });
+
+    //de params die door de enricher gebruikt zijn om de andere kant op te halen
+    expect(common.value).toMatch("bothLeftInput");
+
+    //de geinjecteerde data wordt nu als rightdata geretourneerd en de left data is undefined (is dit echt wenselijk?)
+    expect((rightData as any)["data"].dataLeftOnly).toMatch("leftInput");
+    expect((leftData as any)["data"]).toBeUndefined();
+
+    expect(leftData.success).toBeFalsy();
+    expect(rightData.success).toBeTruthy();
   });
 });
