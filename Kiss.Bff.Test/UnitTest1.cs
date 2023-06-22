@@ -1,8 +1,14 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Text.Json.Nodes;
 using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Beheer.Gespreksresultaten.Controllers;
+using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Managementinfo;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
@@ -168,6 +174,236 @@ namespace Kiss.Bff.Test
             Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorletters"].ToString());
             Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorvoegselAchternaam"].ToString());
 
+        }
+
+        [TestMethod]
+        public async Task GetGespreksresultaten_ReturnsOkResultWithGespreksresultaten()
+        {
+            // Arrange
+            var gespreksresultaten = new List<Gespreksresultaat>
+            {
+                new Gespreksresultaat { Id = Guid.NewGuid(), Definitie = "Resultaat 1" },
+                new Gespreksresultaat { Id = Guid.NewGuid(), Definitie = "Resultaat 2" }
+            };
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                await context.Gespreksresultaten.AddRangeAsync(gespreksresultaten);
+                await context.SaveChangesAsync();
+            }
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = controller.GetGespreksresultaten();
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
+
+                var okResult = (OkObjectResult)result.Result;
+                Assert.IsNotNull(okResult.Value);
+
+                var gespreksresultaatModels = (IAsyncEnumerable<GespreksresultaatModel>)okResult.Value;
+
+
+                var count = 0;
+                await foreach (var item in gespreksresultaatModels)
+                {
+                    count++;
+                    if (count == 1)
+                    {
+                        Assert.AreEqual("Resultaat 1", item.Definitie);
+                    }
+                    else if (count == 2)
+                    {
+                        Assert.AreEqual("Resultaat 2", item.Definitie);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task GetGespreksresultaat_ReturnsGespreksresultaat()
+        {
+            // Arrange
+            var gespreksresultaatId = Guid.NewGuid();
+            var gespreksresultaat = new Gespreksresultaat { Id = gespreksresultaatId, Definitie = "Resultaat" };
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                await context.Gespreksresultaten.AddAsync(gespreksresultaat);
+                await context.SaveChangesAsync();
+            }
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.GetGespreksresultaat(gespreksresultaatId, CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result, typeof(ActionResult<GespreksresultaatModel>));
+
+               // var actionResult = result;
+                Assert.IsNotNull(result.Value);
+
+                Assert.AreEqual(gespreksresultaat.Id, result.Value.Id);
+                Assert.AreEqual(gespreksresultaat.Definitie, result.Value.Definitie);
+            }
+        }
+
+        [TestMethod]
+        public async Task GetGespreksresultaat_WithInvalidId_ReturnsNotFound()
+        {
+            // Arrange
+            var invalidId = Guid.NewGuid();
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.GetGespreksresultaat(invalidId, CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
+            }
+        }
+
+        [TestMethod]
+        public async Task PutGespreksresultaat_WithValidId_ReturnsNoContent()
+        {
+            // Arrange
+            var gespreksresultaatId = Guid.NewGuid();
+            var gespreksresultaat = new Gespreksresultaat { Id = gespreksresultaatId, Definitie = "Resultaat" };
+            var updatedDefinitie = "Updated Resultaat";
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                await context.Gespreksresultaten.AddAsync(gespreksresultaat);
+                await context.SaveChangesAsync();
+            }
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.PutGespreksresultaat(gespreksresultaatId, new GespreksresultaatModel(gespreksresultaatId, updatedDefinitie), CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result, typeof(NoContentResult));
+
+                using (var updatedContext = new BeheerDbContext(_dbContextOptions))
+                {
+                    var updatedGespreksresultaat = await updatedContext.Gespreksresultaten.FindAsync(gespreksresultaatId);
+                    Assert.AreEqual(updatedDefinitie, updatedGespreksresultaat.Definitie);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task PutGespreksresultaat_WithInvalidId_ReturnsNotFound()
+        {
+            // Arrange
+            var invalidId = Guid.NewGuid();
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.PutGespreksresultaat(invalidId, new GespreksresultaatModel(invalidId, "Resultaat"), CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            }
+        }
+
+        [TestMethod]
+        public async Task PostGespreksresultaat_ReturnsCreatedResponseWithGespreksresultaat()
+        {
+            // Arrange
+            var gespreksresultaatModel = new GespreksresultaatModel(Guid.NewGuid(), "Resultaat");
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.PostGespreksresultaat(gespreksresultaatModel, CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
+
+                var createdAtActionResult = (CreatedAtActionResult)result.Result;
+                Assert.AreEqual(201, createdAtActionResult.StatusCode);
+
+                var gespreksresultaatResult = (GespreksresultaatModel)createdAtActionResult.Value;
+                Assert.IsNotNull(gespreksresultaatResult);
+                Assert.AreEqual(gespreksresultaatModel.Definitie, gespreksresultaatResult.Definitie);
+                Assert.AreEqual(gespreksresultaatResult.Id, gespreksresultaatResult.Id);
+            }
+        }
+
+        [TestMethod]
+        public async Task DeleteGespreksresultaat_WithValidId_ReturnsNoContent()
+        {
+            // Arrange
+            var gespreksresultaatId = Guid.NewGuid();
+            var gespreksresultaat = new Gespreksresultaat { Id = gespreksresultaatId, Definitie = "Resultaat" };
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                await context.Gespreksresultaten.AddAsync(gespreksresultaat);
+                await context.SaveChangesAsync();
+            }
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.DeleteGespreksresultaat(gespreksresultaatId, CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result, typeof(NoContentResult));
+
+                using (var updatedContext = new BeheerDbContext(_dbContextOptions))
+                {
+                    var deletedGespreksresultaat = await updatedContext.Gespreksresultaten.FindAsync(gespreksresultaatId);
+                    Assert.IsNull(deletedGespreksresultaat);
+                }
+            }
+        }
+
+        [TestMethod]
+        public async Task DeleteGespreksresultaat_WithInvalidId_ReturnsNoContent()
+        {
+            // Arrange
+            var invalidId = Guid.NewGuid();
+
+            using (var context = new BeheerDbContext(_dbContextOptions))
+            {
+                var controller = new GespreksresultatenController(context);
+
+                // Act
+                var result = await controller.DeleteGespreksresultaat(invalidId, CancellationToken.None);
+
+                // Assert
+                Assert.IsNotNull(result);
+                Assert.IsInstanceOfType(result, typeof(NoContentResult));
+            }
         }
     }
 }
