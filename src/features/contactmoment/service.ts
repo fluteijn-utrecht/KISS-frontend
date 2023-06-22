@@ -111,7 +111,7 @@ export function useContactverzoekenByKlantId(
   page: Ref<number>
 ) {
   function getUrl() {
-    throw new Error("not implemented");
+    return "not implemented";
     const url = new URL("/api/klantcontactmomenten", location.href);
     url.searchParams.set(
       "_order[embedded.contactmoment.registratiedatum]",
@@ -194,6 +194,7 @@ export function useContactmomentenByKlantId(
 }
 
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
+  return Promise.reject("not implemented");
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((r) => r.json())
