@@ -22,7 +22,7 @@ export interface Contactverzoek {
 }
 
 export function saveContactverzoek(data: Contactverzoek) {
-  throw new Error("not implemented");
+  return Promise.reject("not implemented");
   const url = "/api/contactmomenten";
   const registratiedatum = getFormattedUtcDate();
 
@@ -42,7 +42,7 @@ export function saveContactverzoek(data: Contactverzoek) {
 }
 
 export function createKlant(klant: NieuweKlant) {
-  throw new Error("not implemented");
+  return Promise.reject("not implemented");
   const url = "/api/klanten";
   return fetchLoggedIn(url, {
     method: "POST",
@@ -67,8 +67,7 @@ interface Afdeling {
 }
 
 export function useAfdelingen() {
-  throw new Error("not implemented");
-  const url = "/api/ref/afdelingsnamen";
+  const url = "not implemented";
 
   const mapOrganisatie = (x: unknown): Afdeling => x as any;
 
@@ -86,5 +85,7 @@ export function useAfdelingen() {
       })
       .then((all) => all.sort((a, b) => a.name.localeCompare(b.name)));
 
-  return ServiceResult.fromFetcher(url, fetcher);
+  return ServiceResult.fromFetcher(url, () =>
+    Promise.reject("not implemented")
+  );
 }
