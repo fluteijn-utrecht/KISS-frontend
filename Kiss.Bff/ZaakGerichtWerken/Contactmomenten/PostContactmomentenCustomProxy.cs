@@ -30,18 +30,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var userId = Request.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
 
-            if (parsedModel != null)
-            {
-                //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
-                parsedModel["medewerkerIdentificatie"] = new JsonObject
-                {
-                    ["achternaam"] = userRepresentation,
-                    ["identificatie"] = userId,
-                    ["voorletters"] = "",
-                    ["voorvoegselAchternaam"] = "",
-
-                };
-            }
+            UpdateMedewerkerIdentificatie(parsedModel, userRepresentation, userId);
 
             var accessToken = _tokenProvider.GenerateToken(userId, userRepresentation);
 
@@ -65,6 +54,20 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             await using var stream = await response.Content.ReadAsStreamAsync(token);
             await stream.CopyToAsync(Response.Body, token);
+        }
+
+        public void UpdateMedewerkerIdentificatie(JsonObject parsedModel, string userRepresentation, string userId)
+        {
+            if (parsedModel != null)
+            {
+                parsedModel["medewerkerIdentificatie"] = new JsonObject
+                {
+                    ["achternaam"] = userRepresentation,
+                    ["identificatie"] = userId,
+                    ["voorletters"] = "",
+                    ["voorvoegselAchternaam"] = "",
+                };
+            }
         }
     }
 }
