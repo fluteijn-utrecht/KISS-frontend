@@ -40,12 +40,19 @@ namespace Kiss.Bff.Test
         [TestInitialize]
         public void Initialize()
         {
-            // Initialize the in-memory database
-            _dbContextOptions = new DbContextOptionsBuilder<BeheerDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                .Options;
+            InitializeInMemoryDatabase();
         }
+        // This method initializes the in-memory database with a unique database name using Guid.NewGuid().ToString().
+        // The Initialize method now calls InitializeInMemoryDatabase to set up the database before each test.
+        // this ensures that each test has its own isolated database, preventing conflicts between tests.
+        private void InitializeInMemoryDatabase()
+        {
+        _dbContextOptions = new DbContextOptionsBuilder<BeheerDbContext>()
+        .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+        .Options;
+        }
+
         [TestMethod]
         public async Task SendAsync_LogsHttpRequestToDatabase()
         {
