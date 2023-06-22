@@ -1,11 +1,15 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Managementinfo;
+using Kiss.Bff.ZaakGerichtWerken;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using static Kiss.Bff.Beheer.Verwerking.VerwerkingMiddleware;
 
@@ -103,6 +107,40 @@ namespace Kiss.Bff.Test
             Assert.IsInstanceOfType(result, typeof(OkResult));
         }
 
+        [TestMethod]
+        public void GenerateToken_ReturnsValidToken()
+        {
+            // Arrange
+            var apiKey = "blablaFakeApiKey";
+            var clientId = "124567890.87654321";
+            var userId = "blablaFakeUserId";
+            var userRepresentation = "blablaFakeUserRepresentation";
+
+            var tokenProvider = new ZgwTokenProvider(apiKey, clientId);
+
+            // Act
+            var token = tokenProvider.GenerateToken(userId, userRepresentation);
+
+            // Assert
+            Assert.IsNotNull(token);
+            Assert.IsFalse(string.IsNullOrEmpty(token));
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = clientId, // Set the valid issuer
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiKey)),
+                ClockSkew = TimeSpan.Zero
+            };
+
+            // Validate the token
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+            Assert.IsNotNull(principal);
+        }
 
     }
 }
