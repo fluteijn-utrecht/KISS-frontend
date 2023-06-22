@@ -1,5 +1,8 @@
 ﻿using System.Security.Claims;
 using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Beheer.Managementinfo;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -56,5 +59,50 @@ namespace Kiss.Bff.Test
                 // Assert additional properties as needed
             }
         }
+        [TestMethod]
+        public async Task Post_AddsOrUpdatesContactmomentToDatabase()
+        {
+            // Arrange
+            var cancellationToken = CancellationToken.None;
+            var model = new ContactmomentManagementinfoLog
+            {
+                Id = "1",
+                Startdatum = DateTimeOffset.Now,
+                Einddatum = DateTimeOffset.Now.AddDays(1),
+                Resultaat = "Success",
+                PrimaireVraagWeergave = "Question",
+                AfwijkendOnderwerp = "Topic",
+                EmailadresKcm = "test@example.com"
+            };
+            var dbContextMock = new Mock<BeheerDbContext>(_dbContextOptions) { CallBase = true };
+            dbContextMock.Setup(db => db.SaveChangesAsync(cancellationToken)).Returns(Task.FromResult(1));
+
+            var userClaims = new[]
+            {
+                new Claim(ClaimTypes.Email, "test@example.com")
+            };
+            var user = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
+            var controller = new UpsertContactmomentenManagementinfoLog(dbContextMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext
+                    {
+                        User = user
+                    }
+                }
+            };
+
+
+            // Act
+            var result = await controller.Post(model, cancellationToken);
+
+            // Assert
+            dbContextMock.Verify(db => db.AddAsync(model, cancellationToken), Times.Once);
+            dbContextMock.Verify(db => db.SaveChangesAsync(cancellationToken), Times.Once);
+            Assert.IsInstanceOfType(result, typeof(OkResult));
+        }
+
+
     }
 }
