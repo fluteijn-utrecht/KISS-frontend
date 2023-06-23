@@ -62,21 +62,31 @@ describe("service-data-test", () => {
       data: string;
     };
 
-    // let x;
-    const fromPromiseResult = ServiceResult.fromSubmitter<TestType, TestType>(
-      () => Promise.reject<TestType>()
+    //de te testen code is gewrapped in een leeg vue component en wordt aangeroepen vanuit de mounted lifecycle hook
+    //testen van rejected promises werkt dan beter
+    mount(
+      {},
+      {
+        async mounted() {
+          const fromPromiseResult = ServiceResult.fromSubmitter<
+            TestType,
+            TestType
+          >(() => Promise.reject<TestType>());
+
+          expect(fromPromiseResult.submit({ data: "in" })).rejects.toBeFalsy();
+
+          await flushPromises();
+
+          //expect(y.state).toMatch("loading");
+          //expect(y.success).toBeFalsy();
+
+          //  x.catch(() => {
+          expect(fromPromiseResult.state).toMatch("error");
+          expect(fromPromiseResult.success).toBeFalsy();
+        },
+      }
     );
 
-    fromPromiseResult.submit({ data: "in" });
-
-    await flushPromises();
-
-    //expect(y.state).toMatch("loading");
-    //expect(y.success).toBeFalsy();
-
-    //  x.catch(() => {
-    expect(fromPromiseResult.state).toMatch("error");
-    expect(fromPromiseResult.success).toBeFalsy();
     //   });
   });
 });
