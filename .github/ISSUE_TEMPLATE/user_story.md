@@ -8,6 +8,8 @@ assignees: ''
 ---
 ...zodat 
 
+### Story
+
 ### toelichting
 
 **Projectcode**: 
@@ -17,21 +19,10 @@ assignees: ''
 
 ### Functionele teststappen
 
-### Taken Conduction
+### Taken 
 - [ ] Test invullen
 - [ ] 
 
-### Taken ICAT
-- [ ] Test invullen
-- [ ] 
-
-### Taken DIMPACT
-- [ ] Test invullen
-- [ ] 
-
-### Tijdinschatting 
-- *Conduction* 8
-- *ICATT* v
 
 ### Discussie
 - [ ] type hekje om te linken

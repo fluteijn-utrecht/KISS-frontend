@@ -7,6 +7,7 @@ import type { EnrichedPersoon, Persoon } from "../types";
 import { useRouter } from "vue-router";
 import { useEnrichedPersoon } from "./persoon-enricher";
 import type { Klant } from "../../types";
+import { useOrganisatieIds } from "@/stores/user";
 
 const props = defineProps<{ record: Klant | Persoon }>();
 
@@ -49,6 +50,7 @@ function mapGeboortedatum(persoon: Persoon | null) {
 }
 
 const router = useRouter();
+const organisatieIds = useOrganisatieIds();
 
 const create = async () => {
   if (!bsn.value) throw new Error();
@@ -59,10 +61,13 @@ const create = async () => {
         voorvoegselAchternaam: persoonData.data?.voorvoegselAchternaam,
       }
     : {};
-  const newKlant = await ensureKlantForBsn({
-    bsn: bsn.value,
-    ...naam,
-  });
+  const newKlant = await ensureKlantForBsn(
+    {
+      bsn: bsn.value,
+      ...naam,
+    },
+    organisatieIds.value[0] || ""
+  );
   const url = getKlantUrl(newKlant);
   router.push(url);
 };

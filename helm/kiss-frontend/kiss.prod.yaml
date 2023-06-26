@@ -1,8 +1,5 @@
 image:
   pullPolicy: Always
-config:
-  gatewayBaseUri: https://prod.kiss-demo.nl
-  organizationIds: ["999990639"]
 ingress:
   enabled: true
   className: "nginx"

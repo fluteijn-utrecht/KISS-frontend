@@ -25,10 +25,15 @@ async function fetchUser(url: string): Promise<User> {
 
   if (!isLoggedIn || typeof email !== "string" || !email) return anonymousUser;
 
+  const organisatieIds = Array.isArray(json?.organisatieIds)
+    ? json.organisatieIds
+    : [];
+
   return {
     isLoggedIn,
     email,
     isRedacteur,
+    organisatieIds,
   };
 }
 

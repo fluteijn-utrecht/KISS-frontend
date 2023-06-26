@@ -111,7 +111,8 @@ export function useContactverzoekenByKlantId(
   page: Ref<number>
 ) {
   function getUrl() {
-    const url = new URL(window.gatewayBaseUri + "/api/klantcontactmomenten");
+    return "not implemented";
+    const url = new URL("/api/klantcontactmomenten", location.href);
     url.searchParams.set(
       "_order[embedded.contactmoment.registratiedatum]",
       "desc"
@@ -193,6 +194,7 @@ export function useContactmomentenByKlantId(
 }
 
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
+  return Promise.reject("not implemented");
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((r) => r.json())

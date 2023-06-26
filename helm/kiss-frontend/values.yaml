@@ -3,10 +3,6 @@
 # Declare variables to be passed into your templates.
 replicaCount: 2
 
-config:
-  organizationIds: []
-  gatewayBaseUri:
-
 image:
   repository: ghcr.io/klantinteractie-servicesysteem/kiss-frontend
   pullPolicy: IfNotPresent
@@ -98,13 +94,13 @@ tolerations: []
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchExpressions:
-        - key: app
-          operator: In
-          values:
-          - kiss-frontend
-      topologyKey: "kubernetes.io/hostname"
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - kiss-frontend
+        topologyKey: "kubernetes.io/hostname"
 
 env:
   OIDC_CLIENT_ID: ""
@@ -130,6 +126,7 @@ env:
   FEEDBACK_EMAIL_TO: ""
   CONTACTMOMENTEN_BASE_URL: ""
   CONTACTMOMENTEN_API_CLIENT_ID: ""
+  ORGANISATIE_IDS: ""
 
 postgresql:
   enabled: true

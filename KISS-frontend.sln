@@ -15,6 +15,11 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "KISS-frontend", "KISS-front
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kiss.Bff.Test", "Kiss.Bff.Test\Kiss.Bff.Test.csproj", "{DEB9BEF6-DC5E-42AD-B13E-7B969C619F65}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{703D5FC2-739A-4332-B91F-A830953641AC}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

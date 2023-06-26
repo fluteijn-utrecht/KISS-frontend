@@ -22,7 +22,8 @@ export interface Contactverzoek {
 }
 
 export function saveContactverzoek(data: Contactverzoek) {
-  const url = window.gatewayBaseUri + "/api/contactmomenten";
+  return Promise.reject("not implemented");
+  const url = "/api/contactmomenten";
   const registratiedatum = getFormattedUtcDate();
 
   return fetchLoggedIn(url, {
@@ -41,7 +42,8 @@ export function saveContactverzoek(data: Contactverzoek) {
 }
 
 export function createKlant(klant: NieuweKlant) {
-  const url = `${window.gatewayBaseUri}/api/klanten`;
+  return Promise.reject("not implemented");
+  const url = "/api/klanten";
   return fetchLoggedIn(url, {
     method: "POST",
     headers: {
@@ -49,7 +51,7 @@ export function createKlant(klant: NieuweKlant) {
     },
     body: JSON.stringify({
       ...klant,
-      bronorganisatie: window.organisatieIds[0],
+      bronorganisatie,
       // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: "123",
       subjectType: KlantType.Persoon,
@@ -65,7 +67,7 @@ interface Afdeling {
 }
 
 export function useAfdelingen() {
-  const url = `${window.gatewayBaseUri}/api/ref/afdelingsnamen`;
+  const url = "not implemented";
 
   const mapOrganisatie = (x: unknown): Afdeling => x as any;
 
@@ -83,5 +85,7 @@ export function useAfdelingen() {
       })
       .then((all) => all.sort((a, b) => a.name.localeCompare(b.name)));
 
-  return ServiceResult.fromFetcher(url, fetcher);
+  return ServiceResult.fromFetcher(url, () =>
+    Promise.reject("not implemented")
+  );
 }
