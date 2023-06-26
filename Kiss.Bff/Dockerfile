@@ -20,17 +20,23 @@ RUN unzip -j Private_Chain_api_kvk_nl.zip
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
+COPY ["Kiss.Bff.Test/Kiss.Bff.Test.csproj", "Kiss.Bff.Test/"]
+RUN dotnet restore "Kiss.Bff.Test/Kiss.Bff.Test.csproj"
 COPY . .
 WORKDIR "/src/Kiss.Bff"
 RUN dotnet build "Kiss.Bff.csproj" -c Release -o /app/build
+WORKDIR "/src/Kiss.Bff.Test"
+RUN dotnet test -c Release 
 
 FROM node:18-alpine AS frontend
 WORKDIR /app
 COPY . .
 RUN npm ci
+RUN npm run test:unitci
 RUN npm run build --if-present
 
 FROM build AS publish
+WORKDIR "/src/Kiss.Bff"
 COPY --from=frontend /app/dist ./wwwroot
 RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
