@@ -122,29 +122,20 @@ namespace Kiss.Bff.Test
             var gespreksresultaat = new Gespreksresultaat { Id = gespreksresultaatId, Definitie = "Resultaat" };
             var updatedDefinitie = "Updated Resultaat";
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                await context.Gespreksresultaten.AddAsync(gespreksresultaat);
-                await context.SaveChangesAsync();
-            }
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Gespreksresultaten.AddAsync(gespreksresultaat);
+            await context.SaveChangesAsync();
+            var controller = new GespreksresultatenController(context);
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new GespreksresultatenController(context);
+            // Act
+            var result = await controller.PutGespreksresultaat(gespreksresultaatId, new GespreksresultaatModel(gespreksresultaatId, updatedDefinitie), CancellationToken.None);
 
-                // Act
-                var result = await controller.PutGespreksresultaat(gespreksresultaatId, new GespreksresultaatModel(gespreksresultaatId, updatedDefinitie), CancellationToken.None);
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NoContentResult));
-
-                using (var updatedContext = new BeheerDbContext(_dbContextOptions))
-                {
-                    var updatedGespreksresultaat = await updatedContext.Gespreksresultaten.FindAsync(gespreksresultaatId);
-                    Assert.AreEqual(updatedDefinitie, updatedGespreksresultaat.Definitie);
-                }
-            }
+            var updatedGespreksresultaat = await context.Gespreksresultaten.FindAsync(gespreksresultaatId);
+            Assert.AreEqual(updatedDefinitie, updatedGespreksresultaat.Definitie);
         }
 
         [TestMethod]
