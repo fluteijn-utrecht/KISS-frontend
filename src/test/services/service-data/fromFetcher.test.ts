@@ -1,24 +1,10 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import {
-  ServiceResult,
-  fetchLoggedIn,
-  mapServiceData,
-  parseJson,
-  throwIfNotOk,
-  type ServiceData,
-} from "@/services";
+import { ServiceResult, type ServiceData } from "@/services";
 
-import {
-  assertType,
-  describe,
-  expect,
-  expectTypeOf,
-  test,
-  type Test,
-} from "vitest";
+import { describe, expect, expectTypeOf, test } from "vitest";
 
-describe("service-data-test", () => {
-  test("ServiceResult.fromFetcher: the correct result is returned for a resolved Promise.", async () => {
+describe("ServiceResult.fromFetcher", () => {
+  test("should return a ServiceData instance and put in in a success state after a promise is resolved.", async () => {
     type TestType = {
       data: string;
     };

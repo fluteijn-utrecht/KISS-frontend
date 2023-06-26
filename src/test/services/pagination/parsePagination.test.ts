@@ -1,25 +1,9 @@
-import { flushPromises } from "@vue/test-utils";
-import {
-  ServiceResult,
-  fetchLoggedIn,
-  mapServiceData,
-  parseJson,
-  throwIfNotOk,
-  type ServiceData,
-  parsePagination,
-} from "@/services";
+import { parsePagination } from "@/services";
 
-import {
-  assertType,
-  describe,
-  expect,
-  expectTypeOf,
-  test,
-  type Test,
-} from "vitest";
+import { describe, expect, test } from "vitest";
 
-describe("pagination-test", () => {
-  test("test if a synchronous mapper results in the expected paginationobject", async () => {
+describe("parsePagination", () => {
+  test("should return a paginationobject when used with a synchronous mapper", async () => {
     const pageData = [{ data: "a" }, { data: "b" }];
     const nextUrl = "nextUrl";
     const previousUrl = "previousUrl";
@@ -40,7 +24,7 @@ describe("pagination-test", () => {
     expect(result.page).toStrictEqual(pageData);
   });
 
-  test("test if a asynchronous mapper results in the expected paginationobject", async () => {
+  test("should return a paginationobject when used with a asynchronous mapper", async () => {
     const pageData = [{ data: "a" }, { data: "b" }];
     const nextUrl = "nextUrl";
     const previousUrl = "previousUrl";

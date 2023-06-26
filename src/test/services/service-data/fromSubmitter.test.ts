@@ -1,24 +1,9 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import {
-  ServiceResult,
-  fetchLoggedIn,
-  mapServiceData,
-  parseJson,
-  throwIfNotOk,
-  type ServiceData,
-} from "@/services";
+import { ServiceResult, type ServiceData } from "@/services";
+import { describe, expect, expectTypeOf, test } from "vitest";
 
-import {
-  assertType,
-  describe,
-  expect,
-  expectTypeOf,
-  test,
-  type Test,
-} from "vitest";
-
-describe("service-data-test", () => {
-  test("ServiceResult.fromSubmitter returns success for a resolved Promise.", async () => {
+describe("ServiceResult.fromSubmitter", () => {
+  test("should return a ServiceData instance and put in in a success state after a promise is resolved.", async () => {
     type TestType = {
       data: string;
     };
@@ -40,7 +25,7 @@ describe("service-data-test", () => {
     }
   });
 
-  test("ServiceResult.fromSubmitter returns a loading state for a pending Promise.", async () => {
+  test("should return a ServiceData instance and put in in a loading state when a promise is pending.", async () => {
     type TestType = {
       data: string;
     };
@@ -57,7 +42,7 @@ describe("service-data-test", () => {
     expect(fromPromiseResult.success).toBeFalsy();
   });
 
-  test("ServiceResult.fromSubmitter returns an eroor state for a rejected Promise.", async () => {
+  test("should return a ServiceData instance and put in in a error state after a promise is resolved.", async () => {
     type TestType = {
       data: string;
     };
@@ -77,16 +62,10 @@ describe("service-data-test", () => {
 
           await flushPromises();
 
-          //expect(y.state).toMatch("loading");
-          //expect(y.success).toBeFalsy();
-
-          //  x.catch(() => {
           expect(fromPromiseResult.state).toMatch("error");
           expect(fromPromiseResult.success).toBeFalsy();
         },
       }
     );
-
-    //   });
   });
 });

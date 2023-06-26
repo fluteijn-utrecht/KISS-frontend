@@ -17,8 +17,8 @@ import {
   type Test,
 } from "vitest";
 
-describe("service-data-test", () => {
-  test("ServiceResult.fromPromise: test if the correct result is returned for a resolved Promise.", async () => {
+describe("ServiceResult.fromPromise", () => {
+  test("should return a ServiceData instance and put in in a success state after a promise is resolved.", async () => {
     type TestType = {
       data: string;
     };
@@ -35,7 +35,7 @@ describe("service-data-test", () => {
     expect(fromPromiseResult.success).toBeTruthy();
   });
 
-  test("ServiceResult.fromPromise: test if the correct result is returned for a pending Promise.", async () => {
+  test("should return a ServiceData instance and put in in a loading state when a promise is pending.", async () => {
     type TestType = {
       data: string;
     };
@@ -50,7 +50,7 @@ describe("service-data-test", () => {
     expect(fromPromiseResult.success).toBeFalsy();
   });
 
-  test("ServiceResult.fromPromise: test if the correct result  is returned for a rejected Promise.", async () => {
+  test("should return a ServiceData instance and put in in a error state after a promise is resolved.", async () => {
     type TestType = {
       data: string;
     };
@@ -62,7 +62,7 @@ describe("service-data-test", () => {
 
     await flushPromises();
 
-    x.catch(async (err) => {
+    x.catch(async () => {
       expect(y.state).toMatch("error");
       expect(y.success).toBeFalsy();
     });

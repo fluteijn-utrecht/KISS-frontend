@@ -1,18 +1,10 @@
 import { flushPromises } from "@vue/test-utils";
 import { combineEnrichers, ServiceResult, type ServiceData } from "@/services";
 
-import {
-  assertType,
-  describe,
-  expect,
-  expectTypeOf,
-  test,
-  type Test,
-} from "vitest";
-import { allowedNodeEnvironmentFlags } from "process";
+import { describe, expect, test } from "vitest";
 
-describe("service-data-enricher-test", () => {
-  test("starting with Left, retrieving data of type Right wil be attempted", async () => {
+describe("service-data-enricher", () => {
+  test("should attempt to retrieve data of type Right, when the input is of type Left", async () => {
     type LeftType = {
       _typeOf: "left";
       dataLeftOnly: string;
@@ -90,7 +82,7 @@ describe("service-data-enricher-test", () => {
     expect(rightData.success).toBeTruthy();
   });
 
-  test("starting with Right, retrieving data of type Left wil be attempted", async () => {
+  test("should attempt to retrieve data of type Left, when the input is of type Right", async () => {
     type LeftType = {
       _typeOf: "left";
       dataLeftOnly: string;
@@ -168,7 +160,7 @@ describe("service-data-enricher-test", () => {
     expect(rightData.success).toBeTruthy();
   });
 
-  test("starting with Left, if isLeft returns incorrect then..", async () => {
+  test("should return the input, in side dictated by the isLeft function. If Isleft returns the wrong answer the other side wil be empty", async () => {
     type LeftType = {
       _typeOf: "left";
       dataLeftOnly: string;
