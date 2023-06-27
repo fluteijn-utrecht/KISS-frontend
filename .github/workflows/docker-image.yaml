@@ -57,6 +57,9 @@ jobs:
       - name: Build Docker image
         run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
 
+      - name: Export test results
+        run: docker-compose -f docker-compose.deploy.yaml run testresults
+
       - name: Run Docker image
         run: docker-compose -f docker-compose.deploy.yaml up -d
       - name: Pause for the container to come up

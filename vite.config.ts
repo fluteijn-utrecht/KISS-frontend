@@ -5,6 +5,7 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import { createRequire } from "node:module";
 import ckeditor5 from "@ckeditor/vite-plugin-ckeditor5";
 const require = createRequire(import.meta.url);
+import GithubActionsReporter from "vitest-github-actions-reporter";
 
 const getProxy = (
   env: Record<string, string>
@@ -51,6 +52,9 @@ export default defineConfig(({ mode }) => {
       coverage: {
         all: true,
       },
+      reporters: process.env.GITHUB_ACTIONS
+        ? ["default", new GithubActionsReporter()]
+        : "default",
     },
   };
 });

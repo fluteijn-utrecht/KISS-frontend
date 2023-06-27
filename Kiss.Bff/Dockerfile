@@ -11,29 +11,47 @@ RUN addgroup --group kiss --gid 2000 \
     "kiss" 
 RUN chown kiss:kiss  /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS certs
 RUN apt-get update
 RUN apt-get install unzip
 WORKDIR /custom-certs
 RUN wget https://developers.kvk.nl/cms/api/uploads/Private_Chain_api_kvk_nl.zip
 RUN unzip -j Private_Chain_api_kvk_nl.zip
+
+FROM certs AS restore
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
 COPY ["Kiss.Bff.Test/Kiss.Bff.Test.csproj", "Kiss.Bff.Test/"]
 RUN dotnet restore "Kiss.Bff.Test/Kiss.Bff.Test.csproj"
-COPY . .
-WORKDIR "/src/Kiss.Bff"
-RUN dotnet build "Kiss.Bff.csproj" -c Release -o /app/build
-WORKDIR "/src/Kiss.Bff.Test"
-RUN dotnet test -c Release 
 
-FROM node:18-alpine AS frontend
+FROM restore as build
+WORKDIR /src
+COPY Kiss.Bff Kiss.Bff
+WORKDIR "/src/Kiss.Bff"
+RUN dotnet build "Kiss.Bff.csproj" -c Release --no-restore -o /app/build
+
+FROM build as dotnettest
+WORKDIR /src
+COPY Kiss.Bff.Test Kiss.Bff.Test
+WORKDIR "/src/Kiss.Bff.Test"
+RUN dotnet build "Kiss.Bff.Test.csproj" -c Release --no-restore
+RUN dotnet test -c Release --no-build --logger trx
+
+FROM node:18-alpine AS npmci
 WORKDIR /app
-COPY . .
+COPY package-lock.json package-lock.json
+COPY package.json package.json
 RUN npm ci
+
+FROM npmci as frontend
+COPY . .
 RUN npm run test:unitci
 RUN npm run build --if-present
+
+FROM alpine as testresults
+COPY --from=dotnettest /src/Kiss.Bff.Test/TestResults/*.trx results/
+CMD cp -r results/* out
 
 FROM build AS publish
 WORKDIR "/src/Kiss.Bff"
