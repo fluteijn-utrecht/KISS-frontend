@@ -94,7 +94,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Export tests
-        run: docker run -v ./testresults:/out ${{ env.TEST_CONTAINER_TAG }}
+        run: docker-compose -f docker-compose.citest.yaml run testresults
 
       - name: dotnet test report
         uses: dorny/test-reporter@v1
