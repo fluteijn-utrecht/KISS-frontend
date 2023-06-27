@@ -15,6 +15,7 @@ namespace Kiss.Bff.Beheer.Verwerking
         }
 
         [HttpGet("api/verwerkingslogs")]
+        [Authorize(Policy = Policies.RedactiePolicy)]
         public IActionResult Get()
         {
             var data = _db.VerwerkingsLogs
