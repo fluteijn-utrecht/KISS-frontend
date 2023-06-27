@@ -94,7 +94,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Export tests
-        run: docker run ${{ env.TEST_CONTAINER_TAG }} -v ./testresults:/out
+        run: docker run -v ./testresults:/out ${{ env.TEST_CONTAINER_TAG }}
 
       - name: dotnet test report
         uses: dorny/test-reporter@v1
