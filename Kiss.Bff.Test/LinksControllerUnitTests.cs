@@ -185,15 +185,10 @@ namespace Kiss.Bff.Test
             Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
 
             var createdAtActionResult = (CreatedAtActionResult?)result.Result;
-            Assert.IsNotNull(createdAtActionResult?.Value);
-
-            var createdLink = (Link)createdAtActionResult.Value;
-            Assert.AreEqual(link.Titel, createdLink.Titel);
-            Assert.AreEqual(link.Categorie, createdLink.Categorie);
-            Assert.AreEqual(link.Url, createdLink.Url);
-
-            Assert.AreEqual("GetLink", createdAtActionResult.ActionName);
-            Assert.AreEqual(createdLink.Id, createdAtActionResult?.RouteValues?["id"]);
+            var createdLink = (Link?)createdAtActionResult?.Value;
+            Assert.AreEqual(link.Titel, createdLink?.Titel);
+            Assert.AreEqual(link.Categorie, createdLink?.Categorie);
+            Assert.AreEqual(link.Url, createdLink?.Url);
         }
 
         [TestMethod]

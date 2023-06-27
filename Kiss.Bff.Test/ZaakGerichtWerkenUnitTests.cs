@@ -80,6 +80,7 @@ namespace Kiss.Bff.Test
             };
 
             // Validate the token
+            // ValidateToken throws an exception when invalid
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
             Assert.IsNotNull(principal);
         }

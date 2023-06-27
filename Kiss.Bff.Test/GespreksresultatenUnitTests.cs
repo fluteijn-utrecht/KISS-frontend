@@ -135,7 +135,7 @@ namespace Kiss.Bff.Test
         public async Task PostGespreksresultaat_ReturnsCreatedResponseWithGespreksresultaat()
         {
             // Arrange
-            var gespreksresultaatModel = new GespreksresultaatModel(Guid.NewGuid(), "Resultaat");
+            var gespreksresultaatModel = new GespreksresultaatModel(Guid.Empty, "Resultaat");
 
             using var context = new BeheerDbContext(_dbContextOptions);
             var controller = new GespreksresultatenController(context);
@@ -151,7 +151,7 @@ namespace Kiss.Bff.Test
 
             var gespreksresultaatResult = (GespreksresultaatModel?)createdAtActionResult?.Value;
             Assert.AreEqual(gespreksresultaatModel.Definitie, gespreksresultaatResult?.Definitie);
-            Assert.AreEqual(gespreksresultaatResult?.Id, gespreksresultaatResult?.Id);
+            Assert.AreNotEqual(Guid.Empty, gespreksresultaatResult?.Id);
         }
 
         [TestMethod]
