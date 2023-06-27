@@ -7,6 +7,7 @@ services:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
   testresults:
+    image: ${CONTAINER_REGISTRY_BASE}/${CONTAINER_PROJECT_NAME}:${APP_BUILD}
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
