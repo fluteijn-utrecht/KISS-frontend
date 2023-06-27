@@ -69,13 +69,20 @@ jobs:
       - name: Export test results
         run: docker-compose -f docker-compose.deploy.yaml run testresults
 
-      - name: Test Report
+      - name: dotnet test report
         uses: dorny/test-reporter@v1
         if: success() || failure()    # run this step even if previous step failed
         with:
-          name: dotnet Tests            # Name of the check run which will be created
+          name: dotnet tests            # Name of the check run which will be created
           path: testresults/*.trx    # Path to test results
           reporter: dotnet-trx        # Format of test results
+      - name: npm test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: npm tests            # Name of the check run which will be created
+          path: testresults/*.xml    # Path to test results
+          reporter: jest-junit        # Format of test results
 
       - name: Run Docker image
         run: docker-compose -f docker-compose.deploy.yaml up -d

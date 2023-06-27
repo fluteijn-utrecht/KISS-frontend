@@ -44,13 +44,18 @@ COPY package-lock.json package-lock.json
 COPY package.json package.json
 RUN npm ci
 
-FROM npmci as frontend
+FROM npmci as npm
 COPY . .
-RUN npm run test:unitci
+
+FROM npm as frontend
 RUN npm run build --if-present
+
+FROM npm as npmtest
+RUN npm run test:unitci
 
 FROM alpine as testresults
 COPY --from=dotnettest /src/Kiss.Bff.Test/TestResults/*.trx results/
+COPY --from=npmtest /app/TestResult/*.xml results/
 CMD cp -r results/* out
 
 FROM build AS publish
