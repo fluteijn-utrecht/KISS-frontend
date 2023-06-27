@@ -27,11 +27,6 @@ namespace Kiss.Bff.Test
         [TestMethod]
         public async Task GetSkills_ReturnsOkResult_WithSkills()
         {
-
-
-            Assert.AreEqual(1, 2);
-
-
             // Arrange
             var dbContext = new BeheerDbContext(_dbContextOptions);
             dbContext.Skills.AddRange(new List<Skill>
