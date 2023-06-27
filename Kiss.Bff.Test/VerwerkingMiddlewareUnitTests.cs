@@ -26,21 +26,18 @@ namespace Kiss.Bff.Test
             var user = new ClaimsPrincipal();
             var loggerMock = new Mock<ILogger<VerwerkingsHttpClientMiddleware>>();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var middleware = new VerwerkingsHttpClientMiddleware(context, user, loggerMock.Object);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var middleware = new VerwerkingsHttpClientMiddleware(context, user, loggerMock.Object);
 
-                // Act
-                var response = await middleware.SendAsync(async (r, _) => new HttpResponseMessage(), request, CancellationToken.None);
+            // Act
+            var response = await middleware.SendAsync((r, _) => Task.FromResult(new HttpResponseMessage()), request, CancellationToken.None);
 
-                // Assert
-                Assert.IsTrue(response.IsSuccessStatusCode);
+            // Assert
+            Assert.IsTrue(response.IsSuccessStatusCode);
 
-                var loggedRequest = context.VerwerkingsLogs.FirstOrDefault();
-                Assert.IsNotNull(loggedRequest);
-                Assert.AreEqual(request.Method.Method, loggedRequest.Method);
-                Assert.AreEqual(request.RequestUri.AbsoluteUri, loggedRequest.ApiEndpoint);
-            }
+            var loggedRequest = context.VerwerkingsLogs.FirstOrDefault();
+            Assert.AreEqual(request.Method.Method, loggedRequest?.Method);
+            Assert.AreEqual(request.RequestUri?.AbsoluteUri, loggedRequest?.ApiEndpoint);
         }
     }
 }

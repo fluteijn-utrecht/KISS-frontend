@@ -38,13 +38,10 @@ namespace Kiss.Bff.Test
 
             // Act
             var actionResult = _controller.GetSkills();
-            var okResult = actionResult.Result as OkObjectResult;
-            var resultSkills = okResult.Value as IAsyncEnumerable<SkillViewModel>;
+            var okResult = actionResult?.Result as OkObjectResult;
+            var resultSkills = okResult?.Value as IAsyncEnumerable<SkillViewModel>;
 
             // Assert
-            Assert.IsNotNull(okResult);
-            Assert.IsNotNull(resultSkills);
-
             var skillsList = new List<SkillViewModel>();
             var enumerator = resultSkills.GetAsyncEnumerator();
             while (await enumerator.MoveNextAsync())
@@ -73,9 +70,8 @@ namespace Kiss.Bff.Test
             var resultSkill = actionResult.Value as SkillViewModel;
 
             // Assert
-            Assert.IsNotNull(resultSkill);
-            Assert.AreEqual(1, resultSkill.Id);
-            Assert.AreEqual("Skill 1", resultSkill.Naam);
+            Assert.AreEqual(1, resultSkill?.Id);
+            Assert.AreEqual("Skill 1", resultSkill?.Naam);
         }
 
         [TestMethod]
@@ -134,7 +130,7 @@ namespace Kiss.Bff.Test
             // Act
             var actionResult = await _controller.PostSkill(newSkill, CancellationToken.None);
             var createdAtActionResult = actionResult.Result as CreatedAtActionResult;
-            var resultSkill = createdAtActionResult.Value as Skill;
+            var resultSkill = createdAtActionResult?.Value as Skill;
 
             // Assert
             Assert.IsNotNull(createdAtActionResult);

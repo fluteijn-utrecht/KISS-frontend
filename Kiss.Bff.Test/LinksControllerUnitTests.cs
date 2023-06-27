@@ -14,7 +14,7 @@ namespace Kiss.Bff.Test
     [TestClass]
     public class LinksControllerUnitTests : TestHelper
     {
-        private LinksController _controller;
+        private LinksController? _controller;
 
         [TestInitialize]
         public void Initialize()
@@ -73,46 +73,37 @@ namespace Kiss.Bff.Test
             // Arrange
             var link = new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                await context.Links.AddAsync(link);
-                await context.SaveChangesAsync();
-            }
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Links.AddAsync(link);
+            await context.SaveChangesAsync();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
+            var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.GetLink(1);
+            // Act
+            var result = await controller.GetLink(1);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result.Value, typeof(Link));
+            // Assert
+            Assert.IsInstanceOfType(result.Value, typeof(Link));
 
-                var returnedLink = (Link)result.Value;
-                Assert.AreEqual(link.Id, returnedLink.Id);
-                Assert.AreEqual(link.Titel, returnedLink.Titel);
-                Assert.AreEqual(link.Categorie, returnedLink.Categorie);
-                Assert.AreEqual(link.Url, returnedLink.Url);
-            }
+            var returnedLink = result?.Value;
+            Assert.AreEqual(link.Id, returnedLink?.Id);
+            Assert.AreEqual(link.Titel, returnedLink?.Titel);
+            Assert.AreEqual(link.Categorie, returnedLink?.Categorie);
+            Assert.AreEqual(link.Url, returnedLink?.Url);
         }
 
         [TestMethod]
         public async Task GetLink_WithInvalidId_ReturnsNotFoundResult()
         {
             // Arrange
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.GetLink(1);
+            // Act
+            var result = await controller.GetLink(1);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
-            }
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -121,13 +112,12 @@ namespace Kiss.Bff.Test
             // Arrange
             var link = new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                await context.Links.AddAsync(link);
-                await context.SaveChangesAsync();
-            }
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Links.AddAsync(link);
+            await context.SaveChangesAsync();
 
-            var updatedLink = new LinksController.LinkPutModel
+
+            var updatedLink = new LinkPutModel
             {
                 Id = 1,
                 Titel = "Updated Link",
@@ -135,26 +125,21 @@ namespace Kiss.Bff.Test
                 Url = "https://example.com/updated"
             };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.PutLink(1, updatedLink, CancellationToken.None);
+            var controller = new LinksController(context);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NoContentResult));
+            // Act
+            var result = await controller.PutLink(1, updatedLink, CancellationToken.None);
 
-                using (var updatedContext = new BeheerDbContext(_dbContextOptions))
-                {
-                    var updatedLinkEntity = await updatedContext.Links.FindAsync(1);
-                    Assert.IsNotNull(updatedLinkEntity);
-                    Assert.AreEqual(updatedLink.Titel, updatedLinkEntity.Titel);
-                    Assert.AreEqual(updatedLink.Categorie, updatedLinkEntity.Categorie);
-                    Assert.AreEqual(updatedLink.Url, updatedLinkEntity.Url);
-                }
-            }
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
+    
+            var updatedLinkEntity = await context.Links.FindAsync(1);
+            Assert.IsNotNull(updatedLinkEntity);
+            Assert.AreEqual(updatedLink.Titel, updatedLinkEntity.Titel);
+            Assert.AreEqual(updatedLink.Categorie, updatedLinkEntity.Categorie);
+            Assert.AreEqual(updatedLink.Url, updatedLinkEntity.Url);
+            
         }
 
         [TestMethod]
@@ -169,52 +154,46 @@ namespace Kiss.Bff.Test
                 Url = "https://example.com/1"
             };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.PutLink(1, link, CancellationToken.None);
+            // Act
+            var result = await controller.PutLink(1, link, CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            }
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
         public async Task PostLink_WithValidLink_ReturnsCreatedResultWithLink()
         {
             // Arrange
-            var link = new LinksController.LinkPostModel
+            var link = new LinkPostModel
             {
                 Titel = "New Link",
                 Categorie = "New Category",
                 Url = "https://example.com/new"
             };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.PostLink(link);
+            // Act
+            var result = await controller.PostLink(link);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
 
-                var createdAtActionResult = (CreatedAtActionResult)result.Result;
-                Assert.IsNotNull(createdAtActionResult.Value);
+            var createdAtActionResult = (CreatedAtActionResult?)result.Result;
+            Assert.IsNotNull(createdAtActionResult?.Value);
 
-                var createdLink = (Link)createdAtActionResult.Value;
-                Assert.AreEqual(link.Titel, createdLink.Titel);
-                Assert.AreEqual(link.Categorie, createdLink.Categorie);
-                Assert.AreEqual(link.Url, createdLink.Url);
+            var createdLink = (Link)createdAtActionResult.Value;
+            Assert.AreEqual(link.Titel, createdLink.Titel);
+            Assert.AreEqual(link.Categorie, createdLink.Categorie);
+            Assert.AreEqual(link.Url, createdLink.Url);
 
-                Assert.AreEqual("GetLink", createdAtActionResult.ActionName);
-                Assert.AreEqual(createdLink.Id, createdAtActionResult.RouteValues["id"]);
-            }
+            Assert.AreEqual("GetLink", createdAtActionResult.ActionName);
+            Assert.AreEqual(createdLink.Id, createdAtActionResult?.RouteValues?["id"]);
         }
 
         [TestMethod]
@@ -223,46 +202,34 @@ namespace Kiss.Bff.Test
             // Arrange
             var link = new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                await context.Links.AddAsync(link);
-                await context.SaveChangesAsync();
-            }
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Links.AddAsync(link);
+            await context.SaveChangesAsync();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
+            var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.DeleteLink(1);
+            // Act
+            var result = await controller.DeleteLink(1);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NoContentResult));
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
-                using (var deletedContext = new BeheerDbContext(_dbContextOptions))
-                {
-                    var deletedLink = await deletedContext.Links.FindAsync(1);
-                    Assert.IsNull(deletedLink);
-                }
-            }
+            var deletedLink = await context.Links.FindAsync(1);
+            Assert.IsNull(deletedLink);
         }
 
         [TestMethod]
         public async Task DeleteLink_WithInvalidId_ReturnsNotFoundResult()
         {
             // Arrange
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new LinksController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new LinksController(context);
 
-                // Act
-                var result = await controller.DeleteLink(1);
+            // Act
+            var result = await controller.DeleteLink(1);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            }
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
     }
 }
