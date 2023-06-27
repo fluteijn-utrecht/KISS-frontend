@@ -24,68 +24,56 @@ namespace Kiss.Bff.Test
                 new Gespreksresultaat { Id = Guid.NewGuid(), Definitie = "Resultaat 2" }
             };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Gespreksresultaten.AddRangeAsync(gespreksresultaten);
+            await context.SaveChangesAsync();
+
+
+            var controller = new GespreksresultatenController(context);
+
+            // Act
+            var result = controller.GetGespreksresultaten();
+
+            // Assert
+            var okResult = result.Result as OkObjectResult;
+            var count = 0;
+
+            if (okResult?.Value is IAsyncEnumerable<GespreksresultaatModel> gespreksresultaatModels)
             {
-                await context.Gespreksresultaten.AddRangeAsync(gespreksresultaten);
-                await context.SaveChangesAsync();
-            
-           
-                var controller = new GespreksresultatenController(context);
-
-                // Act
-                var result = controller.GetGespreksresultaten();
-
-                // Assert
-                var okResult = result.Result as OkObjectResult;
-                var count = 0;
-
-                if (okResult?.Value is IAsyncEnumerable<GespreksresultaatModel> gespreksresultaatModels)
+                await foreach (var item in gespreksresultaatModels)
                 {
-                    await foreach (var item in gespreksresultaatModels)
+                    count++;
+                    if (count == 1)
                     {
-                        count++;
-                        if (count == 1)
-                        {
-                            Assert.AreEqual("Resultaat 1", item.Definitie);
-                        }
-                        else if (count == 2)
-                        {
-                            Assert.AreEqual("Resultaat 2", item.Definitie);
-                        }
+                        Assert.AreEqual("Resultaat 1", item.Definitie);
+                    }
+                    else if (count == 2)
+                    {
+                        Assert.AreEqual("Resultaat 2", item.Definitie);
                     }
                 }
-
-                Assert.AreEqual(2, count);
             }
+
+            Assert.AreEqual(2, count);
         }
 
         [TestMethod]
         public async Task GetGespreksresultaat_ReturnsGespreksresultaat()
         {
             // Arrange
-            var gespreksresultaatId = Guid.NewGuid();
-            var gespreksresultaat = new Gespreksresultaat { Id = gespreksresultaatId, Definitie = "Resultaat" };
+            var gespreksresultaat = new Gespreksresultaat { Id = Guid.NewGuid(), Definitie = "Resultaat" };
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Gespreksresultaten.AddAsync(gespreksresultaat);
+            await context.SaveChangesAsync();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                await context.Gespreksresultaten.AddAsync(gespreksresultaat);
-                await context.SaveChangesAsync();
-            
-                var controller = new GespreksresultatenController(context);
+            var controller = new GespreksresultatenController(context);
 
-                // Act
-                var result = await controller.GetGespreksresultaat(gespreksresultaatId, CancellationToken.None);
+            // Act
+            var result = await controller.GetGespreksresultaat(gespreksresultaat.Id, CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(ActionResult<GespreksresultaatModel>));
-
-               // var actionResult = result;
-                Assert.IsNotNull(result.Value);
-
-                Assert.AreEqual(gespreksresultaat.Id, result.Value.Id);
-                Assert.AreEqual(gespreksresultaat.Definitie, result.Value.Definitie);
-            }
+            // Assert
+            Assert.AreEqual(gespreksresultaat.Id, result?.Value?.Id);
+            Assert.AreEqual(gespreksresultaat.Definitie, result?.Value?.Definitie);
         }
 
         [TestMethod]
@@ -94,17 +82,14 @@ namespace Kiss.Bff.Test
             // Arrange
             var invalidId = Guid.NewGuid();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new GespreksresultatenController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new GespreksresultatenController(context);
 
-                // Act
-                var result = await controller.GetGespreksresultaat(invalidId, CancellationToken.None);
+            // Act
+            var result = await controller.GetGespreksresultaat(invalidId, CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
-            }
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -124,11 +109,10 @@ namespace Kiss.Bff.Test
             var result = await controller.PutGespreksresultaat(gespreksresultaatId, new GespreksresultaatModel(gespreksresultaatId, updatedDefinitie), CancellationToken.None);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
             var updatedGespreksresultaat = await context.Gespreksresultaten.FindAsync(gespreksresultaatId);
-            Assert.AreEqual(updatedDefinitie, updatedGespreksresultaat.Definitie);
+            Assert.AreEqual(updatedDefinitie, updatedGespreksresultaat?.Definitie);
         }
 
         [TestMethod]
@@ -137,17 +121,14 @@ namespace Kiss.Bff.Test
             // Arrange
             var invalidId = Guid.NewGuid();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new GespreksresultatenController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new GespreksresultatenController(context);
 
-                // Act
-                var result = await controller.PutGespreksresultaat(invalidId, new GespreksresultaatModel(invalidId, "Resultaat"), CancellationToken.None);
+            // Act
+            var result = await controller.PutGespreksresultaat(invalidId, new GespreksresultaatModel(invalidId, "Resultaat"), CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            }
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -156,25 +137,21 @@ namespace Kiss.Bff.Test
             // Arrange
             var gespreksresultaatModel = new GespreksresultaatModel(Guid.NewGuid(), "Resultaat");
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new GespreksresultatenController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new GespreksresultatenController(context);
 
-                // Act
-                var result = await controller.PostGespreksresultaat(gespreksresultaatModel, CancellationToken.None);
+            // Act
+            var result = await controller.PostGespreksresultaat(gespreksresultaatModel, CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
+            // Assert
+            Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
 
-                var createdAtActionResult = (CreatedAtActionResult)result.Result;
-                Assert.AreEqual(201, createdAtActionResult.StatusCode);
+            var createdAtActionResult = (CreatedAtActionResult?)result.Result;
+            Assert.AreEqual(201, createdAtActionResult?.StatusCode);
 
-                var gespreksresultaatResult = (GespreksresultaatModel)createdAtActionResult.Value;
-                Assert.IsNotNull(gespreksresultaatResult);
-                Assert.AreEqual(gespreksresultaatModel.Definitie, gespreksresultaatResult.Definitie);
-                Assert.AreEqual(gespreksresultaatResult.Id, gespreksresultaatResult.Id);
-            }
+            var gespreksresultaatResult = (GespreksresultaatModel?)createdAtActionResult?.Value;
+            Assert.AreEqual(gespreksresultaatModel.Definitie, gespreksresultaatResult?.Definitie);
+            Assert.AreEqual(gespreksresultaatResult?.Id, gespreksresultaatResult?.Id);
         }
 
         [TestMethod]
@@ -184,23 +161,19 @@ namespace Kiss.Bff.Test
             var gespreksresultaatId = Guid.NewGuid();
             var gespreksresultaat = new Gespreksresultaat { Id = gespreksresultaatId, Definitie = "Resultaat" };
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                await context.Gespreksresultaten.AddAsync(gespreksresultaat);
-                await context.SaveChangesAsync();
-                var controller = new GespreksresultatenController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            await context.Gespreksresultaten.AddAsync(gespreksresultaat);
+            await context.SaveChangesAsync();
+            var controller = new GespreksresultatenController(context);
 
-                // Act
-                var result = await controller.DeleteGespreksresultaat(gespreksresultaatId, CancellationToken.None);
+            // Act
+            var result = await controller.DeleteGespreksresultaat(gespreksresultaatId, CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NoContentResult));
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
-                var deletedGespreksresultaat = await context.Gespreksresultaten.FindAsync(gespreksresultaatId);
-                Assert.IsNull(deletedGespreksresultaat);
-                
-            }
+            var deletedGespreksresultaat = await context.Gespreksresultaten.FindAsync(gespreksresultaatId);
+            Assert.IsNull(deletedGespreksresultaat);
         }
 
         [TestMethod]
@@ -209,17 +182,14 @@ namespace Kiss.Bff.Test
             // Arrange
             var invalidId = Guid.NewGuid();
 
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
-                var controller = new GespreksresultatenController(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new GespreksresultatenController(context);
 
-                // Act
-                var result = await controller.DeleteGespreksresultaat(invalidId, CancellationToken.None);
+            // Act
+            var result = await controller.DeleteGespreksresultaat(invalidId, CancellationToken.None);
 
-                // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            }
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NoContentResult));
         }
     }
 }

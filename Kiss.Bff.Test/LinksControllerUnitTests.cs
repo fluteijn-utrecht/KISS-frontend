@@ -14,7 +14,7 @@ namespace Kiss.Bff.Test
     [TestClass]
     public class LinksControllerUnitTests : TestHelper
     {
-        private LinksController _controller;
+        private LinksController? _controller;
 
         [TestInitialize]
         public void Initialize()
@@ -83,14 +83,13 @@ namespace Kiss.Bff.Test
             var result = await controller.GetLink(1);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result.Value, typeof(Link));
 
-            var returnedLink = (Link)result.Value;
-            Assert.AreEqual(link.Id, returnedLink.Id);
-            Assert.AreEqual(link.Titel, returnedLink.Titel);
-            Assert.AreEqual(link.Categorie, returnedLink.Categorie);
-            Assert.AreEqual(link.Url, returnedLink.Url);
+            var returnedLink = result?.Value;
+            Assert.AreEqual(link.Id, returnedLink?.Id);
+            Assert.AreEqual(link.Titel, returnedLink?.Titel);
+            Assert.AreEqual(link.Categorie, returnedLink?.Categorie);
+            Assert.AreEqual(link.Url, returnedLink?.Url);
         }
 
         [TestMethod]
@@ -104,7 +103,6 @@ namespace Kiss.Bff.Test
             var result = await controller.GetLink(1);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
         }
 
@@ -119,7 +117,7 @@ namespace Kiss.Bff.Test
             await context.SaveChangesAsync();
 
 
-            var updatedLink = new LinksController.LinkPutModel
+            var updatedLink = new LinkPutModel
             {
                 Id = 1,
                 Titel = "Updated Link",
@@ -134,10 +132,8 @@ namespace Kiss.Bff.Test
             var result = await controller.PutLink(1, updatedLink, CancellationToken.None);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-
-            
+    
             var updatedLinkEntity = await context.Links.FindAsync(1);
             Assert.IsNotNull(updatedLinkEntity);
             Assert.AreEqual(updatedLink.Titel, updatedLinkEntity.Titel);
@@ -165,7 +161,6 @@ namespace Kiss.Bff.Test
             var result = await controller.PutLink(1, link, CancellationToken.None);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
@@ -173,7 +168,7 @@ namespace Kiss.Bff.Test
         public async Task PostLink_WithValidLink_ReturnsCreatedResultWithLink()
         {
             // Arrange
-            var link = new LinksController.LinkPostModel
+            var link = new LinkPostModel
             {
                 Titel = "New Link",
                 Categorie = "New Category",
@@ -187,11 +182,10 @@ namespace Kiss.Bff.Test
             var result = await controller.PostLink(link);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
 
-            var createdAtActionResult = (CreatedAtActionResult)result.Result;
-            Assert.IsNotNull(createdAtActionResult.Value);
+            var createdAtActionResult = (CreatedAtActionResult?)result.Result;
+            Assert.IsNotNull(createdAtActionResult?.Value);
 
             var createdLink = (Link)createdAtActionResult.Value;
             Assert.AreEqual(link.Titel, createdLink.Titel);
@@ -199,7 +193,7 @@ namespace Kiss.Bff.Test
             Assert.AreEqual(link.Url, createdLink.Url);
 
             Assert.AreEqual("GetLink", createdAtActionResult.ActionName);
-            Assert.AreEqual(createdLink.Id, createdAtActionResult.RouteValues["id"]);
+            Assert.AreEqual(createdLink.Id, createdAtActionResult?.RouteValues?["id"]);
         }
 
         [TestMethod]
@@ -218,7 +212,6 @@ namespace Kiss.Bff.Test
             var result = await controller.DeleteLink(1);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
             var deletedLink = await context.Links.FindAsync(1);
@@ -236,7 +229,6 @@ namespace Kiss.Bff.Test
             var result = await controller.DeleteLink(1);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
     }
