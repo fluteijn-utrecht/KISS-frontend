@@ -65,7 +65,7 @@ jobs:
         with:
           context: .
           push: false
-          tags: $CONTAINER_REGISTRY_BASE/$CONTAINER_PROJECT_NAME:$APP_BUILD
+          tags: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.APP_BUILD}}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
