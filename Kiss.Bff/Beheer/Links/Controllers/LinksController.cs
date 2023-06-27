@@ -20,7 +20,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
 
         // GET: api/Links
         [HttpGet]
-        public ActionResult<IAsyncEnumerable<GetLinkModel>> GetLinks()
+        public IActionResult GetLinks()
         {
             if (_context.Links == null)
             {
@@ -35,13 +35,7 @@ namespace Kiss.Bff.Beheer.Links.Controllers
                    Categorie = categorieGroep.Key,
                    Items = categorieGroep
                     .OrderBy(x => x.Titel)
-                    .Select(categorieGroepItems => new GetLinkModel 
-                    {   
-                        Id = categorieGroepItems.Id,
-                        Titel =  categorieGroepItems.Titel,
-                        Categorie = categorieGroepItems.Categorie,
-                        Url = categorieGroepItems.Url 
-                    })
+                    .Select(categorieGroepItems => new { categorieGroepItems.Id, categorieGroepItems.Titel, categorieGroepItems.Categorie, categorieGroepItems.Url })
                })
                .OrderBy(x => x.Categorie)
                .AsAsyncEnumerable();
@@ -157,14 +151,6 @@ namespace Kiss.Bff.Beheer.Links.Controllers
             [Required]
             public string Categorie { get; set; } = string.Empty;
 
-        }
-
-        public class GetLinkModel
-        {
-            public int Id { get; set; }
-            public string Titel { get; set; }
-            public string Categorie { get; set; }
-            public string Url { get; set; }
         }
 
     }

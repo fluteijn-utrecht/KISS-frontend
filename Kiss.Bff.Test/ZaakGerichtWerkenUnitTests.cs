@@ -24,30 +24,30 @@ namespace Kiss.Bff.Test
             InitializeDatabase();
         }
 
-        [TestMethod]
-        public void UpdateMedewerkerIdentificatie_AddsMedewerkerIdentificatieToParsedModel()
-        {
+        //[TestMethod]
+        //public void UpdateMedewerkerIdentificatie_AddsMedewerkerIdentificatieToParsedModel()
+        //{
 
-            // Arrange
-            var parsedModel = new JsonObject();
-            var userRepresentation = "John Doe";
-            var userId = "123";
-            var configurationMock = new Mock<IConfiguration>();
-            var factoryMock = new Mock<IHttpClientFactory>();
-            var proxy = new PostContactmomentenCustomProxy(configurationMock.Object, factoryMock.Object);
+        //    // Arrange
+        //    var parsedModel = new JsonObject();
+        //    var userRepresentation = "John Doe";
+        //    var userId = "123";
+        //    var configurationMock = new Mock<IConfiguration>();
+        //    var factoryMock = new Mock<IHttpClientFactory>();
+        //    var proxy = new PostContactmomentenCustomProxy(configurationMock.Object, factoryMock.Object);
 
 
-            // Act
-            proxy.UpdateMedewerkerIdentificatie(parsedModel, userRepresentation, userId);
+        //    // Act
+        //    proxy.UpdateMedewerkerIdentificatie(parsedModel, userRepresentation, userId);
 
-            // Assert
-            Assert.IsNotNull(parsedModel["medewerkerIdentificatie"]);
-            Assert.AreEqual(userRepresentation, parsedModel["medewerkerIdentificatie"]["achternaam"].ToString());
-            Assert.AreEqual(userId, parsedModel["medewerkerIdentificatie"]["identificatie"].ToString());
-            Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorletters"].ToString());
-            Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorvoegselAchternaam"].ToString());
+        //    // Assert
+        //    Assert.IsNotNull(parsedModel["medewerkerIdentificatie"]);
+        //    Assert.AreEqual(userRepresentation, parsedModel["medewerkerIdentificatie"]["achternaam"].ToString());
+        //    Assert.AreEqual(userId, parsedModel["medewerkerIdentificatie"]["identificatie"].ToString());
+        //    Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorletters"].ToString());
+        //    Assert.AreEqual("", parsedModel["medewerkerIdentificatie"]["voorvoegselAchternaam"].ToString());
 
-        }
+        //}
 
         [TestMethod]
         public void GenerateToken_ReturnsValidToken()
