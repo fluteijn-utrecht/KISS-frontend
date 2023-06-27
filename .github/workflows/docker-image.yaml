@@ -64,6 +64,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          file: Kiss.Bff/Dockerfile
           push: false
           tags: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.APP_BUILD}}
           cache-from: type=gha
