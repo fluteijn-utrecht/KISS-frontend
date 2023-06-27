@@ -58,7 +58,7 @@ jobs:
       #   run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
 
       - name: alternative docker driver
-        run: docker buildx create --use --driver=docker-container
+        run: docker buildx create --use --driver=docker-container --load
 
       - name: Build alternative
         uses: docker/build-push-action@v4
