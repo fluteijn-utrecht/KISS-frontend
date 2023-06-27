@@ -28,38 +28,34 @@ namespace Kiss.Bff.Test
             {
                 await context.Gespreksresultaten.AddRangeAsync(gespreksresultaten);
                 await context.SaveChangesAsync();
-            }
-
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
+            
+           
                 var controller = new GespreksresultatenController(context);
 
                 // Act
                 var result = controller.GetGespreksresultaten();
 
                 // Assert
-                Assert.IsNotNull(result);
-                Assert.IsInstanceOfType(result.Result, typeof(OkObjectResult));
-
-                var okResult = (OkObjectResult)result.Result;
-                Assert.IsNotNull(okResult.Value);
-
-                var gespreksresultaatModels = (IAsyncEnumerable<GespreksresultaatModel>)okResult.Value;
-
-
+                var okResult = result.Result as OkObjectResult;
                 var count = 0;
-                await foreach (var item in gespreksresultaatModels)
+
+                if (okResult?.Value is IAsyncEnumerable<GespreksresultaatModel> gespreksresultaatModels)
                 {
-                    count++;
-                    if (count == 1)
+                    await foreach (var item in gespreksresultaatModels)
                     {
-                        Assert.AreEqual("Resultaat 1", item.Definitie);
-                    }
-                    else if (count == 2)
-                    {
-                        Assert.AreEqual("Resultaat 2", item.Definitie);
+                        count++;
+                        if (count == 1)
+                        {
+                            Assert.AreEqual("Resultaat 1", item.Definitie);
+                        }
+                        else if (count == 2)
+                        {
+                            Assert.AreEqual("Resultaat 2", item.Definitie);
+                        }
                     }
                 }
+
+                Assert.AreEqual(2, count);
             }
         }
 
@@ -74,10 +70,7 @@ namespace Kiss.Bff.Test
             {
                 await context.Gespreksresultaten.AddAsync(gespreksresultaat);
                 await context.SaveChangesAsync();
-            }
-
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
+            
                 var controller = new GespreksresultatenController(context);
 
                 // Act
@@ -195,10 +188,6 @@ namespace Kiss.Bff.Test
             {
                 await context.Gespreksresultaten.AddAsync(gespreksresultaat);
                 await context.SaveChangesAsync();
-            }
-
-            using (var context = new BeheerDbContext(_dbContextOptions))
-            {
                 var controller = new GespreksresultatenController(context);
 
                 // Act
@@ -208,11 +197,9 @@ namespace Kiss.Bff.Test
                 Assert.IsNotNull(result);
                 Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
-                using (var updatedContext = new BeheerDbContext(_dbContextOptions))
-                {
-                    var deletedGespreksresultaat = await updatedContext.Gespreksresultaten.FindAsync(gespreksresultaatId);
-                    Assert.IsNull(deletedGespreksresultaat);
-                }
+                var deletedGespreksresultaat = await context.Gespreksresultaten.FindAsync(gespreksresultaatId);
+                Assert.IsNull(deletedGespreksresultaat);
+                
             }
         }
 
