@@ -48,7 +48,9 @@ export default defineConfig(({ mode }) => {
       assetsInlineLimit: 0,
     },
     test: {
-      // ...
+      coverage: {
+        all: true,
+      },
     },
   };
 });
