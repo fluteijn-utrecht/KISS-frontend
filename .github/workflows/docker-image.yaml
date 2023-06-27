@@ -57,8 +57,25 @@ jobs:
       - name: Build Docker image
         run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
 
+      # - name: Build alternative
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     push: false
+      #     tags: "$CONTAINER_REGISTRY_BASE/$CONTAINER_PROJECT_NAME:$APP_BUILD"
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
+
       - name: Export test results
         run: docker-compose -f docker-compose.deploy.yaml run testresults
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: dotnet Tests            # Name of the check run which will be created
+          path: testresults/*.trx    # Path to test results
+          reporter: dotnet-trx        # Format of test results
 
       - name: Run Docker image
         run: docker-compose -f docker-compose.deploy.yaml up -d
