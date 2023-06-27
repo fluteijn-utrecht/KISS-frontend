@@ -5,7 +5,6 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import { createRequire } from "node:module";
 import ckeditor5 from "@ckeditor/vite-plugin-ckeditor5";
 const require = createRequire(import.meta.url);
-import GithubActionsReporter from "vitest-github-actions-reporter";
 
 const proxyCalls = [
   "/api",
