@@ -54,25 +54,46 @@ jobs:
           NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
           echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
 
+      - name: Setting FULL_CONTAINER_TAG
+        run: |
+          NAME=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.APP_BUILD}}
+          echo "FULL_CONTAINER_TAG=$NAME" >> $GITHUB_ENV
+
+      - name: Setting TEST_CONTAINER_TAG
+        run: |
+          NAME=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}_test:${{ env.APP_BUILD}}
+          echo "TEST_CONTAINER_TAG=$NAME" >> $GITHUB_ENV
+
       # - name: Build Docker image
       #   run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
 
       - name: alternative docker driver
         run: docker buildx create --use --driver=docker-container
 
-      - name: Build alternative
+      - name: Build container
         uses: docker/build-push-action@v4
         with:
           context: .
           load: true
           file: Kiss.Bff/Dockerfile
           push: false
-          tags: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.APP_BUILD}}
+          tags: ${{ env.TEST_CONTAINER_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Export test results
-        run: docker-compose -f docker-compose.deploy.yaml run testresults
+      - name: Build test exporter
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          load: true
+          file: Kiss.Bff/Dockerfile
+          push: false
+          tags: ${{ env.FULL_CONTAINER_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Export tests
+        run: docker run ${{ env.TEST_CONTAINER_TAG }} -v ./testresults:/out
 
       - name: dotnet test report
         uses: dorny/test-reporter@v1
