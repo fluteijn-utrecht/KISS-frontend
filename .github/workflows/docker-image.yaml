@@ -54,17 +54,17 @@ jobs:
           NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
           echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
 
-      - name: Build Docker image
-        run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
+      # - name: Build Docker image
+      #   run: docker-compose -f docker-compose.deploy.yaml build --build-arg APP_ENV=$APP_ENV --build-arg APP_BUILD=$APP_BUILD
 
-      # - name: Build alternative
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: .
-      #     push: false
-      #     tags: "$CONTAINER_REGISTRY_BASE/$CONTAINER_PROJECT_NAME:$APP_BUILD"
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
+      - name: Build alternative
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: "$CONTAINER_REGISTRY_BASE/$CONTAINER_PROJECT_NAME:$APP_BUILD"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Export test results
         run: docker-compose -f docker-compose.deploy.yaml run testresults
