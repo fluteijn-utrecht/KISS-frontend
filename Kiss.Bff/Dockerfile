@@ -11,14 +11,14 @@ RUN addgroup --group kiss --gid 2000 \
     "kiss" 
 RUN chown kiss:kiss  /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS certs
-RUN apt-get update
-RUN apt-get install unzip
-WORKDIR /custom-certs
-RUN wget https://developers.kvk.nl/cms/api/uploads/Private_Chain_api_kvk_nl.zip
-RUN unzip -j Private_Chain_api_kvk_nl.zip
+FROM mcr.microsoft.com/dotnet/sdk:6.0 as sdk
 
-FROM certs AS restore
+FROM sdk AS certs
+RUN apt-get update && apt-get install unzip
+WORKDIR /custom-certs
+RUN wget https://developers.kvk.nl/cms/api/uploads/Private_Chain_api_kvk_nl.zip && unzip -j Private_Chain_api_kvk_nl.zip
+
+FROM sdk AS restore
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
@@ -35,13 +35,11 @@ FROM build as dotnettest
 WORKDIR /src
 COPY Kiss.Bff.Test Kiss.Bff.Test
 WORKDIR "/src/Kiss.Bff.Test"
-RUN dotnet build "Kiss.Bff.Test.csproj" -c Release --no-restore
-RUN dotnet test -c Release --no-build --logger trx
+RUN dotnet build "Kiss.Bff.Test.csproj" -c Release --no-restore && dotnet test -c Release --no-build --logger trx
 
 FROM node:18-alpine AS npmci
 WORKDIR /app
-COPY package-lock.json package-lock.json
-COPY package.json package.json
+COPY package*.json .
 RUN npm ci
 
 FROM npmci as npm
@@ -66,7 +64,7 @@ RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=publish /custom-certs /usr/local/share/ca-certificates
+COPY --from=certs /custom-certs /usr/local/share/ca-certificates
 RUN update-ca-certificates
 USER kiss:kiss
 ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
