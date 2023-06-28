@@ -54,10 +54,6 @@ export default defineConfig(({ mode }) => {
       coverage: {
         all: true,
       },
-      reporters: process.env.GITHUB_ACTIONS ? ["default", "junit"] : "default",
-      outputFile: process.env.GITHUB_ACTIONS
-        ? "TestResult/vitest-junit.xml"
-        : undefined,
     },
   };
 });
