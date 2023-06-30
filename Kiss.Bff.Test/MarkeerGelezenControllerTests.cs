@@ -55,37 +55,9 @@ namespace Kiss.Bff.Test
             var updatedEntity = await dbContext.Gelezen.FindAsync(userId, berichtId);
             Assert.IsNotNull(updatedEntity);
             Assert.IsTrue(updatedEntity.GelezenOp > DateTimeOffset.MinValue);
-            Assert.AreEqual(userId, updatedEntity.UserId); // Ensure UserId is set correctly
         }
 
-        //[TestMethod]
-        //public async Task MarkeerGelezen_ExistingEntity_UpdatesGelezenOp()
-        //{
-        //    // Arrange
-        //    var dbContextOptions = new DbContextOptionsBuilder<BeheerDbContext>()
-        //        .UseInMemoryDatabase(databaseName: "TestDatabase")
-        //        .Options;
-
-        //    using var dbContext = new BeheerDbContext(dbContextOptions);
-        //    var userId = "testuser";
-        //    var berichtId = 1;
-        //    var existingGelezen = new BerichtGelezen { UserId = userId, BerichtId = berichtId };
-        //    dbContext.Gelezen.Add(existingGelezen);
-        //    dbContext.SaveChanges();
-
-        //    var controller = new MarkeerGelezenController(dbContext);
-
-        //    // Act
-        //    var model = new MarkeerGelezenModel(true);
-        //    var result = await controller.MarkeerGelezen(berichtId, model, new CancellationToken());
-
-        //    // Assert
-        //    Assert.IsInstanceOfType(result, typeof(OkResult));
-        //    var updatedEntity = await dbContext.Gelezen.FindAsync(userId, berichtId);
-        //    Assert.IsNotNull(updatedEntity);
-        //    Assert.IsTrue(updatedEntity.GelezenOp > DateTimeOffset.MinValue);
-        //}
-
+       
         [TestMethod]
         public async Task MarkeerGelezen_ExistingEntity_IsGelezenFalse_RemovesGelezen()
         {
