@@ -1,7 +1,5 @@
 name: Backlog item
 description: Create a new backlog item
-title: ""
-labels: []
 body:
   - type: textarea
     id: description
@@ -10,7 +8,7 @@ body:
       description: Describe backlog item (why)
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: estimate
     attributes:
       label: Estimate
