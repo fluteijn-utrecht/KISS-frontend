@@ -1,0 +1,47 @@
+name: Backlog item
+description: Create a new backlog item
+title: ""
+labels: []
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe backlog item (why)
+    validations:
+      required: true
+  - type: textarea
+    id: estimate
+    attributes:
+      label: Estimate
+      description: State estimation in points or time
+    validations:
+      required: false      
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: List acceptance criteria (what)
+    validations:
+      required: false
+  - type: textarea
+    id: specific_details
+    attributes:
+      label: Specific details
+      description: List specific details (how)
+    validations:
+      required: false      
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: Test Plan
+      description: List steps to test this backog item
+    validations:
+      required: false
+  - type: textarea
+    id: delivery_notes
+    attributes:
+      label: Delivery notes
+      description: Remarks during delivery
+    validations:
+      required: false      
