@@ -17,10 +17,8 @@ import { rest } from "msw";
 const someUrl = "https://dummy.request.fgdsf";
 
 describe("fetchLoggedIn", () => {
-  const consoleLogMock = vi.spyOn(console, "log").mockImplementation((e) => {});
-  const consoleWarnMock = vi
-    .spyOn(console, "warn")
-    .mockImplementation((e) => {});
+  const consoleLogMock = vi.spyOn(console, "log");
+  const consoleWarnMock = vi.spyOn(console, "warn");
 
   afterEach(() => {
     consoleLogMock.mockReset();
