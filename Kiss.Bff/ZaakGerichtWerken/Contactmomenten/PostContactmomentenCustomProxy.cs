@@ -1,7 +1,5 @@
 ﻿using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Text.Json.Nodes;
-using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
@@ -10,6 +8,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
     [ApiController]
     public class PostContactmomentenCustomProxy : ControllerBase
     {
+        private const int IdentificatieMaxLength = 24;
         private readonly HttpClient _defaultClient;
         private readonly ZgwTokenProvider _tokenProvider;
         private readonly string _destination;
@@ -29,15 +28,17 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         {
             var email = Request.HttpContext.User?.GetEmail();
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
-
+            // identificatie mag maximaal 24 tekens zijn
+            var identificatie = email != null && email.Length > IdentificatieMaxLength
+                ? email[..IdentificatieMaxLength]
+                : email;
             if (parsedModel != null)
             {
                 //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
                 parsedModel["medewerkerIdentificatie"] = new JsonObject
                 {
                     ["achternaam"] = userRepresentation,
-                    // identificatie mag maximaal 24 tekens zijn
-                    ["identificatie"] = email?[..24],
+                    ["identificatie"] = identificatie,
                     ["voorletters"] = "",
                     ["voorvoegselAchternaam"] = "",
 
