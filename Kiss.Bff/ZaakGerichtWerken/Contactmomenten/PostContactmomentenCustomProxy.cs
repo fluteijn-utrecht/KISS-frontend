@@ -27,7 +27,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         [HttpPost]
         public async Task Post([FromBody] JsonObject parsedModel, CancellationToken token)
         {
-            var userId = Request.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
+            var email = Request.HttpContext.User?.GetEmail();
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
 
             if (parsedModel != null)
@@ -36,14 +36,15 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 parsedModel["medewerkerIdentificatie"] = new JsonObject
                 {
                     ["achternaam"] = userRepresentation,
-                    ["identificatie"] = userId,
+                    // identificatie mag maximaal 24 tekens zijn
+                    ["identificatie"] = email?[..24],
                     ["voorletters"] = "",
                     ["voorvoegselAchternaam"] = "",
 
                 };
             }
 
-            var accessToken = _tokenProvider.GenerateToken(userId, userRepresentation);
+            var accessToken = _tokenProvider.GenerateToken(email, userRepresentation);
 
             var url = _destination.TrimEnd('/') + "/contactmomenten/api/v1/contactmomenten";
 
