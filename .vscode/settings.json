@@ -1,19 +1,34 @@
 {
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": [
-    "source.formatDocument",
-    "source.fixAll.stylelint",
-    "source.fixAll.eslint",
-  ],
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "stylelint.validate": [
     "css",
-    "less",
     "postcss",
     "scss",
     "vue"
   ],
-  "[dockerfile]": {
-    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  "[css][scss]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": [
+      "source.formatDocument",
+      "source.fixAll.stylelint",
+    ]
+  },
+
+  "[javascript][typescript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": [
+      "source.formatDocument",
+      "source.fixAll.eslint",
+    ]
+  },
+  "[vue]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": [
+      "source.formatDocument",
+      "source.fixAll.stylelint",
+      "source.fixAll.eslint",
+    ],
   },
 }
