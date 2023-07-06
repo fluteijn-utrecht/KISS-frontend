@@ -30,7 +30,8 @@ const getProxy = (
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = mode === 'development' ? loadEnv(mode, process.cwd(), "") : undefined;
+  const env =
+    mode === "development" ? loadEnv(mode, process.cwd(), "") : undefined;
   const proxy = env && getProxy(env);
   return {
     plugins: [
