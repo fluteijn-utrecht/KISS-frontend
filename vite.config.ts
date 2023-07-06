@@ -14,7 +14,7 @@ const proxyCalls = [
 ];
 
 const getProxy = (
-  env: Record<string, string>
+  env?: Record<string, string>
 ): Record<string, ProxyOptions> | undefined => {
   const targetPort = env?.BFF_SSL_PORT;
   if (!targetPort) return undefined;
@@ -30,8 +30,8 @@ const getProxy = (
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
-  const proxy = getProxy(env);
+  const env = mode === 'development' ? loadEnv(mode, process.cwd(), "") : undefined;
+  const proxy = env && getProxy(env);
   return {
     plugins: [
       ckeditor5({ theme: require.resolve("@ckeditor/ckeditor5-theme-lark") }),
