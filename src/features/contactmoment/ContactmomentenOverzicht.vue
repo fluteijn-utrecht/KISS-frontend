@@ -16,7 +16,14 @@
                 formatDateOnly(contactmoment.registratiedatum)
               }}</span>
               <span aria-describedby="medewerker-header">{{
-                contactmoment.medewerkerIdentificatie?.identificatie
+                [
+                  contactmoment?.medewerkerIdentificatie?.voorletters,
+                  contactmoment?.medewerkerIdentificatie?.voorvoegselAchternaam,
+                  contactmoment?.medewerkerIdentificatie?.achternaam,
+                ]
+                  .filter(Boolean)
+                  .join(" ") ||
+                contactmoment?.medewerkerIdentificatie?.identificatie
               }}</span>
               <span aria-describedby="kanaal-header">{{
                 contactmoment.kanaal
@@ -108,7 +115,7 @@ ul {
   list-style: none;
 }
 
-li:not(:first-child):not(:last-child) {
+li:not(:first-child, :last-child) {
   border-bottom: 2px solid var(--color-tertiary);
 }
 
