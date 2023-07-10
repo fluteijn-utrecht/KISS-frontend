@@ -8,7 +8,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
     [ApiController]
     public class PostContactmomentenCustomProxy : ControllerBase
     {
-        private const int IdentificatieMaxLength = 24;
         private readonly HttpClient _defaultClient;
         private readonly ZgwTokenProvider _tokenProvider;
         private readonly string _destination;
@@ -30,18 +29,14 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
             var lastName = Request.HttpContext.User?.GetLastName();
             var firstName = Request.HttpContext.User?.GetFirstName();
-            // identificatie mag maximaal 24 tekens zijn
-            var identificatie = email != null && email.Length > IdentificatieMaxLength
-                ? email[..IdentificatieMaxLength]
-                : email;
             if (parsedModel != null)
             {
                 //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
                 parsedModel["medewerkerIdentificatie"] = new JsonObject
                 {
-                    ["achternaam"] = lastName ?? "",
-                    ["identificatie"] = identificatie ?? "",
-                    ["voorletters"] = firstName ?? "",
+                    ["achternaam"] = Truncate(lastName, 200) ?? "",
+                    ["identificatie"] = Truncate(email, 24) ?? "",
+                    ["voorletters"] = Truncate(firstName, 20) ?? "",
                     ["voorvoegselAchternaam"] = "",
 
                 };
@@ -70,5 +65,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             await using var stream = await response.Content.ReadAsStreamAsync(token);
             await stream.CopyToAsync(Response.Body, token);
         }
+
+        private static string? Truncate(string? value, int maxLength) => value != null && value.Length > maxLength
+            ? value[..maxLength]
+            : value;
     }
 }
