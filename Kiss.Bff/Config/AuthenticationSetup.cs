@@ -17,7 +17,7 @@ namespace Kiss
         private const string ObjectIdentitifier = "http://schemas.microsoft.com/identity/claims/objectidentifier";
         public static string? GetId(this ClaimsPrincipal? user) => user?.FindFirstValue(ObjectIdentitifier) ?? user?.FindFirstValue(ClaimTypes.NameIdentifier);
         public static string? GetEmail(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.Email) ?? user?.FindFirstValue(JwtClaimTypes.PreferredUserName);
-        public static string? GetLastName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.FamilyName) ?? user?.Identity?.Name;
+        public static string? GetLastName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.FamilyName) ?? user?.FindFirstValue(JwtClaimTypes.Name) ?? user?.Identity?.Name;
         public static string? GetFirstName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.GivenName);
     }
 }
