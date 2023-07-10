@@ -124,7 +124,7 @@ ul {
   list-style: none;
 }
 
-li:not(:first-child, :last-child) {
+li:not(:first-child):not(:last-child) {
   border-bottom: 2px solid var(--color-tertiary);
 }
 
