@@ -39,9 +39,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
                 parsedModel["medewerkerIdentificatie"] = new JsonObject
                 {
-                    ["achternaam"] = lastName,
-                    ["identificatie"] = identificatie,
-                    ["voorletters"] = firstName,
+                    ["achternaam"] = lastName ?? "",
+                    ["identificatie"] = identificatie ?? "",
+                    ["voorletters"] = firstName ?? "",
                     ["voorvoegselAchternaam"] = "",
 
                 };
