@@ -16,19 +16,20 @@
                 formatDateOnly(contactmoment.registratiedatum)
               }}</span>
               <span aria-describedby="medewerker-header">
+                {{
+                  [
+                    contactmoment?.medewerkerIdentificatie?.voorletters,
+                    contactmoment?.medewerkerIdentificatie
+                      ?.voorvoegselAchternaam,
+                    contactmoment?.medewerkerIdentificatie?.achternaam,
+                  ]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  contactmoment.medewerkerIdentificatie?.identificatie
+                }}
                 <template
                   v-if="contactmoment?.medewerkerIdentificatie?.achternaam"
                 >
-                  {{
-                    [
-                      contactmoment.medewerkerIdentificatie.voorletters,
-                      contactmoment.medewerkerIdentificatie
-                        .voorvoegselAchternaam,
-                      contactmoment.medewerkerIdentificatie.achternaam,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")
-                  }}
                 </template>
                 <template v-else>
                   {{ contactmoment.medewerkerIdentificatie?.identificatie }}
