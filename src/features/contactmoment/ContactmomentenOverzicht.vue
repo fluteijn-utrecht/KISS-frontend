@@ -15,26 +15,16 @@
               <span aria-describedby="datum-header" class="first-column">{{
                 formatDateOnly(contactmoment.registratiedatum)
               }}</span>
-              <span aria-describedby="medewerker-header">
-                {{
-                  [
-                    contactmoment?.medewerkerIdentificatie?.voorletters,
-                    contactmoment?.medewerkerIdentificatie
-                      ?.voorvoegselAchternaam,
-                    contactmoment?.medewerkerIdentificatie?.achternaam,
-                  ]
-                    .filter(Boolean)
-                    .join(" ") ||
-                  contactmoment.medewerkerIdentificatie?.identificatie
-                }}
-                <template
-                  v-if="contactmoment?.medewerkerIdentificatie?.achternaam"
-                >
-                </template>
-                <template v-else>
-                  {{ contactmoment.medewerkerIdentificatie?.identificatie }}
-                </template></span
-              >
+              <span aria-describedby="medewerker-header">{{
+                [
+                  contactmoment?.medewerkerIdentificatie?.voorletters,
+                  contactmoment?.medewerkerIdentificatie?.voorvoegselAchternaam,
+                  contactmoment?.medewerkerIdentificatie?.achternaam,
+                ]
+                  .filter(Boolean)
+                  .join(" ") ||
+                contactmoment?.medewerkerIdentificatie?.identificatie
+              }}</span>
               <span aria-describedby="kanaal-header">{{
                 contactmoment.kanaal
               }}</span>
@@ -125,7 +115,7 @@ ul {
   list-style: none;
 }
 
-li:not(:first-child):not(:last-child) {
+li:not(:first-child, :last-child) {
   border-bottom: 2px solid var(--color-tertiary);
 }
 
