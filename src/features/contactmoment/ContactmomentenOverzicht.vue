@@ -22,6 +22,8 @@
                   {{
                     [
                       contactmoment.medewerkerIdentificatie.voorletters,
+                      contactmoment.medewerkerIdentificatie
+                        .voorvoegselAchternaam,
                       contactmoment.medewerkerIdentificatie.achternaam,
                     ]
                       .filter(Boolean)
