@@ -28,6 +28,8 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         {
             var email = Request.HttpContext.User?.GetEmail();
             var userRepresentation = Request.HttpContext.User?.Identity?.Name;
+            var lastName = Request.HttpContext.User?.GetLastName();
+            var firstName = Request.HttpContext.User?.GetFirstName();
             // identificatie mag maximaal 24 tekens zijn
             var identificatie = email != null && email.Length > IdentificatieMaxLength
                 ? email[..IdentificatieMaxLength]
@@ -37,9 +39,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
                 parsedModel["medewerkerIdentificatie"] = new JsonObject
                 {
-                    ["achternaam"] = userRepresentation,
+                    ["achternaam"] = lastName,
                     ["identificatie"] = identificatie,
-                    ["voorletters"] = "",
+                    ["voorletters"] = firstName,
                     ["voorvoegselAchternaam"] = "",
 
                 };
