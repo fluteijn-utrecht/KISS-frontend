@@ -15,9 +15,23 @@
               <span aria-describedby="datum-header" class="first-column">{{
                 formatDateOnly(contactmoment.registratiedatum)
               }}</span>
-              <span aria-describedby="medewerker-header">{{
-                contactmoment.medewerkerIdentificatie?.identificatie
-              }}</span>
+              <span aria-describedby="medewerker-header">
+                <template
+                  v-if="contactmoment?.medewerkerIdentificatie?.achternaam"
+                >
+                  {{
+                    [
+                      contactmoment.medewerkerIdentificatie.voorletters,
+                      contactmoment.medewerkerIdentificatie.achternaam,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  }}
+                </template>
+                <template v-else>
+                  {{ contactmoment.medewerkerIdentificatie?.identificatie }}
+                </template></span
+              >
               <span aria-describedby="kanaal-header">{{
                 contactmoment.kanaal
               }}</span>
@@ -108,7 +122,7 @@ ul {
   list-style: none;
 }
 
-li:not(:first-child):not(:last-child) {
+li:not(:first-child, :last-child) {
   border-bottom: 2px solid var(--color-tertiary);
 }
 
