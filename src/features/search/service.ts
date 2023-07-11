@@ -10,16 +10,19 @@ import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
 
 function mapResult(obj: any): SearchResult {
-  const source = obj?.object_bron?.raw ?? "Website";
-  const id = obj?.id?.raw;
-  const title = obj?.headings?.raw?.[0] ?? obj?.title?.raw;
-  const content = obj?.body_content?.raw;
-  const url = parseValidUrl(obj?.url?.raw);
+  const source = obj?._index?.startsWith(".ent-search")
+    ? "Website"
+    : obj?._index ?? "";
+  const id = obj?._id;
+
+  const title = obj?._source?.headings?.[0] ?? obj?._source?.title;
+  const content = obj?._source?.body_content;
+  const url = parseValidUrl(obj?._source?.url);
   const documentUrl = new URL(location.href);
-  documentUrl.pathname = searchUrl;
+  // documentUrl.pathname = searchUrl;
   documentUrl.searchParams.set("query", id);
 
-  const jsonObject = JSON.parse(obj?.object?.raw ?? null);
+  const jsonObject = obj?._source?.object ?? null;
   return {
     source,
     id,
@@ -31,12 +34,9 @@ function mapResult(obj: any): SearchResult {
   };
 }
 
-const globalSearchBaseUri =
-  "/api/enterprisesearch/api/as/v1/engines/kiss-engine";
+const globalSearchBaseUri = "/api/elasticsearch";
 
-const searchUrl = globalSearchBaseUri + "/search";
-
-const suggestionUrl = globalSearchBaseUri + "/query_suggestion";
+const pageSize = 20;
 
 export function useGlobalSearch(
   parameters: Ref<{
@@ -45,121 +45,127 @@ export function useGlobalSearch(
     filters: Source[];
   }>
 ) {
-  function groupBy<K, V>(array: V[], grouper: (item: V) => K) {
-    return array.reduce((store, item) => {
-      const key = grouper(item);
-      if (!store.has(key)) {
-        store.set(key, [item]);
-      } else {
-        store.get(key)?.push(item);
-      }
-      return store;
-    }, new Map<K, V[]>());
-  }
+  const getUrl = () => {
+    const uniqueIndices = [
+      ...new Set(parameters.value.filters.map((x) => x.index)),
+    ];
 
-  async function fetcher(): Promise<Paginated<SearchResult>> {
-    const payLoad = {
-      query: parameters.value.search,
-      page: {
-        current: parameters.value.page || 1,
+    const url = new URL(location.href);
+    url.pathname = `${globalSearchBaseUri}/${uniqueIndices
+      .sort((a, b) => a.localeCompare(b))
+      .join(",")}/_search`;
+
+    return url.toString();
+  };
+
+  const getPayload = () => {
+    const page = parameters.value.page || 1;
+    const from = (page - 1) * pageSize;
+
+    return JSON.stringify({
+      query: {
+        simple_query_string: {
+          query: parameters.value.search,
+        },
       },
-      filters: { any: [] as Record<string, string[]>[] },
-    };
-    if (
-      parameters?.value?.filters !== undefined &&
-      parameters?.value?.filters?.length > 0
-    ) {
-      const groupedFilters = groupBy(parameters.value.filters, (x) => x.type);
-      groupedFilters.forEach((value, key) => {
-        const sourceNames = value.map((source) => source.name);
-        const filter = {
-          [key]: sourceNames,
-        };
-        payLoad.filters.any.push(filter);
-      });
-    }
+      from,
+      size: pageSize,
+    });
+  };
 
-    const r = await fetchLoggedIn(searchUrl, {
+  async function fetcher(url: string): Promise<Paginated<SearchResult>> {
+    const r = await fetchLoggedIn(url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify(payLoad),
+      body: getPayload(),
     });
     if (!r.ok) throw new Error();
     const json = await r.json();
-    const { results, meta } = json ?? {};
     const {
-      current: pageNumber,
-      total_pages: totalPages,
-      size: pageSize,
-    } = meta?.page ?? {};
-    const page = Array.isArray(results) ? results.map(mapResult) : [];
+      hits: { total, hits },
+    } = json ?? {};
+    const totalPages = Math.ceil((total?.value || 0) / pageSize);
+    const page = Array.isArray(hits) ? hits.map(mapResult) : [];
     return {
       page,
       pageSize,
-      pageNumber,
+      pageNumber: parameters.value.page || 1,
       totalPages,
     };
   }
 
   function getUniqueId() {
-    const { search, page, filters } = parameters.value ?? {};
-    if (!search) return "";
-    return `${search}|${page || 1}|${filters.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )}`;
+    if (!parameters.value.search) return "";
+    const payload = getPayload();
+    const url = getUrl();
+    return `${payload}${url}`;
   }
 
-  return ServiceResult.fromFetcher(searchUrl, fetcher, {
+  return ServiceResult.fromFetcher(getUrl, fetcher, {
     getUniqueId,
   });
 }
 
+const BRON_QUERY = JSON.stringify({
+  size: 0,
+  aggs: {
+    bronnen: {
+      terms: {
+        field: "object_bron.keyword",
+      },
+      aggs: {
+        by_index: {
+          terms: {
+            field: "_index",
+          },
+        },
+      },
+    },
+    domains: {
+      terms: {
+        field: "domains.enum",
+      },
+      aggs: {
+        by_index: {
+          terms: {
+            field: "_index",
+          },
+        },
+      },
+    },
+  },
+});
+
 export function useSources() {
   async function fetcher(): Promise<Source[]> {
-    const r = await fetchLoggedIn(searchUrl, {
+    const r = await fetchLoggedIn(globalSearchBaseUri + "/_search", {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        query: "",
-        facets: {
-          object_bron: {
-            type: "value",
-          },
-          domains: {
-            type: "value",
-          },
-        },
-      }),
+      body: BRON_QUERY,
     });
     if (!r.ok) throw new Error();
     const json = await r.json();
-    const { facets } = json ?? {};
+    const {
+      aggregations: { bronnen, domains },
+    } = json ?? {};
 
-    if (typeof facets !== "object" || !facets) {
-      throw new Error();
-    }
-
-    const entries = Object.entries(facets) as [
-      string,
-      { data: { value: string }[] }[]
-    ][];
-
-    return entries.flatMap(([k, v]) =>
-      v.flatMap((x) =>
-        x.data.map((x) => ({
-          name: x.value,
-          type: k,
+    const sources: Source[] = [...bronnen.buckets, ...domains.buckets].flatMap(
+      ({ key, by_index: { buckets } }) =>
+        buckets.map((x: any) => ({
+          index: x.key,
+          name: key,
         }))
-      )
     );
+
+    return sources;
   }
 
   return ServiceResult.fromFetcher(globalSearchBaseUri, fetcher, {
-    getUniqueId: () => "sources",
+    getUniqueId: () => globalSearchBaseUri + "/sources",
   });
 }
 
@@ -169,7 +175,7 @@ export function useSuggestions(input: Ref<string>) {
     return json.results.documents.map(({ suggestion }: any) => suggestion);
   }
   function fetchSuggestions() {
-    return fetchLoggedIn(suggestionUrl, {
+    return fetchLoggedIn("", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -191,7 +197,7 @@ export function useSuggestions(input: Ref<string>) {
   function getUniqueId() {
     return input.value && "suggestions_" + input.value;
   }
-  return ServiceResult.fromFetcher(suggestionUrl, fetchSuggestions, {
+  return ServiceResult.fromFetcher(() => "", fetchSuggestions, {
     getUniqueId,
   });
 }

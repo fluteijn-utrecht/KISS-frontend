@@ -112,12 +112,12 @@
               <template v-if="id === state.currentId">
                 <medewerker-detail
                   :medewerkerRaw="jsonObject"
-                  v-if="source === 'Smoelenboek'"
+                  v-if="source === 'smoelenboek'"
                   :title="title"
                   :heading-level="2"
                 />
                 <kennisartikel-detail
-                  v-else-if="source === 'Kennisartikel'"
+                  v-else-if="source === 'kennisartikel'"
                   :kennisartikel-raw="jsonObject"
                   :title="title"
                   :heading-level="2"
@@ -225,14 +225,18 @@ const state = ensureState({
 
 const searchBarRef = ref();
 
+const sources = useSources();
+
 const searchParameters = computed(() => ({
   search: state.value.currentSearch,
   page: state.value.currentPage,
-  filters: state.value.selectedSources,
+  filters:
+    sources.success && !state.value.selectedSources.length
+      ? sources.data
+      : state.value.selectedSources,
 }));
 
 const searchResults = useGlobalSearch(searchParameters);
-const sources = useSources();
 
 const automaticSearchTimeout = ref<number | null>(null);
 

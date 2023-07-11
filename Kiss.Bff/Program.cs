@@ -76,6 +76,8 @@ try
 
     builder.Services.AddHealthChecks();
 
+    builder.Services.AddElasticsearch(builder.Configuration["ELASTIC_BASE_URL"], builder.Configuration["ELASTIC_USERNAME"], builder.Configuration["ELASTIC_PASSWORD"]);
+
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .Enrich.FromLogContext());
