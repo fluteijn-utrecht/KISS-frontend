@@ -3,7 +3,8 @@ import useSWRV from "swrv";
 import { reactive, computed, watch } from "vue";
 
 const refreshInterval =
-  Number.parseInt(import.meta.env.VITE_API_REFRESH_INTERVAL_MS, 10) || 0;
+  Number.parseInt(import.meta.env.VITE_API_REFRESH_INTERVAL_MS, 10) ||
+  undefined;
 
 const logError = import.meta.env.DEV
   ? (e: unknown) => console.error(e)
@@ -169,8 +170,7 @@ export const ServiceResult = {
       getRequestUniqueId,
       fetcherWithoutParameters,
       {
-        refreshInterval:
-          config?.poll && refreshInterval ? refreshInterval : undefined,
+        refreshInterval: config?.poll ? refreshInterval : undefined,
       }
     );
 
