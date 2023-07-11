@@ -11,60 +11,51 @@ RUN addgroup --group kiss --gid 2000 \
     "kiss" 
 RUN chown kiss:kiss  /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 as sdk
-
-FROM sdk AS certs
+FROM mcr.microsoft.com/dotnet/sdk:6.0 as dotnetbuild
 RUN apt-get update && apt-get install unzip
 WORKDIR /custom-certs
 RUN wget https://developers.kvk.nl/cms/api/uploads/Private_Chain_api_kvk_nl.zip && unzip -j Private_Chain_api_kvk_nl.zip
-
-FROM sdk AS restore
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
-COPY ["Kiss.Bff.Test/Kiss.Bff.Test.csproj", "Kiss.Bff.Test/"]
-RUN dotnet restore "Kiss.Bff.Test/Kiss.Bff.Test.csproj"
-
-FROM restore as build
-WORKDIR /src
 COPY Kiss.Bff Kiss.Bff
 WORKDIR "/src/Kiss.Bff"
 RUN dotnet build "Kiss.Bff.csproj" -c Release --no-restore -o /app/build
 
-FROM build as dotnettest
+FROM dotnetbuild as dotnettest
 WORKDIR /src
+COPY ["Kiss.Bff.Test/Kiss.Bff.Test.csproj", "Kiss.Bff.Test/"]
+RUN dotnet restore "Kiss.Bff.Test/Kiss.Bff.Test.csproj"
 COPY Kiss.Bff.Test Kiss.Bff.Test
 WORKDIR "/src/Kiss.Bff.Test"
-RUN dotnet build "Kiss.Bff.Test.csproj" -c Release --no-restore && dotnet test -c Release --no-build --logger trx
+RUN dotnet build "Kiss.Bff.Test.csproj" -c Release --no-restore
+RUN dotnet test -c Release --no-build --logger trx --results-directory /testresults -v n
 
-FROM node:18-alpine AS npmci
+FROM node:18-alpine AS frontend
 WORKDIR /app
 COPY package*.json .
 RUN npm ci
-
-FROM npmci as npm
 COPY . .
 
-FROM npm as frontend
+FROM frontend as frontendtest
+RUN npm run test:unitci -- --reporter junit --outputFile /testresults/vitest-junit.xml
+
+FROM frontend as frontendbuild
 RUN npm run build --if-present
 
-FROM npm as npmtest
-RUN npm run test:unitci
+FROM scratch as test
+COPY --from=dotnettest /testresults/*.trx .
+COPY --from=frontendtest /testresults/*.xml .
 
-FROM alpine as testresults
-COPY --from=dotnettest /src/Kiss.Bff.Test/TestResults/*.trx results/
-COPY --from=npmtest /app/TestResult/*.xml results/
-CMD cp -r results/* out
-
-FROM build AS publish
+FROM dotnetbuild AS dotnetpublish
 WORKDIR "/src/Kiss.Bff"
-COPY --from=frontend /app/dist ./wwwroot
 RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-COPY --from=certs /custom-certs /usr/local/share/ca-certificates
+COPY --from=dotnetpublish /custom-certs /usr/local/share/ca-certificates
 RUN update-ca-certificates
+COPY --from=dotnetpublish /app/publish .
+COPY --from=frontendbuild /app/dist ./wwwroot
 USER kiss:kiss
 ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]

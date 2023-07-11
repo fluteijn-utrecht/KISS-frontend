@@ -1,6 +1,7 @@
 **/.classpath
 **/.dockerignore
-**/.env
+**/.env.local
+**/.env.local.example
 **/.git
 **/.github
 **/.gitignore
@@ -23,6 +24,7 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
-
+**/testresult
+**/testresults
 LICENSE
 README.md

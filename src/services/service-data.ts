@@ -2,6 +2,10 @@ import { toReactive } from "@vueuse/core";
 import useSWRV from "swrv";
 import { reactive, computed, watch } from "vue";
 
+const refreshInterval =
+  Number.parseInt(import.meta.env.VITE_API_REFRESH_INTERVAL_MS, 10) ||
+  undefined;
+
 const logError = import.meta.env.DEV
   ? (e: unknown) => console.error(e)
   : // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -166,9 +170,7 @@ export const ServiceResult = {
       getRequestUniqueId,
       fetcherWithoutParameters,
       {
-        refreshInterval: config?.poll
-          ? import.meta.env.VITE_API_REFRESH_INTERVAL_MS
-          : undefined,
+        refreshInterval: config?.poll ? refreshInterval : undefined,
       }
     );
 
