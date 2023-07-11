@@ -76,7 +76,6 @@
 <script lang="ts" setup>
 import { formatDateOnly, formatTimeOnly } from "@/helpers/date";
 import type { ContactmomentViewModel } from "../shared/types";
-import { ref } from "vue";
 
 defineProps<{
   contactmomenten: ContactmomentViewModel[];
@@ -103,11 +102,6 @@ ul {
   display: grid;
   list-style: none;
   padding: 0;
-}
-
-.header-row {
-  background: var(--color-tertiary);
-  color: var(--color-white);
 }
 
 summary,
@@ -167,6 +161,8 @@ details {
 .header-row {
   padding-block-start: var(--spacing-default);
   padding-block-end: var(--spacing-default);
+  background: var(--color-tertiary);
+  color: var(--color-white);
 }
 
 details[open],
