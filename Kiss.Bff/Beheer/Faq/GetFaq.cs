@@ -22,6 +22,7 @@ namespace Kiss.Bff.Beheer.Faq
         public IActionResult Get()
         {
             var lastContactmomenten = _db.ContactmomentManagementLogs
+                .Where(x=> !string.IsNullOrWhiteSpace(x.PrimaireVraagWeergave))
                 .OrderByDescending(x => x.Einddatum)
                 .Take(AmountOfContactmomenten);
 
@@ -33,7 +34,7 @@ namespace Kiss.Bff.Beheer.Faq
                 .Take(AmountOfQuestions);
 
             var query = topQuestions
-                .Select(x => x.Key ?? "Geen gekoppelde vraag")
+                .Select(x => x.Key)
                 .AsAsyncEnumerable();
 
             return Ok(query);
