@@ -26,17 +26,14 @@ namespace Kiss.Bff.Beheer.Faq
                 .Take(AmountOfContactmomenten);
 
             var groupedByQuestion = lastContactmomenten
-                .Where(x => !string.IsNullOrWhiteSpace(x.PrimaireVraagWeergave) || !string.IsNullOrWhiteSpace(x.AfwijkendOnderwerp))
-                .GroupBy(x => string.IsNullOrWhiteSpace(x.PrimaireVraagWeergave) 
-                    ? x.AfwijkendOnderwerp 
-                    : x.PrimaireVraagWeergave);
+                .GroupBy(x => x.PrimaireVraagWeergave);
 
             var topQuestions = groupedByQuestion
                 .OrderByDescending(x => x.Count())
                 .Take(AmountOfQuestions);
 
             var query = topQuestions
-                .Select(x => x.Key)
+                .Select(x => x.Key ?? "Geen gekoppelde vraag")
                 .AsAsyncEnumerable();
 
             return Ok(query);
