@@ -38,7 +38,7 @@ const globalSearchBaseUri = "/api/elasticsearch";
 
 const pageSize = 20;
 
-const getSearchUrl = (query: string | undefined, sources: Source[]) => {
+const getSearchUrl = (query: string, sources: Source[]) => {
   if (!query) return "";
   const uniqueIndices = [...new Set(sources.map((x) => x.index))];
 
@@ -67,7 +67,6 @@ export function useGlobalSearch(
     return JSON.stringify({
       query: {
         simple_query_string: {
-          lenient: true,
           query: parameters.value.search + "*",
         },
       },
