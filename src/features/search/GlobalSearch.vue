@@ -227,13 +227,16 @@ const searchBarRef = ref();
 
 const sources = useSources();
 
+const sourceParameter = computed(() =>
+  sources.success && !state.value.selectedSources.length
+    ? sources.data
+    : state.value.selectedSources
+);
+
 const searchParameters = computed(() => ({
   search: state.value.currentSearch,
   page: state.value.currentPage,
-  filters:
-    sources.success && !state.value.selectedSources.length
-      ? sources.data
-      : state.value.selectedSources,
+  filters: sourceParameter.value,
 }));
 
 const searchResults = useGlobalSearch(searchParameters);
@@ -333,7 +336,7 @@ const debounceInput = debouncedRef(
   300
 );
 
-const suggestions = useSuggestions(debounceInput);
+const suggestions = useSuggestions(debounceInput, sourceParameter);
 
 const listItems = mapServiceData(suggestions, (items) =>
   items.map((value) => ({ value }))

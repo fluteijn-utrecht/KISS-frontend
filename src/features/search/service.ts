@@ -38,6 +38,18 @@ const globalSearchBaseUri = "/api/elasticsearch";
 
 const pageSize = 20;
 
+const getSearchUrl = (query: string | undefined, sources: Source[]) => {
+  if (!query) return "";
+  const uniqueIndices = [...new Set(sources.map((x) => x.index))];
+
+  const url = new URL(location.href);
+  url.pathname = `${globalSearchBaseUri}/${uniqueIndices
+    .sort((a, b) => a.localeCompare(b))
+    .join(",")}/_search`;
+
+  return url.toString();
+};
+
 export function useGlobalSearch(
   parameters: Ref<{
     search?: string;
@@ -45,18 +57,8 @@ export function useGlobalSearch(
     filters: Source[];
   }>
 ) {
-  const getUrl = () => {
-    const uniqueIndices = [
-      ...new Set(parameters.value.filters.map((x) => x.index)),
-    ];
-
-    const url = new URL(location.href);
-    url.pathname = `${globalSearchBaseUri}/${uniqueIndices
-      .sort((a, b) => a.localeCompare(b))
-      .join(",")}/_search`;
-
-    return url.toString();
-  };
+  const getUrl = () =>
+    getSearchUrl(parameters.value.search, parameters.value.filters);
 
   const getPayload = () => {
     const page = parameters.value.page || 1;
@@ -65,7 +67,8 @@ export function useGlobalSearch(
     return JSON.stringify({
       query: {
         simple_query_string: {
-          query: parameters.value.search,
+          lenient: true,
+          query: parameters.value.search + "*",
         },
       },
       from,
@@ -169,35 +172,47 @@ export function useSources() {
   });
 }
 
-export function useSuggestions(input: Ref<string>) {
+export function useSuggestions(input: Ref<string>, sources: Ref<Source[]>) {
   function mapSuggestions(json: any): string[] {
-    if (!Array.isArray(json?.results?.documents)) return [];
-    return json.results.documents.map(({ suggestion }: any) => suggestion);
+    if (!Array.isArray(json?.suggest?.suggestions)) return [];
+    const result = [...json.suggest.suggestions].flatMap(({ options }: any) =>
+      options.map(({ text }: any) => (text as string).toLocaleLowerCase())
+    ) as string[];
+    return [...new Set(result)];
   }
-  function fetchSuggestions() {
-    return fetchLoggedIn("", {
+
+  const getPayload = () =>
+    JSON.stringify({
+      _source: { exclude: ["*"] },
+      suggest: {
+        suggestions: {
+          prefix: input.value,
+          completion: {
+            field: "_completion_all",
+            skip_duplicates: true,
+            fuzzy: {},
+          },
+        },
+      },
+    });
+
+  const getUrl = () => getSearchUrl(input.value, sources.value);
+  function fetchSuggestions(url: string) {
+    return fetchLoggedIn(url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        query: input.value,
-        size: 10,
-        types: {
-          documents: {
-            fields: ["title", "body_content"],
-          },
-        },
-      }),
+      body: getPayload(),
     })
       .then(throwIfNotOk)
       .then(parseJson)
       .then(mapSuggestions);
   }
   function getUniqueId() {
-    return input.value && "suggestions_" + input.value;
+    return input.value && getPayload() + getUrl();
   }
-  return ServiceResult.fromFetcher(() => "", fetchSuggestions, {
+  return ServiceResult.fromFetcher(getUrl, fetchSuggestions, {
     getUniqueId,
   });
 }
