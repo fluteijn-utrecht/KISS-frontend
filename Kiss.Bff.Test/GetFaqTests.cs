@@ -3,7 +3,7 @@
 namespace Kiss.Bff.Test
 {
     [TestClass]
-    public class FaqControllerTests
+    public class GetFaqTests
     {
         private static WebApplicationFactory<Program> s_factory = null!;
 
@@ -20,7 +20,7 @@ namespace Kiss.Bff.Test
         }
 
         [TestMethod]
-        public async Task Test()
+        public async Task GetFaqIsProtectedByLogin()
         {
             using var client = s_factory.CreateDefaultClient();
             using var response = await client.GetAsync("/api/faq");
