@@ -103,7 +103,10 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
-        await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+        if (db.Database.IsRelational())
+        {
+            await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+        }
     }
 
     app.Run();
@@ -122,3 +125,5 @@ finally
     Log.Information("Shut down complete");
     Log.CloseAndFlush();
 }
+
+public partial class Program { }

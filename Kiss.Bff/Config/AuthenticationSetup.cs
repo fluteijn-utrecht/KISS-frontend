@@ -78,11 +78,21 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.Scope.Clear();
                 options.Scope.Add(OidcConstants.StandardScopes.OpenId);
                 options.Scope.Add(OidcConstants.StandardScopes.Profile);
-                options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
-                options.SaveTokens = true;
+                //options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
+                //options.SaveTokens = true;
 
                 options.Events.OnRemoteFailure = RedirectToRoot;
                 options.Events.OnSignedOutCallbackRedirect = RedirectToRoot;
+                options.Events.OnRedirectToIdentityProvider = (ctx) =>
+                {
+                    if (ctx.Request.Headers.ContainsKey("is-api"))
+                    {
+                        ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        ctx.Response.Headers.Location = ctx.ProtocolMessage.CreateAuthenticationRequestUrl();
+                        ctx.HandleResponse();
+                    }
+                    return Task.CompletedTask;
+                };
             });
 
             services.AddDistributedMemoryCache();
@@ -143,7 +153,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static Task HandleLoggedOut<TOptions>(RedirectContext<TOptions> ctx) where TOptions : AuthenticationSchemeOptions
         {
-            if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            if (ctx.Request.Headers.ContainsKey("is-api"))
             {
                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 ctx.Response.Headers.Location = ctx.RedirectUri;
