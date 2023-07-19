@@ -5,8 +5,7 @@
       </utrecht-heading>
      <section
         v-for="{ id, html, label } in mappedSections"
-        :key="id + 'text'"
-        :class="{ 'is-active': true }"
+        :key="id + 'text'"        
         :id="id"
       >
         <utrecht-heading :level="headingLevel + 1">{{ label }}</utrecht-heading>
@@ -103,66 +102,7 @@
     }
   
     > section {
-      flex: 1;
-      display: none;
-  
-      &.is-active {
-        display: block;
-      }
-  
-      div :deep(h3),
-      div :deep(h4) {
-        margin-block-start: var(--spacing-default);
-      }
-  
-      :deep(ul) {
-        list-style: disc;
-        margin-inline-start: var(--spacing-default);
-        margin-block: var(--spacing-small);
-  
-        ul {
-          list-style: circle;
-          margin-block: 0;
-        }
-      }
-  
-      :deep(td) {
-        border: 1px var(--color-tertiary) solid;
-        padding: var(--spacing-small);
-      }
-  
-      :deep(table) {
-        margin-block: var(--spacing-small);
-      }
-  
-      :deep(p + p) {
-        margin-block-start: var(--spacing-small);
-      }
+      flex: 1;    
     }
-  }
-  
-  nav ul {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-extrasmall);
-  
-    li {
-      border: 1px solid var(--color-tertiary);
-  
-      a,
-      span {
-        text-decoration: none;
-        color: inherit;
-        padding: var(--spacing-small);
-        display: block;
-      }
-    }
-  
-    .is-active {
-      background-color: var(--color-tertiary);
-      color: var(--color-white);
-      text-decoration: underline;
-    }
-  }
+  }  
   </style>
-  
