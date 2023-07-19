@@ -55,12 +55,7 @@ const getSection = (
 ): { label: string; html: string } | null => {
   const section = props.raw[sectionName];
 
-  return section
-    ? {
-        label: sectionName,
-        html: processHtml(section),
-      }
-    : null;
+  return section ? { label: sectionName, html: processHtml(section) } : null;
 };
 
 const antwoordSection = computed(() => getSection(knownSections.antwoord));
