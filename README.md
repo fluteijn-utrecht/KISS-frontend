@@ -5,7 +5,7 @@
 # kiss-frontend
 
 ## Set-up environment variables
-1. Make a copy of .env.local.example, rename it .env.local and fill in the required secrets:
+1. Make a copy of .env.local.example, rename it .env.local and fill in the required secrets. This is a subset, a complete overview can be found at https://kiss-klantinteractie-servicesysteem.readthedocs.io/en/latest/INSTALLATION/:  
    - `OIDC_CLIENT_SECRET`, `OIDC_CLIENT_ID`, `OIDC_AUTHORITY`: use any OIDC provider. Users have access if they have a claim of either type `role` or type `roles` and a value that corresponds to the environment variable `OIDC_KLANTCONTACTMEDEWERKER_ROLE` (`Klantcontactmedewerker` by default). If you're using Azure AD, this can be done by [creating an application role and assigning it to either groups or individual users](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps). Do the same with `OIDC_KLANTCONTACTMEDEWERKER_ROLE` (`Redacteur` by default) to enable a user to manage content in KISS.
    - `KVK_BASE_URL`: for the KvK test environment, use `https://api.kvk.nl/test/api/v1` 
    - `KVK_API_KEY`: for the KvK test environment, look for the API key on [the KvK website](https://developers.kvk.nl/documentation/testing)
@@ -39,3 +39,12 @@ Then launch a browser on [this address](http://localhost:7231)
     1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
     2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 1. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+
+## Elastic search
+KISS uses Elastic search. Follow these steps to connect your local development environment to an Elastic search instance hosted in Azure/kubernetes. 
+1. Install the azure cli
+1. az login (once)
+1. az account set --subscription [...your subscriptionid...] (once)
+1. az aks get-credentials --resource-group [for example: KISS_Kubernetes_Dev] --name [for example: KISS_Kubernetes_Dev]
+1. kubectl config set-context --current --namespace=[for example: kiss-namespace]
+1. kubectl port-forward deployment/enterprise-search-ent 3002:3002
