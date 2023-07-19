@@ -3,13 +3,13 @@
        <utrecht-heading :level="headingLevel" class="heading">
         {{ title }}
       </utrecht-heading>
-     <section
-        v-for="{ id, html, label } in mappedSections"
-        :key="id + 'text'"        
-        :id="id"
-      >
-        <utrecht-heading :level="headingLevel + 1">{{ label }}</utrecht-heading>
-        <div v-html="html"></div>
+     <section v-if="antwoordSection">
+        <utrecht-heading :level="headingLevel + 1">{{ antwoordSection.label}}</utrecht-heading>
+        <div v-html="antwoordSection.html"></div>
+      </section>
+      <section v-if="toelichtingSection" >
+         <utrecht-heading :level="headingLevel + 1">{{toelichtingSection.label}}</utrecht-heading>
+        <div v-html="toelichtingSection.html"></div>
       </section>
     </article>
   
@@ -22,16 +22,12 @@
     increaseHeadings,
   } from "@/helpers/html";
   import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-  import { nanoid } from "nanoid";
   import { computed } from "vue";
- 
-  
+   
   const knownSections = { 
     toelichting: "toelichting",
     antwoord: "antwoord",    
   } as const;
-  
-  const componentId = nanoid();
   
   const props = defineProps<{
     raw: any;
@@ -53,34 +49,22 @@
     return htmlWithIncreasedHeadings;
   }
   
-  const processedSections = computed(() => {
 
-    const allSections = Object.entries(knownSections).map(([key, label]) => ({
-      label,
-      key: key,
-      text: props.raw[key],
-    }));
+  const getSection = (sectionName: string) : { label: string, html: string} | null => {
 
-    const sectionsWithActualText = allSections.filter(({ text }) => !!text);
-  
-    const sectionsWithProcessedHtml = sectionsWithActualText.map(
-      ({ label, text, key }) => ({
-        key: key,
-        label,
-        html: processHtml(text),
-      })
-    );
-  
-    return sectionsWithProcessedHtml;
-   });
-  
-  // seperate this computed variable for caching purposes: making a section active doesn't trigger the reprocessing of the source html
-  const mappedSections = computed(() =>
-    processedSections.value.map((section, index) => ({
-      ...section,
-      id: componentId + index,  
-    }))
-  );
+    const section = props.raw[sectionName];
+    
+    return section 
+      ? {
+          label: sectionName,
+          html:  processHtml(section)
+        }
+      : null;     
+  }
+
+  const antwoordSection = computed(() => getSection(knownSections.antwoord));
+
+  const toelichtingSection = computed(() => getSection(knownSections.toelichting));
   
  </script>
   
@@ -89,13 +73,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-large);
+    flex-direction: column;
   
     .heading {
       width: 100%;
-    }
-  
-    > section {
-      flex: 1;    
-    }
+    }  
+    
   }  
   </style>
