@@ -8,6 +8,7 @@ import {
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
+import { computed } from "vue";
 
 function mapResult(obj: any): SearchResult {
   const source = obj?._source?.object_bron ?? "Website";
@@ -55,22 +56,34 @@ export function useGlobalSearch(
     filters: Source[];
   }>
 ) {
-  const getUrl = () =>
-    getSearchUrl(parameters.value.search || "", parameters.value.filters);
+  const templateResult = useQueryTemplate();
+  const template = computed(
+    () => templateResult.success && templateResult.data.template
+  );
+
+  const getUrl = () => {
+    if (!template.value) return "";
+    return getSearchUrl(
+      parameters.value.search || "",
+      parameters.value.filters
+    );
+  };
 
   const getPayload = () => {
+    if (!template.value || !parameters.value.search) return "";
     const page = parameters.value.page || 1;
     const from = (page - 1) * pageSize;
 
-    return JSON.stringify({
-      query: {
-        simple_query_string: {
-          query: parameters.value.search + "*",
-        },
-      },
-      from,
-      size: pageSize,
-    });
+    const replaced = template.value.replace(
+      /\{\{query\}\}/g,
+      parameters.value.search
+    );
+
+    const query = JSON.parse(replaced);
+    query.from = from;
+    query.size = pageSize;
+
+    return JSON.stringify(query);
   };
 
   async function fetcher(url: string): Promise<Paginated<SearchResult>> {
@@ -108,6 +121,40 @@ export function useGlobalSearch(
   });
 }
 
+function useQueryTemplate() {
+  const url =
+    "/api/enterprisesearch/api/as/v1/engines/kiss-engine/search_explain";
+
+  const body = JSON.stringify({
+    query: "{{query}}",
+  });
+
+  function fetcher(url: string) {
+    return fetchLoggedIn(url, {
+      method: "POST",
+      body,
+      headers: {
+        "content-type": "application/json",
+      },
+    })
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then(({ query_string, query_body }) => {
+        delete query_body.from;
+        delete query_body.size;
+        const searchUrl: string = query_string.split(" ").at(-1);
+        const indicesStr = searchUrl.split("/")[0];
+        const indices = indicesStr.split(",");
+        return {
+          indices,
+          template: JSON.stringify(query_body),
+        };
+      });
+  }
+
+  return ServiceResult.fromFetcher(url, fetcher);
+}
+
 const BRON_QUERY = JSON.stringify({
   size: 0,
   aggs: {
@@ -139,8 +186,21 @@ const BRON_QUERY = JSON.stringify({
 });
 
 export function useSources() {
-  async function fetcher(): Promise<Source[]> {
-    const r = await fetchLoggedIn(globalSearchBaseUri + "/_search", {
+  const templateResult = useQueryTemplate();
+  const templateSources = computed(
+    () =>
+      templateResult.success &&
+      !!templateResult.data.indices.length &&
+      templateResult.data.indices
+  );
+
+  const getUrl = () =>
+    !templateSources.value
+      ? ""
+      : `${globalSearchBaseUri}/${templateSources.value.join(",")}/_search`;
+
+  async function fetcher(u: string): Promise<Source[]> {
+    const r = await fetchLoggedIn(u, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -164,9 +224,7 @@ export function useSources() {
     return sources;
   }
 
-  return ServiceResult.fromFetcher(globalSearchBaseUri, fetcher, {
-    getUniqueId: () => globalSearchBaseUri + "/sources",
-  });
+  return ServiceResult.fromFetcher(getUrl, fetcher);
 }
 
 export function useSuggestions(input: Ref<string>, sources: Ref<Source[]>) {

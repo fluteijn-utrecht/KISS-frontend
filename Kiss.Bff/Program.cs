@@ -47,7 +47,7 @@ try
 
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
     builder.Services.AddDbContext<BeheerDbContext>(o => o.UseNpgsql(connStr));
-    builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PUBLIC_API_KEY"]);
+    builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PRIVATE_API_KEY"]);
 
     builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
     builder.Services.AddContactmomentenProxy(builder.Configuration["CONTACTMOMENTEN_BASE_URL"], builder.Configuration["CONTACTMOMENTEN_API_CLIENT_ID"], builder.Configuration["CONTACTMOMENTEN_API_KEY"]);
