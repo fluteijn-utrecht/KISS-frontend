@@ -23,11 +23,10 @@
   } from "@/helpers/html";
   import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
   import { nanoid } from "nanoid";
-  import { computed, ref } from "vue";
+  import { computed } from "vue";
  
   
-  const knownSections = {
- 
+  const knownSections = { 
     toelichting: "toelichting",
     antwoord: "antwoord",    
   } as const;
@@ -54,8 +53,6 @@
     return htmlWithIncreasedHeadings;
   }
   
-  const currentSectionIndex = ref(0);
-
   const processedSections = computed(() => {
 
     const allSections = Object.entries(knownSections).map(([key, label]) => ({
@@ -81,11 +78,7 @@
   const mappedSections = computed(() =>
     processedSections.value.map((section, index) => ({
       ...section,
-      id: componentId + index,
-      isActive: index === currentSectionIndex.value,
-      setActive() {
-        currentSectionIndex.value = index;
-      },
+      id: componentId + index,  
     }))
   );
   
