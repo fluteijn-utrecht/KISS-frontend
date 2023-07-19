@@ -142,6 +142,7 @@ function useQueryTemplate() {
       .then(({ query_string, query_body }) => {
         delete query_body.from;
         delete query_body.size;
+        delete query_body._source;
         const searchUrl: string = query_string.split(" ").at(-1);
         const indicesStr = searchUrl.split("/")[0];
         const indices = indicesStr.split(",");
