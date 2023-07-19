@@ -33,6 +33,12 @@ export type Kennisartikel = {
   sections: string[];
 };
 
+export type Vac = {
+  url: string;
+  vraag: string;
+  antwoord: string;
+};
+
 export type Nieuwsbericht = {
   url: string;
   title: string;

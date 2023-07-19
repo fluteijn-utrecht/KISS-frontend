@@ -123,6 +123,14 @@
                   :heading-level="2"
                   @kennisartikel-selected="handleKennisartikelSelected"
                 />
+                <vac-detail
+                  v-else-if="source === 'VAC'"
+                  :raw="jsonObject"
+                  :title="title"
+                  :heading-level="2"
+            
+                />
+
                 <article v-else>
                   <header>
                     <utrecht-heading :level="2"
@@ -183,10 +191,12 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import type { Source } from "./types";
 import MedewerkerDetail from "./MedewerkerDetail.vue";
 import KennisartikelDetail from "./KennisartikelDetail.vue";
+import VacDetail from "./VacDetail.vue";
 import type {
   Medewerker,
   Kennisartikel,
   Website,
+  Vac
 } from "@/features/search/types";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
@@ -285,6 +295,9 @@ const selectSearchResult = (
   if (contactmomentStore.contactmomentLoopt) {
     if (source === "Smoelenboek")
       handleSmoelenboekSelected(jsonObject, documentUrl.toString());
+
+    if ((source || "" ).toUpperCase() === "VAC")
+      handleVacSelected(jsonObject, documentUrl.toString()); 
   }
 
   emit("result-selected", {
@@ -313,6 +326,13 @@ const handleSmoelenboekSelected = (
   url: string
 ): void => {
   contactmomentStore.addMedewerker(medewerker, url);
+};
+
+const handleVacSelected = (
+  vac: Vac,
+  url: string
+): void => {
+  contactmomentStore.addVac(vac.vraag, url);
 };
 
 const handleKennisartikelSelected = (kennisartikel: Kennisartikel): void => {

@@ -252,6 +252,32 @@
             </li>
           </ul>
         </section>
+
+        <section v-if="vraag.vacs.length" class="gerelateerde-resources">
+          <utrecht-heading :level="3">{{
+            vraag.vacs.length > 1
+              ? "Gerelateerde VACs"
+              : "Gerelateerde VAC"
+          }}</utrecht-heading>
+          <ul>
+            <li v-for="record in vraag.vacs" :key="record.vac.url">
+              <label>
+                <a
+                  :href="record.vac.url"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  >{{ record.vac.title }}</a
+                >
+                <input
+                  title="Deze VAC opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
+              </label>
+            </li>
+          </ul>
+        </section>
+
         <section class="details">
           <utrecht-heading :level="3"> Details </utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
@@ -377,6 +403,7 @@
                   ]),
                   ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
                   ...vraag.werkinstructies.map((item) => item.werkinstructie),
+                  ...vraag.vacs.map((item) =>item.vac  ),
                 ]"
                 :key="itemIdx + '|' + idx"
                 :value="item"
