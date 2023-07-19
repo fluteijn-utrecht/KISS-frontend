@@ -29,8 +29,18 @@ try
 
     // Add services to the container.
     builder.Services.AddControllers();
+
+    const string AuthorityKey = "OIDC_AUTHORITY";
+
+    var authority = builder.Configuration[AuthorityKey];
+
+    if (string.IsNullOrWhiteSpace(authority))
+    {
+        Log.Fatal("Environment variable {variableKey} is missing", AuthorityKey);
+    }
+
     builder.Services.AddKissAuth(
-        builder.Configuration["OIDC_AUTHORITY"],
+        authority,
         builder.Configuration["OIDC_CLIENT_ID"],
         builder.Configuration["OIDC_CLIENT_SECRET"],
         builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"],
