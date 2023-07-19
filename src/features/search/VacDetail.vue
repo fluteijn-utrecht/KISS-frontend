@@ -12,7 +12,7 @@
     <section v-if="toelichtingSection">
       <utrecht-heading :level="headingLevel + 1">{{
         toelichtingSection.label
-      }}</utrecht-heading>
+      }} (interne informatie)</utrecht-heading>
       <div v-html="toelichtingSection.html"></div>
     </section>
   </article>

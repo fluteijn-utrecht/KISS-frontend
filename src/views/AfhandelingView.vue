@@ -260,12 +260,7 @@
           <ul>
             <li v-for="record in vraag.vacs" :key="record.vac.url">
               <label>
-                <a
-                  :href="record.vac.url"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                  >{{ record.vac.title }}</a
-                >
+                {{ record.vac.title }}
                 <input
                   title="Deze VAC opslaan bij het contactmoment"
                   type="checkbox"
@@ -630,6 +625,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   addMedewerkersToContactmoment(contactmoment, vraag);
   addNieuwsberichtToContactmoment(contactmoment, vraag);
   addWerkinstructiesToContactmoment(contactmoment, vraag);
+  addVacToContactmoment(contactmoment, vraag);
 
   let contactverzoekUrl: string | undefined;
 
@@ -712,6 +708,16 @@ const addKennisartikelenToContactmoment = (
     if (!kennisartikel.shouldStore) return;
 
     contactmoment.onderwerpLinks.push(kennisartikel.kennisartikel.url);
+  });
+};
+
+const addVacToContactmoment = (contactmoment: Contactmoment, vraag: Vraag) => {
+  if (!vraag.vacs) return;
+
+  vraag.vacs.forEach((item) => {
+    if (!item.shouldStore) return;
+
+    contactmoment.onderwerpLinks.push(item.vac.url);
   });
 };
 
