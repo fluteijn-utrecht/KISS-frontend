@@ -10,9 +10,7 @@ import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
 
 function mapResult(obj: any): SearchResult {
-  const source = obj?._index?.startsWith(".ent-search")
-    ? "Website"
-    : obj?._index ?? "";
+  const source = obj?._source?.object_bron ?? "Website";
   const id = obj?._id;
 
   const title = obj?._source?.headings?.[0] ?? obj?._source?.title;
@@ -58,7 +56,7 @@ export function useGlobalSearch(
   }>
 ) {
   const getUrl = () =>
-    getSearchUrl(parameters.value.search, parameters.value.filters);
+    getSearchUrl(parameters.value.search || "", parameters.value.filters);
 
   const getPayload = () => {
     const page = parameters.value.page || 1;
@@ -115,7 +113,7 @@ const BRON_QUERY = JSON.stringify({
   aggs: {
     bronnen: {
       terms: {
-        field: "object_bron.keyword",
+        field: "object_bron.enum",
       },
       aggs: {
         by_index: {
@@ -187,7 +185,7 @@ export function useSuggestions(input: Ref<string>, sources: Ref<Source[]>) {
         suggestions: {
           prefix: input.value,
           completion: {
-            field: "_completion_all",
+            field: "_completion",
             skip_duplicates: true,
             fuzzy: {},
           },

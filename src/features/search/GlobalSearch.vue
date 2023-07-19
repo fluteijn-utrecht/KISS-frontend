@@ -112,12 +112,12 @@
               <template v-if="id === state.currentId">
                 <medewerker-detail
                   :medewerkerRaw="jsonObject"
-                  v-if="source === 'smoelenboek'"
+                  v-if="source === 'Smoelenboek'"
                   :title="title"
                   :heading-level="2"
                 />
                 <kennisartikel-detail
-                  v-else-if="source === 'kennisartikel'"
+                  v-else-if="source === 'Kennisartikel'"
                   :kennisartikel-raw="jsonObject"
                   :title="title"
                   :heading-level="2"

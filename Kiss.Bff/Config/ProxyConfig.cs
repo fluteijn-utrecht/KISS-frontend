@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     }
                 },
                 // TODO: discuss if we need to get a valid certificate for Enterprise Search
-                HttpClient = x.Route == EnterpriseSearchProxyConfig.ROUTE
+                HttpClient = x.Route == EnterpriseSearchProxyConfig.ROUTE || x.Route == ElasticsearchProxyConfig.ROUTE
                 ? new HttpClientConfig
                 {
                     DangerousAcceptAnyServerCertificate = true
