@@ -255,9 +255,7 @@
 
         <section v-if="vraag.vacs.length" class="gerelateerde-resources">
           <utrecht-heading :level="3">{{
-            vraag.vacs.length > 1
-              ? "Gerelateerde VACs"
-              : "Gerelateerde VAC"
+            vraag.vacs.length > 1 ? "Gerelateerde VACs" : "Gerelateerde VAC"
           }}</utrecht-heading>
           <ul>
             <li v-for="record in vraag.vacs" :key="record.vac.url">
@@ -403,7 +401,7 @@
                   ]),
                   ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
                   ...vraag.werkinstructies.map((item) => item.werkinstructie),
-                  ...vraag.vacs.map((item) =>item.vac  ),
+                  ...vraag.vacs.map((item) => item.vac),
                 ]"
                 :key="itemIdx + '|' + idx"
                 :value="item"
