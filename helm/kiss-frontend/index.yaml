@@ -3,7 +3,7 @@ entries:
   elasticstack:
   - apiVersion: v2
     appVersion: 7.17.3
-    created: "2023-05-03T11:25:42.6408679+02:00"
+    created: "2023-07-14T16:42:43.206799+02:00"
     dependencies:
     - name: elasticsearch
       repository: https://helm.elastic.co
@@ -18,4 +18,40 @@ entries:
     urls:
     - charts/elasticstack-0.4.4.tgz
     version: 0.4.4
-generated: "2023-05-03T11:25:42.6378689+02:00"
+  postgresql:
+  - annotations:
+      category: Database
+      licenses: Apache-2.0
+    apiVersion: v2
+    appVersion: 15.2.0
+    created: "2023-07-14T16:42:43.2098597+02:00"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    description: PostgreSQL (Postgres) is an open source object-relational database
+      known for reliability and data integrity. ACID-compliant, it supports foreign
+      keys, joins, views, triggers and stored procedures.
+    digest: 892198acc18596d77031e845085a123ecd874d4beb5c351f8a35473e5263e602
+    home: https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+    icon: https://bitnami.com/assets/stacks/postgresql/img/postgresql-stack-220x234.png
+    keywords:
+    - postgresql
+    - postgres
+    - database
+    - sql
+    - replication
+    - cluster
+    maintainers:
+    - name: Bitnami
+      url: https://github.com/bitnami/charts
+    name: postgresql
+    sources:
+    - https://github.com/bitnami/containers/tree/main/bitnami/postgresql
+    - https://www.postgresql.org/
+    urls:
+    - charts/postgresql-12.4.2.tgz
+    version: 12.4.2
+generated: "2023-07-14T16:42:43.2025846+02:00"
