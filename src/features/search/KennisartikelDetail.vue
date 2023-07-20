@@ -34,11 +34,7 @@
   />
 </template>
 <script setup lang="ts">
-import {
-  sanitizeHtmlToBerichtFormat,
-  unescapeHtml,
-  increaseHeadings,
-} from "@/helpers/html";
+import { unescapedSanatizedWithIncreadesHeadingsHtml } from "@/helpers/html";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { nanoid } from "nanoid";
 import { computed, ref, watch } from "vue";
@@ -67,16 +63,6 @@ const props = defineProps<{
   title: string;
   headingLevel: 2 | 3 | 4;
 }>();
-
-function processHtml(html: string) {
-  const unescapedHtml = unescapeHtml(html);
-  const cleanedHtml = sanitizeHtmlToBerichtFormat(unescapedHtml);
-  const htmlWithIncreasedHeadings = increaseHeadings(
-    cleanedHtml,
-    (props.headingLevel + 1) as any
-  );
-  return htmlWithIncreasedHeadings;
-}
 
 const currentSectionIndex = ref(0);
 
@@ -108,7 +94,7 @@ const processedSections = computed(() => {
     ({ label, text, key }) => ({
       key: key,
       label,
-      html: processHtml(text),
+      html: unescapedSanatizedWithIncreadesHeadingsHtml(text, props.headingLevel),
     })
   );
 

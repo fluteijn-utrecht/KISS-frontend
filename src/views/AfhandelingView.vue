@@ -252,6 +252,25 @@
             </li>
           </ul>
         </section>
+
+        <section v-if="vraag.vacs.length" class="gerelateerde-resources">
+          <utrecht-heading :level="3">{{
+            vraag.vacs.length > 1 ? "Gerelateerde VACs" : "Gerelateerde VAC"
+          }}</utrecht-heading>
+          <ul>
+            <li v-for="record in vraag.vacs" :key="record.vac.url">
+              <label>
+                {{ record.vac.title }}
+                <input
+                  title="Deze VAC opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
+              </label>
+            </li>
+          </ul>
+        </section>
+
         <section class="details">
           <utrecht-heading :level="3"> Details </utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
@@ -377,6 +396,7 @@
                   ]),
                   ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
                   ...vraag.werkinstructies.map((item) => item.werkinstructie),
+                  ...vraag.vacs.map((item) => item.vac),
                 ]"
                 :key="itemIdx + '|' + idx"
                 :value="item"
@@ -605,6 +625,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   addMedewerkersToContactmoment(contactmoment, vraag);
   addNieuwsberichtToContactmoment(contactmoment, vraag);
   addWerkinstructiesToContactmoment(contactmoment, vraag);
+  addVacToContactmoment(contactmoment, vraag);
 
   let contactverzoekUrl: string | undefined;
 
@@ -687,6 +708,16 @@ const addKennisartikelenToContactmoment = (
     if (!kennisartikel.shouldStore) return;
 
     contactmoment.onderwerpLinks.push(kennisartikel.kennisartikel.url);
+  });
+};
+
+const addVacToContactmoment = (contactmoment: Contactmoment, vraag: Vraag) => {
+  if (!vraag.vacs) return;
+
+  vraag.vacs.forEach((item) => {
+    if (!item.shouldStore) return;
+
+    contactmoment.onderwerpLinks.push(item.vac.url);
   });
 };
 

@@ -76,3 +76,17 @@ export function focusNextFormItem(
     });
   }
 }
+
+
+export function  unescapedSanatizedWithIncreadesHeadingsHtml(html: string, headingLevel: number) {
+  if (!html) {
+    return html;
+  }
+  const unescapedHtml = unescapeHtml(html);
+  const cleanedHtml = sanitizeHtmlToBerichtFormat(unescapedHtml);
+  const htmlWithIncreasedHeadings = increaseHeadings(
+    cleanedHtml,
+    (headingLevel + 1) as any
+  );
+  return htmlWithIncreasedHeadings;
+}

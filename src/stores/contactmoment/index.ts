@@ -4,6 +4,7 @@ import type {
   Kennisartikel,
   Nieuwsbericht,
   Werkinstructie,
+  Vac
 } from "@/features/search/types";
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { defineStore } from "pinia";
@@ -11,6 +12,8 @@ import { createSession, type Session } from "../switchable-store";
 export * from "./types";
 
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
+
+
 
 export type ContactmomentContactVerzoek = {
   url: string;
@@ -32,6 +35,12 @@ export type ContactmomentKlant = {
   url?: string;
 };
 
+
+export type Bron  = {
+  title: string,
+  url : string
+}
+
 export interface Vraag {
   zaken: ContactmomentZaak[];
   notitie: string;
@@ -41,12 +50,13 @@ export interface Vraag {
   resultaat: string;
   klanten: { klant: ContactmomentKlant; shouldStore: boolean }[];
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
-  websites: { website: Website; shouldStore: boolean }[];
-  kennisartikelen: { kennisartikel: Kennisartikel; shouldStore: boolean }[];
-  nieuwsberichten: { nieuwsbericht: Nieuwsbericht; shouldStore: boolean }[];
-  werkinstructies: { werkinstructie: Werkinstructie; shouldStore: boolean }[];
-  primaireVraag: { url: string; title: string } | undefined;
+  websites: { website: Bron; shouldStore: boolean }[];
+  kennisartikelen: { kennisartikel: Bron; shouldStore: boolean }[];
+  nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
+  werkinstructies: { werkinstructie: Bron; shouldStore: boolean }[];
+  primaireVraag: Bron | undefined;
   afwijkendOnderwerp: string;
+  vacs: { vac: Bron; shouldStore: boolean }[];
 }
 
 function initVraag(): Vraag {
@@ -69,6 +79,7 @@ function initVraag(): Vraag {
     kennisartikelen: [],
     nieuwsberichten: [],
     werkinstructies: [],
+    vacs: [],
     primaireVraag: undefined,
     afwijkendOnderwerp: "",
   };
@@ -289,6 +300,27 @@ export const useContactmomentStore = defineStore("contactmoment", {
       }
 
       huidigeVraag.primaireVraag = website;
+    },
+
+    addVac(vraag: string, url : string) {
+      const { huidigContactmoment } = this;
+      if (!huidigContactmoment) return;
+      const { huidigeVraag } = huidigContactmoment;
+          
+      const record = huidigeVraag.vacs.find(
+        (k) => k.vac.title === vraag
+      );
+
+      if (!record) {
+        const vacVraag = {title: vraag, url: url };
+        huidigeVraag.vacs.push({
+          vac: vacVraag ,
+          shouldStore: true,
+        });
+        huidigeVraag.primaireVraag = vacVraag
+      } else {
+        huidigeVraag.primaireVraag = record.vac;      
+      }
     },
 
     toggleNieuwsbericht(nieuwsbericht: Nieuwsbericht) {
