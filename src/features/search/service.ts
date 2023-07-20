@@ -143,6 +143,8 @@ function useQueryTemplate() {
         delete query_body.from;
         delete query_body.size;
         delete query_body._source;
+        query_body.indices_boost = [{ ".ent-search*": 1 }, { "*": 10 }];
+
         const searchUrl: string = query_string.split(" ").at(-1);
         const indicesStr = searchUrl.split("/")[0];
         const indices = indicesStr.split(",");
