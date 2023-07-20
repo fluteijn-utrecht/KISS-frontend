@@ -36,7 +36,7 @@ export type ContactmomentKlant = {
 };
 
 
-export type primaireVraag  = {
+export type Bron  = {
   title: string,
   url : string
 }
@@ -50,13 +50,13 @@ export interface Vraag {
   resultaat: string;
   klanten: { klant: ContactmomentKlant; shouldStore: boolean }[];
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
-  websites: { website: Website; shouldStore: boolean }[];
-  kennisartikelen: { kennisartikel: Kennisartikel; shouldStore: boolean }[];
-  nieuwsberichten: { nieuwsbericht: Nieuwsbericht; shouldStore: boolean }[];
-  werkinstructies: { werkinstructie: Werkinstructie; shouldStore: boolean }[];
-  primaireVraag: { url: string; title: string } | undefined;
+  websites: { website: Bron; shouldStore: boolean }[];
+  kennisartikelen: { kennisartikel: Bron; shouldStore: boolean }[];
+  nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
+  werkinstructies: { werkinstructie: Bron; shouldStore: boolean }[];
+  primaireVraag: Bron | undefined;
   afwijkendOnderwerp: string;
-  vacs: { vac: primaireVraag; shouldStore: boolean }[];
+  vacs: { vac: Bron; shouldStore: boolean }[];
 }
 
 function initVraag(): Vraag {
