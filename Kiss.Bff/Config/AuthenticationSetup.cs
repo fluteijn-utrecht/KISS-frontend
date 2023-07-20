@@ -39,10 +39,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<IsRedacteur>(user => user?.IsInRole(redacteurRole) ?? false);
 
-            services.AddAuthentication(options =>
+            var authBuilder = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieSchemeName;
-                options.DefaultChallengeScheme = ChallengeSchemeName;
+                if(!string.IsNullOrWhiteSpace(authority))
+                {
+                    options.DefaultChallengeScheme = ChallengeSchemeName;
+                }
             }).AddCookie(CookieSchemeName, options =>
             {
                 options.Cookie.SameSite = SameSiteMode.Strict;
@@ -55,35 +58,49 @@ namespace Microsoft.Extensions.DependencyInjection
                 //options.Events.OnSigningOut = (e) => e.HttpContext.RevokeRefreshTokenAsync();
                 options.Events.OnRedirectToAccessDenied = HandleLoggedOut;
                 options.Events.OnRedirectToLogin = HandleLoggedOut;
-            })
-            .AddOpenIdConnect(ChallengeSchemeName, options =>
-            {
-                options.NonceCookie.HttpOnly = true;
-                options.NonceCookie.IsEssential = true;
-                options.NonceCookie.SameSite = SameSiteMode.None;
-                options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.CorrelationCookie.HttpOnly = true;
-                options.CorrelationCookie.IsEssential = true;
-                options.CorrelationCookie.SameSite = SameSiteMode.None;
-                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
-                options.Authority = authority;
-                options.ClientId = clientId;
-                options.ClientSecret = clientSecret;
-                options.SignedOutRedirectUri = SignOutCallback;
-                options.ResponseType = OidcConstants.ResponseTypes.Code;
-                options.UsePkce = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
-
-                options.Scope.Clear();
-                options.Scope.Add(OidcConstants.StandardScopes.OpenId);
-                options.Scope.Add(OidcConstants.StandardScopes.Profile);
-                options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
-                options.SaveTokens = true;
-
-                options.Events.OnRemoteFailure = RedirectToRoot;
-                options.Events.OnSignedOutCallbackRedirect = RedirectToRoot;
             });
+
+            if (!string.IsNullOrWhiteSpace(authority))
+            {
+                authBuilder.AddOpenIdConnect(ChallengeSchemeName, options =>
+                {
+                    options.NonceCookie.HttpOnly = true;
+                    options.NonceCookie.IsEssential = true;
+                    options.NonceCookie.SameSite = SameSiteMode.None;
+                    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.CorrelationCookie.HttpOnly = true;
+                    options.CorrelationCookie.IsEssential = true;
+                    options.CorrelationCookie.SameSite = SameSiteMode.None;
+                    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                    options.Authority = authority;
+                    options.ClientId = clientId;
+                    options.ClientSecret = clientSecret;
+                    options.SignedOutRedirectUri = SignOutCallback;
+                    options.ResponseType = OidcConstants.ResponseTypes.Code;
+                    options.UsePkce = true;
+                    options.GetClaimsFromUserInfoEndpoint = true;
+
+                    options.Scope.Clear();
+                    options.Scope.Add(OidcConstants.StandardScopes.OpenId);
+                    options.Scope.Add(OidcConstants.StandardScopes.Profile);
+                    //options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
+                    //options.SaveTokens = true;
+
+                    options.Events.OnRemoteFailure = RedirectToRoot;
+                    options.Events.OnSignedOutCallbackRedirect = RedirectToRoot;
+                    options.Events.OnRedirectToIdentityProvider = (ctx) =>
+                    {
+                        if (ctx.Request.Headers.ContainsKey("is-api"))
+                        {
+                            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            ctx.Response.Headers.Location = ctx.ProtocolMessage.CreateAuthenticationRequestUrl();
+                            ctx.HandleResponse();
+                        }
+                        return Task.CompletedTask;
+                    };
+                });
+            }
 
             services.AddDistributedMemoryCache();
             services.AddOpenIdConnectAccessTokenManagement();
@@ -143,7 +160,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static Task HandleLoggedOut<TOptions>(RedirectContext<TOptions> ctx) where TOptions : AuthenticationSchemeOptions
         {
-            if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            if (ctx.Request.Headers.ContainsKey("is-api"))
             {
                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 ctx.Response.Headers.Location = ctx.RedirectUri;
