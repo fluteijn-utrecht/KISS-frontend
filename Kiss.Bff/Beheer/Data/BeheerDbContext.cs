@@ -45,6 +45,11 @@ namespace Kiss.Bff.Beheer.Data
                 e.HasKey(x => new { x.Klant, x.Contactmoment, x.Rol });
                 e.HasIndex(x => x.Klant);
             });
+
+            modelBuilder.Entity<Managementinfo.ContactmomentManagementinfoLog>(l =>
+            {
+                l.HasIndex(x => x.PrimaireVraagWeergave);
+            });
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;

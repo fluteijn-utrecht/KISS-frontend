@@ -25,13 +25,25 @@ export function handleLogin() {
   waitForLogin.resolve();
 }
 
+function setHeader(init: RequestInit, key: string, value: string) {
+  if (!init.headers) {
+    init.headers = {};
+  }
+
+  if (Array.isArray(init.headers)) {
+    init.headers.push([key, value]);
+  } else if (init.headers instanceof Headers) {
+    init.headers.set(key, value);
+  } else {
+    init.headers[key] = value;
+  }
+}
+
 export function fetchLoggedIn(...args: FetchArgs): FetchReturn {
   const init = args[1] || {};
+  args[1] = init;
 
-  if (!init.credentials) {
-    init.credentials = "include";
-    args[1] = init;
-  }
+  setHeader(init, "is-api", "true");
 
   return fetch(...args).then((r) => {
     if (r.status === 401) {
