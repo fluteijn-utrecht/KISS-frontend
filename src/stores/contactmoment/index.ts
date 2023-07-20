@@ -36,7 +36,7 @@ export type ContactmomentKlant = {
 };
 
 
-export type primaireVrag  = {
+export type primaireVraag  = {
   title: string,
   url : string
 }
@@ -56,7 +56,7 @@ export interface Vraag {
   werkinstructies: { werkinstructie: Werkinstructie; shouldStore: boolean }[];
   primaireVraag: { url: string; title: string } | undefined;
   afwijkendOnderwerp: string;
-  vacs: { vac: primaireVrag; shouldStore: boolean }[];
+  vacs: { vac: primaireVraag; shouldStore: boolean }[];
 }
 
 function initVraag(): Vraag {

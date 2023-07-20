@@ -18,11 +18,7 @@
   </article>
 </template>
 <script setup lang="ts">
-import {
-  sanitizeHtmlToBerichtFormat,
-  unescapeHtml,
-  increaseHeadings,
-} from "@/helpers/html";
+import {  unescapedSanatizedWithIncreadesHeadingsHtml } from "@/helpers/html";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { computed } from "vue";
 
@@ -37,25 +33,13 @@ const props = defineProps<{
   headingLevel: 2 | 3 | 4;
 }>();
 
-function processHtml(html: string) {
-  if (!html) {
-    return html;
-  }
-  const unescapedHtml = unescapeHtml(html);
-  const cleanedHtml = sanitizeHtmlToBerichtFormat(unescapedHtml);
-  const htmlWithIncreasedHeadings = increaseHeadings(
-    cleanedHtml,
-    (props.headingLevel + 1) as any
-  );
-  return htmlWithIncreasedHeadings;
-}
 
 const getSection = (
   sectionName: string
 ): { label: string; html: string } | null => {
   const section = props.raw[sectionName];
 
-  return section ? { label: sectionName, html: processHtml(section) } : null;
+  return section ? { label: sectionName, html: unescapedSanatizedWithIncreadesHeadingsHtml(section, props.headingLevel) } : null;
 };
 
 const antwoordSection = computed(() => getSection(knownSections.antwoord));
