@@ -390,3 +390,37 @@ th.row-link-header {
 dt {
   font-weight: bold;
 }
+
+
+
+
+.htmlcontent {
+  h3,
+  h4 {
+    margin-block-start: var(--spacing-default);
+  }
+
+  ul {
+    list-style: disc;
+    margin-inline-start: var(--spacing-default);
+    margin-block: var(--spacing-small);
+
+    ul {
+      list-style: circle;
+      margin-block: 0;
+    }
+  }
+
+  td {
+    border: 1px var(--color-tertiary) solid;
+    padding: var(--spacing-small);
+  }
+
+  table {
+    margin-block: var(--spacing-small);
+  }
+
+  p + p {
+    margin-block-start: var(--spacing-small);
+  }
+}

@@ -7,13 +7,13 @@
       <utrecht-heading :level="headingLevel + 1">{{
         antwoordSection.label
       }}</utrecht-heading>
-      <div v-html="antwoordSection.html"></div>
+      <div v-html="antwoordSection.html" class="htmlcontent"></div>
     </section>
     <section v-if="toelichtingSection">
       <utrecht-heading :level="headingLevel + 1">{{
         toelichtingSection.label
       }} (interne informatie)</utrecht-heading>
-      <div v-html="toelichtingSection.html"></div>
+      <div v-html="toelichtingSection.html" class="htmlcontent"></div>
     </section>
   </article>
 </template>
@@ -58,5 +58,21 @@ article {
   .heading {
     width: 100%;
   }
+
+ 
+
+  // > section {
+  //   flex: 1;
+  //   display: none;
+
+  //   &.is-active {
+  //     display: block;
+  //   }
+
+
 }
+
+
+
+
 </style>
