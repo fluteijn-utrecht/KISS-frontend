@@ -184,15 +184,12 @@ const fetchContactmomenten = (u: string) =>
           contactmoment.url
         );
 
-        if (managementInfo.primaireVraagWeergave) {
-          contactmoment.vraag = managementInfo.primaireVraagWeergave;
-        }
-        if (managementInfo.resultaat) {
-          contactmoment.resultaat = managementInfo.resultaat;
-        }
-        if (managementInfo.afwijkendOnderwerp) {
-          contactmoment.afwijkendevraag = managementInfo.afwijkendOnderwerp;
-        }
+        contactmoment.vraag =
+          managementInfo.primaireVraagWeergave ?? contactmoment.vraag;
+        contactmoment.resultaat =
+          managementInfo.resultaat ?? contactmoment.resultaat;
+        contactmoment.afwijkendevraag =
+          managementInfo.afwijkendOnderwerp ?? contactmoment.afwijkendevraag;
 
         return contactmoment;
       })
