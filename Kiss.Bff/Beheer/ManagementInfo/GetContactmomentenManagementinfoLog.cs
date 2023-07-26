@@ -17,6 +17,21 @@ namespace Kiss.Bff.Beheer.Managementinfo
             _db = db;
         }
 
+        [HttpGet("/api/managementinfo/contactmoment")]
+        [Authorize(Policy = Policies.RedactiePolicy)]
+        public async Task <IActionResult> Get([FromQuery] string id, CancellationToken token)
+        {
+            var contactmoment = await _db.ContactmomentManagementLogs
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (contactmoment == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(contactmoment);
+        }
+
         [HttpGet("/api/managementinfo/contactmomenten")]
         [Authorize(Policy = Policies.RedactiePolicy)]
         public IActionResult Get()

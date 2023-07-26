@@ -7,6 +7,8 @@ export interface ContactmomentViewModel {
   kanaal: string;
   resultaat: string;
   tekst: string;
+  vraag: string;
+  afwijkendevraag: string;
   zaken: string[];
   //contactverzoeken: ContactmomentContactverzoek[];
   _self: {

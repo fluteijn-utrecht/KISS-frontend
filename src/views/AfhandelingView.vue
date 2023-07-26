@@ -413,7 +413,7 @@
               ]"
               :for="'afwijkendOnderwerp' + idx"
             >
-              Specificatie
+              Specifieke vraag
             </label>
             <input
               :required="!vraag.primaireVraag"

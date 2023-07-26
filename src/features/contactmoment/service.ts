@@ -24,6 +24,7 @@ import { toRelativeProxyUrl } from "@/helpers/url";
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
+const managementinfoApiRoot = "/api/managementinfo/contactmoment";
 const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
@@ -170,28 +171,59 @@ const fetchContactmomenten = (u: string) =>
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) =>
-      parsePagination(p, (x: any) => {
+      parsePagination(p, async (x: any) => {
         const i = toRelativeProxyUrl(
           x?.contactmoment,
           contactmomentenProxyRoot
         );
         if (!i) throw new Error("invalide url: " + x?.contactmoment);
-        return fetchContactmoment(i);
+        const contactmoment = await fetchContactmoment(i);
+
+        // Now fetch additional management info for this contact moment
+        const managementInfo = await fetchContactmomentManagement(
+          contactmoment.url
+        );
+
+        if (managementInfo.primaireVraagWeergave) {
+          contactmoment.vraag = managementInfo.primaireVraagWeergave;
+        }
+        if (managementInfo.afwijkendOnderwerp) {
+          contactmoment.afwijkendevraag = managementInfo.afwijkendOnderwerp;
+        }
+
+        return contactmoment;
       })
     );
 
-export function useContactmomentenByKlantId(
-  id: Ref<string>
-  // page: Ref<number>
-) {
-  function getUrl() {
+export function useContactmomentenByKlantId(id: Ref<string>) {
+  const getUrl = () => {
     const searchParams = new URLSearchParams();
     searchParams.set("klant", id.value);
     return `${klantcontactmomentenUrl}?${searchParams.toString()}`;
-  }
+  };
 
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+  const contactmomentenResult = ServiceResult.fromFetcher(
+    getUrl,
+    fetchContactmomenten
+  );
+
+  return contactmomentenResult;
 }
+
+export const fetchContactmomentManagement = (managementInfoId: string) => {
+  const getUrl = () => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("id", managementInfoId);
+    return `${managementinfoApiRoot}?${searchParams.toString()}`;
+  };
+
+  return fetchLoggedIn(getUrl())
+    .then(throwIfNotOk)
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    });
+};
 
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
   return Promise.reject("not implemented");
