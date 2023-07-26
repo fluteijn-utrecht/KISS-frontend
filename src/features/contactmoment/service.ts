@@ -187,6 +187,9 @@ const fetchContactmomenten = (u: string) =>
         if (managementInfo.primaireVraagWeergave) {
           contactmoment.vraag = managementInfo.primaireVraagWeergave;
         }
+        if (managementInfo.resultaat) {
+          contactmoment.resultaat = managementInfo.resultaat;
+        }
         if (managementInfo.afwijkendOnderwerp) {
           contactmoment.afwijkendevraag = managementInfo.afwijkendOnderwerp;
         }

@@ -49,7 +49,8 @@
                 <dt>Specificatie</dt>
                 <dd>{{ contactmoment.afwijkendOnderwerp }}</dd>
               </template> -->
-
+              <dt>Resultaat</dt>
+              <dd class="tekst">{{ contactmoment.resultaat }}</dd>
               <slot name="zaken" :zaken="contactmoment.zaken"></slot>
               <dt>Vraag</dt>
               <dd class="tekst">
@@ -59,8 +60,10 @@
                 <dt>Specifieke vraag</dt>
                 <dd class="tekst">{{ contactmoment.afwijkendevraag }}</dd>
               </template>
-              <dt>Notitie</dt>
-              <dd class="tekst">{{ contactmoment.tekst }}</dd>
+              <template v-if="contactmoment.tekst">
+                <dt>Notitie</dt>
+                <dd class="tekst">{{ contactmoment.tekst }}</dd>
+              </template>
             </dl>
             <p
               v-for="(
