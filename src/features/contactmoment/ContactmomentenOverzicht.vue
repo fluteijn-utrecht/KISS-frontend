@@ -52,18 +52,16 @@
               <dt>Resultaat</dt>
               <dd class="tekst">{{ contactmoment.resultaat }}</dd>
               <slot name="zaken" :zaken="contactmoment.zaken"></slot>
-              <dt>Vraag</dt>
-              <dd class="tekst">
-                {{ contactmoment.vraag ? contactmoment.vraag : "Anders" }}
-              </dd>
+              <template v-if="contactmoment.vraag">
+                <dt>Vraag</dt>
+                <dd class="tekst">{{ contactmoment.vraag }}</dd>
+              </template>
               <template v-if="contactmoment.afwijkendevraag">
                 <dt>Specifieke vraag</dt>
                 <dd class="tekst">{{ contactmoment.afwijkendevraag }}</dd>
               </template>
-              <template v-if="contactmoment.tekst">
-                <dt>Notitie</dt>
-                <dd class="tekst">{{ contactmoment.tekst }}</dd>
-              </template>
+              <dt>Notitie</dt>
+              <dd class="tekst">{{ contactmoment.tekst }}</dd>
             </dl>
             <p
               v-for="(
