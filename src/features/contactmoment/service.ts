@@ -179,13 +179,13 @@ const fetchContactmomenten = (u: string) =>
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) =>
-      parsePagination(p, async (x: any) => {
+      parsePagination(p, (x: any) => {
         const i = toRelativeProxyUrl(
           x?.contactmoment,
           contactmomentenProxyRoot
         );
         if (!i) throw new Error("invalide url: " + x?.contactmoment);
-        return await fetchContactmoment(i);
+        return fetchContactmoment(i);
       })
     );
 
