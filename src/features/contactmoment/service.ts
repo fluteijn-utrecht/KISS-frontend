@@ -24,7 +24,7 @@ import { toRelativeProxyUrl } from "@/helpers/url";
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
-const managementinfoApiRoot = "/api/managementinfo/contactmoment";
+const contactmomentDetails = "/api/contactmomentdetails";
 const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
@@ -160,6 +160,14 @@ const fetchContactmoment = (u: string) =>
         .filter((x) => x.objectType === "zaak")
         .map((x) => x.object);
 
+      const contactmomentDetails = await fetchContactmomentDetails(cm.url);
+
+      cm.vraag = contactmomentDetails.vraag ?? cm.vraag;
+      cm.gespreksresultaat =
+        contactmomentDetails.gespreksresultaat ?? cm.gespreksresultaat;
+      cm.specifiekevraag =
+        contactmomentDetails.specifiekeVraag ?? cm.specifiekevraag;
+
       return {
         ...cm,
         zaken,
@@ -177,44 +185,25 @@ const fetchContactmomenten = (u: string) =>
           contactmomentenProxyRoot
         );
         if (!i) throw new Error("invalide url: " + x?.contactmoment);
-        const contactmoment = await fetchContactmoment(i);
-
-        // Now fetch additional management info for this contact moment
-        const managementInfo = await fetchContactmomentManagement(
-          contactmoment.url
-        );
-
-        contactmoment.vraag =
-          managementInfo.primaireVraagWeergave ?? contactmoment.vraag;
-        contactmoment.resultaat =
-          managementInfo.resultaat ?? contactmoment.resultaat;
-        contactmoment.afwijkendevraag =
-          managementInfo.afwijkendOnderwerp ?? contactmoment.afwijkendevraag;
-
-        return contactmoment;
+        return await fetchContactmoment(i);
       })
     );
 
 export function useContactmomentenByKlantId(id: Ref<string>) {
-  const getUrl = () => {
+  function getUrl() {
     const searchParams = new URLSearchParams();
     searchParams.set("klant", id.value);
     return `${klantcontactmomentenUrl}?${searchParams.toString()}`;
-  };
+  }
 
-  const contactmomentenResult = ServiceResult.fromFetcher(
-    getUrl,
-    fetchContactmomenten
-  );
-
-  return contactmomentenResult;
+  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
 }
 
-export const fetchContactmomentManagement = (managementInfoId: string) => {
+export const fetchContactmomentDetails = (contactMomentDetailsId: string) => {
   const getUrl = () => {
     const searchParams = new URLSearchParams();
-    searchParams.set("id", managementInfoId);
-    return `${managementinfoApiRoot}?${searchParams.toString()}`;
+    searchParams.set("id", contactMomentDetailsId);
+    return `${contactmomentDetails}?${searchParams.toString()}`;
   };
 
   return fetchLoggedIn(getUrl())
@@ -253,8 +242,8 @@ const mapContactverzoekDetail = (
     starttijd: formatTimeOnly(new Date(contactmoment.registratiedatum)),
     aanmaker: contactmoment["_self"].owner,
     notitie: todo.description,
-    primaireVraagWeergave: contactmoment.primaireVraagWeergave,
-    afwijkendOnderwerp: contactmoment.afwijkendOnderwerp,
+    vraag: contactmoment.vraag,
+    specifiekevraag: contactmoment.specifiekevraag,
   };
 };
 

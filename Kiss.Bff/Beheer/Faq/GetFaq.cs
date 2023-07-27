@@ -21,13 +21,13 @@ namespace Kiss.Bff.Beheer.Faq
         [HttpGet]
         public IActionResult Get()
         {
-            var lastContactmomenten = _db.ContactmomentManagementLogs
-                .Where(x=> !string.IsNullOrWhiteSpace(x.PrimaireVraagWeergave))
+            var lastContactmomenten = _db.ContactMomentDetails
+                .Where(x=> !string.IsNullOrWhiteSpace(x.Vraag))
                 .OrderByDescending(x => x.Einddatum)
                 .Take(AmountOfContactmomenten);
 
             var groupedByQuestion = lastContactmomenten
-                .GroupBy(x => x.PrimaireVraagWeergave);
+                .GroupBy(x => x.Vraag);
 
             var topQuestions = groupedByQuestion
                 .OrderByDescending(x => x.Count())

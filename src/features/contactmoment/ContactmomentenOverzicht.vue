@@ -30,7 +30,7 @@
                 contactmoment.kanaal
               }}</span>
               <span aria-describedby="gespreksresultaat-header">{{
-                contactmoment.resultaat
+                contactmoment.gespreksresultaat
               }}</span>
             </summary>
             <dl>
@@ -41,9 +41,9 @@
                 <dt>Vraag</dt>
                 <dd class="tekst">{{ contactmoment.vraag }}</dd>
               </template>
-              <template v-if="contactmoment.afwijkendevraag">
+              <template v-if="contactmoment.specifiekevraag">
                 <dt>Specifieke vraag</dt>
-                <dd class="tekst">{{ contactmoment.afwijkendevraag }}</dd>
+                <dd class="tekst">{{ contactmoment.specifiekevraag }}</dd>
               </template>
               <dt>Notitie</dt>
               <dd class="tekst">{{ contactmoment.tekst }}</dd>

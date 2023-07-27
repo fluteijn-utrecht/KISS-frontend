@@ -3,25 +3,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.Beheer.Managementinfo
+namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
-
-
     [ApiController]
-    public class GetContactmomentenManagementinfoLog : ControllerBase
+    public class ReadContactmomentenDetails : ControllerBase
     {
         private readonly BeheerDbContext _db;
 
-        public GetContactmomentenManagementinfoLog(BeheerDbContext db)
+        public ReadContactmomentenDetails(BeheerDbContext db)
         {
             _db = db;
         }
 
-        [HttpGet("/api/managementinfo/contactmoment")]
+        [HttpGet("/api/contactmomentdetails")]
         [Authorize(Policy = Policies.RedactiePolicy)]
-        public async Task <IActionResult> Get([FromQuery] string id, CancellationToken token)
+        public async Task<IActionResult> Get([FromQuery] string id, CancellationToken token)
         {
-            var contactmoment = await _db.ContactmomentManagementLogs
+            var contactmoment = await _db.ContactMomentDetails
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (contactmoment == null)
@@ -32,15 +30,15 @@ namespace Kiss.Bff.Beheer.Managementinfo
             return Ok(contactmoment);
         }
 
-        [HttpGet("/api/managementinfo/contactmomenten")]
+        [HttpGet("/api/contactmomentendetails")]
         [Authorize(Policy = Policies.RedactiePolicy)]
         public IActionResult Get()
         {
-            var contactmomenten =  _db.ContactmomentManagementLogs
-                .OrderByDescending(x => x.Startdatum)              
+            var contactmomenten = _db.ContactMomentDetails
+                .OrderByDescending(x => x.Startdatum)
                 .Take(10000)
                 .AsAsyncEnumerable();
-            
+
             return Ok(contactmomenten);
         }
     }

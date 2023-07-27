@@ -3,14 +3,18 @@ import type { Contactmoment } from "./types";
 
 export type ContactmomentDetails = Pick<
   Contactmoment,
-  "gespreksresultaat" | "startdatum" | "einddatum" | "vraag" | "specifiekevraag"
+  | "gespreksresultaat"
+  | "startdatum"
+  | "einddatum"
+  | "vraag"
+  | "specifiekevraag"
 >;
 
-export const upsertContactmomentManagementInfo = (
+export const writeContactmomentDetails = (
   contactmoment: ContactmomentDetails,
   id: string
 ): Promise<unknown> =>
-  fetchLoggedIn("/api/contactmomentdetails", {
+    fetchLoggedIn("/api/contactmomentdetails", {
     method: "PUT",
     body: JSON.stringify({
       ...contactmoment,

@@ -46,9 +46,9 @@ namespace Kiss.Bff.Beheer.Data
                 e.HasIndex(x => x.Klant);
             });
 
-            modelBuilder.Entity<Managementinfo.ContactmomentManagementinfoLog>(l =>
+            modelBuilder.Entity<ContactmomentDetails>(l =>
             {
-                l.HasIndex(x => x.PrimaireVraagWeergave);
+                l.HasIndex(x => x.Vraag);
             });
         }
 
@@ -60,6 +60,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
         public DbSet<KlantContactmoment> KlantContactmomenten { get; set; } = null!;
-        public DbSet<Managementinfo.ContactmomentManagementinfoLog> ContactmomentManagementLogs { get; set; } = null!;
+        public DbSet<ContactmomentDetails> ContactMomentDetails { get; set; } = null!;
     }
 }

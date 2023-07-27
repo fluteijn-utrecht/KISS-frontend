@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Nodes;
 using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Beheer.Managementinfo;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Http;
@@ -90,14 +89,14 @@ namespace Kiss.Bff.Test
         {
             // Arrange
             var cancellationToken = CancellationToken.None;
-            var model = new ContactmomentManagementinfoLog
+            var model = new ContactmomentDetails
             {
                 Id = "1",
                 Startdatum = DateTimeOffset.Now,
                 Einddatum = DateTimeOffset.Now.AddDays(1),
-                Resultaat = "Success",
-                PrimaireVraagWeergave = "Question",
-                AfwijkendOnderwerp = "Topic",
+                Gespreksresultaat = "Success",
+                Vraag = "Question",
+                SpecifiekeVraag = "Topic",
                 EmailadresKcm = "test@example.com"
             };
             var dbContextMock = new Mock<BeheerDbContext>(_dbContextOptions) { CallBase = true };
@@ -108,7 +107,7 @@ namespace Kiss.Bff.Test
                 new Claim(ClaimTypes.Email, "test@example.com")
             };
             var user = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
-            var controller = new UpsertContactmomentenManagementinfoLog(dbContextMock.Object)
+            var controller = new WriteContactmomentenDetails(dbContextMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
