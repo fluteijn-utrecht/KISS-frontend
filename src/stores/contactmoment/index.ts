@@ -47,15 +47,15 @@ export interface Vraag {
   contactverzoek: ContactmomentContactVerzoek;
   startdatum: string;
   kanaal: string;
-  resultaat: string;
+  gespreksresultaat: string;
   klanten: { klant: ContactmomentKlant; shouldStore: boolean }[];
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
   websites: { website: Bron; shouldStore: boolean }[];
   kennisartikelen: { kennisartikel: Bron; shouldStore: boolean }[];
   nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
   werkinstructies: { werkinstructie: Bron; shouldStore: boolean }[];
-  primaireVraag: Bron | undefined;
-  afwijkendOnderwerp: string;
+  vraag: Bron | undefined;
+  specifiekevraag: string;
   vacs: { vac: Bron; shouldStore: boolean }[];
 }
 
@@ -72,7 +72,7 @@ function initVraag(): Vraag {
     },
     startdatum: new Date().toISOString(),
     kanaal: "",
-    resultaat: "",
+    gespreksresultaat: "",
     klanten: [],
     medewerkers: [],
     websites: [],
@@ -80,8 +80,8 @@ function initVraag(): Vraag {
     nieuwsberichten: [],
     werkinstructies: [],
     vacs: [],
-    primaireVraag: undefined,
-    afwijkendOnderwerp: "",
+    vraag: undefined,
+    specifiekevraag: "",
   };
 }
 
@@ -281,7 +281,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         record.kennisartikel = kennisartikel;
       }
 
-      huidigeVraag.primaireVraag = kennisartikel;
+      huidigeVraag.vraag = kennisartikel;
     },
 
     addWebsite(website: Website) {
@@ -299,7 +299,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         record.website = website;
       }
 
-      huidigeVraag.primaireVraag = website;
+      huidigeVraag.vraag = website;
     },
 
     addVac(vraag: string, url : string) {
@@ -317,9 +317,9 @@ export const useContactmomentStore = defineStore("contactmoment", {
           vac: vacVraag ,
           shouldStore: true,
         });
-        huidigeVraag.primaireVraag = vacVraag
+        huidigeVraag.vraag = vacVraag
       } else {
-        huidigeVraag.primaireVraag = record.vac;      
+          huidigeVraag.vraag = record.vac;      
       }
     },
 
@@ -342,7 +342,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         shouldStore: true,
       });
 
-      huidigeVraag.primaireVraag = nieuwsbericht;
+      huidigeVraag.vraag = nieuwsbericht;
     },
 
     toggleWerkinstructie(werkinstructie: Werkinstructie) {
@@ -364,7 +364,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         shouldStore: true,
       });
 
-      huidigeVraag.primaireVraag = werkinstructie;
+      huidigeVraag.vraag = werkinstructie;
     },
 
     updateContactverzoek(contactverzoek: ContactmomentContactVerzoek) {

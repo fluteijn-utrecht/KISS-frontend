@@ -1,20 +1,20 @@
 import { fetchLoggedIn, throwIfNotOk } from "@/services";
 import type { Contactmoment } from "./types";
 
-export type ContactmomentManagementInfo = Pick<
+export type ContactmomentDetails = Pick<
   Contactmoment,
-  | "resultaat"
+  | "gespreksresultaat"
   | "startdatum"
   | "einddatum"
-  | "primaireVraagWeergave"
-  | "afwijkendOnderwerp"
+  | "vraag"
+  | "specifiekevraag"
 >;
 
-export const upsertContactmomentManagementInfo = (
-  contactmoment: ContactmomentManagementInfo,
+export const writeContactmomentDetails = (
+  contactmoment: ContactmomentDetails,
   id: string
 ): Promise<unknown> =>
-  fetchLoggedIn("/api/managementinfo/contactmomenten", {
+    fetchLoggedIn("/api/contactmomentdetails", {
     method: "PUT",
     body: JSON.stringify({
       ...contactmoment,

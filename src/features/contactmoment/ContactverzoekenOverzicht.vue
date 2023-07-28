@@ -44,16 +44,16 @@
           <dd>{{ contactverzoek.status }}</dd>
         </dl>
 
-        <template v-if="contactverzoek.primaireVraagWeergave">
+        <template v-if="contactverzoek.vraag">
           <dl>
             <dt>Vraag</dt>
-            <dd>{{ contactverzoek.primaireVraagWeergave }}</dd>
+            <dd>{{ contactverzoek.vraag }}</dd>
           </dl>
         </template>
-        <template v-if="contactverzoek.afwijkendOnderwerp">
+        <template v-if="contactverzoek.specifiekevraag">
           <dl>
             <dt>Specificatie</dt>
-            <dd>{{ contactverzoek.afwijkendOnderwerp }}</dd>
+            <dd>{{ contactverzoek.specifiekevraag }}</dd>
           </dl>
         </template>
 

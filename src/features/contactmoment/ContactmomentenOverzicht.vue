@@ -8,6 +8,7 @@
           <span id="datum-header">Datum</span>
           <span id="medewerker-header">Medewerker</span>
           <span id="kanaal-header">Kanaal</span>
+          <span id="gespreksresultaat-header">Gespreksresultaat</span>
         </li>
         <li v-for="contactmoment in contactmomenten" :key="contactmoment.id">
           <details @click="toggleDetails">
@@ -28,30 +29,22 @@
               <span aria-describedby="kanaal-header">{{
                 contactmoment.kanaal
               }}</span>
-              <!-- 
-                niet conform api standaard
-                <span aria-describedby="gespreksresultaat-header">{{
-                contactmoment.resultaat
-              }}</span> -->
+              <span aria-describedby="gespreksresultaat-header">{{
+                contactmoment.gespreksresultaat
+              }}</span>
             </summary>
             <dl>
               <dt>Starttijd</dt>
               <dd>{{ formatTimeOnly(contactmoment.registratiedatum) }}</dd>
-              <!-- 
-                niet conform api standaard
-                <template v-if="contactmoment.primaireVraagWeergave">
-                <dt>Vraag</dt>
-                <dd>{{ contactmoment.primaireVraagWeergave }}</dd>
-              </template> -->
-              <!-- 
-                niet conform api standaard
-                <template v-if="contactmoment.afwijkendOnderwerp">
-                <dt>Specificatie</dt>
-                <dd>{{ contactmoment.afwijkendOnderwerp }}</dd>
-              </template> -->
-
               <slot name="zaken" :zaken="contactmoment.zaken"></slot>
-
+              <template v-if="contactmoment.vraag">
+                <dt>Vraag</dt>
+                <dd class="tekst">{{ contactmoment.vraag }}</dd>
+              </template>
+              <template v-if="contactmoment.specifiekevraag">
+                <dt>Specifieke vraag</dt>
+                <dd class="tekst">{{ contactmoment.specifiekevraag }}</dd>
+              </template>
               <dt>Notitie</dt>
               <dd class="tekst">{{ contactmoment.tekst }}</dd>
             </dl>
@@ -120,7 +113,7 @@ dt {
 .header-row,
 summary {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr 1rem;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1rem;
   gap: var(--gap);
 }
 
