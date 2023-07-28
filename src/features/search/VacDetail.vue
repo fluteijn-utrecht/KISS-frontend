@@ -7,18 +7,18 @@
       <utrecht-heading :level="headingLevel + 1">{{
         antwoordSection.label
       }}</utrecht-heading>
-      <div v-html="antwoordSection.html"></div>
+      <div v-html="antwoordSection.html" class="htmlcontent"></div>
     </section>
     <section v-if="toelichtingSection">
       <utrecht-heading :level="headingLevel + 1">{{
         toelichtingSection.label
-      }} (interne informatie)</utrecht-heading>
-      <div v-html="toelichtingSection.html"></div>
+      }}</utrecht-heading>
+      <div v-html="toelichtingSection.html" class="htmlcontent"></div>
     </section>
   </article>
 </template>
 <script setup lang="ts">
-import {  unescapedSanatizedWithIncreadesHeadingsHtml } from "@/helpers/html";
+import { unescapedSanatizedWithIncreadesHeadingsHtml } from "@/helpers/html";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { computed } from "vue";
 
@@ -33,19 +33,29 @@ const props = defineProps<{
   headingLevel: 2 | 3 | 4;
 }>();
 
-
 const getSection = (
-  sectionName: string
+  sectionName: string,
+  sectionLabel: string | undefined
 ): { label: string; html: string } | null => {
   const section = props.raw[sectionName];
 
-  return section ? { label: sectionName, html: unescapedSanatizedWithIncreadesHeadingsHtml(section, props.headingLevel) } : null;
+  return section
+    ? {
+        label: sectionLabel ? sectionLabel : sectionName,
+        html: unescapedSanatizedWithIncreadesHeadingsHtml(
+          section,
+          props.headingLevel
+        ),
+      }
+    : null;
 };
 
-const antwoordSection = computed(() => getSection(knownSections.antwoord));
+const antwoordSection = computed(() =>
+  getSection(knownSections.antwoord, "Antwoord")
+);
 
 const toelichtingSection = computed(() =>
-  getSection(knownSections.toelichting)
+  getSection(knownSections.toelichting, "Interne toelichting")
 );
 </script>
 

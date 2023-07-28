@@ -22,7 +22,7 @@
       :id="id"
     >
       <utrecht-heading :level="headingLevel + 1">{{ label }}</utrecht-heading>
-      <div v-html="html"></div>
+      <div v-html="html" class="htmlcontent"></div>
     </section>
   </article>
 
@@ -161,35 +161,7 @@ article {
     &.is-active {
       display: block;
     }
-
-    div :deep(h3),
-    div :deep(h4) {
-      margin-block-start: var(--spacing-default);
-    }
-
-    :deep(ul) {
-      list-style: disc;
-      margin-inline-start: var(--spacing-default);
-      margin-block: var(--spacing-small);
-
-      ul {
-        list-style: circle;
-        margin-block: 0;
-      }
-    }
-
-    :deep(td) {
-      border: 1px var(--color-tertiary) solid;
-      padding: var(--spacing-small);
-    }
-
-    :deep(table) {
-      margin-block: var(--spacing-small);
-    }
-
-    :deep(p + p) {
-      margin-block-start: var(--spacing-small);
-    }
+     
   }
 }
 
