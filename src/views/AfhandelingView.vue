@@ -303,7 +303,7 @@
             </label>
             <select
               :id="'gespreksresultaat' + idx"
-              v-model="vraag.resultaat"
+              v-model="vraag.gespreksresultaat"
               class="utrecht-select utrecht-select--html-select"
               required
               v-if="gespreksresultaten.success"
@@ -316,7 +316,9 @@
               </option>
             </select>
 
-            <template v-if="vraag.resultaat === 'Contactverzoek gemaakt'">
+            <template
+              v-if="vraag.gespreksresultaat === 'Contactverzoek gemaakt'"
+            >
               <label />
 
               <div class="contactverzoek-container">
@@ -379,7 +381,7 @@
               Vraag
             </label>
             <select
-              v-model="vraag.primaireVraag"
+              v-model="vraag.vraag"
               :id="'hoofdvraag' + idx"
               class="utrecht-select utrecht-select--html-select"
               required
@@ -407,20 +409,17 @@
             </select>
 
             <label
-              :class="[
-                'utrecht-form-label',
-                { required: !vraag.primaireVraag },
-              ]"
-              :for="'afwijkendOnderwerp' + idx"
+              :class="['utrecht-form-label', { required: !vraag.vraag }]"
+              :for="'specifiekevraag' + idx"
             >
-              Specificatie
+              Specifieke vraag
             </label>
             <input
-              :required="!vraag.primaireVraag"
+              :required="!vraag.vraag"
               type="text"
               class="utrecht-textbox utrecht-textbox--html-input"
-              :id="'afwijkendOnderwerp' + idx"
-              v-model="vraag.afwijkendOnderwerp"
+              :id="'specifiekevraag' + idx"
+              v-model="vraag.specifiekevraag"
             />
 
             <label class="utrecht-form-label" :for="'notitie' + idx"
@@ -483,7 +482,7 @@ import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
 import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
 import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
-import { upsertContactmomentManagementInfo } from "@/features/contactmoment/upsert-contactmoment-management";
+import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -502,7 +501,7 @@ onMounted(() => {
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
-      vraag.resultaat = "Contactverzoek gemaakt";
+      vraag.gespreksresultaat = "Contactverzoek gemaakt";
     }
     if (!vraag.kanaal) {
       vraag.kanaal = userStore.preferences.kanaal;
@@ -605,6 +604,9 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     tekst: vraag.notitie,
     onderwerpLinks: [],
     initiatiefnemer: "klant", //enum "gemeente" of "klant"
+    vraag: vraag.vraag?.title,
+    specifiekevraag: vraag.specifiekevraag || undefined,
+    gespreksresultaat: vraag.gespreksresultaat,
 
     // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
     gespreksId,
@@ -612,12 +614,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurskanaal: "",
     voorkeurstaal: "",
     medewerker: "",
-    resultaat: vraag.resultaat,
     startdatum: vraag.startdatum,
     einddatum: new Date().toISOString(),
-    primaireVraag: vraag.primaireVraag?.url,
-    primaireVraagWeergave: vraag.primaireVraag?.title,
-    afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
   };
 
   addKennisartikelenToContactmoment(contactmoment, vraag);
@@ -629,7 +627,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   let contactverzoekUrl: string | undefined;
 
-  if (vraag.resultaat === "Contactverzoek gemaakt") {
+  if (vraag.gespreksresultaat === "Contactverzoek gemaakt") {
     const contactverzoek = await saveContactverzoek({
       bronorganisatie: organisatieIds.value[0] || "",
       todo: {
@@ -640,8 +638,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
           vraag.contactverzoek.afdeling,
         ].filter(Boolean),
       },
-      primaireVraagWeergave: vraag.primaireVraag?.title,
-      afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
+      vraag: vraag.vraag?.title,
+      specifiekevraag: vraag.specifiekevraag || undefined,
     });
 
     await koppelKlanten(vraag, contactverzoek.id);
@@ -650,10 +648,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
 
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await upsertContactmomentManagementInfo(
-    contactmoment,
-    savedContactmoment.url
-  );
+  await writeContactmomentDetails(contactmoment, savedContactmoment.url);
 
   await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
 

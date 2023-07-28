@@ -24,6 +24,7 @@ import { toRelativeProxyUrl } from "@/helpers/url";
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
+const contactmomentDetails = "/api/contactmomentdetails";
 const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
@@ -159,6 +160,14 @@ const fetchContactmoment = (u: string) =>
         .filter((x) => x.objectType === "zaak")
         .map((x) => x.object);
 
+      const contactmomentDetails = await fetchContactmomentDetails(cm.url);
+
+      cm.vraag = contactmomentDetails.vraag ?? cm.vraag;
+      cm.gespreksresultaat =
+        contactmomentDetails.gespreksresultaat ?? cm.gespreksresultaat;
+      cm.specifiekevraag =
+        contactmomentDetails.specifiekeVraag ?? cm.specifiekevraag;
+
       return {
         ...cm,
         zaken,
@@ -180,10 +189,7 @@ const fetchContactmomenten = (u: string) =>
       })
     );
 
-export function useContactmomentenByKlantId(
-  id: Ref<string>
-  // page: Ref<number>
-) {
+export function useContactmomentenByKlantId(id: Ref<string>) {
   function getUrl() {
     const searchParams = new URLSearchParams();
     searchParams.set("klant", id.value);
@@ -192,6 +198,21 @@ export function useContactmomentenByKlantId(
 
   return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
 }
+
+export const fetchContactmomentDetails = (contactMomentDetailsId: string) => {
+  const getUrl = () => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("id", contactMomentDetailsId);
+    return `${contactmomentDetails}?${searchParams.toString()}`;
+  };
+
+  return fetchLoggedIn(getUrl())
+    .then(throwIfNotOk)
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    });
+};
 
 function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
   return Promise.reject("not implemented");
@@ -221,8 +242,8 @@ const mapContactverzoekDetail = (
     starttijd: formatTimeOnly(new Date(contactmoment.registratiedatum)),
     aanmaker: contactmoment["_self"].owner,
     notitie: todo.description,
-    primaireVraagWeergave: contactmoment.primaireVraagWeergave,
-    afwijkendOnderwerp: contactmoment.afwijkendOnderwerp,
+    vraag: contactmoment.vraag,
+    specifiekevraag: contactmoment.specifiekevraag,
   };
 };
 

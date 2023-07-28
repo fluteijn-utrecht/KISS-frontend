@@ -5,16 +5,15 @@ export interface ContactmomentViewModel {
   registratiedatum: Date;
   medewerker: string;
   kanaal: string;
-  resultaat: string;
+  gespreksresultaat: string;
   tekst: string;
+  vraag: string;
+  specifiekevraag: string;
   zaken: string[];
   //contactverzoeken: ContactmomentContactverzoek[];
   _self: {
     owner: string;
   };
-  primaireVraag?: string;
-  primaireVraagWeergave?: string;
-  afwijkendOnderwerp?: string;
   medewerkerIdentificatie: MedewerkerIdentificatie;
 }
 
