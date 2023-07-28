@@ -16,7 +16,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         }
 
         [HttpGet("/api/contactmomentdetails")]
-        [Authorize(Policy = Policies.RedactiePolicy)]
         public async Task<IActionResult> Get([FromQuery] string id, CancellationToken token)
         {
             var contactmoment = await _db.ContactMomentDetails
