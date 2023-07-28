@@ -49,15 +49,15 @@ KISS uses Elastic search. Follow these steps to connect your local development e
 1. kubectl config set-context --current --namespace=[for example: kiss-namespace]
 1. kubectl port-forward deployment/enterprise-search-ent 3002:3002
 
-## Toevoegen van Migraties
-Wanneer je een nieuwe migratie toevoegt aan het project, moet je ervoor zorgen dat je het juiste startup-project hebt geselecteerd.
-Je kunt de volgende foutmelding krijgen als je het verkeerde project hebt geselecteerd:
+## Adding Migrations
+When adding new migrations to the project, ensure you have the correct startup project selected.
+You might encounter the following error message if the incorrect project has been selected:
 ```sh
 Startup project 'docker-compose' is a Docker project. Select an ASP.NET Core Web Application as your startup project and try again.
 ```
-Om dit probleem te verhelpen, volg deze stappen:
-1. In de Solution Explorer, zoek naar het project kiss.bff.
-1. Klik met de rechtermuisknop op kiss.bff en selecteer 'Set as StartUp Project'.
+To resolve this, follow these steps:
+1. In the Solution Explorer, look for the kiss.bff project.
+1. Right-click on kiss.bff and select 'Set as StartUp Project'.
 
-Nu zou je in staat moeten zijn om nieuwe migraties toe te voegen. Het kiss.bff project bevat de migraties, en het instellen van dit project als je startup project zou de bovenstaande fout moeten oplossen.
-Zorg ervoor dat je na het toevoegen van de migraties terugkeert naar de oorspronkelijke startup projecten configuratie uit de kiss-frontend readme, indien nodig voor je ontwikkelproces.
+Now, you should be able to add new migrations. The kiss.bff project contains the migrations, and setting this project as your startup project should resolve the above error.
+Make sure to switch back to the original startup project configuration after adding the migrations, if required for your development process.
