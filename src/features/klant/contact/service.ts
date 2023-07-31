@@ -7,7 +7,7 @@ import {
 } from "@/services";
 import { mutate } from "swrv";
 import type { Ref } from "vue";
-import type { Klant } from "../types";
+import { KlantType, type Klant } from "../types";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
@@ -24,12 +24,14 @@ function getKlantSearchUrl({ email = "", phone = "" }: KlantSearchParameters) {
 
   const url = new URL(klantRootUrl);
 
+  url.searchParams.set("subjectType", KlantType.Persoon);
+
   if (email) {
-    url.searchParams.append("emailadres", email);
+    url.searchParams.set("emailadres", email);
   }
 
   if (phone) {
-    url.searchParams.append("telefoonnummer", phone);
+    url.searchParams.set("telefoonnummer", phone);
   }
 
   return url.toString();
