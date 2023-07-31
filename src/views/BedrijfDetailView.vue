@@ -9,7 +9,7 @@
       </li>
     </ul>
   </nav>
-  <tabs-component class="tabs" v-model="currentTab">
+  <tabs-component class="detail-tabs" v-model="currentTab">
     <template #[tabs.contactgegevens]>
       <simple-spinner v-if="klant.loading" />
       <bedrijf-details v-else-if="klant.success" :klant="klant.data" />
@@ -33,6 +33,7 @@
       />
     </template>
     <template #[tabs.contactmomenten]>
+      <utrecht-heading :level="2"> Contactmomenten</utrecht-heading>
       <simple-spinner v-if="contactmomenten.loading" />
       <application-message
         v-if="contactmomenten.error"
@@ -40,7 +41,6 @@
         messageType="error"
       />
       <template v-if="contactmomenten.success && contactmomenten.data">
-        <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
         <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
           <template v-slot:zaken="{ zaken }">
             <template v-for="zaakurl in zaken" :key="zaakurl">
@@ -57,21 +57,24 @@
       </template>
     </template>
     <template #[tabs.zaken]>
+      <utrecht-heading :level="2"> Zaken </utrecht-heading>
       <simple-spinner v-if="zaken.loading" />
       <application-message
         v-if="zaken.error"
         message="Er ging iets mis bij het ophalen van de zaken. Probeer het later nog eens."
         messageType="error"
       />
-      <template v-if="zaken.success && zaken.data.page.length">
-        <utrecht-heading :level="2"> Zaken </utrecht-heading>
+      <template v-if="zaken.success">
         <zaken-overzicht
+          v-if="zaken.data.page.length"
           :zaken="zaken.data.page"
           :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
         />
+        <p v-else>Geen zaken gevonden.</p>
       </template>
     </template>
     <template #[tabs.contactverzoeken]>
+      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
       <simple-spinner v-if="contactverzoeken.loading" />
       <application-message
         v-if="contactverzoeken.error"
@@ -81,7 +84,6 @@
       <template
         v-if="contactverzoeken.success && contactverzoeken.data.page.length"
       >
-        <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
         <contactverzoeken-overzicht
           :contactverzoeken="contactverzoeken.data.page"
         />
@@ -173,9 +175,3 @@ type Tab = Tabs[keyof Tabs];
 
 const currentTab = ref<Tab>(tabs.contactgegevens);
 </script>
-
-<style scoped lang="scss">
-.tabs :deep([role="tabpanel"]) {
-  padding: var(--spacing-large);
-}
-</style>
