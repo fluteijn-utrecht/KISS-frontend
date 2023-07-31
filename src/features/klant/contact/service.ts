@@ -84,7 +84,10 @@ function searchKlantenRecursive(urlStr: string, page = 1): Promise<Klant[]> {
     });
 }
 
-function compareNonEmpty(a: string | undefined, b: string | undefined) {
+function compareNonEmpty(
+  a: string | null | undefined,
+  b: string | null | undefined
+) {
   if (!a && !b) return 0;
   if (!b) return -1;
   if (!a) return 1;
