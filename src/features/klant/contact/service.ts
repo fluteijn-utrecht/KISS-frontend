@@ -75,6 +75,8 @@ function searchKlantenRecursive(urlStr: string, page = 1): Promise<Klant[]> {
     })
     .then((p) => {
       if (!p.next) return p.page;
+      // because we filter out results manually, we break pagination.
+      // to work around this, we retrieve all pages and return them as a flat list.
       return searchKlantenRecursive(urlStr, page + 1).then((next) => [
         ...p.page,
         ...next,
