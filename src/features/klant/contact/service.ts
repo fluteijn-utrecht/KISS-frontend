@@ -91,14 +91,14 @@ function compareNonEmpty(a: string | undefined, b: string | undefined) {
   return a.localeCompare(b);
 }
 
+function sortKlant(a: Klant, b: Klant) {
+  const compareEmail = compareNonEmpty(a.emailadres, b.emailadres);
+  if (compareEmail !== 0) return compareEmail;
+  return compareNonEmpty(a.telefoonnummer, b.telefoonnummer);
+}
+
 function searchKlanten(url: string) {
-  return searchKlantenRecursive(url).then((r) =>
-    r.sort((a, b) => {
-      const compareEmail = compareNonEmpty(a.emailadres, b.emailadres);
-      if (compareEmail !== 0) return compareEmail;
-      return compareNonEmpty(a.telefoonnummer, b.telefoonnummer);
-    })
-  );
+  return searchKlantenRecursive(url).then((r) => r.sort(sortKlant));
 }
 
 function getKlantIdUrl(id?: string) {
