@@ -57,7 +57,6 @@ const store = ensureState({
       currentEmail: "",
       klantPhone: "",
       klantEmail: "",
-      page: 1,
     };
   },
 });
@@ -66,7 +65,6 @@ const klanten = useSearchKlanten(
   computed(() => ({
     email: store.value.klantEmail,
     phone: store.value.klantPhone,
-    page: store.value.page,
   }))
 );
 
@@ -91,7 +89,6 @@ watch(singleKlantId, (newId, oldId) => {
 const handleSearch = () => {
   store.value.klantEmail = store.value.currentEmail;
   store.value.klantPhone = store.value.currentPhone;
-  store.value.page = 1;
 };
 </script>
 
