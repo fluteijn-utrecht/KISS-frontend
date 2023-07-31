@@ -1,98 +1,93 @@
 <template>
-  <section>
-    <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
-    <nav>
-      <ul>
-        <li>
-          <router-link :to="{ name: 'bedrijven' }">{{
-            "< Bedrijven zoeken"
-          }}</router-link>
-        </li>
-      </ul>
-    </nav>
-    <simple-spinner v-if="klant.loading" />
-    <bedrijf-details v-else-if="klant.success" :klant="klant.data" />
-    <application-message
-      v-if="klant.error"
-      message="Er ging iets mis bij het ophalen van de klant. Probeer het later
+  <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
+  <nav>
+    <ul>
+      <li>
+        <router-link :to="{ name: 'bedrijven' }">{{
+          "< Bedrijven zoeken"
+        }}</router-link>
+      </li>
+    </ul>
+  </nav>
+  <tabs-component class="tabs" v-model="currentTab">
+    <template #[tabs.contactgegevens]>
+      <simple-spinner v-if="klant.loading" />
+      <bedrijf-details v-else-if="klant.success" :klant="klant.data" />
+      <application-message
+        v-if="klant.error"
+        message="Er ging iets mis bij het ophalen van de klant. Probeer het later
       nog eens."
-      messageType="error"
-    />
-
-    <simple-spinner v-if="bedrijf.loading" />
-    <handelsregister-gegevens
-      v-if="bedrijf.success && bedrijf.data"
-      :bedrijf="bedrijf.data"
-    />
-    <application-message
-      v-if="bedrijf.error"
-      message="Er ging iets mis bij het ophalen van de Handelsregister gegevens. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <simple-spinner v-if="contactverzoeken.loading" />
-    <application-message
-      v-if="contactverzoeken.error"
-      message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
-      messageType="error"
-    />
-    <template
-      v-if="contactverzoeken.success && contactverzoeken.data.page.length"
-    >
-      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
-
-      <contactverzoeken-overzicht
-        :contactverzoeken="contactverzoeken.data.page"
+        messageType="error"
       />
     </template>
-
-    <!-- Zaken -->
-
-    <simple-spinner v-if="zaken.loading" />
-
-    <application-message
-      v-if="zaken.error"
-      message="Er ging iets mis bij het ophalen van de zaken. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <template v-if="zaken.success && zaken.data.page.length">
-      <utrecht-heading :level="2"> Zaken </utrecht-heading>
-
-      <zaken-overzicht
-        :zaken="zaken.data.page"
-        :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+    <template #[tabs.kvk]>
+      <simple-spinner v-if="bedrijf.loading" />
+      <handelsregister-gegevens
+        v-if="bedrijf.success && bedrijf.data"
+        :bedrijf="bedrijf.data"
+      />
+      <application-message
+        v-if="bedrijf.error"
+        message="Er ging iets mis bij het ophalen van de Handelsregister gegevens. Probeer het later nog eens."
+        messageType="error"
       />
     </template>
-
-    <!-- Contactmomenten -->
-
-    <simple-spinner v-if="contactmomenten.loading" />
-
-    <application-message
-      v-if="contactmomenten.error"
-      message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <template v-if="contactmomenten.success && contactmomenten.data">
-      <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-        <template v-slot:zaken="{ zaken }">
-          <template v-for="zaakurl in zaken" :key="zaakurl">
-            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+    <template #[tabs.contactmomenten]>
+      <simple-spinner v-if="contactmomenten.loading" />
+      <application-message
+        v-if="contactmomenten.error"
+        message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
+        messageType="error"
+      />
+      <template v-if="contactmomenten.success && contactmomenten.data">
+        <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+        <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
+          <template v-slot:zaken="{ zaken }">
+            <template v-for="zaakurl in zaken" :key="zaakurl">
+              <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+            </template>
           </template>
-        </template>
-      </contactmomenten-overzicht>
-      <!-- 
-      <pagination
-        class="pagination"
-        :pagination="contactmomenten.data"
-        @navigate="onContactmomentenNavigate"
-      /> -->
+        </contactmomenten-overzicht>
+        <!--
+  <pagination
+    class="pagination"
+    :pagination="contactmomenten.data"
+    @navigate="onContactmomentenNavigate"
+  /> -->
+      </template>
     </template>
-  </section>
+    <template #[tabs.zaken]>
+      <simple-spinner v-if="zaken.loading" />
+      <application-message
+        v-if="zaken.error"
+        message="Er ging iets mis bij het ophalen van de zaken. Probeer het later nog eens."
+        messageType="error"
+      />
+      <template v-if="zaken.success && zaken.data.page.length">
+        <utrecht-heading :level="2"> Zaken </utrecht-heading>
+        <zaken-overzicht
+          :zaken="zaken.data.page"
+          :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+        />
+      </template>
+    </template>
+    <template #[tabs.contactverzoeken]>
+      <simple-spinner v-if="contactverzoeken.loading" />
+      <application-message
+        v-if="contactverzoeken.error"
+        message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
+        messageType="error"
+      />
+      <template
+        v-if="contactverzoeken.success && contactverzoeken.data.page.length"
+      >
+        <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+        <contactverzoeken-overzicht
+          :contactverzoeken="contactverzoeken.data.page"
+        />
+      </template>
+    </template>
+  </tabs-component>
 </template>
 
 <script setup lang="ts">
@@ -119,6 +114,7 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import TabsComponent from "@/components/TabsComponent.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
@@ -146,8 +142,8 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  contactmomentenPage
+  klantUrl
+  // contactmomentenPage
 );
 
 // const onContactmomentenNavigate = (page: number) => {
@@ -163,18 +159,23 @@ const klantVestigingsnummer = computed(getVestigingsnummer);
 const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
+
+const tabs = {
+  contactgegevens: "Contactgegevens",
+  kvk: "KvK-gegevens",
+  contactmomenten: "Contactmomenten",
+  zaken: "Zaken",
+  contactverzoeken: "Contactverzoeken",
+} as const;
+
+type Tabs = typeof tabs;
+type Tab = Tabs[keyof Tabs];
+
+const currentTab = ref<Tab>(tabs.contactgegevens);
 </script>
 
 <style scoped lang="scss">
-nav {
-  list-style: none;
-}
-
-section > * {
-  margin-block-end: var(--spacing-large);
-}
-
-utrecht-heading {
-  margin-block-end: 0;
+.tabs :deep([role="tabpanel"]) {
+  padding: var(--spacing-large);
 }
 </style>

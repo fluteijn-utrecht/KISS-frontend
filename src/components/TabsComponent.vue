@@ -56,7 +56,7 @@ const emit = defineEmits(["update:modelValue"]);
 const slotKeys = Object.keys(slots);
 const entries = computed(() =>
   slotKeys
-    .filter((name) => name.toLowerCase() !== "tab")
+    .filter((name) => name.toLowerCase() !== "tab" && slots[name])
     .map((name, idx) => {
       const id = instanceId + idx;
       const isActive = props.modelValue === name;
