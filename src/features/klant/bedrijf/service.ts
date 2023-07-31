@@ -60,6 +60,7 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
   // TODO: think about how to search in both klantregister and handelsregister for phone / email
 
   params.set("pagina", page?.toString() ?? "1");
+  params.set("type", "hoofdvestiging,nevenvestiging");
 
   const searchParams = bedrijfQueryDictionary[query.field](query.value);
 
