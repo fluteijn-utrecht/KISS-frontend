@@ -12,7 +12,7 @@ import type { Paginated, PaginatedResult } from "@/services";
 import { computed } from "vue";
 
 const props = defineProps<{
-  results: Paginated<unknown> | PaginatedResult<unknown>;
+  results: Paginated<unknown> | PaginatedResult<unknown> | unknown[];
 }>();
 
 const resultCount = computed(() => {
@@ -23,7 +23,8 @@ const resultCount = computed(() => {
     return props.results.totalRecords;
   if ("count" in props.results && typeof props.results.count === "number")
     return props.results.count;
-  return props.results.page.length;
+  if ("page" in props.results) return props.results.page.length;
+  return props.results.length;
 });
 </script>
 

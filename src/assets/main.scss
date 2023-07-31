@@ -260,6 +260,10 @@ table.overview {
       font-weight: 600;
     }
 
+    td:empty::after {
+      content: "-";
+    }
+
     &.row-link {
       a,
       button {
@@ -390,9 +394,6 @@ th.row-link-header {
 dt {
   font-weight: bold;
 }
-
-
-
 
 .htmlcontent {
   h3,

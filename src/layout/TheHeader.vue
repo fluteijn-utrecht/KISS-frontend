@@ -14,23 +14,10 @@
         >
         <nav v-if="route.meta.showNav">
           <ul>
-            <li>
-              <router-link :to="{ name: 'home' }">
-                <span>Nieuws en werkinstructies</span>
-
-                <span
-                  v-if="
-                    featuredWerkberichtenCount.success &&
-                    featuredWerkberichtenCount.data > 0
-                  "
-                  class="featured-indicator"
-                  >{{
-                    featuredWerkberichtenCount.data < 10
-                      ? featuredWerkberichtenCount.data
-                      : "9+"
-                  }}</span
-                >
-              </router-link>
+            <li v-if="contactmomentStore.contactmomentLoopt">
+              <router-link :to="{ name: 'contacten' }"
+                ><span>Contacten</span></router-link
+              >
             </li>
 
             <li v-if="contactmomentStore.contactmomentLoopt">
@@ -49,6 +36,25 @@
               <router-link :to="{ name: 'zaken' }"
                 ><span>Zaken</span></router-link
               >
+            </li>
+
+            <li>
+              <router-link :to="{ name: 'home' }">
+                <span>Nieuws en werkinstructies</span>
+
+                <span
+                  v-if="
+                    featuredWerkberichtenCount.success &&
+                    featuredWerkberichtenCount.data > 0
+                  "
+                  class="featured-indicator"
+                  >{{
+                    featuredWerkberichtenCount.data < 10
+                      ? featuredWerkberichtenCount.data
+                      : "9+"
+                  }}</span
+                >
+              </router-link>
             </li>
             <li>
               <router-link :to="{ name: 'links' }"
