@@ -11,6 +11,14 @@ describe("parseDutchDate", () => {
     expect(geboortedatum.getMonth()).toBe(9);
     expect(geboortedatum.getFullYear()).toBe(2000);
   });
+  test("should allow d/M/yyyy", async () => {
+    const parsed = parseDutchDate("2/1/2000");
+    expect(parsed).toBeInstanceOf(Date);
+    const geboortedatum = parsed as Date;
+    expect(geboortedatum.getDate()).toBe(2);
+    expect(geboortedatum.getMonth()).toBe(0);
+    expect(geboortedatum.getFullYear()).toBe(2000);
+  });
 
   test("should allow dd-MM-yyyy", async () => {
     const parsed = parseDutchDate("20-10-2000");
@@ -18,6 +26,15 @@ describe("parseDutchDate", () => {
     const geboortedatum = parsed as Date;
     expect(geboortedatum.getDate()).toBe(20);
     expect(geboortedatum.getMonth()).toBe(9);
+    expect(geboortedatum.getFullYear()).toBe(2000);
+  });
+
+  test("should allow d-M-yyyy", async () => {
+    const parsed = parseDutchDate("2-1-2000");
+    expect(parsed).toBeInstanceOf(Date);
+    const geboortedatum = parsed as Date;
+    expect(geboortedatum.getDate()).toBe(2);
+    expect(geboortedatum.getMonth()).toBe(0);
     expect(geboortedatum.getFullYear()).toBe(2000);
   });
 
