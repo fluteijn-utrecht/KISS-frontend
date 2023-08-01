@@ -104,10 +104,14 @@ function sortBy<T>(
   ...properties: Array<(x: T) => string | undefined>
 ): Compare<T> {
   return combineCompare(
-    ...properties.map(
-      (getProp) => (a: T, b: T) =>
-        (getProp(a) || "").localeCompare(getProp(b) || "")
-    )
+    ...properties.map((getProp) => (a: T, b: T) => {
+      const propA = getProp(a);
+      const propB = getProp(b);
+      if (!propA && !propB) return 0;
+      if (!propB) return -1;
+      if (!propA) return 1;
+      return propA.localeCompare(propB);
+    })
   );
 }
 
