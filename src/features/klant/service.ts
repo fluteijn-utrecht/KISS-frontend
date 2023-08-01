@@ -224,14 +224,8 @@ export function useUpdateContactGegevens() {
 export async function ensureKlantForBsn(
   {
     bsn,
-    voornaam,
-    voorvoegselAchternaam,
-    achternaam,
   }: {
     bsn: string;
-    voornaam?: string;
-    voorvoegselAchternaam?: string;
-    achternaam?: string;
   },
   bronorganisatie: string
 ) {
@@ -258,9 +252,6 @@ export async function ensureKlantForBsn(
       klantnummer: nanoid(8),
       subjectIdentificatie: { inpBsn: bsn },
       subjectType: KlantType.Persoon,
-      voornaam,
-      voorvoegselAchternaam,
-      achternaam,
     }),
   });
 
