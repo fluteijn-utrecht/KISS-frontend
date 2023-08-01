@@ -39,16 +39,13 @@ function getKlantSearchUrl({ email = "", phone = "" }: KlantSearchParameters) {
 
 // TODO: kijken of een gemeenschappelijke interface nog nodig is als het zoeken op contact/persoon/bedrijf uitgewerkt is
 function mapKlant(obj: any): Klant {
-  const { subjectIdentificatie, url } = obj ?? {};
-  const { inpBsn, vestigingsNummer } = subjectIdentificatie ?? {};
+  const { url } = obj ?? {};
   const urlSplit: string[] = url?.split("/") ?? [];
 
   return {
     ...obj,
-    id: urlSplit[urlSplit.length - 1],
+    id: urlSplit.at(-1),
     _typeOfKlant: "klant",
-    bsn: inpBsn,
-    vestigingsnummer: vestigingsNummer,
     url: url,
   };
 }

@@ -4,7 +4,6 @@ import type {
   Kennisartikel,
   Nieuwsbericht,
   Werkinstructie,
-  Vac
 } from "@/features/search/types";
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { defineStore } from "pinia";
@@ -12,8 +11,6 @@ import { createSession, type Session } from "../switchable-store";
 export * from "./types";
 
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
-
-
 
 export type ContactmomentContactVerzoek = {
   url: string;
@@ -25,9 +22,9 @@ export type ContactmomentContactVerzoek = {
 
 export type ContactmomentKlant = {
   id: string;
-  voornaam: string;
+  voornaam?: string;
   voorvoegselAchternaam?: string;
-  achternaam: string;
+  achternaam?: string;
   bedrijfsnaam?: string;
   telefoonnummer?: string;
   emailadres?: string;
@@ -35,11 +32,10 @@ export type ContactmomentKlant = {
   url?: string;
 };
 
-
-export type Bron  = {
-  title: string,
-  url : string
-}
+export type Bron = {
+  title: string;
+  url: string;
+};
 
 export interface Vraag {
   zaken: ContactmomentZaak[];
@@ -51,7 +47,10 @@ export interface Vraag {
   klanten: { klant: ContactmomentKlant; shouldStore: boolean }[];
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
   websites: { website: Bron; shouldStore: boolean }[];
-  kennisartikelen: { kennisartikel: Bron; shouldStore: boolean }[];
+  kennisartikelen: {
+    kennisartikel: Kennisartikel;
+    shouldStore: boolean;
+  }[];
   nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
   werkinstructies: { werkinstructie: Bron; shouldStore: boolean }[];
   vraag: Bron | undefined;
@@ -302,24 +301,22 @@ export const useContactmomentStore = defineStore("contactmoment", {
       huidigeVraag.vraag = website;
     },
 
-    addVac(vraag: string, url : string) {
+    addVac(vraag: string, url: string) {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
-          
-      const record = huidigeVraag.vacs.find(
-        (k) => k.vac.title === vraag
-      );
+
+      const record = huidigeVraag.vacs.find((k) => k.vac.title === vraag);
 
       if (!record) {
-        const vacVraag = {title: vraag, url: url };
+        const vacVraag = { title: vraag, url: url };
         huidigeVraag.vacs.push({
-          vac: vacVraag ,
+          vac: vacVraag,
           shouldStore: true,
         });
-        huidigeVraag.vraag = vacVraag
+        huidigeVraag.vraag = vacVraag;
       } else {
-          huidigeVraag.vraag = record.vac;      
+        huidigeVraag.vraag = record.vac;
       }
     },
 

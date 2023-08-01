@@ -1,3 +1,6 @@
+import type { Directive } from "vue";
+import { watch } from "vue";
+
 function isValidPhoneNumber(val: string) {
   if (!val) return true; // empty is allowed, handeld by required attribute
   const numberCount = (val.match(/[0-9]/g) ?? []).length;
@@ -18,11 +21,24 @@ interface Postcode {
 export interface PostcodeHuisnummer {
   postcode: Postcode;
   huisnummer: string;
+  toevoeging?: string;
+  huisletter?: string;
 }
 
 export interface GeslachtsnaamGeboortedatum {
   geslachtsnaam: string;
   geboortedatum: Date;
+}
+
+export function parsePostcode(input: string): Postcode | Error {
+  const matches = input.trim().match(/^([1-9]\d{3}) *([A-Za-z]{2})$/);
+  if (matches?.length !== 3) {
+    return new Error("Voer een valide postcode in, bijvoorbeeld 1234 AZ.");
+  }
+  return {
+    numbers: matches[1],
+    digits: matches[2],
+  };
 }
 
 export function parsePostcodeHuisnummer(
@@ -59,15 +75,25 @@ const matchDutchDate = (input: string) => {
   const month = month1 || month2;
   const day = day1 || day2;
 
-  if (!year || !month || !day)
-    return new Error(
-      "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
-    );
+  if (year && month && day) {
+    const correctedMonth = +month - 1;
+    const intYear = +year;
+    const intDay = +day;
+    const date = new Date(intYear, correctedMonth, intDay);
+    if (
+      date.getFullYear() === intYear &&
+      date.getMonth() === correctedMonth &&
+      date.getDate() === intDay
+    )
+      return {
+        date,
+        matchedString: matches?.[0] ?? "",
+      };
+  }
 
-  return {
-    date: new Date(+year, +month - 1, +day),
-    matchedString: matches?.[0] ?? "",
-  };
+  return new Error(
+    "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
+  );
 };
 
 export function parseDutchDate(input: string): Date | Error {
@@ -88,7 +114,8 @@ function elfProef(numbers: number[]): boolean {
 }
 
 export function parseBsn(input: string): string | Error {
-  const matches = input.match(/^ *(\d{9}) *$/);
+  if (!input) return input;
+  const matches = input.trim().match(/^(\d{9})$/);
   if (!matches || matches.length < 2)
     return new Error("Voer een BSN in van negen cijfers.");
   const match = matches[1];
@@ -97,24 +124,88 @@ export function parseBsn(input: string): string | Error {
 }
 
 export function parseKvkNummer(input: string): string | Error {
-  const matches = input.match(/^ *(\d{8}) *$/);
+  const matches = input.trim().match(/^(\d{8})$/);
   return !matches || matches.length < 2
     ? new Error("Vul de 8 cijfers van het KvK-nummer in, bijvoorbeeld 12345678")
     : matches[1];
 }
 
-export function parseGeslachtsnaamGeboortedatum(
-  input: string
-): GeslachtsnaamGeboortedatum | Error {
-  const result = matchDutchDate(input);
+export function parseAchternaam(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z0-9À-ž .\-']{3,199})$/);
+  return !matches || matches.length < 2
+    ? new Error(
+        "Vul een geldig (begin van een) achternaam in, van minimaal 3 tekens"
+      )
+    : matches[1];
+}
 
-  if (result instanceof Error) return result;
+export function parseHuisletter(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z]{1})$/);
+  return !matches || matches.length < 2
+    ? new Error("Vul een geldige huisletter in")
+    : matches[1];
+}
 
-  const geslachtsnaam = input.replace(result.matchedString, "").trim();
+export function parseToevoeging(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z0-9 -]{1,4})$/);
+  return !matches || matches.length < 2
+    ? new Error("Vul een geldige toevoeging in, van maximaal 4 karakters")
+    : matches[1];
+}
 
-  if (!geslachtsnaam) return new Error("Vul een achternaam in");
+export function parseHuisnummer(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^[1-9][0-9]{0,4}$/);
+  return !matches || !matches.length
+    ? new Error("Vul een geldig huisnummer in")
+    : matches[0];
+}
+
+export type Validator<T> = (v: string) => T | Error;
+export type ValidatorSetup<T = any> = {
+  validator: Validator<T>;
+  current: string;
+  validated: T | undefined;
+};
+
+export function validateWith<T>(validator: Validator<T>): ValidatorSetup<T> {
   return {
-    geboortedatum: result.date,
-    geslachtsnaam,
+    validator,
+    current: "",
+    validated: undefined,
   };
 }
+
+export const vValidate: Directive<HTMLInputElement, ValidatorSetup> = {
+  mounted(el, { value }) {
+    const unwatch = watch(
+      () => value.current,
+      (i) => {
+        el.value = i;
+        const parsed = value.validator(i);
+        if (parsed instanceof Error) {
+          value.validated = undefined;
+          el.setCustomValidity(parsed.message);
+        } else {
+          el.setCustomValidity("");
+          value.validated = parsed;
+        }
+      },
+      { immediate: true }
+    );
+    function onInput() {
+      value.current = el.value;
+    }
+    el.addEventListener("input", onInput);
+    (el as any).removeValidatorSetup = () => {
+      el.removeEventListener("input", onInput);
+      unwatch();
+    };
+  },
+  unmounted(el) {
+    (el as any).removeValidatorSetup?.();
+  },
+};

@@ -51,3 +51,5 @@ export function throwIfNotOk(response: Response) {
 export function parseJson(response: Response) {
   return response.json();
 }
+
+export class FriendlyError extends Error {}

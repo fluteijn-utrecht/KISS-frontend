@@ -6,6 +6,7 @@ import {
   type Paginated,
   enforceOneOrZero,
   defaultPagination,
+  FriendlyError,
 } from "@/services";
 
 import type {
@@ -139,8 +140,6 @@ const hasFoutCode = (body: unknown, code: string) => {
   }
   return false;
 };
-
-export class FriendlyError extends Error {}
 
 function searchBedrijvenInHandelsRegister(url: string) {
   return fetchLoggedIn(url).then(async (r) => {
