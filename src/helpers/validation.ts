@@ -22,6 +22,7 @@ export interface PostcodeHuisnummer {
   postcode: Postcode;
   huisnummer: string;
   toevoeging?: string;
+  huisletter?: string;
 }
 
 export interface GeslachtsnaamGeboortedatum {
@@ -30,7 +31,7 @@ export interface GeslachtsnaamGeboortedatum {
 }
 
 export function parsePostcode(input: string): Postcode | Error {
-  const matches = input.match(/^ *([1-9]\d{3}) *([A-Za-z]{2}) *$/);
+  const matches = input.trim().match(/^([1-9]\d{3}) *([A-Za-z]{2})$/);
   if (matches?.length !== 3) {
     return new Error("Voer een valide postcode in, bijvoorbeeld 1234 AZ.");
   }
@@ -114,7 +115,7 @@ function elfProef(numbers: number[]): boolean {
 
 export function parseBsn(input: string): string | Error {
   if (!input) return input;
-  const matches = input.match(/^ *(\d{9}) *$/);
+  const matches = input.trim().match(/^(\d{9})$/);
   if (!matches || matches.length < 2)
     return new Error("Voer een BSN in van negen cijfers.");
   const match = matches[1];
@@ -123,10 +124,44 @@ export function parseBsn(input: string): string | Error {
 }
 
 export function parseKvkNummer(input: string): string | Error {
-  const matches = input.match(/^ *(\d{8}) *$/);
+  const matches = input.trim().match(/^(\d{8})$/);
   return !matches || matches.length < 2
     ? new Error("Vul de 8 cijfers van het KvK-nummer in, bijvoorbeeld 12345678")
     : matches[1];
+}
+
+export function parseAchternaam(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z0-9À-ž .\-']{3,199})$/);
+  return !matches || matches.length < 2
+    ? new Error(
+        "Vul een geldig (begin van een) achternaam in, van minimaal 3 tekens"
+      )
+    : matches[1];
+}
+
+export function parseHuisletter(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z]{1})$/);
+  return !matches || matches.length < 2
+    ? new Error("Vul een geldige huisletter in")
+    : matches[1];
+}
+
+export function parseToevoeging(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z0-9 -]{1,4})$/);
+  return !matches || matches.length < 2
+    ? new Error("Vul een geldige toevoeging in, van maximaal 4 karakters")
+    : matches[1];
+}
+
+export function parseHuisnummer(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^[1-9][0-9]{0,4}$/);
+  return !matches || !matches.length
+    ? new Error("Vul een geldig huisnummer in")
+    : matches[0];
 }
 
 export type Validator<T> = (v: string) => T | Error;
