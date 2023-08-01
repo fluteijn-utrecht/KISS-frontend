@@ -85,7 +85,7 @@ const matchDutchDate = (input: string) => {
       date.getDate() === intDay
     )
       return {
-        date: new Date(+year, +month - 1, +day),
+        date,
         matchedString: matches?.[0] ?? "",
       };
   }
