@@ -5,38 +5,6 @@
 
   <non-blocking-form v-else @submit.prevent="submit">
     <div class="input-group">
-      <label for="voornaam" class="utrecht-form-label">Voornaam</label>
-      <input
-        id="voornaam"
-        type="text"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="formData.voornaam"
-      />
-    </div>
-
-    <div class="input-group">
-      <label for="tussenvoegsel" class="utrecht-form-label"
-        >Tussenvoegsel</label
-      >
-      <input
-        id="tussenvoegsel"
-        type="text"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="formData.tussenvoegsel"
-      />
-    </div>
-
-    <div class="input-group">
-      <label for="achternaam" class="utrecht-form-label">Achternaam</label>
-      <input
-        id="achternaam"
-        type="text"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="formData.achternaam"
-      />
-    </div>
-
-    <div class="input-group">
       <label for="email" class="utrecht-form-label">E-mailadres</label>
       <input
         id="email"
@@ -109,9 +77,6 @@ const props = defineProps<{
 }>();
 
 const formData = ref({
-  voornaam: "",
-  tussenvoegsel: "",
-  achternaam: "",
   email: "",
   telefoonnummer: "",
 });
@@ -136,13 +101,8 @@ const submit = async () => {
   savingKlant.value = true;
 
   const nieuweKlant = {
-    voornaam: formData.value.voornaam,
-    voorvoegselAchternaam: formData.value.tussenvoegsel,
-    achternaam: formData.value.achternaam,
-    telefoonnummers: formData.value.telefoonnummer
-      ? [{ telefoonnummer: formData.value.telefoonnummer }]
-      : [],
-    emails: formData.value.email ? [{ email: formData.value.email }] : [],
+    telefoonnummer: formData.value.telefoonnummer,
+    emailadres: formData.value.email,
   };
 
   const { id } = await createKlant(nieuweKlant);
