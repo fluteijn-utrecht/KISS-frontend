@@ -4,7 +4,7 @@
       <label class="utrecht-form-label">
         Achternaam
         <input
-          v-model="store.achternaam"
+          v-validate="store.achternaam"
           required
           class="utrecht-textbox utrecht-textbox--html-input"
         />
@@ -32,15 +32,23 @@
       <label class="utrecht-form-label">
         Huisnummer
         <input
-          v-model="store.huisnummer"
+          v-validate="store.huisnummer"
           required
+          inputmode="numeric"
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        Huisletter
+        <input
+          v-validate="store.huisletter"
           class="utrecht-textbox utrecht-textbox--html-input"
         />
       </label>
       <label class="utrecht-form-label">
         Toevoeging
         <input
-          v-model="store.toevoeging"
+          v-validate="store.toevoeging"
           class="utrecht-textbox utrecht-textbox--html-input"
         />
       </label>
@@ -80,7 +88,11 @@
     <application-message
       v-if="personen.error"
       messageType="error"
-      message="Er is een fout opgetreden"
+      :message="
+        personen.error instanceof FriendlyError
+          ? personen.error.message
+          : 'Er is een fout opgetreden'
+      "
     />
   </section>
 </template>
@@ -100,6 +112,10 @@ import {
   parseDutchDate,
   validateWith,
   vValidate,
+  parseAchternaam,
+  parseToevoeging,
+  parseHuisletter,
+  parseHuisnummer,
 } from "@/helpers/validation";
 import {
   useSearchPersonen,
@@ -107,16 +123,21 @@ import {
   type PersoonSearchField,
 } from "./service";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
+import { ensureKlantForBsn } from "../service";
+import { useOrganisatieIds } from "@/stores/user";
+import { FriendlyError } from "@/services";
+
 const store = ensureState({
   stateId: "klant-zoeker",
   stateFactory() {
     return {
       currentSearch: "",
-      achternaam: "",
+      achternaam: validateWith(parseAchternaam),
       geboortedatum: validateWith(parseDutchDate),
       postcode: validateWith(parsePostcode),
-      huisnummer: "",
-      toevoeging: "",
+      huisnummer: validateWith(parseHuisnummer),
+      toevoeging: validateWith(parseToevoeging),
+      huisletter: validateWith(parseHuisletter),
       bsn: validateWith(parseBsn),
       persoonSearchQuery: undefined as
         | PersoonQuery<PersoonSearchField>
@@ -127,11 +148,11 @@ const store = ensureState({
 });
 
 const zoekOpGeboortedatum = () => {
-  if (store.value.geboortedatum.validated && store.value.achternaam) {
+  if (store.value.geboortedatum.validated && store.value.achternaam.validated) {
     store.value.persoonSearchQuery = {
       field: "geslachtsnaamGeboortedatum",
       value: {
-        geslachtsnaam: store.value.achternaam,
+        geslachtsnaam: store.value.achternaam.validated,
         geboortedatum: store.value.geboortedatum.validated,
       },
     };
@@ -139,13 +160,14 @@ const zoekOpGeboortedatum = () => {
 };
 
 const zoekOpPostcode = () => {
-  if (store.value.postcode.validated && store.value.huisnummer) {
+  if (store.value.postcode.validated && store.value.huisnummer.validated) {
     store.value.persoonSearchQuery = {
       field: "postcodeHuisnummer",
       value: {
         postcode: store.value.postcode.validated,
-        huisnummer: store.value.huisnummer,
-        toevoeging: store.value.toevoeging,
+        huisnummer: store.value.huisnummer.validated,
+        toevoeging: store.value.toevoeging.validated,
+        huisletter: store.value.huisletter.validated,
       },
     };
   }
@@ -168,20 +190,25 @@ const navigate = (val: number) => {
   store.value.page = val;
 };
 
-const singleKlantId = computed(() => {
+const singleBsn = computed(() => {
   if (personen.success && personen.data.page.length === 1) {
     const first = personen.data.page[0];
+    return first?.bsn;
   }
   return undefined;
 });
 
 const router = useRouter();
-
-watch(singleKlantId, (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    router.push(`/personen/${newId}`);
+const organisatieIds = useOrganisatieIds();
+watch(
+  [singleBsn, () => organisatieIds.value[0]],
+  async ([bsn, org], [oldBsn]) => {
+    if (org && bsn && bsn !== oldBsn) {
+      const { id } = await ensureKlantForBsn({ bsn }, org);
+      await router.push(`/personen/${id}`);
+    }
   }
-});
+);
 </script>
 
 <style lang="scss" scoped>
