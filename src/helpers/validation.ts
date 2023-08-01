@@ -1,3 +1,6 @@
+import type { Directive } from "vue";
+import { watch } from "vue";
+
 function isValidPhoneNumber(val: string) {
   if (!val) return true; // empty is allowed, handeld by required attribute
   const numberCount = (val.match(/[0-9]/g) ?? []).length;
@@ -18,11 +21,23 @@ interface Postcode {
 export interface PostcodeHuisnummer {
   postcode: Postcode;
   huisnummer: string;
+  toevoeging?: string;
 }
 
 export interface GeslachtsnaamGeboortedatum {
   geslachtsnaam: string;
   geboortedatum: Date;
+}
+
+export function parsePostcode(input: string): Postcode | Error {
+  const matches = input.match(/^ *([1-9]\d{3}) *([A-Za-z]{2}) *$/);
+  if (matches?.length !== 3) {
+    return new Error("Voer een valide postcode in, bijvoorbeeld 1234 AZ.");
+  }
+  return {
+    numbers: matches[1],
+    digits: matches[2],
+  };
 }
 
 export function parsePostcodeHuisnummer(
@@ -88,6 +103,7 @@ function elfProef(numbers: number[]): boolean {
 }
 
 export function parseBsn(input: string): string | Error {
+  if (!input) return input;
   const matches = input.match(/^ *(\d{9}) *$/);
   if (!matches || matches.length < 2)
     return new Error("Voer een BSN in van negen cijfers.");
@@ -103,18 +119,48 @@ export function parseKvkNummer(input: string): string | Error {
     : matches[1];
 }
 
-export function parseGeslachtsnaamGeboortedatum(
-  input: string
-): GeslachtsnaamGeboortedatum | Error {
-  const result = matchDutchDate(input);
+export type Validator<T> = (v: string) => T | Error;
+export type ValidatorSetup<T = any> = {
+  validator: Validator<T>;
+  current: string;
+  validated: T | undefined;
+};
 
-  if (result instanceof Error) return result;
-
-  const geslachtsnaam = input.replace(result.matchedString, "").trim();
-
-  if (!geslachtsnaam) return new Error("Vul een achternaam in");
+export function validateWith<T>(validator: Validator<T>): ValidatorSetup<T> {
   return {
-    geboortedatum: result.date,
-    geslachtsnaam,
+    validator,
+    current: "",
+    validated: undefined,
   };
 }
+
+export const vValidate: Directive<HTMLInputElement, ValidatorSetup> = {
+  mounted(el, { value }) {
+    const unwatch = watch(
+      () => value.current,
+      (i) => {
+        el.value = i;
+        const parsed = value.validator(i);
+        if (parsed instanceof Error) {
+          value.validated = undefined;
+          el.setCustomValidity(parsed.message);
+        } else {
+          el.setCustomValidity("");
+          value.validated = parsed;
+        }
+      },
+      { immediate: true }
+    );
+    function onInput() {
+      value.current = el.value;
+    }
+    el.addEventListener("input", onInput);
+    (el as any).removeValidatorSetup = () => {
+      el.removeEventListener("input", onInput);
+      unwatch();
+    };
+  },
+  unmounted(el) {
+    (el as any).removeValidatorSetup?.();
+  },
+};

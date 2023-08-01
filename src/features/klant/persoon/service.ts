@@ -65,13 +65,17 @@ const queryDictionary: PersoonQueryParams = {
   ],
   geslachtsnaamGeboortedatum: ({ geslachtsnaam, geboortedatum }) => [
     ["geboortedatum", formatIsoDate(geboortedatum)],
-    ["geslachtsnaam", geslachtsnaam],
+    [
+      "geslachtsnaam",
+      geslachtsnaam?.endsWith("*") ? geslachtsnaam : geslachtsnaam + "*",
+    ],
     ["type", "ZoekMetGeslachtsnaamEnGeboortedatum"],
     ["fields", [...minimalFields]],
   ],
-  postcodeHuisnummer: ({ postcode, huisnummer }) => [
+  postcodeHuisnummer: ({ postcode, huisnummer, toevoeging }) => [
     ["postcode", `${postcode.numbers}${postcode.digits}`],
     ["huisnummer", huisnummer],
+    ["huisnummertoevoeging", toevoeging || ""],
     ["type", "ZoekMetPostcodeEnHuisnummer"],
     ["fields", [...minimalFields]],
   ],
