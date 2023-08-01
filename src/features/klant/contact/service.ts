@@ -37,6 +37,7 @@ function getKlantSearchUrl({ email = "", phone = "" }: KlantSearchParameters) {
   return url.toString();
 }
 
+// TODO: kijken of een gemeenschappelijke interface nog nodig is als het zoeken op contact/persoon/bedrijf uitgewerkt is
 function mapKlant(obj: any): Klant {
   const { subjectIdentificatie, url } = obj ?? {};
   const { inpBsn, vestigingsNummer } = subjectIdentificatie ?? {};
