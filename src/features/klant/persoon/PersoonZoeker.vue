@@ -74,16 +74,11 @@
   <section class="search-section" v-if="store.persoonSearchQuery?.value">
     <simple-spinner v-if="personen.loading" />
     <template v-if="personen.success">
-      <personen-overzicht :records="personen.data.page">
+      <personen-overzicht :records="personen.data">
         <template #caption>
           <SearchResultsCaption :results="personen.data" />
         </template>
       </personen-overzicht>
-      <pagination
-        class="pagination"
-        :pagination="personen.data"
-        @navigate="navigate"
-      />
     </template>
     <application-message
       v-if="personen.error"
@@ -186,13 +181,9 @@ const personen = useSearchPersonen({
   query: computed(() => store.value.persoonSearchQuery),
 });
 
-const navigate = (val: number) => {
-  store.value.page = val;
-};
-
 const singleBsn = computed(() => {
-  if (personen.success && personen.data.page.length === 1) {
-    const first = personen.data.page[0];
+  if (personen.success && personen.data.length === 1) {
+    const first = personen.data[0];
     return first?.bsn;
   }
   return undefined;

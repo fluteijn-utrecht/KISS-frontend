@@ -35,6 +35,10 @@ type PersoonQueryParams = {
   ) => QueryParam;
 };
 
+type PersoonSorters = {
+  [K in PersoonSearchField]: (a: Persoon, b: Persoon) => number;
+};
+
 export type PersoonQuery<K extends PersoonSearchField> = {
   field: K;
   value: SearchPersoonFieldParams[K];
@@ -83,6 +87,50 @@ const queryDictionary: PersoonQueryParams = {
   ],
 };
 
+type Compare<T> = (a: T, b: T) => number;
+
+function combineCompare<T>(...comparers: Compare<T>[]): Compare<T> {
+  return (a, b) => {
+    let result = 0;
+    for (const comparer of comparers) {
+      result = comparer(a, b);
+      if (result !== 0) return result;
+    }
+    return result;
+  };
+}
+
+function sortBy<T>(
+  ...properties: Array<(x: T) => string | undefined>
+): Compare<T> {
+  return combineCompare(
+    ...properties.map(
+      (getProp) => (a: T, b: T) =>
+        (getProp(a) || "").localeCompare(getProp(b) || "")
+    )
+  );
+}
+
+const compareNaam = sortBy<Persoon>(
+  (x) => x.achternaam,
+  (x) => x.voorvoegselAchternaam,
+  (x) => x.voornaam
+);
+
+const compareAdres = sortBy<Persoon>(
+  (x) => x.adresregel1,
+  (x) => x.adresregel2,
+  (x) => x.adresregel3
+);
+
+const compareAdresThenNaam = combineCompare(compareAdres, compareNaam);
+
+const sorters: PersoonSorters = {
+  geslachtsnaamGeboortedatum: compareNaam,
+  bsn: compareNaam,
+  postcodeHuisnummer: compareAdresThenNaam,
+};
+
 function getQueryParams<K extends PersoonSearchField>(params: PersoonQuery<K>) {
   return queryDictionary[params.field](params.value) as ReturnType<
     PersoonQueryParams[K]
@@ -118,11 +166,11 @@ function getPersoonUniqueBsnId(bsn: string | undefined) {
   return bsn ? zoekUrl + "_single" + bsn : "";
 }
 
-const searchSinglePersoon = (bsn: string) =>
+const searchSinglePersoon = (bsn: string): Promise<Persoon | null> =>
   searchPersonen({
     field: "bsn",
     value: bsn,
-  }).then(enforceOneOrZero);
+  }).then((r) => r?.[0] || null);
 
 export const searchPersonen = <K extends PersoonSearchField>(
   query: PersoonQuery<K>
@@ -160,7 +208,8 @@ export const searchPersonen = <K extends PersoonSearchField>(
         }
         mapped.push(persoon);
       });
-      return defaultPagination(mapped);
+      const sorter = sorters[query.field];
+      return mapped.sort(sorter);
     });
 };
 
