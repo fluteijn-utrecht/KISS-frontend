@@ -1,43 +1,51 @@
 import { describe, expect, test } from "vitest";
 
-import {
-  parseGeslachtsnaamGeboortedatum,
-  type GeslachtsnaamGeboortedatum,
-  parseBsn,
-} from "@/helpers/validation";
+import { parseDutchDate, parseBsn } from "@/helpers/validation";
 
-describe("parseGeslachtsnaamGeboortedatum", () => {
-  test("should allow XXX dd/MM/yyyy", async () => {
-    const parsed = parseGeslachtsnaamGeboortedatum("bbb 20/10/2000");
-    const geslachtsnaamGeboortedatum = parsed as GeslachtsnaamGeboortedatum;
-    expect(geslachtsnaamGeboortedatum.geboortedatum.getDate()).toBe(20);
-    expect(geslachtsnaamGeboortedatum.geboortedatum.getMonth()).toBe(9);
-    expect(geslachtsnaamGeboortedatum.geboortedatum.getFullYear()).toBe(2000);
-    expect(geslachtsnaamGeboortedatum.geslachtsnaam).toBe("bbb");
+describe("parseDutchDate", () => {
+  test("should allow dd/MM/yyyy", async () => {
+    const parsed = parseDutchDate("20/10/2000");
+    expect(parsed).toBeInstanceOf(Date);
+    const geboortedatum = parsed as Date;
+    expect(geboortedatum.getDate()).toBe(20);
+    expect(geboortedatum.getMonth()).toBe(9);
+    expect(geboortedatum.getFullYear()).toBe(2000);
   });
 
-  test("should allow XXX dd/MM/yyyy", async () => {
-    const parsed = parseGeslachtsnaamGeboortedatum("20-10-2000 bbb");
-    const geslachtsnaamGeboortedatum = parsed as GeslachtsnaamGeboortedatum;
-    expect(geslachtsnaamGeboortedatum.geboortedatum.getDate()).toBe(20);
-    expect(geslachtsnaamGeboortedatum.geboortedatum.getMonth()).toBe(9);
-    expect(geslachtsnaamGeboortedatum.geboortedatum.getFullYear()).toBe(2000);
-    expect(geslachtsnaamGeboortedatum.geslachtsnaam).toBe("bbb");
+  test("should allow dd-MM-yyyy", async () => {
+    const parsed = parseDutchDate("20-10-2000");
+    expect(parsed).toBeInstanceOf(Date);
+    const geboortedatum = parsed as Date;
+    expect(geboortedatum.getDate()).toBe(20);
+    expect(geboortedatum.getMonth()).toBe(9);
+    expect(geboortedatum.getFullYear()).toBe(2000);
   });
 
-  //todo: date 50-40-2000 is accepted. regex should be improved
+  test("should allow ddMMyyyy", async () => {
+    const parsed = parseDutchDate("20102000");
+    expect(parsed).toBeInstanceOf(Date);
+    const geboortedatum = parsed as Date;
+    expect(geboortedatum.getDate()).toBe(20);
+    expect(geboortedatum.getMonth()).toBe(9);
+    expect(geboortedatum.getFullYear()).toBe(2000);
+  });
+
   test("should return an error on invalid date", async () => {
-    const parsed = parseGeslachtsnaamGeboortedatum("aaa bbb");
-    const geslachtsnaamGeboortedatum = parsed as Error;
-    expect(geslachtsnaamGeboortedatum.message).toBe(
+    const parsed = parseDutchDate("50-40-2000");
+    expect(parsed).toBeInstanceOf(Error);
+    const error = parsed as Error;
+    expect(error.message).toBe(
       "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
     );
   });
 
-  test("should return an error on missing name", async () => {
-    const parsed = parseGeslachtsnaamGeboortedatum("20-10-2000");
-    const geslachtsnaamGeboortedatum = parsed as Error;
-    expect(geslachtsnaamGeboortedatum.message).toBe("Vul een achternaam in");
+  test("should return an error on a non-date", async () => {
+    const parsed = parseDutchDate("aaa bbb");
+    expect(parsed).toBeInstanceOf(Error);
+    const error = parsed as Error;
+    expect(error.message).toBe(
+      "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
+    );
   });
 });
 

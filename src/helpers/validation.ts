@@ -74,15 +74,25 @@ const matchDutchDate = (input: string) => {
   const month = month1 || month2;
   const day = day1 || day2;
 
-  if (!year || !month || !day)
-    return new Error(
-      "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
-    );
+  if (year && month && day) {
+    const correctedMonth = +month - 1;
+    const intYear = +year;
+    const intDay = +day;
+    const date = new Date(intYear, correctedMonth, intDay);
+    if (
+      date.getFullYear() === intYear &&
+      date.getMonth() === correctedMonth &&
+      date.getDate() === intDay
+    )
+      return {
+        date: new Date(+year, +month - 1, +day),
+        matchedString: matches?.[0] ?? "",
+      };
+  }
 
-  return {
-    date: new Date(+year, +month - 1, +day),
-    matchedString: matches?.[0] ?? "",
-  };
+  return new Error(
+    "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
+  );
 };
 
 export function parseDutchDate(input: string): Date | Error {
