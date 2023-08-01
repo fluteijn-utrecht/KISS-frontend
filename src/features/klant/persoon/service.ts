@@ -11,6 +11,7 @@ import {
   type ServiceData,
   enforceOneOrZero,
   defaultPagination,
+  FriendlyError,
 } from "@/services";
 import { mutate } from "swrv";
 import type { Ref } from "vue";
@@ -65,13 +66,18 @@ const queryDictionary: PersoonQueryParams = {
   ],
   geslachtsnaamGeboortedatum: ({ geslachtsnaam, geboortedatum }) => [
     ["geboortedatum", formatIsoDate(geboortedatum)],
-    ["geslachtsnaam", geslachtsnaam],
+    [
+      "geslachtsnaam",
+      geslachtsnaam?.endsWith("*") ? geslachtsnaam : geslachtsnaam + "*",
+    ],
     ["type", "ZoekMetGeslachtsnaamEnGeboortedatum"],
     ["fields", [...minimalFields]],
   ],
-  postcodeHuisnummer: ({ postcode, huisnummer }) => [
+  postcodeHuisnummer: ({ postcode, huisnummer, toevoeging, huisletter }) => [
     ["postcode", `${postcode.numbers}${postcode.digits}`],
     ["huisnummer", huisnummer],
+    ["huisnummertoevoeging", toevoeging || ""],
+    ["huisletter", huisletter || ""],
     ["type", "ZoekMetPostcodeEnHuisnummer"],
     ["fields", [...minimalFields]],
   ],
@@ -130,8 +136,20 @@ export const searchPersonen = <K extends PersoonSearchField>(
     },
     body,
   })
-    .then(throwIfNotOk)
-    .then(parseJson)
+    .then(async (r) => {
+      const contentType = r.headers.get("content-type");
+      if (
+        r.status === 400 &&
+        contentType?.match(/^application\/problem\+json.*/)?.[0]
+      ) {
+        const json = await r.json();
+        if (json?.code && json?.detail) {
+          throw new FriendlyError(json.detail);
+        }
+      }
+      throwIfNotOk(r);
+      return r.json();
+    })
     .then((json) => {
       const mapped: Persoon[] = [];
       json.personen.forEach((p: any) => {
