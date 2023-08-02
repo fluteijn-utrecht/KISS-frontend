@@ -10,7 +10,7 @@
     </ul>
   </nav>
 
-  <data-tabs :state="state">
+  <data-tabs :state="state" v-model="currentTab">
     <template #[tabs.contactgegevens]="{ data }">
       <bedrijf-details :klant="data" />
     </template>
@@ -118,6 +118,8 @@ const tabs = {
 
 type Tabs = typeof tabs;
 type Tab = Tabs[keyof Tabs];
+
+const currentTab = ref<Tab>();
 
 const state = {
   [tabs.contactgegevens]: tabStateValue(klant, (k) => !!k),

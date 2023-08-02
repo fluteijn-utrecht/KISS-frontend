@@ -58,9 +58,15 @@ defineSlots<Mapped>();
 
 const props = defineProps<{
   state: T;
+  modelValue: keyof T | undefined;
 }>();
 
-const currentTab = ref("");
+const emit = defineEmits(["update:modelValue"]);
+
+const currentTab = computed({
+  get: () => props.modelValue as string,
+  set: (val) => emit("update:modelValue", val),
+});
 
 const refs = computed(() =>
   Object.fromEntries(Object.keys(props.state).map((key) => [key, ref()]))
