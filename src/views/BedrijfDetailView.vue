@@ -11,13 +11,13 @@
   </nav>
 
   <data-tabs :state="state" v-model="currentTab">
-    <template #[tabs.contactgegevens]="{ data }">
+    <template #Contactgegevens="{ data }">
       <bedrijf-details :klant="data" />
     </template>
-    <template #[tabs.kvk]="{ data }">
+    <template #KvK-gegevens="{ data }">
       <handelsregister-gegevens v-if="data" :bedrijf="data" />
     </template>
-    <template #[tabs.contactmomenten]="{ data }">
+    <template #Contactmomenten="{ data }">
       <contactmomenten-overzicht :contactmomenten="data.page">
         <template v-slot:zaken="{ zaken }">
           <template v-for="zaakurl in zaken" :key="zaakurl">
@@ -26,13 +26,13 @@
         </template>
       </contactmomenten-overzicht>
     </template>
-    <template #[tabs.zaken]="{ data }">
+    <template #Zaken="{ data }">
       <zaken-overzicht
         :zaken="data.page"
         :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
       />
     </template>
-    <template #[tabs.contactverzoeken]="{ data }">
+    <template #Contactverzoeken="{ data }">
       <contactverzoeken-overzicht :contactverzoeken="data.page" />
     </template>
   </data-tabs>
@@ -60,10 +60,7 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import DataTabs, {
-  tabStateValue,
-  type TabState,
-} from "@/components/DataTabs.vue";
+import DataTabs, { tabState } from "@/components/DataTabs.vue";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -108,27 +105,15 @@ const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
 
-const tabs = {
-  contactgegevens: "Contactgegevens",
-  kvk: "KvK-gegevens",
-  contactmomenten: "Contactmomenten",
-  zaken: "Zaken",
-  contactverzoeken: "Contactverzoeken",
-} as const;
+const state = {
+  Contactverzoeken: tabState(contactverzoeken, (c) => !!c.page.length),
+  Contactgegevens: tabState(klant, (k) => !!k),
+  "KvK-gegevens": tabState(bedrijf, (b) => !!b),
+  Contactmomenten: tabState(contactmomenten, (c) => !!c.count),
+  Zaken: tabState(zaken, (z) => !!z.count),
+};
 
-type Tabs = typeof tabs;
-type Tab = Tabs[keyof Tabs];
+type Tab = keyof typeof state;
 
 const currentTab = ref<Tab>();
-
-const state = {
-  [tabs.contactgegevens]: tabStateValue(klant, (k) => !!k),
-  [tabs.kvk]: tabStateValue(bedrijf, (b) => !!b),
-  [tabs.contactmomenten]: tabStateValue(contactmomenten, (c) => !!c.count),
-  [tabs.zaken]: tabStateValue(zaken, (z) => !!z.count),
-  [tabs.contactverzoeken]: tabStateValue(
-    contactverzoeken,
-    (c) => !!c.page.length
-  ),
-} satisfies TabState<Tab>;
 </script>
