@@ -97,7 +97,7 @@ watchEffect(() => {
   }
 
   &[inert] {
-    color: var(--color-secondary);
+    color: var(--color-grey);
   }
 }
 
