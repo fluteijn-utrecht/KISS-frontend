@@ -1,7 +1,6 @@
 import {
   ServiceResult,
   fetchLoggedIn,
-  parsePagination,
   throwIfNotOk,
   parseJson,
 } from "@/services";
@@ -38,15 +37,21 @@ function getKlantSearchUrl({ email = "", phone = "" }: KlantSearchParameters) {
 }
 
 // TODO: kijken of een gemeenschappelijke interface nog nodig is als het zoeken op contact/persoon/bedrijf uitgewerkt is
-function mapKlant(obj: any): Klant {
-  const { url } = obj ?? {};
+function mapKlant(obj: any): Klant | null {
+  const { subjectIdentificatie, url, emailadres, telefoonnummer, klantnummer } =
+    obj ?? {};
   const urlSplit: string[] = url?.split("/") ?? [];
+  const { inpBsn } = subjectIdentificatie ?? {};
+  // remove klanten with bsn
+  if (inpBsn) return null;
 
   return {
-    ...obj,
-    id: urlSplit.at(-1),
+    id: urlSplit.at(-1) || "",
     _typeOfKlant: "klant",
     url: url,
+    emailadres,
+    telefoonnummer,
+    klantnummer,
   };
 }
 
@@ -56,27 +61,24 @@ function searchKlantenRecursive(urlStr: string, page = 1): Promise<Klant[]> {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((j) => parsePagination(j, mapKlant))
-    .then((p) => {
-      // remove klanten with bsn
-      p.page = p.page.filter((x) => !x.bsn);
-      return p;
-    })
-    .then((p) => {
-      p.page.forEach((klant) => {
-        const idUrl = getKlantIdUrl(klant.id);
-        if (idUrl) {
-          mutate(idUrl, klant);
+    .then((j) => {
+      if (!Array.isArray(j?.results)) {
+        throw new Error("expected array: " + JSON.stringify(j));
+      }
+      const result: Klant[] = [];
+      j.results.forEach((k: any) => {
+        const klant = mapKlant(k);
+        if (klant) {
+          result.push(klant);
+          const idUrl = getKlantIdUrl(klant.id);
+          if (idUrl) {
+            mutate(idUrl, klant);
+          }
         }
       });
-      return p;
-    })
-    .then((p) => {
-      if (!p.next) return p.page;
-      // because we filter out results manually, we break pagination.
-      // to work around this, we retrieve all pages and return them as a flat list.
+      if (!j.next) return result;
       return searchKlantenRecursive(urlStr, page + 1).then((next) => [
-        ...p.page,
+        ...result,
         ...next,
       ]);
     });
