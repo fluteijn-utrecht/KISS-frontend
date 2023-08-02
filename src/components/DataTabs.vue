@@ -3,13 +3,16 @@
     <template #tab="{ tabName }">
       <span
         :ref="refs[tabName]"
-        :class="state[tabName][0].error ? 'alert icon-after' : ''"
+        :class="state[tabName].data.error ? 'alert icon-after' : ''"
         >{{ tabName }}</span
       >
-      <simple-spinner class="small-spinner" v-if="state[tabName][0].loading" />
+      <simple-spinner
+        class="small-spinner"
+        v-if="state[tabName].data.loading"
+      />
     </template>
 
-    <template v-for="[key, [data]] in entries" :key="key" #[key]>
+    <template v-for="[key, { data }] in entries" :key="key" #[key]>
       <simple-spinner v-if="data.loading" />
       <application-message
         v-if="data.error"
@@ -22,15 +25,21 @@
 </template>
 
 <script lang="ts">
-export type TabState<V> = [ServiceData<V>, (v: V) => boolean];
+export type TabState<V> = {
+  data: ServiceData<V>;
+  isEnabled: (v: V) => boolean;
+};
 
-type TabDictionary = Record<string, TabState<any>>;
+export type TabDictionary = Record<string, TabState<any>>;
 
 export function tabState<T>(
-  d: ServiceData<T>,
-  m: (v: T) => boolean
+  data: ServiceData<T>,
+  isEnabled: (v: T) => boolean
 ): TabState<T> {
-  return [d, m];
+  return {
+    data,
+    isEnabled,
+  };
 }
 </script>
 
@@ -80,8 +89,8 @@ watchEffect(() => {
   for (const key in props.state) {
     const el = refs.value[key];
     if (el.value instanceof HTMLElement && el.value.parentElement) {
-      const [state, func] = props.state[key];
-      el.value.parentElement.inert = state.success && !func(state.data);
+      const { data, isEnabled } = props.state[key];
+      el.value.parentElement.inert = data.success && !isEnabled(data.data);
     }
   }
 });
