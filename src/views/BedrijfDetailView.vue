@@ -60,7 +60,10 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import DataTabs, { tabState, tabStateValue } from "@/components/DataTabs.vue";
+import DataTabs, {
+  tabStateValue,
+  type TabState,
+} from "@/components/DataTabs.vue";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -116,7 +119,7 @@ const tabs = {
 type Tabs = typeof tabs;
 type Tab = Tabs[keyof Tabs];
 
-const state = tabState<Tab>({
+const state = {
   [tabs.contactgegevens]: tabStateValue(klant, (k) => !!k),
   [tabs.kvk]: tabStateValue(bedrijf, (b) => !!b),
   [tabs.contactmomenten]: tabStateValue(contactmomenten, (c) => !!c.count),
@@ -125,5 +128,5 @@ const state = tabState<Tab>({
     contactverzoeken,
     (c) => !!c.page.length
   ),
-});
+} satisfies TabState<Tab>;
 </script>

@@ -30,10 +30,6 @@ export type TabState<K extends string = string, V = any> = {
   [k in K]: TabStateValue<V>;
 };
 
-export function tabState<K extends string>(tabState: TabState<K>) {
-  return tabState;
-}
-
 export function tabStateValue<T>(
   d: ServiceData<T>,
   m: (v: T) => boolean
