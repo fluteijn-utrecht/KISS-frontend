@@ -93,10 +93,6 @@ body {
   }
 }
 
-.detail-tabs > [role="tabpanel"] {
-  padding: var(--spacing-large);
-}
-
 a[aria-current="page"] {
   color: inherit;
   pointer-events: none;

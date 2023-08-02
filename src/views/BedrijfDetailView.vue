@@ -9,87 +9,33 @@
       </li>
     </ul>
   </nav>
-  <tabs-component class="detail-tabs" v-model="currentTab">
-    <template #[tabs.contactgegevens]>
-      <simple-spinner v-if="klant.loading" />
-      <bedrijf-details v-else-if="klant.success" :klant="klant.data" />
-      <application-message
-        v-if="klant.error"
-        message="Er ging iets mis bij het ophalen van de klant. Probeer het later
-      nog eens."
-        messageType="error"
-      />
+
+  <data-tabs :state="state">
+    <template #[tabs.contactgegevens]="{ data }">
+      <bedrijf-details :klant="data" />
     </template>
-    <template #[tabs.kvk]>
-      <simple-spinner v-if="bedrijf.loading" />
-      <handelsregister-gegevens
-        v-if="bedrijf.success && bedrijf.data"
-        :bedrijf="bedrijf.data"
-      />
-      <application-message
-        v-if="bedrijf.error"
-        message="Er ging iets mis bij het ophalen van de Handelsregister gegevens. Probeer het later nog eens."
-        messageType="error"
-      />
+    <template #[tabs.kvk]="{ data }">
+      <handelsregister-gegevens v-if="data" :bedrijf="data" />
     </template>
-    <template #[tabs.contactmomenten]>
-      <utrecht-heading :level="2"> Contactmomenten</utrecht-heading>
-      <simple-spinner v-if="contactmomenten.loading" />
-      <application-message
-        v-if="contactmomenten.error"
-        message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
-        messageType="error"
-      />
-      <template v-if="contactmomenten.success && contactmomenten.data">
-        <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-          <template v-slot:zaken="{ zaken }">
-            <template v-for="zaakurl in zaken" :key="zaakurl">
-              <zaak-preview :zaakurl="zaakurl"></zaak-preview>
-            </template>
+    <template #[tabs.contactmomenten]="{ data }">
+      <contactmomenten-overzicht :contactmomenten="data.page">
+        <template v-slot:zaken="{ zaken }">
+          <template v-for="zaakurl in zaken" :key="zaakurl">
+            <zaak-preview :zaakurl="zaakurl" />
           </template>
-        </contactmomenten-overzicht>
-        <!--
-  <pagination
-    class="pagination"
-    :pagination="contactmomenten.data"
-    @navigate="onContactmomentenNavigate"
-  /> -->
-      </template>
+        </template>
+      </contactmomenten-overzicht>
     </template>
-    <template #[tabs.zaken]>
-      <utrecht-heading :level="2"> Zaken </utrecht-heading>
-      <simple-spinner v-if="zaken.loading" />
-      <application-message
-        v-if="zaken.error"
-        message="Er ging iets mis bij het ophalen van de zaken. Probeer het later nog eens."
-        messageType="error"
+    <template #[tabs.zaken]="{ data }">
+      <zaken-overzicht
+        :zaken="data.page"
+        :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
       />
-      <template v-if="zaken.success">
-        <zaken-overzicht
-          v-if="zaken.data.page.length"
-          :zaken="zaken.data.page"
-          :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-        />
-        <p v-else>Geen zaken gevonden.</p>
-      </template>
     </template>
-    <template #[tabs.contactverzoeken]>
-      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
-      <simple-spinner v-if="contactverzoeken.loading" />
-      <application-message
-        v-if="contactverzoeken.error"
-        message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
-        messageType="error"
-      />
-      <template
-        v-if="contactverzoeken.success && contactverzoeken.data.page.length"
-      >
-        <contactverzoeken-overzicht
-          :contactverzoeken="contactverzoeken.data.page"
-        />
-      </template>
+    <template #[tabs.contactverzoeken]="{ data }">
+      <contactverzoeken-overzicht :contactverzoeken="data.page" />
     </template>
-  </tabs-component>
+  </data-tabs>
 </template>
 
 <script setup lang="ts">
@@ -106,8 +52,6 @@ import {
   BedrijfDetails,
   useKlantById,
 } from "@/features/klant";
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
@@ -116,8 +60,7 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import TabsComponent from "@/components/TabsComponent.vue";
-
+import DataTabs, { tabState, tabStateValue } from "@/components/DataTabs.vue";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -173,5 +116,14 @@ const tabs = {
 type Tabs = typeof tabs;
 type Tab = Tabs[keyof Tabs];
 
-const currentTab = ref<Tab>(tabs.contactgegevens);
+const state = tabState<Tab>({
+  [tabs.contactgegevens]: tabStateValue(klant, (k) => !!k),
+  [tabs.kvk]: tabStateValue(bedrijf, (b) => !!b),
+  [tabs.contactmomenten]: tabStateValue(contactmomenten, (c) => !!c.count),
+  [tabs.zaken]: tabStateValue(zaken, (z) => !!z.count),
+  [tabs.contactverzoeken]: tabStateValue(
+    contactverzoeken,
+    (c) => !!c.page.length
+  ),
+});
 </script>
