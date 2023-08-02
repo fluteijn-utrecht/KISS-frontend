@@ -111,5 +111,9 @@ watchEffect(() => {
 
 :deep([role="tabpanel"]) {
   padding: var(--spacing-large);
+
+  tbody tr {
+    background: var(--color-white);
+  }
 }
 </style>
