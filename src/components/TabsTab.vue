@@ -29,24 +29,28 @@
 
 <script setup lang="ts">
 import { nanoid } from "nanoid";
-import { inject, computed } from "vue";
-import type { Tablist } from "./TabsNew.vue";
+import { inject, computed, onMounted } from "vue";
+import { tablistInjectionKey } from "./TabsList.vue";
 
-const props = defineProps<{ disabled?: boolean; label?: string }>();
-const tablist = inject<Tablist>("tablist");
+const props = defineProps<{ disabled?: boolean; label: string }>();
+const tablist = inject(tablistInjectionKey);
 if (!tablist) {
   throw new Error("use this component in a tablist");
 }
 const tabId = nanoid();
 const panelId = tabId + "_panel";
-const isActive = computed(() => tablist.isActive(tabId));
+const isActive = computed(() => tablist.isActive(props.label));
 const is = computed(() => (!props.disabled && !isActive.value ? "a" : "span"));
 const href = computed(() => (is.value === "a" ? "#" + panelId : undefined));
 const activate = () => {
   if (!props.disabled) {
-    tablist.setActive(tabId);
+    tablist.setActive(props.label);
   }
 };
+
+onMounted(() => {
+  tablist.register(props.label);
+});
 </script>
 
 <style lang="scss" scoped>

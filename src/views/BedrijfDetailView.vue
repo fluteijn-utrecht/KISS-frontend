@@ -9,7 +9,7 @@
       </li>
     </ul>
   </nav>
-  <tabs-list>
+  <tabs-list v-model="currentTab">
     <tabs-data-tab label="Contactgegevens" :data="klant" :disabled="(k) => !k">
       <template #success="{ data }">
         <bedrijf-details :klant="data" />
@@ -85,6 +85,8 @@ const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+
+const currentTab = ref("");
 
 watch(
   () => klant.success && klant.data,

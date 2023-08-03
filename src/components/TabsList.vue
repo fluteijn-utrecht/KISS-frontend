@@ -1,49 +1,53 @@
 <template>
-  <div>
-    <nav role="tablist" ref="el" />
-    <slot> </slot>
-  </div>
+  <nav role="tablist" ref="el" />
+  <slot></slot>
 </template>
 
+<script lang="ts">
+import type { InjectionKey, Ref } from "vue";
+export const tablistInjectionKey = Symbol() as InjectionKey<{
+  el: Ref<HTMLElement | undefined>;
+  setActive: (name: string) => void;
+  isActive: (name: string) => boolean;
+  register: (name: string) => void;
+}>;
+</script>
+
 <script setup lang="ts">
-import { nextTick, onMounted } from "vue";
+import { watch } from "vue";
+import { computed, reactive } from "vue";
 import { provide, ref } from "vue";
 
-const current = ref("");
+const props = defineProps<{ modelValue: string }>();
+const emit = defineEmits<{ (e: "update:modelValue", v: string): void }>();
+
+const current = computed({
+  get: () => props.modelValue,
+  set: (v) => emit("update:modelValue", v),
+});
+
+const tabIds = reactive([] as string[]);
 
 const setActive = (name: string) => (current.value = name);
 const isActive = (name: string) => current.value === name;
+const register = (name: string) => {
+  tabIds.push(name);
+};
 
 const el = ref<HTMLElement>();
 
-function getFirstId() {
-  if (!el.value) return undefined;
-  for (const iterator of el.value.children) {
-    if (iterator.id) return iterator.id;
-  }
-  return undefined;
-}
-
-onMounted(() => {
-  nextTick(() => {
-    if (!current.value) {
-      const firstId = getFirstId();
-      if (firstId) {
-        setActive(firstId);
-      }
-    }
-  });
-});
-
-const tablist = {
+provide(tablistInjectionKey, {
   el,
   setActive,
   isActive,
-} as const;
+  register,
+});
 
-export type Tablist = typeof tablist;
-
-provide("tablist", tablist);
+watch([current, tabIds], ([c, ids]) => {
+  if (!c && ids.length) {
+    setActive(ids.at(0) || "");
+  }
+});
 </script>
 
 <style lang="scss" scoped>
