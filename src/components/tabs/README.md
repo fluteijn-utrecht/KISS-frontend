@@ -65,6 +65,6 @@ The main use cases are listed below.
 import { TabList, TabListItem, TabListDataItem } from "@components/tabs";
 import { ServiceResult } from "@/services";
 
-const myServiceData = ServiceResult.fromPromise(Promise.resolve(false));
+const myServiceData = ServiceResult.fromPromise(Promise.resolve(true));
 </script>
 ```
