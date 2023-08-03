@@ -53,7 +53,7 @@ The main use cases are listed below.
     </tab-list-data-item>
 
     <tab-list-data-item
-      label="This is another data-list-item, but it is disabled"
+      label="This is another tab-list-data-item, but it is disabled"
       :data="myServiceData"
       :disabled="(data) => data === true"
     >
