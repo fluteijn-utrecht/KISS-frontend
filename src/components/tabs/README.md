@@ -1,7 +1,7 @@
 # TabList components
 
 There are three components: `<tab-list>`, `<tab-list-item>` and `<tab-list-data-item>`
-Usage is similar to `ul` and `li`: always wrap `<tab-list-item>` and `<tab-list-data-item>` with a `<tab-list>`.
+Usage is similar to `ul` and `li`: `<tab-list-item>` and `<tab-list-data-item>` must be contained by a parent `<tab-list>`.
 The main use cases are listed below.
 
 ```vue
