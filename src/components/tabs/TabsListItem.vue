@@ -57,19 +57,28 @@ onMounted(() => {
 [role="tab"] {
   text-decoration: none;
   color: inherit;
+  padding-inline: var(--spacing-large);
+  padding-block: var(--spacing-default);
 
   &[inert] {
     color: var(--color-grey);
   }
 }
 
+[role="tab"][aria-selected="true"],
 [role="tabpanel"] {
+  background-color: var(--tab-bg, var(--color-secondary));
+}
+
+[role="tabpanel"] {
+  padding: var(--spacing-large);
+
   :deep(.details-block) {
     padding: 0;
   }
 
   :deep(tbody > tr) {
-    background-color: white;
+    background: var(--color-white);
   }
 }
 </style>

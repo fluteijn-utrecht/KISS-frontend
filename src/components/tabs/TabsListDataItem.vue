@@ -38,27 +38,12 @@ const disabled = computed(
 
 <style lang="scss" scoped>
 .data-tab {
-  padding-inline: var(--spacing-large);
-  padding-block: var(--spacing-default);
   position: relative;
 
   > span {
     display: flex;
     gap: 1ch;
   }
-}
-
-.data-tabpanel {
-  flex: 1;
-  padding: var(--spacing-large);
-
-  tbody tr {
-    background: var(--color-white);
-  }
-}
-
-[data-active="true"] {
-  background-color: var(--tab-bg, var(--color-secondary));
 }
 
 .small-spinner {
