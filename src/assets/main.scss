@@ -50,8 +50,9 @@ body {
   appearance: auto;
 }
 
-.main-tabs > nav {
-  background-color: var(--color-secondary);
+.klant-panel {
+  display: grid;
+  gap: var(--spacing-large);
 }
 
 a[aria-current="page"] {

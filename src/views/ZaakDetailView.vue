@@ -83,13 +83,7 @@ const zaakUrl = computed(() =>
 
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
-const Tabs = {
-  algemeen: "Algemeen",
-  documenten: "Documenten",
-  contactmomenten: "Contactmomenten",
-} as const;
-
-const activeTab = ref(Tabs.algemeen);
+const activeTab = ref("");
 
 watch(
   () => zaak.success && zaak.data,

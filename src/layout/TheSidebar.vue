@@ -18,38 +18,37 @@
         <current-contactmoment-info />
         <h2>Vragen</h2>
         <contactmoment-vragen-menu />
-        <tabs-component v-model="state.currentNotitieTab" class="notitie-tabs">
-          <template #tab="{ tabName }">
-            <span
-              :title="tabName"
-              :class="[
-                'icon-after',
-                tabName === NotitieTabs.Contactverzoek ? 'phone-flip' : 'note',
-              ]"
-            ></span>
-          </template>
-          <template #[NotitieTabs.Regulier]>
-            <utrecht-heading id="notitieblok" :level="2"
-              >Notitieblok</utrecht-heading
-            >
-            <textarea
-              aria-labelledby="notitieblok"
-              id="cm-notitieblok"
-              class="utrecht-textarea"
-              v-model="
-                contactmomentStore.huidigContactmoment.huidigeVraag.notitie
-              "
-            />
-          </template>
-          <template #[NotitieTabs.Contactverzoek]>
-            <ContactverzoekFormulier
-              :huidige-vraag="
-                contactmomentStore.huidigContactmoment.huidigeVraag
-              "
-              :huidige-klant="contactmomentStore.klantVoorHuidigeVraag"
-            />
-          </template>
-        </tabs-component>
+        <div class="notitie-tabs">
+          <tabs-list v-model="state.currentNotitieTab">
+            <tabs-list-item :label="NotitieTabs.Regulier">
+              <template #tab="{ label }">
+                <span :title="label" class="icon-after note" />
+              </template>
+              <utrecht-heading id="notitieblok" :level="2"
+                >Notitieblok</utrecht-heading
+              >
+              <textarea
+                aria-labelledby="notitieblok"
+                id="cm-notitieblok"
+                class="utrecht-textarea"
+                v-model="
+                  contactmomentStore.huidigContactmoment.huidigeVraag.notitie
+                "
+              />
+            </tabs-list-item>
+            <tabs-list-item :label="NotitieTabs.Contactverzoek">
+              <template #tab="{ label }">
+                <span :title="label" class="icon-after phone-flip" />
+              </template>
+              <contactverzoek-formulier
+                :huidige-vraag="
+                  contactmomentStore.huidigContactmoment.huidigeVraag
+                "
+                :huidige-klant="contactmomentStore.klantVoorHuidigeVraag"
+              />
+            </tabs-list-item>
+          </tabs-list>
+        </div>
       </section>
     </template>
   </aside>
@@ -57,7 +56,6 @@
 
 <script lang="ts" setup>
 import { ContactverzoekFormulier } from "@/features/contactverzoek";
-import TabsComponent from "@/components/TabsComponent.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import ContactmomentVragenMenu from "@/features/contactmoment/ContactmomentVragenMenu.vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
@@ -69,12 +67,13 @@ import {
   CurrentContactmomentInfo,
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
+import TabsListItem from "@/components/tabs/TabsListItem.vue";
+import TabsList from "@/components/tabs/TabsList.vue";
 
 enum NotitieTabs {
   Regulier = "Reguliere notitie",
   Contactverzoek = "Contactverzoek maken",
 }
-
 const contactmomentStore = useContactmomentStore();
 const route = useRoute();
 
@@ -154,6 +153,7 @@ aside {
     padding: var(--spacing-default);
     display: flex;
     flex-direction: column;
+    flex: 1;
   }
 
   :deep([role="tab"]) {
