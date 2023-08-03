@@ -10,29 +10,34 @@
     </ul>
   </nav>
   <tabs-list v-model="currentTab">
-    <tabs-tab label="Contactgegevens">
-      <template #tab="{label}">
+    <tabs-list-item label="Contactgegevens">
+      <template #tab="{ label }">
         <span class="">
           {{ label }}
-
         </span>
       </template>
-      <template>
+      <template> </template>
+    </tabs-list-item>
 
-      </template>
-    </tabs-tab>
-
-    <tabs-data-tab label="Contactgegevens" :data="klant" :disabled="(k) => !k">
+    <tabs-list-data-item
+      label="Contactgegevens"
+      :data="klant"
+      :disabled="(k) => !k"
+    >
       <template #success="{ data }">
         <bedrijf-details :klant="data" />
       </template>
-    </tabs-data-tab>
-    <tabs-data-tab label="KvK-gegevens" :data="bedrijf" :disabled="(b) => !b">
+    </tabs-list-data-item>
+    <tabs-list-data-item
+      label="KvK-gegevens"
+      :data="bedrijf"
+      :disabled="(b) => !b"
+    >
       <template #success="{ data }">
         <handelsregister-gegevens v-if="data" :bedrijf="data" />
       </template>
-    </tabs-data-tab>
-    <tabs-data-tab
+    </tabs-list-data-item>
+    <tabs-list-data-item
       label="Contactmomenten"
       :data="contactmomenten"
       :disabled="(c) => !c.count"
@@ -46,16 +51,20 @@
           </template>
         </contactmomenten-overzicht>
       </template>
-    </tabs-data-tab>
-    <tabs-data-tab label="Zaken" :data="zaken" :disabled="(z) => !z.count">
+    </tabs-list-data-item>
+    <tabs-list-data-item
+      label="Zaken"
+      :data="zaken"
+      :disabled="(z) => !z.count"
+    >
       <template #success="{ data }">
         <zaken-overzicht
           :zaken="data.page"
           :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
         />
       </template>
-    </tabs-data-tab>
-    <tabs-data-tab
+    </tabs-list-data-item>
+    <tabs-list-data-item
       label="Contactverzoeken"
       :data="contactverzoeken"
       :disabled="(c) => !c.page.length"
@@ -63,7 +72,7 @@
       <template #success="{ data }">
         <contactverzoeken-overzicht :contactverzoeken="data.page" />
       </template>
-    </tabs-data-tab>
+    </tabs-list-data-item>
   </tabs-list>
 </template>
 
@@ -90,8 +99,8 @@ import {
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import TabsList from "@/components/tabs/TabsList.vue";
-import TabsDataTab from "@/components/tabs/TabsDataTab.vue";
-import TabsTab from "@/components/tabs/TabsTab.vue";
+import TabsListDataItem from "@/components/tabs/TabsListDataItem.vue";
+import TabsListItem from "@/components/tabs/TabsListItem.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
