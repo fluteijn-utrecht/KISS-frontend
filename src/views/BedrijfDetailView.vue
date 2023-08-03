@@ -9,33 +9,50 @@
       </li>
     </ul>
   </nav>
-
-  <data-tabs :state="state" v-model="currentTab">
-    <template #Contactgegevens="{ data }">
-      <bedrijf-details :klant="data" />
-    </template>
-    <template #KvK-gegevens="{ data }">
-      <handelsregister-gegevens v-if="data" :bedrijf="data" />
-    </template>
-    <template #Contactmomenten="{ data }">
-      <contactmomenten-overzicht :contactmomenten="data.page">
-        <template v-slot:zaken="{ zaken }">
-          <template v-for="zaakurl in zaken" :key="zaakurl">
-            <zaak-preview :zaakurl="zaakurl" />
+  <tabs-list>
+    <tabs-data-tab label="Contactgegevens" :data="klant" :disabled="(k) => !k">
+      <template #success="{ data }">
+        <bedrijf-details :klant="data" />
+      </template>
+    </tabs-data-tab>
+    <tabs-data-tab label="KvK-gegevens" :data="bedrijf" :disabled="(b) => !b">
+      <template #success="{ data }">
+        <handelsregister-gegevens v-if="data" :bedrijf="data" />
+      </template>
+    </tabs-data-tab>
+    <tabs-data-tab
+      label="Contactmomenten"
+      :data="contactmomenten"
+      :disabled="(c) => !c.count"
+    >
+      <template #success="{ data }">
+        <contactmomenten-overzicht :contactmomenten="data.page">
+          <template v-slot:zaken="{ zaken }">
+            <template v-for="zaakurl in zaken" :key="zaakurl">
+              <zaak-preview :zaakurl="zaakurl" />
+            </template>
           </template>
-        </template>
-      </contactmomenten-overzicht>
-    </template>
-    <template #Zaken="{ data }">
-      <zaken-overzicht
-        :zaken="data.page"
-        :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-      />
-    </template>
-    <template #Contactverzoeken="{ data }">
-      <contactverzoeken-overzicht :contactverzoeken="data.page" />
-    </template>
-  </data-tabs>
+        </contactmomenten-overzicht>
+      </template>
+    </tabs-data-tab>
+    <tabs-data-tab label="Zaken" :data="zaken" :disabled="(z) => !z.count">
+      <template #success="{ data }">
+        <zaken-overzicht
+          :zaken="data.page"
+          :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+        />
+      </template>
+    </tabs-data-tab>
+    <tabs-data-tab
+      label="Contactverzoeken"
+      :data="contactverzoeken"
+      :disabled="(c) => !c.page.length"
+    >
+      <template #success="{ data }">
+        <contactverzoeken-overzicht :contactverzoeken="data.page" />
+      </template>
+    </tabs-data-tab>
+  </tabs-list>
 </template>
 
 <script setup lang="ts">
@@ -60,7 +77,9 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import DataTabs, { tabState } from "@/components/DataTabs.vue";
+import TabsList from "@/components/TabsList.vue";
+import TabsDataTab from "@/components/TabsDataTab.vue";
+
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -104,16 +123,4 @@ const klantVestigingsnummer = computed(getVestigingsnummer);
 const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
-
-const state = {
-  Contactverzoeken: tabState(contactverzoeken, (c) => !!c.page.length),
-  Contactgegevens: tabState(klant, (k) => !!k),
-  "KvK-gegevens": tabState(bedrijf, (b) => !!b),
-  Contactmomenten: tabState(contactmomenten, (c) => !!c.count),
-  Zaken: tabState(zaken, (z) => !!z.count),
-};
-
-type Tab = keyof typeof state;
-
-const currentTab = ref<Tab>();
 </script>
