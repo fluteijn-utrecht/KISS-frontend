@@ -4,7 +4,7 @@
       <header class="heading-container">
         <utrecht-heading :level="level">
           <span class="heading">
-            Gegevens klant
+            Contactgegevens
             <utrecht-button
               v-if="!editing"
               appearance="subtle-button"
@@ -42,10 +42,6 @@
         </menu>
       </header>
       <dl>
-        <dt>Bedrijfsnaam</dt>
-        <dd>
-          {{ klant.bedrijfsnaam }}
-        </dd>
         <dt>E-mailadres</dt>
         <dd>
           <fieldset v-if="showForm">
@@ -87,8 +83,8 @@ import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
-import type { Klant } from "../types";
-import { useUpdateContactGegevens } from "../service";
+import type { Klant } from "./types";
+import { useUpdateContactGegevens } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { computed } from "vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";

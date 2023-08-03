@@ -11,7 +11,7 @@
       </ul>
     </nav>
     <simple-spinner v-if="klant.loading" />
-    <contact-details v-else-if="klant.success" :klant="klant.data" />
+    <klant-details v-else-if="klant.success" :klant="klant.data" />
     <application-message
       v-if="klant.error"
       message="Er ging iets mis bij het ophalen van de klant. Probeer het later
@@ -66,20 +66,19 @@ import {
   ContactmomentenOverzicht,
   useContactverzoekenByKlantId,
 } from "@/features/contactmoment";
-import { useKlantById } from "@/features/klant/contact/service";
+import { useKlantById, KlantDetails } from "@/features/klant";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
-import ContactDetails from "@/features/klant/contact/ContactDetails.vue";
 
 const props = defineProps<{ contactId: string }>();
 const klantId = computed(() => props.contactId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 
-const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+const klantUrl = computed(() => (klant.success ? klant.data?.url ?? "" : ""));
 
 watch(
   () => klant.success && klant.data,

@@ -26,12 +26,12 @@ const current = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-const tabIds = reactive([] as string[]);
+const tabIds = reactive(new Set<string>());
 
 const setActive = (name: string) => (current.value = name);
 const isActive = (name: string) => current.value === name;
 const register = (name: string) => {
-  tabIds.push(name);
+  tabIds.add(name);
 };
 
 const el = ref<HTMLElement>();
@@ -44,8 +44,8 @@ provide(tablistInjectionKey, {
 });
 
 watch([current, tabIds], ([c, ids]) => {
-  if (!c && ids.length) {
-    setActive(ids.at(0) || "");
+  if (!c && ids.size) {
+    setActive([...ids.values()][0] || "");
   }
 });
 </script>

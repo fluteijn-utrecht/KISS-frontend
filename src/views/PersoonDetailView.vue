@@ -11,7 +11,7 @@
       </ul>
     </nav>
     <simple-spinner v-if="klant.loading" />
-    <persoon-details v-else-if="klant.success" :klant="klant.data" />
+    <klant-details v-else-if="klant.success" :klant="klant.data" />
     <application-message
       v-if="klant.error"
       message="Er ging iets mis bij het ophalen van de klant. Probeer het later
@@ -103,7 +103,7 @@ import {
   useContactverzoekenByKlantId,
 } from "@/features/contactmoment";
 import {
-  PersoonDetails,
+  KlantDetails,
   useKlantById,
   BrpGegevens,
   usePersoonByBsn,
