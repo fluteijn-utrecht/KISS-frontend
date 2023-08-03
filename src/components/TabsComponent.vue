@@ -53,28 +53,28 @@ const instanceId = nanoid();
 const slots = useSlots();
 const emit = defineEmits(["update:modelValue"]);
 
-const slotKeys = Object.keys(slots).filter(
-  (x) => x.toLocaleLowerCase() !== "tab"
-);
+const slotKeys = Object.keys(slots);
 const entries = computed(() =>
-  slotKeys.map((name, idx) => {
-    const id = instanceId + idx;
-    const isActive = props.modelValue === name;
-    const panelId = id + "_panel";
+  slotKeys
+    .filter((name) => name.toLowerCase() !== "tab")
+    .map((name, idx) => {
+      const id = instanceId + idx;
+      const isActive = props.modelValue === name;
+      const panelId = id + "_panel";
 
-    return {
-      isActive,
-      name,
-      label: name,
-      href: isActive ? undefined : "#" + panelId,
-      tag: isActive ? "span" : "a",
-      tabId: id + "_tab",
-      panelId,
-      enable() {
-        emit("update:modelValue", name);
-      },
-    };
-  })
+      return {
+        isActive,
+        name,
+        label: name,
+        href: isActive ? undefined : "#" + panelId,
+        tag: isActive ? "span" : "a",
+        tabId: id + "_tab",
+        panelId,
+        enable() {
+          emit("update:modelValue", name);
+        },
+      };
+    })
 );
 watch(
   () => props.modelValue,
