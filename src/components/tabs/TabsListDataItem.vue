@@ -28,11 +28,11 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 const props = defineProps<{
   label: string;
   data: ServiceData<T>;
-  disabled: (data: T) => boolean;
+  disabled?: (data: T) => boolean;
 }>();
 
 const disabled = computed(
-  () => props.data.success && props.disabled(props.data.data)
+  () => props.data.success && !!props.disabled?.(props.data.data)
 );
 </script>
 

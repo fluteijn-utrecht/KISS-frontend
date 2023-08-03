@@ -22,7 +22,10 @@
         <tabs-list-item label="Algemeen">
           <zaak-algemeen :zaak="zaak.data" />
         </tabs-list-item>
-        <tabs-list-item label="Documenten">
+        <tabs-list-item
+          label="Documenten"
+          :disabled="!zaak.data.documenten?.length"
+        >
           <zaak-documenten :zaak="zaak.data" />
         </tabs-list-item>
         <tabs-list-data-item

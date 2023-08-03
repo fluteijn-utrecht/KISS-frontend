@@ -54,45 +54,6 @@ body {
   background-color: var(--color-secondary);
 }
 
-.tabs-component-zaken {
-  > ul li.is-active {
-    background-color: var(--color-secondary);
-    border-radius: var(--radius-default) var(--radius-default) 0 0;
-  }
-
-  > ul li {
-    display: inline-block;
-    padding: var(--spacing-default);
-
-    a {
-      text-decoration: none;
-      font-size: var(--utrecht-typography-scale-lg);
-      color: var(--utrecht-document-color);
-    }
-  }
-
-  > div {
-    background-color: var(--color-secondary);
-  }
-}
-
-.tabs-component-contactmoment {
-  > ul li.is-active {
-    background-color: var(--color-white);
-  }
-
-  > ul li {
-    display: inline-block;
-    padding: var(--spacing-default);
-
-    a {
-      text-decoration: none;
-      font-size: var(--utrecht-typography-scale-lg);
-      color: var(--utrecht-document-color);
-    }
-  }
-}
-
 a[aria-current="page"] {
   color: inherit;
   pointer-events: none;
