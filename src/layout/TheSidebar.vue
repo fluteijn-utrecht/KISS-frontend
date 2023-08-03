@@ -19,8 +19,8 @@
         <h2>Vragen</h2>
         <contactmoment-vragen-menu />
         <div class="notitie-tabs">
-          <tabs-list v-model="state.currentNotitieTab">
-            <tabs-list-item :label="NotitieTabs.Regulier">
+          <tab-list v-model="state.currentNotitieTab">
+            <tab-list-item :label="NotitieTabs.Regulier">
               <template #tab="{ label }">
                 <span :title="label" class="icon-after note" />
               </template>
@@ -35,8 +35,8 @@
                   contactmomentStore.huidigContactmoment.huidigeVraag.notitie
                 "
               />
-            </tabs-list-item>
-            <tabs-list-item :label="NotitieTabs.Contactverzoek">
+            </tab-list-item>
+            <tab-list-item :label="NotitieTabs.Contactverzoek">
               <template #tab="{ label }">
                 <span :title="label" class="icon-after phone-flip" />
               </template>
@@ -46,8 +46,8 @@
                 "
                 :huidige-klant="contactmomentStore.klantVoorHuidigeVraag"
               />
-            </tabs-list-item>
-          </tabs-list>
+            </tab-list-item>
+          </tab-list>
         </div>
       </section>
     </template>
@@ -67,8 +67,7 @@ import {
   CurrentContactmomentInfo,
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
-import TabsListItem from "@/components/tabs/TabsListItem.vue";
-import TabsList from "@/components/tabs/TabsList.vue";
+import { TabList, TabListItem } from "@/components/tabs";
 
 enum NotitieTabs {
   Regulier = "Reguliere notitie",

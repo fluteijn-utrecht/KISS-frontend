@@ -9,8 +9,8 @@
       </li>
     </ul>
   </nav>
-  <tabs-list v-model="currentTab">
-    <tabs-list-data-item
+  <tab-list v-model="currentTab">
+    <tab-list-data-item
       label="Contactgegevens"
       :data="klant"
       :disabled="(k) => !k"
@@ -18,8 +18,8 @@
       <template #success="{ data }">
         <klant-details :klant="data" />
       </template>
-    </tabs-list-data-item>
-    <tabs-list-data-item
+    </tab-list-data-item>
+    <tab-list-data-item
       label="KvK-gegevens"
       :data="bedrijf"
       :disabled="(b) => !b"
@@ -27,8 +27,8 @@
       <template #success="{ data }">
         <handelsregister-gegevens v-if="data" :bedrijf="data" />
       </template>
-    </tabs-list-data-item>
-    <tabs-list-data-item
+    </tab-list-data-item>
+    <tab-list-data-item
       label="Contactmomenten"
       :data="contactmomenten"
       :disabled="(c) => !c.count"
@@ -42,20 +42,16 @@
           </template>
         </contactmomenten-overzicht>
       </template>
-    </tabs-list-data-item>
-    <tabs-list-data-item
-      label="Zaken"
-      :data="zaken"
-      :disabled="(z) => !z.count"
-    >
+    </tab-list-data-item>
+    <tab-list-data-item label="Zaken" :data="zaken" :disabled="(z) => !z.count">
       <template #success="{ data }">
         <zaken-overzicht
           :zaken="data.page"
           :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
         />
       </template>
-    </tabs-list-data-item>
-    <tabs-list-data-item
+    </tab-list-data-item>
+    <tab-list-data-item
       label="Contactverzoeken"
       :data="contactverzoeken"
       :disabled="(c) => !c.page.length"
@@ -63,8 +59,8 @@
       <template #success="{ data }">
         <contactverzoeken-overzicht :contactverzoeken="data.page" />
       </template>
-    </tabs-list-data-item>
-  </tabs-list>
+    </tab-list-data-item>
+  </tab-list>
 </template>
 
 <script setup lang="ts">
@@ -89,8 +85,7 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import TabsList from "@/components/tabs/TabsList.vue";
-import TabsListDataItem from "@/components/tabs/TabsListDataItem.vue";
+import { TabList, TabListDataItem } from "@/components/tabs";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);

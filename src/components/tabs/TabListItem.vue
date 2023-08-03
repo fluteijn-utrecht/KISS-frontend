@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { nanoid } from "nanoid";
 import { inject, computed, onMounted } from "vue";
-import { tablistInjectionKey } from "./TabsList.vue";
+import { tablistInjectionKey } from "./TabList.vue";
 
 const props = defineProps<{ disabled?: boolean; label: string }>();
 const tablist = inject(tablistInjectionKey);

@@ -18,17 +18,17 @@
         }}</router-link>
       </div>
 
-      <tabs-list v-model="activeTab">
-        <tabs-list-item label="Algemeen">
+      <tab-list v-model="activeTab">
+        <tab-list-item label="Algemeen">
           <zaak-algemeen :zaak="zaak.data" />
-        </tabs-list-item>
-        <tabs-list-item
+        </tab-list-item>
+        <tab-list-item
           label="Documenten"
           :disabled="!zaak.data.documenten?.length"
         >
           <zaak-documenten :zaak="zaak.data" />
-        </tabs-list-item>
-        <tabs-list-data-item
+        </tab-list-item>
+        <tab-list-data-item
           label="Contactmomenten"
           :data="contactmomenten"
           :disabled="(c) => !c.count"
@@ -45,8 +45,8 @@
               </contactmomenten-overzicht>
             </div>
           </template>
-        </tabs-list-data-item>
-      </tabs-list>
+        </tab-list-data-item>
+      </tab-list>
 
       <div class="toelichting">
         <zaak-toelichting :zaak="zaak.data" @success="onNotitieUpdate" />
@@ -70,9 +70,7 @@ import {
   useContactmomentenByObjectUrl,
 } from "@/features/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import TabsList from "@/components/tabs/TabsList.vue";
-import TabsListItem from "@/components/tabs/TabsListItem.vue";
-import TabsListDataItem from "@/components/tabs/TabsListDataItem.vue";
+import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
