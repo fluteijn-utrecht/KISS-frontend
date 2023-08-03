@@ -1,4 +1,5 @@
 # TabList components
+
 There are three components: `<tab-list>`, `<tab-list-item>` and `<tab-list-data-item>`
 Usage is similar to `ul` and `li`: always wrap `<tab-list-item>`s and `<tab-list-data-item>` with a `<tab-list>`.
 The main use cases are listed below.
@@ -7,29 +8,22 @@ The main use cases are listed below.
 <template>
   <tab-list>
     <tab-list-item label="This label shows up in the first tab">
-      <div>
-        <p>This is the first tabpanel</p>
-      </div>
+      <p>This is the first tabpanel</p>
     </tab-list-item>
 
     <tab-list-item label="Here we use the slot for the tab">
       <template #tab="{ label }">
-        <span class="my-special-class"
-          >{{ label }} this whole span shows up in the second tab</span
-        >
+        <span class="my-special-class">
+          {{ label }} this whole span shows up in the second tab
+        </span>
       </template>
-      <div>
-        <p>This is the second tabpanel</p>
-      </div>
+      <p>This is the second tabpanel</p>
     </tab-list-item>
 
     <tab-list-item label="This tab is disabled" :disabled="true">
-      <div>
-        <p>
-          This is the third tabpanel but you can't reach it because it is
-          disabled
-        </p>
-      </div>
+      <p>
+        This is the third tabpanel but you can't reach it because it is disabled
+      </p>
     </tab-list-item>
 
     <tab-list-data-item
