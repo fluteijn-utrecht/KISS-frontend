@@ -62,4 +62,14 @@ onMounted(() => {
     color: var(--color-grey);
   }
 }
+
+[role="tabpanel"] {
+  :deep(.details-block) {
+    padding: 0;
+  }
+
+  :deep(tbody > tr) {
+    background-color: white;
+  }
+}
 </style>

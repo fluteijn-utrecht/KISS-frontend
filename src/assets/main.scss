@@ -307,6 +307,9 @@ th.row-link-header {
 }
 
 .details-block {
+  background-color: var(--color-secondary);
+  padding: var(--spacing-default);
+
   dl {
     display: grid;
     grid-auto-flow: column;
