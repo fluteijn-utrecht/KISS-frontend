@@ -1,5 +1,5 @@
 <template>
-  <teleport :to="tablist.el.value" v-if="tablist.el.value">
+  <teleport :to="tablist.el.value" v-if="tablist?.el.value">
     <component
       role="tab"
       :aria-selected="isActive ? 'true' : 'false'"
@@ -29,27 +29,28 @@
 
 <script setup lang="ts">
 import { nanoid } from "nanoid";
-import { inject, computed, onMounted } from "vue";
-import { tablistInjectionKey } from "./TabList.vue";
+import { inject, computed, watchEffect } from "vue";
+import { tablistInjectionKey } from "./injection";
 
 const props = defineProps<{ disabled?: boolean; label: string }>();
 const tablist = inject(tablistInjectionKey);
-if (!tablist) {
-  throw new Error("use this component in a tablist");
-}
 const tabId = nanoid();
 const panelId = tabId + "_panel";
-const isActive = computed(() => tablist.isActive(props.label));
+const isActive = computed(() => tablist?.isActive(props.label) || false);
 const is = computed(() => (!props.disabled && !isActive.value ? "a" : "span"));
 const href = computed(() => (is.value === "a" ? "#" + panelId : undefined));
 const activate = () => {
   if (!props.disabled) {
-    tablist.setActive(props.label);
+    tablist?.setActive(props.label);
   }
 };
 
-onMounted(() => {
-  tablist.register(props.label);
+watchEffect(() => {
+  if (props.disabled) {
+    tablist?.unregister(props.label);
+  } else {
+    tablist?.register(props.label);
+  }
 });
 </script>
 

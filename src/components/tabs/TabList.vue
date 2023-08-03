@@ -3,20 +3,9 @@
   <slot></slot>
 </template>
 
-<script lang="ts">
-import type { InjectionKey, Ref } from "vue";
-export const tablistInjectionKey = Symbol() as InjectionKey<{
-  el: Ref<HTMLElement | undefined>;
-  setActive: (name: string) => void;
-  isActive: (name: string) => boolean;
-  register: (name: string) => void;
-}>;
-</script>
-
 <script setup lang="ts">
-import { watch } from "vue";
-import { computed, reactive } from "vue";
-import { provide, ref } from "vue";
+import { watchEffect, computed, reactive, provide, ref } from "vue";
+import { tablistInjectionKey } from "./injection";
 
 const props = defineProps<{ modelValue: string }>();
 const emit = defineEmits<{ (e: "update:modelValue", v: string): void }>();
@@ -26,12 +15,15 @@ const current = computed({
   set: (v) => emit("update:modelValue", v),
 });
 
-const tabIds = reactive([] as string[]);
+const tabIds = reactive(new Set<string>());
 
 const setActive = (name: string) => (current.value = name);
 const isActive = (name: string) => current.value === name;
 const register = (name: string) => {
-  tabIds.push(name);
+  tabIds.add(name);
+};
+const unregister = (name: string) => {
+  tabIds.delete(name);
 };
 
 const el = ref<HTMLElement>();
@@ -41,11 +33,12 @@ provide(tablistInjectionKey, {
   setActive,
   isActive,
   register,
+  unregister,
 });
 
-watch([current, tabIds], ([c, ids]) => {
-  if (!c && ids.length) {
-    setActive(ids[0] || "");
+watchEffect(() => {
+  if (!tabIds.has(current.value)) {
+    setActive(tabIds.values().next().value || "");
   }
 });
 </script>
