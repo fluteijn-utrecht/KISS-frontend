@@ -23,23 +23,6 @@
             />
           </span>
         </utrecht-heading>
-
-        <menu v-if="showForm" class="buttons-container">
-          <li>
-            <utrecht-button
-              @click="reset"
-              type="reset"
-              appearance="secondary-action-button"
-            >
-              Annuleren
-            </utrecht-button>
-          </li>
-          <li>
-            <utrecht-button appearance="primary-action-button" type="submit"
-              >Opslaan</utrecht-button
-            >
-          </li>
-        </menu>
       </header>
       <dl>
         <dt>E-mailadres</dt>
@@ -73,6 +56,23 @@
           <template v-else>{{ telefoonnummer }}</template>
         </dd>
       </dl>
+
+      <menu v-if="showForm" class="buttons-container">
+        <li>
+          <utrecht-button
+            @click="reset"
+            type="reset"
+            appearance="secondary-action-button"
+          >
+            Annuleren
+          </utrecht-button>
+        </li>
+        <li>
+          <utrecht-button appearance="primary-action-button" type="submit"
+            >Opslaan</utrecht-button
+          >
+        </li>
+      </menu>
     </non-blocking-form>
   </article>
 </template>
@@ -162,12 +162,13 @@ const showForm = computed(() => !submitter.loading && editing.value);
     align-items: center;
     gap: var(--spacing-small);
   }
+}
 
-  .buttons-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-default);
-  }
+.buttons-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-default);
+  margin-block-start: var(--spacing-large);
 }
 
 .add-item {
