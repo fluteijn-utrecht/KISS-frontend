@@ -8,11 +8,11 @@
     </template>
     <template #default="{ isActive }">
       <div class="data-tabpanel" :data-active="isActive">
-        <data-wrapper :data="data">
+        <service-data-wrapper :data="data">
           <template #success="{ data }">
             <slot name="success" :data="data"></slot>
           </template>
-        </data-wrapper>
+        </service-data-wrapper>
       </div>
     </template>
   </tabs-tab>
@@ -21,9 +21,9 @@
 <script setup lang="ts" generic="T">
 import type { ServiceData } from "@/services";
 import { computed } from "vue";
-import DataWrapper from "./DataWrapper.vue";
+import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
 import TabsTab from "./TabsTab.vue";
-import SimpleSpinner from "./SimpleSpinner.vue";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
 
 const props = defineProps<{
   label: string;

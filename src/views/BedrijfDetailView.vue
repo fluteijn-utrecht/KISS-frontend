@@ -10,6 +10,18 @@
     </ul>
   </nav>
   <tabs-list v-model="currentTab">
+    <tabs-tab label="Contactgegevens">
+      <template #tab="{label}">
+        <span class="">
+          {{ label }}
+
+        </span>
+      </template>
+      <template>
+
+      </template>
+    </tabs-tab>
+
     <tabs-data-tab label="Contactgegevens" :data="klant" :disabled="(k) => !k">
       <template #success="{ data }">
         <bedrijf-details :klant="data" />
@@ -77,8 +89,9 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import TabsList from "@/components/TabsList.vue";
-import TabsDataTab from "@/components/TabsDataTab.vue";
+import TabsList from "@/components/tabs/TabsList.vue";
+import TabsDataTab from "@/components/tabs/TabsDataTab.vue";
+import TabsTab from "@/components/tabs/TabsTab.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
