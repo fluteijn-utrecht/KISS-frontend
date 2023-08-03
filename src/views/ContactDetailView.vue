@@ -78,7 +78,7 @@ const klantId = computed(() => props.contactId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 
-const klantUrl = computed(() => (klant.success ? klant.data?.url ?? "" : ""));
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 watch(
   () => klant.success && klant.data,
