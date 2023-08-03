@@ -8,7 +8,7 @@ The main use cases are listed below.
   <tab-list>
     <tab-list-item label="This label shows up in the first tab">
       <div>
-        <p>This is the first tab panel</p>
+        <p>This is the first tabpanel</p>
       </div>
     </tab-list-item>
 
@@ -19,14 +19,14 @@ The main use cases are listed below.
         >
       </template>
       <div>
-        <p>This is the second tab panel</p>
+        <p>This is the second tabpanel</p>
       </div>
     </tab-list-item>
 
     <tab-list-item label="This tab is disabled" :disabled="true">
       <div>
         <p>
-          This is the third tab panel but you can't reach it because it is
+          This is the third tabpanel but you can't reach it because it is
           disabled
         </p>
       </div>
@@ -38,7 +38,7 @@ The main use cases are listed below.
     >
       <template #success="{ data }">
         <p>
-          This is the fourth tab panel. This only shows up in the success state.
+          This is the fourth tabpanel. This only shows up in the success state.
           The value is a boolean in this case: {{ data }}
         </p>
         <p>
@@ -59,7 +59,7 @@ The main use cases are listed below.
     >
       <template #success="{ data }">
         <p>
-          This is the fifth tab panel but you can't reach it because it is
+          This is the fifth tabpanel but you can't reach it because it is
           disabled.
         </p>
       </template>
