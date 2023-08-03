@@ -1,6 +1,6 @@
 # TabList components
 
-There are three components: `<tab-list>`, `<tab-list-item>` and `<tab-list-data-item>`
+There are three components: `<tab-list>`, `<tab-list-item>` and `<tab-list-data-item>`.
 Usage is similar to `ul` and `li`: `<tab-list-item>` and `<tab-list-data-item>` must be contained by a parent `<tab-list>`.
 The main use cases are listed below.
 
