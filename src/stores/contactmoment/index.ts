@@ -17,6 +17,12 @@ export type ContactmomentContactVerzoek = {
   medewerker: string;
   afdeling: string;
   notitie: string;
+  naam: string;
+  telefoonnummer1: string;
+  telefoonnummer2: string;
+  omschrijvingTelefoonnummer2: string;
+  emailadres: string;
+  interneToelichting: string;
   isActive: boolean;
 };
 
@@ -67,6 +73,12 @@ function initVraag(): Vraag {
       medewerker: "",
       afdeling: "",
       notitie: "",
+      naam: "",
+      telefoonnummer1: "",
+      telefoonnummer2: "",
+      omschrijvingTelefoonnummer2: "",
+      emailadres: "",
+      interneToelichting: "",
       isActive: false,
     },
     startdatum: new Date().toISOString(),

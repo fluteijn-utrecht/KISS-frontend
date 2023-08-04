@@ -35,10 +35,79 @@
       <span class="required">Notitie bij het contactverzoek</span>
       <textarea
         v-model="notitie"
+        name="Notitie"
+              aria-label="Notitie"
         class="utrecht-textarea utrecht-textarea--html-textarea"
         rows="10"
       />
     </label>
+
+    <label class="utrecht-form-label">
+      <span class="required">Naam</span>
+      <input
+        v-model="naam"
+        type="tel"
+              name="Naam"
+              aria-label="Naam"
+        class="utrecht-textbox utrecht-textbox--html-input"
+      />
+    </label>
+
+    <label class="utrecht-form-label">
+      <span class="required">Telefoonnummer 1</span>
+      <input
+        v-model="telefoonnummer1"
+        type="tel"
+              name="Telefoonnummer 1"
+              aria-label="Telefoonnummer 1"
+        class="utrecht-textbox utrecht-textbox--html-input"
+      />
+    </label>
+
+    <label class="utrecht-form-label">
+      <span class="required">Telefoonnummer 2</span>
+      <input
+        v-model="telefoonnummer2"
+        type="tel"
+              name="Telefoonnummer 2"
+              aria-label="Telefoonnummer 2"
+        class="utrecht-textbox utrecht-textbox--html-input"
+      />
+    </label>
+
+    <label class="utrecht-form-label">
+      <span class="required">Omschrijving telefoonnummer 2</span>
+      <input
+        v-model="omschrijvingTelefoonnummer2"
+  
+              name="Omschrijving telefoonnummer 2"
+              aria-label="Omschrijving telefoonnummer 2"
+        class="utrecht-textbox utrecht-textbox--html-input"
+      />
+    </label>
+
+    <label class="utrecht-form-label">
+      <span class="required">E-mailadres</span>
+      <input
+        v-model="emailadres"        
+        type="email"
+              name="E-mailadres"
+              aria-label="E-mailadres"
+              class="utrecht-textbox utrecht-textbox--html-input"
+      />
+    </label>
+
+    <label class="utrecht-form-label notitieveld">
+      <span class="required">Interne toelichting voor medewerker</span>
+      <textarea
+        v-model="interneToelichting"
+        name="E-mailadres"
+              aria-label="E-mailadres"
+        class="utrecht-textarea utrecht-textarea--html-textarea"
+        rows="10"
+      />
+    </label>
+
   </form>
 </template>
 
@@ -52,7 +121,7 @@ export default {
 import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
-import { computed } from "@vue/reactivity";
+import { computed } from "vue";
 import { useAfdelingen } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 
@@ -97,6 +166,80 @@ const afdeling = computed({
     });
   },
 });
+
+const naam = computed({
+  get: () => props.huidigeVraag.contactverzoek.naam,
+  set: (naam) => {
+    if (!naam) return;
+
+    contactmomentStore.updateContactverzoek({
+      ...props.huidigeVraag.contactverzoek,
+      naam,
+    });
+  },
+});
+
+const telefoonnummer1 = computed({
+  get: () => props.huidigeVraag.contactverzoek.telefoonnummer1,
+  set: (telefoonnummer1) => {
+    if (!telefoonnummer1) return;
+
+    contactmomentStore.updateContactverzoek({
+      ...props.huidigeVraag.contactverzoek,
+      telefoonnummer1,
+    });
+  },
+});
+
+
+const telefoonnummer2 = computed({
+  get: () => props.huidigeVraag.contactverzoek.telefoonnummer2,
+  set: (telefoonnummer2) => {
+    if (!telefoonnummer2) return;
+
+    contactmomentStore.updateContactverzoek({
+      ...props.huidigeVraag.contactverzoek,
+      telefoonnummer2,
+    });
+  },
+});
+
+const omschrijvingTelefoonnummer2 = computed({
+  get: () => props.huidigeVraag.contactverzoek.omschrijvingTelefoonnummer2,
+  set: (omschrijvingTelefoonnummer2) => {
+    if (!omschrijvingTelefoonnummer2) return;
+
+    contactmomentStore.updateContactverzoek({
+      ...props.huidigeVraag.contactverzoek,
+      omschrijvingTelefoonnummer2,
+    });
+  },
+});
+
+const emailadres = computed({
+  get: () => props.huidigeVraag.contactverzoek.emailadres,
+  set: (emailadres) => {
+    if (!emailadres) return;
+
+    contactmomentStore.updateContactverzoek({
+      ...props.huidigeVraag.contactverzoek,
+      emailadres,
+    });
+  },
+});
+
+const interneToelichting = computed({
+  get: () => props.huidigeVraag.contactverzoek.interneToelichting,
+  set: (interneToelichting) => {
+    if (!interneToelichting) return;
+
+    contactmomentStore.updateContactverzoek({
+      ...props.huidigeVraag.contactverzoek,
+      interneToelichting,
+    });
+  },
+});
+
 
 const afdelingen = useAfdelingen();
 </script>
