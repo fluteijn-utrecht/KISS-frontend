@@ -110,17 +110,6 @@ function getKlantIdUrl(id?: string) {
   return url.toString();
 }
 
-function fetchKlantById(url: string) {
-  return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
-}
-
-export function useKlantById(id: Ref<string>) {
-  return ServiceResult.fromFetcher(
-    () => getKlantIdUrl(id.value),
-    fetchKlantById
-  );
-}
-
 export function useSearchKlanten(params: Ref<KlantSearchParameters>) {
   const getUrl = () => getKlantSearchUrl(params.value);
   return ServiceResult.fromFetcher(getUrl, searchKlanten);

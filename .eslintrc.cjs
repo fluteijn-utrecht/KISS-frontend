@@ -19,5 +19,8 @@ module.exports = {
         ignores: ["Pagination", "Paragraph"],
       },
     ],
+    // TODO: treat these rules as errors and fix all affected code
+    "vue/no-setup-props-destructure": ["warn"],
+    "vue/prefer-import-from-vue": ["warn"],
   },
 };

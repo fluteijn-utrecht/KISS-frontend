@@ -4,7 +4,7 @@
       <header class="heading-container">
         <utrecht-heading :level="level">
           <span class="heading">
-            Gegevens klant
+            Contactgegevens
             <utrecht-button
               v-if="!editing"
               appearance="subtle-button"
@@ -23,29 +23,8 @@
             />
           </span>
         </utrecht-heading>
-
-        <menu v-if="showForm" class="buttons-container">
-          <li>
-            <utrecht-button
-              @click="reset"
-              type="reset"
-              appearance="secondary-action-button"
-            >
-              Annuleren
-            </utrecht-button>
-          </li>
-          <li>
-            <utrecht-button appearance="primary-action-button" type="submit"
-              >Opslaan</utrecht-button
-            >
-          </li>
-        </menu>
       </header>
       <dl>
-        <dt>Bedrijfsnaam</dt>
-        <dd>
-          {{ klant.bedrijfsnaam }}
-        </dd>
         <dt>E-mailadres</dt>
         <dd>
           <fieldset v-if="showForm">
@@ -77,6 +56,23 @@
           <template v-else>{{ telefoonnummer }}</template>
         </dd>
       </dl>
+
+      <menu v-if="showForm" class="buttons-container">
+        <li>
+          <utrecht-button
+            @click="reset"
+            type="reset"
+            appearance="secondary-action-button"
+          >
+            Annuleren
+          </utrecht-button>
+        </li>
+        <li>
+          <utrecht-button appearance="primary-action-button" type="submit"
+            >Opslaan</utrecht-button
+          >
+        </li>
+      </menu>
     </non-blocking-form>
   </article>
 </template>
@@ -87,8 +83,8 @@ import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
-import type { Klant } from "../types";
-import { useUpdateContactGegevens } from "../service";
+import type { Klant } from "./types";
+import { useUpdateContactGegevens } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { computed } from "vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
@@ -166,12 +162,13 @@ const showForm = computed(() => !submitter.loading && editing.value);
     align-items: center;
     gap: var(--spacing-small);
   }
+}
 
-  .buttons-container {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-default);
-  }
+.buttons-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-default);
+  margin-block-start: var(--spacing-large);
 }
 
 .add-item {

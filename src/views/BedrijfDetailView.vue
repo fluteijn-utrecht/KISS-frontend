@@ -1,98 +1,66 @@
 <template>
-  <section>
-    <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
-    <nav>
-      <ul>
-        <li>
-          <router-link :to="{ name: 'bedrijven' }">{{
-            "< Bedrijven zoeken"
-          }}</router-link>
-        </li>
-      </ul>
-    </nav>
-    <simple-spinner v-if="klant.loading" />
-    <bedrijf-details v-else-if="klant.success" :klant="klant.data" />
-    <application-message
-      v-if="klant.error"
-      message="Er ging iets mis bij het ophalen van de klant. Probeer het later
-      nog eens."
-      messageType="error"
-    />
-
-    <simple-spinner v-if="bedrijf.loading" />
-    <handelsregister-gegevens
-      v-if="bedrijf.success && bedrijf.data"
-      :bedrijf="bedrijf.data"
-    />
-    <application-message
-      v-if="bedrijf.error"
-      message="Er ging iets mis bij het ophalen van de Handelsregister gegevens. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <simple-spinner v-if="contactverzoeken.loading" />
-    <application-message
-      v-if="contactverzoeken.error"
-      message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
-      messageType="error"
-    />
-    <template
-      v-if="contactverzoeken.success && contactverzoeken.data.page.length"
+  <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
+  <nav>
+    <ul>
+      <li>
+        <router-link :to="{ name: 'bedrijven' }">{{
+          "< Bedrijven zoeken"
+        }}</router-link>
+      </li>
+    </ul>
+  </nav>
+  <tab-list v-model="currentTab">
+    <tab-list-data-item
+      label="Contactgegevens"
+      :data="klant"
+      :disabled="(k) => !k"
     >
-      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
-
-      <contactverzoeken-overzicht
-        :contactverzoeken="contactverzoeken.data.page"
-      />
-    </template>
-
-    <!-- Zaken -->
-
-    <simple-spinner v-if="zaken.loading" />
-
-    <application-message
-      v-if="zaken.error"
-      message="Er ging iets mis bij het ophalen van de zaken. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <template v-if="zaken.success && zaken.data.page.length">
-      <utrecht-heading :level="2"> Zaken </utrecht-heading>
-
-      <zaken-overzicht
-        :zaken="zaken.data.page"
-        :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-      />
-    </template>
-
-    <!-- Contactmomenten -->
-
-    <simple-spinner v-if="contactmomenten.loading" />
-
-    <application-message
-      v-if="contactmomenten.error"
-      message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <template v-if="contactmomenten.success && contactmomenten.data">
-      <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-        <template v-slot:zaken="{ zaken }">
-          <template v-for="zaakurl in zaken" :key="zaakurl">
-            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+      <template #success="{ data }">
+        <klant-details :klant="data" />
+      </template>
+    </tab-list-data-item>
+    <tab-list-data-item
+      label="KvK-gegevens"
+      :data="bedrijf"
+      :disabled="(b) => !b"
+    >
+      <template #success="{ data }">
+        <handelsregister-gegevens v-if="data" :bedrijf="data" />
+      </template>
+    </tab-list-data-item>
+    <tab-list-data-item
+      label="Contactmomenten"
+      :data="contactmomenten"
+      :disabled="(c) => !c.count"
+    >
+      <template #success="{ data }">
+        <contactmomenten-overzicht :contactmomenten="data.page">
+          <template v-slot:zaken="{ zaken }">
+            <template v-for="zaakurl in zaken" :key="zaakurl">
+              <zaak-preview :zaakurl="zaakurl" />
+            </template>
           </template>
-        </template>
-      </contactmomenten-overzicht>
-      <!-- 
-      <pagination
-        class="pagination"
-        :pagination="contactmomenten.data"
-        @navigate="onContactmomentenNavigate"
-      /> -->
-    </template>
-  </section>
+        </contactmomenten-overzicht>
+      </template>
+    </tab-list-data-item>
+    <tab-list-data-item label="Zaken" :data="zaken" :disabled="(z) => !z.count">
+      <template #success="{ data }">
+        <zaken-overzicht
+          :zaken="data.page"
+          :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+        />
+      </template>
+    </tab-list-data-item>
+    <tab-list-data-item
+      label="Contactverzoeken"
+      :data="contactverzoeken"
+      :disabled="(c) => !c.page.length"
+    >
+      <template #success="{ data }">
+        <contactverzoeken-overzicht :contactverzoeken="data.page" />
+      </template>
+    </tab-list-data-item>
+  </tab-list>
 </template>
 
 <script setup lang="ts">
@@ -106,11 +74,9 @@ import {
 import {
   useBedrijfByVestigingsnummer,
   HandelsregisterGegevens,
-  BedrijfDetails,
+  KlantDetails,
   useKlantById,
 } from "@/features/klant";
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
@@ -119,12 +85,15 @@ import {
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import { TabList, TabListDataItem } from "@/components/tabs";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+
+const currentTab = ref("");
 
 watch(
   () => klant.success && klant.data,
@@ -146,8 +115,8 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  contactmomentenPage
+  klantUrl
+  // contactmomentenPage
 );
 
 // const onContactmomentenNavigate = (page: number) => {
@@ -164,17 +133,3 @@ const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
 </script>
-
-<style scoped lang="scss">
-nav {
-  list-style: none;
-}
-
-section > * {
-  margin-block-end: var(--spacing-large);
-}
-
-utrecht-heading {
-  margin-block-end: 0;
-}
-</style>
