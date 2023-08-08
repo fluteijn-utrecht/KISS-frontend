@@ -31,6 +31,10 @@ elasticstack:
         - hosts:
             - elastic.dev.kiss-demo.nl
           secretName: wildcard-kiss-tls
+    roles:
+      data: "true"
+      ingest: "true"
+      master: "true"
   kibana:
     elasticsearchHost: https://elasticsearch-master:9200
     ingress:
