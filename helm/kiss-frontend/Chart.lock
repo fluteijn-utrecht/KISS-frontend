@@ -1,9 +1,6 @@
 dependencies:
-- name: elasticstack
-  repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/main/
-  version: 0.4.5
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 12.4.2
-digest: sha256:45060faf9bb0421a10530aa59d15347fc979a368f2d6a7ae4cfef1c4a968e47d
-generated: "2023-08-07T13:03:28.1567043+02:00"
+digest: sha256:1f9da1d24569fdf2f59c5cb7f7fdbcfd4d81cdb7fd0737c6ecd7258171a59c1a
+generated: "2023-08-08T09:58:20.4409232+02:00"

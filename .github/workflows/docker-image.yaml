@@ -2,10 +2,14 @@ name: Docker CI
 
 on:
   pull_request:
+    paths-ignore:
+      - "helm/**"
     branches:
       - main
 
   push:
+    paths-ignore:
+      - "helm/**"
     branches:
       - main
   workflow_dispatch:
