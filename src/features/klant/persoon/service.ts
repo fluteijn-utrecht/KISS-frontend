@@ -11,6 +11,7 @@ import {
   type ServiceData,
   enforceOneOrZero,
   defaultPagination,
+  FriendlyError,
 } from "@/services";
 import { mutate } from "swrv";
 import type { Ref } from "vue";
@@ -32,6 +33,10 @@ type PersoonQueryParams = {
   [K in PersoonSearchField]: (
     search: SearchPersoonFieldParams[K]
   ) => QueryParam;
+};
+
+type PersoonSorters = {
+  [K in PersoonSearchField]: (a: Persoon, b: Persoon) => number;
 };
 
 export type PersoonQuery<K extends PersoonSearchField> = {
@@ -65,16 +70,69 @@ const queryDictionary: PersoonQueryParams = {
   ],
   geslachtsnaamGeboortedatum: ({ geslachtsnaam, geboortedatum }) => [
     ["geboortedatum", formatIsoDate(geboortedatum)],
-    ["geslachtsnaam", geslachtsnaam],
+    [
+      "geslachtsnaam",
+      geslachtsnaam?.endsWith("*") ? geslachtsnaam : geslachtsnaam + "*",
+    ],
     ["type", "ZoekMetGeslachtsnaamEnGeboortedatum"],
     ["fields", [...minimalFields]],
   ],
-  postcodeHuisnummer: ({ postcode, huisnummer }) => [
+  postcodeHuisnummer: ({ postcode, huisnummer, toevoeging, huisletter }) => [
     ["postcode", `${postcode.numbers}${postcode.digits}`],
     ["huisnummer", huisnummer],
+    ["huisnummertoevoeging", toevoeging || ""],
+    ["huisletter", huisletter || ""],
     ["type", "ZoekMetPostcodeEnHuisnummer"],
     ["fields", [...minimalFields]],
   ],
+};
+
+type Compare<T> = (a: T, b: T) => number;
+
+function combineCompare<T>(...comparers: Compare<T>[]): Compare<T> {
+  return (a, b) => {
+    let result = 0;
+    for (const comparer of comparers) {
+      result = comparer(a, b);
+      if (result !== 0) return result;
+    }
+    return result;
+  };
+}
+
+function sortBy<T>(
+  ...properties: Array<(x: T) => string | undefined>
+): Compare<T> {
+  return combineCompare(
+    ...properties.map((getProp) => (a: T, b: T) => {
+      const propA = getProp(a);
+      const propB = getProp(b);
+      if (!propA && !propB) return 0;
+      if (!propB) return -1;
+      if (!propA) return 1;
+      return propA.localeCompare(propB);
+    })
+  );
+}
+
+const compareNaam = sortBy<Persoon>(
+  (x) => x.achternaam,
+  (x) => x.voorvoegselAchternaam,
+  (x) => x.voornaam
+);
+
+const compareAdres = sortBy<Persoon>(
+  (x) => x.adresregel1,
+  (x) => x.adresregel2,
+  (x) => x.adresregel3
+);
+
+const compareAdresThenNaam = combineCompare(compareAdres, compareNaam);
+
+const sorters: PersoonSorters = {
+  geslachtsnaamGeboortedatum: compareNaam,
+  bsn: compareNaam,
+  postcodeHuisnummer: compareAdresThenNaam,
 };
 
 function getQueryParams<K extends PersoonSearchField>(params: PersoonQuery<K>) {
@@ -112,11 +170,11 @@ function getPersoonUniqueBsnId(bsn: string | undefined) {
   return bsn ? zoekUrl + "_single" + bsn : "";
 }
 
-const searchSinglePersoon = (bsn: string) =>
+const searchSinglePersoon = (bsn: string): Promise<Persoon | null> =>
   searchPersonen({
     field: "bsn",
     value: bsn,
-  }).then(enforceOneOrZero);
+  }).then((r) => r?.[0] || null);
 
 export const searchPersonen = <K extends PersoonSearchField>(
   query: PersoonQuery<K>
@@ -130,8 +188,20 @@ export const searchPersonen = <K extends PersoonSearchField>(
     },
     body,
   })
-    .then(throwIfNotOk)
-    .then(parseJson)
+    .then(async (r) => {
+      const contentType = r.headers.get("content-type");
+      if (
+        r.status === 400 &&
+        contentType?.match(/^application\/problem\+json.*/)?.[0]
+      ) {
+        const json = await r.json();
+        if (json?.code && json?.detail) {
+          throw new FriendlyError(json.detail);
+        }
+      }
+      throwIfNotOk(r);
+      return r.json();
+    })
     .then((json) => {
       const mapped: Persoon[] = [];
       json.personen.forEach((p: any) => {
@@ -142,7 +212,8 @@ export const searchPersonen = <K extends PersoonSearchField>(
         }
         mapped.push(persoon);
       });
-      return defaultPagination(mapped);
+      const sorter = sorters[query.field];
+      return mapped.sort(sorter);
     });
 };
 

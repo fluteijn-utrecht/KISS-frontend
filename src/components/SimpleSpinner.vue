@@ -24,7 +24,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .loader {
-  font-size: 90px;
+  font-size: var(--spinner-size, 90px);
   text-indent: -9999em;
   overflow: hidden;
   width: 1em;

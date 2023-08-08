@@ -11,7 +11,7 @@
       </ul>
     </nav>
     <simple-spinner v-if="klant.loading" />
-    <persoon-details v-else-if="klant.success" :klant="klant.data" />
+    <klant-details v-else-if="klant.success" :klant="klant.data" />
     <application-message
       v-if="klant.error"
       message="Er ging iets mis bij het ophalen van de klant. Probeer het later
@@ -103,7 +103,7 @@ import {
   useContactverzoekenByKlantId,
 } from "@/features/contactmoment";
 import {
-  PersoonDetails,
+  KlantDetails,
   useKlantById,
   BrpGegevens,
   usePersoonByBsn,
@@ -123,18 +123,6 @@ const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
-
-watch(
-  () => klant.success && klant.data,
-  (k) => {
-    if (!k) return;
-    contactmomentStore.setKlant({
-      ...k,
-      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
-    });
-  },
-  { immediate: true }
-);
 
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
@@ -157,6 +145,19 @@ const klantBsn = computed(getBsn);
 
 const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
+
+watch(
+  [() => klant.success && klant.data, () => persoon.success && persoon.data],
+  ([k, p]) => {
+    if (!k) return;
+    contactmomentStore.setKlant({
+      ...k,
+      ...p,
+      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
+    });
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped lang="scss">

@@ -3,7 +3,47 @@ entries:
   kiss-frontend:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9622294+02:00"
+    created: "2023-08-07T13:29:08.1803554+02:00"
+    dependencies:
+    - name: elasticstack
+      repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/main/
+      version: 0.4.5
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - postgresql
+      version: 12.4.2
+    description: A Helm chart for Kubernetes
+    digest: 3b2443b80b664e975efd489fc6d45a18e869335a92ec2aeb176edc4512907b0e
+    name: kiss-frontend
+    type: application
+    urls:
+    - kiss-frontend-1.0.43.tgz
+    version: 1.0.43
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-08-07T13:29:08.1715429+02:00"
+    dependencies:
+    - name: elasticstack
+      repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/main/
+      version: 0.4.5
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - postgresql
+      version: 12.4.2
+    description: A Helm chart for Kubernetes
+    digest: bbb29f141d19a445ed50d297abb4c1786f588429c572e4c41e2c6a2e24e3632a
+    name: kiss-frontend
+    type: application
+    urls:
+    - kiss-frontend-1.0.42.tgz
+    version: 1.0.42
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2023-08-07T13:29:08.1629598+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -23,7 +63,7 @@ entries:
     version: 1.0.41
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9520414+02:00"
+    created: "2023-08-07T13:29:08.1557963+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -43,7 +83,7 @@ entries:
     version: 1.0.40
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9419905+02:00"
+    created: "2023-08-07T13:29:08.1469559+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -63,7 +103,7 @@ entries:
     version: 1.0.39
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9419905+02:00"
+    created: "2023-08-07T13:29:08.1379726+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -83,7 +123,7 @@ entries:
     version: 1.0.38
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9336054+02:00"
+    created: "2023-08-07T13:29:08.1284+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -103,7 +143,7 @@ entries:
     version: 1.0.37
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.927796+02:00"
+    created: "2023-08-07T13:29:08.1199245+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -123,7 +163,7 @@ entries:
     version: 1.0.36
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9198827+02:00"
+    created: "2023-08-07T13:29:08.1125249+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -143,7 +183,7 @@ entries:
     version: 1.0.35
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9133457+02:00"
+    created: "2023-08-07T13:29:08.1040428+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -163,7 +203,7 @@ entries:
     version: 1.0.34
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.9056684+02:00"
+    created: "2023-08-07T13:29:08.0954634+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -183,7 +223,7 @@ entries:
     version: 1.0.33
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8981595+02:00"
+    created: "2023-08-07T13:29:08.0884163+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -203,7 +243,7 @@ entries:
     version: 1.0.32
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8844573+02:00"
+    created: "2023-08-07T13:29:08.0789537+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -223,7 +263,7 @@ entries:
     version: 1.0.31
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8783158+02:00"
+    created: "2023-08-07T13:29:08.0713697+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -243,7 +283,7 @@ entries:
     version: 1.0.30
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8741278+02:00"
+    created: "2023-08-07T13:29:08.0618564+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -263,7 +303,7 @@ entries:
     version: 1.0.29
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8640035+02:00"
+    created: "2023-08-07T13:29:08.054347+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -283,7 +323,7 @@ entries:
     version: 1.0.28
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8538666+02:00"
+    created: "2023-08-07T13:29:08.0418331+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -297,7 +337,7 @@ entries:
     version: 1.0.27
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8538666+02:00"
+    created: "2023-08-07T13:29:08.0388332+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -311,7 +351,7 @@ entries:
     version: 1.0.26
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8470348+02:00"
+    created: "2023-08-07T13:29:08.0348283+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -325,7 +365,7 @@ entries:
     version: 1.0.25
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8434367+02:00"
+    created: "2023-08-07T13:29:08.0307044+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -339,7 +379,7 @@ entries:
     version: 1.0.24
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8331407+02:00"
+    created: "2023-08-07T13:29:08.0277409+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -353,7 +393,7 @@ entries:
     version: 1.0.23
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8331407+02:00"
+    created: "2023-08-07T13:29:08.0231664+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -367,7 +407,7 @@ entries:
     version: 1.0.22
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.827397+02:00"
+    created: "2023-08-07T13:29:08.0191939+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -381,7 +421,7 @@ entries:
     version: 1.0.21
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8243618+02:00"
+    created: "2023-08-07T13:29:08.0161927+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -395,7 +435,7 @@ entries:
     version: 1.0.20
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8226893+02:00"
+    created: "2023-08-07T13:29:08.0126824+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -409,7 +449,7 @@ entries:
     version: 1.0.19
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2023-07-14T16:46:06.8058995+02:00"
+    created: "2023-08-07T13:29:07.9905326+02:00"
     dependencies:
     - name: elasticstack
       repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
@@ -421,4 +461,4 @@ entries:
     urls:
     - kiss-frontend-1.0.18.tgz
     version: 1.0.18
-generated: "2023-07-14T16:46:06.7647682+02:00"
+generated: "2023-08-07T13:29:07.9336665+02:00"

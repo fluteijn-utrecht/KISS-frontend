@@ -18,34 +18,35 @@
         }}</router-link>
       </div>
 
-      <tabs-component v-model="activeTab">
-        <template #[Tabs.algemeen]>
+      <tab-list v-model="activeTab">
+        <tab-list-item label="Algemeen">
           <zaak-algemeen :zaak="zaak.data" />
-        </template>
-
-        <template #[Tabs.documenten]>
+        </tab-list-item>
+        <tab-list-item
+          label="Documenten"
+          :disabled="!zaak.data.documenten?.length"
+        >
           <zaak-documenten :zaak="zaak.data" />
-        </template>
-
-        <template #[Tabs.contactmomenten]>
-          <section
-            v-if="contactmomenten.success && contactmomenten.data"
-            class="contactmomenten"
-          >
-            <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-
-            <contactmomenten-overzicht
-              :contactmomenten="contactmomenten.data.page"
-            >
-              <template v-slot:zaken="{ zaken }">
-                <template v-for="zaakurl in zaken" :key="zaakurl">
-                  <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+        </tab-list-item>
+        <tab-list-data-item
+          label="Contactmomenten"
+          :data="contactmomenten"
+          :disabled="(c) => !c.count"
+        >
+          <template #success="{ data }">
+            <div class="contactmomenten">
+              <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+              <contactmomenten-overzicht :contactmomenten="data.page">
+                <template v-slot:zaken="{ zaken }">
+                  <template v-for="zaakurl in zaken" :key="zaakurl">
+                    <zaak-preview :zaakurl="zaakurl"></zaak-preview>
+                  </template>
                 </template>
-              </template>
-            </contactmomenten-overzicht>
-          </section>
-        </template>
-      </tabs-component>
+              </contactmomenten-overzicht>
+            </div>
+          </template>
+        </tab-list-data-item>
+      </tab-list>
 
       <div class="toelichting">
         <zaak-toelichting :zaak="zaak.data" @success="onNotitieUpdate" />
@@ -64,12 +65,13 @@ import ZaakToelichting from "@/features/zaaksysteem/components/ZaakToelichting.v
 import ZaakDocumenten from "@/features/zaaksysteem/components/ZaakDocumenten.vue";
 import ZaakAlgemeen from "@/features/zaaksysteem/components/ZaakAlgemeen.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import TabsComponent from "@/components/TabsComponent.vue";
 import {
   ContactmomentenOverzicht,
   useContactmomentenByObjectUrl,
 } from "@/features/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
+
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
@@ -79,13 +81,7 @@ const zaakUrl = computed(() =>
 
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
-const Tabs = {
-  algemeen: "Algemeen",
-  documenten: "Documenten",
-  contactmomenten: "Contactmomenten",
-} as const;
-
-const activeTab = ref(Tabs.algemeen);
+const activeTab = ref("");
 
 watch(
   () => zaak.success && zaak.data,
@@ -104,8 +100,6 @@ const onNotitieUpdate = () => zaak.refresh();
 
 <style lang="scss" scoped>
 .contactmomenten {
-  padding: var(--spacing-large);
-
   > :first-child {
     margin-block-end: var(--spacing-large);
   }
