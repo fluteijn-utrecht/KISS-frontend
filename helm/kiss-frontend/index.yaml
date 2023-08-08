@@ -2,22 +2,22 @@ apiVersion: v1
 entries:
   elasticstack:
   - apiVersion: v2
-    appVersion: 7.17.3
+    appVersion: 8.5.1
     created: "2023-07-14T16:42:43.206799+02:00"
     dependencies:
     - name: elasticsearch
       repository: https://helm.elastic.co
-      version: 7.17.3
+      version: 8.5.1
     - name: kibana
       repository: https://helm.elastic.co
-      version: 7.17.3
+      version: 8.5.1
     description: Installs the helm stack needed for KISS
     digest: a6b037b660f6bb7eee558aabc2f40cb77edf58495571ead1634eeb6c5195fbd9
     name: elasticstack
     type: application
     urls:
-    - charts/elasticstack-0.4.4.tgz
-    version: 0.4.4
+    - charts/elasticstack-0.4.5.tgz
+    version: 0.4.5
   postgresql:
   - annotations:
       category: Database

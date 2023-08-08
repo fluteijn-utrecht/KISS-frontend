@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.0.41
+version: 1.0.44
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -24,9 +24,6 @@ version: 1.0.41
 appVersion: "1.0.0"
 
 dependencies:
-  - name: elasticstack
-    version: 0.4.4
-    repository: https://raw.githubusercontent.com/Klantinteractie-Servicesysteem/Helm-Charts/feature/elastic-stack-chart/
   - name: postgresql
     version: 12.4.2
     repository: https://charts.bitnami.com/bitnami
