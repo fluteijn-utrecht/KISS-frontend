@@ -8,7 +8,8 @@
     >
       Afdeling
       <select
-        v-model="afdeling"
+        v-model="form.afdeling"
+        @change="setActive"
         name="afdeling"
         class="utrecht-select utrecht-select--html-select"
       >
@@ -26,88 +27,78 @@
       <span class="required">Contactverzoek versturen naar</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="medewerker"
-        :defaultValue="medewerker"
-      />
-    </label>
-
-    <label class="utrecht-form-label notitieveld">
-      <span class="required">Notitie bij het contactverzoek</span>
-      <textarea
-        v-model="notitie"
-        name="Notitie"
-              aria-label="Notitie"
-        class="utrecht-textarea utrecht-textarea--html-textarea"
-        rows="10"
+        required
+        v-model="form.medewerker"
+        :defaultValue="form.medewerker"
+        @update:model-value="setActive"
       />
     </label>
 
     <label class="utrecht-form-label">
-      <span class="required">Naam</span>
+      <span>Klantnaam</span>
       <input
-        v-model="naam"
+        v-model="form.naam"
         type="tel"
-              name="Naam"
-              aria-label="Naam"
+        name="Naam"
         class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
       />
     </label>
 
     <label class="utrecht-form-label">
-      <span class="required">Telefoonnummer 1</span>
+      <span>Telefoonnummer 1</span>
       <input
-        v-model="telefoonnummer1"
+        v-model="form.telefoonnummer1"
         type="tel"
-              name="Telefoonnummer 1"
-              aria-label="Telefoonnummer 1"
+        name="Telefoonnummer 1"
         class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
       />
     </label>
 
     <label class="utrecht-form-label">
-      <span class="required">Telefoonnummer 2</span>
+      <span>Telefoonnummer 2</span>
       <input
-        v-model="telefoonnummer2"
+        v-model="form.telefoonnummer2"
         type="tel"
-              name="Telefoonnummer 2"
-              aria-label="Telefoonnummer 2"
+        name="Telefoonnummer 2"
         class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
       />
     </label>
 
     <label class="utrecht-form-label">
-      <span class="required">Omschrijving telefoonnummer 2</span>
+      <span>Omschrijving telefoonnummer 2</span>
       <input
-        v-model="omschrijvingTelefoonnummer2"
-  
-              name="Omschrijving telefoonnummer 2"
-              aria-label="Omschrijving telefoonnummer 2"
+        v-model="form.omschrijvingTelefoonnummer2"
+        name="Omschrijving telefoonnummer 2"
         class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
       />
     </label>
 
     <label class="utrecht-form-label">
-      <span class="required">E-mailadres</span>
+      <span>E-mailadres</span>
       <input
-        v-model="emailadres"        
+        v-model="form.emailadres"
         type="email"
-              name="E-mailadres"
-              aria-label="E-mailadres"
-              class="utrecht-textbox utrecht-textbox--html-input"
+        name="E-mailadres"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
       />
     </label>
 
     <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
       <textarea
-        v-model="interneToelichting"
-        name="E-mailadres"
-              aria-label="E-mailadres"
+        v-model="form.interneToelichting"
+        name="Interne toelichting"
+        required
         class="utrecht-textarea utrecht-textarea--html-textarea"
         rows="10"
+        @input="setActive"
       />
     </label>
-
   </form>
 </template>
 
@@ -118,137 +109,55 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
-import { computed } from "vue";
 import { useAfdelingen } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
+import { ref } from "vue";
+import { watch } from "vue";
 
 const props = defineProps<{
-  huidigeVraag: Vraag;
+  modelValue: ContactmomentContactVerzoek;
 }>();
 
-const contactmomentStore = useContactmomentStore();
+const emit = defineEmits<{
+  (e: "update:modelValue", v: ContactmomentContactVerzoek): void;
+  (e: "active"): void;
+}>();
 
-const medewerker = computed({
-  get: () => props.huidigeVraag.contactverzoek.medewerker,
-  set(medewerker) {
-    if (!medewerker) return;
+const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      medewerker,
-    });
+watch(
+  () => props.modelValue,
+  (v) => {
+    form.value = v;
   },
-});
+  { immediate: true, deep: true }
+);
 
-const notitie = computed({
-  get: () => props.huidigeVraag.contactverzoek.notitie,
-  set: (notitie) => {
-    if (!notitie) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      notitie,
-    });
-  },
-});
-
-const afdeling = computed({
-  get: () => props.huidigeVraag.contactverzoek.afdeling,
-  set: (afdeling) => {
-    if (!afdeling) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      afdeling,
-    });
-  },
-});
-
-const naam = computed({
-  get: () => props.huidigeVraag.contactverzoek.naam,
-  set: (naam) => {
-    if (!naam) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      naam,
-    });
-  },
-});
-
-const telefoonnummer1 = computed({
-  get: () => props.huidigeVraag.contactverzoek.telefoonnummer1,
-  set: (telefoonnummer1) => {
-    if (!telefoonnummer1) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      telefoonnummer1,
-    });
-  },
-});
-
-
-const telefoonnummer2 = computed({
-  get: () => props.huidigeVraag.contactverzoek.telefoonnummer2,
-  set: (telefoonnummer2) => {
-    if (!telefoonnummer2) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      telefoonnummer2,
-    });
-  },
-});
-
-const omschrijvingTelefoonnummer2 = computed({
-  get: () => props.huidigeVraag.contactverzoek.omschrijvingTelefoonnummer2,
-  set: (omschrijvingTelefoonnummer2) => {
-    if (!omschrijvingTelefoonnummer2) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      omschrijvingTelefoonnummer2,
-    });
-  },
-});
-
-const emailadres = computed({
-  get: () => props.huidigeVraag.contactverzoek.emailadres,
-  set: (emailadres) => {
-    if (!emailadres) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      emailadres,
-    });
-  },
-});
-
-const interneToelichting = computed({
-  get: () => props.huidigeVraag.contactverzoek.interneToelichting,
-  set: (interneToelichting) => {
-    if (!interneToelichting) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      interneToelichting,
-    });
-  },
-});
-
+watch(
+  form,
+  (f) =>
+    emit("update:modelValue", {
+      ...props.modelValue,
+      ...f,
+    }),
+  { deep: true }
+);
 
 const afdelingen = useAfdelingen();
+
+const setActive = () => {
+  form.value.isActive = true;
+};
 </script>
 
 <style lang="scss" scoped>
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-large);
+  gap: var(--spacing-default);
 }
 
 textarea {

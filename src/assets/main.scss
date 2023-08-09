@@ -15,7 +15,7 @@ body {
   position: relative;
   min-height: 100vh;
   display: grid;
-  grid-template: "aside header" auto "nothing main" 1fr / 20.75rem 1fr;
+  grid-template: "aside header" auto "nothing main" 1fr / 21.25rem 1fr;
   border-top: 4px solid var(--color-primary);
 
   &.contactmoment-loopt {

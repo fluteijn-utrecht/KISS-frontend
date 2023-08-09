@@ -25,6 +25,7 @@ import { useGlobalSearch, useSources } from "./service";
 import type { SearchResult } from "./types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
+import type { PropType } from "vue";
 
 type DatalistItem = {
   value: string;
@@ -33,7 +34,7 @@ type DatalistItem = {
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: String as PropType<string | undefined>,
     required: true,
   },
   id: {

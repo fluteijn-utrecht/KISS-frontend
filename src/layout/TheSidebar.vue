@@ -41,10 +41,10 @@
                 <span :title="label" class="icon-after phone-flip" />
               </template>
               <contactverzoek-formulier
-                :huidige-vraag="
+                v-model="
                   contactmomentStore.huidigContactmoment.huidigeVraag
+                    .contactverzoek
                 "
-                :huidige-klant="contactmomentStore.klantVoorHuidigeVraag"
               />
             </tab-list-item>
           </tab-list>
