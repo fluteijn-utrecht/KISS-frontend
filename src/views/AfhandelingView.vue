@@ -800,7 +800,7 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
-// trigger build
+
 const afdelingen = useAfdelingen();
 </script>
 
