@@ -1,7 +1,6 @@
 <template>
   <SimpleSpinner v-if="afdelingen.loading" />
-  <form class="container" @submit.prevent>
-    <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
+  <div class="container" @submit.prevent>
     <label
       class="utrecht-form-label"
       v-if="afdelingen.success && afdelingen.data.length"
@@ -95,11 +94,11 @@
         name="Interne toelichting"
         required
         class="utrecht-textarea utrecht-textarea--html-textarea"
-        rows="10"
+        rows="5"
         @input="setActive"
       />
     </label>
-  </form>
+  </div>
 </template>
 
 <script lang="ts">

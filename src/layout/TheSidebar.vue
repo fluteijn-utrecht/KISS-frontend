@@ -40,12 +40,15 @@
               <template #tab="{ label }">
                 <span :title="label" class="icon-after phone-flip" />
               </template>
-              <contactverzoek-formulier
-                v-model="
-                  contactmomentStore.huidigContactmoment.huidigeVraag
-                    .contactverzoek
-                "
-              />
+              <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
+              <form @submit.prevent>
+                <contactverzoek-formulier
+                  v-model="
+                    contactmomentStore.huidigContactmoment.huidigeVraag
+                      .contactverzoek
+                  "
+                />
+              </form>
             </tab-list-item>
           </tab-list>
         </div>

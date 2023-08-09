@@ -47,6 +47,8 @@ export const saveContactmoment = (
     .then(throwIfNotOk)
     .then((r) => r.json());
 
+export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
+
 export const useGespreksResultaten = () => {
   const fetchBerichten = (url: string) =>
     fetchLoggedIn(url)
@@ -58,10 +60,19 @@ export const useGespreksResultaten = () => {
         }
         return r.json();
       })
-      .then((results) => {
+      .then((results: Array<Gespreksresultaat>) => {
         if (!Array.isArray(results))
           throw new Error("unexpected json result: " + JSON.stringify(results));
-        return results as Array<Gespreksresultaat>;
+        const hasContactverzoekResultaat = results.some(
+          ({ definitie }) => definitie === CONTACTVERZOEK_GEMAAKT
+        );
+        if (!hasContactverzoekResultaat) {
+          results.push({
+            definitie: CONTACTVERZOEK_GEMAAKT,
+          });
+          results.sort((a, b) => a.definitie.localeCompare(b.definitie));
+        }
+        return results;
       });
 
   return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);

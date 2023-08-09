@@ -306,68 +306,16 @@
               v-if="gespreksresultaten.success"
             >
               <option
-                v-for="gespreksresultaat in gespreksresultaten.data"
-                :key="gespreksresultaat.id"
+                v-for="(gespreksresultaat, i) in gespreksresultaten.data"
+                :key="`gespreksresultaat_${i}`"
               >
                 {{ gespreksresultaat.definitie }}
               </option>
             </select>
 
-            <template
-              v-if="vraag.gespreksresultaat === 'Contactverzoek gemaakt'"
-            >
-              <label />
-
+            <template v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT">
               <div class="contactverzoek-container">
-                <div v-if="afdelingen.success && afdelingen.data.length">
-                  <label
-                    class="utrecht-form-label"
-                    :for="'verzoek-afdeling' + idx"
-                    >Afdeling</label
-                  >
-                  <select
-                    v-model="vraag.contactverzoek.afdeling"
-                    class="utrecht-select utrecht-select--html-select"
-                    :id="'verzoek-afdeling' + idx"
-                  >
-                    <option
-                      v-for="afdeling in afdelingen.data"
-                      :key="idx + afdeling.id"
-                      :value="afdeling.name"
-                    >
-                      {{ afdeling.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    class="utrecht-form-label required"
-                    :for="'verzoek-medewerker' + idx"
-                    >Contactverzoek versturen naar</label
-                  >
-                  <medewerker-search
-                    v-model="vraag.contactverzoek.medewerker"
-                    :id="'verzoek-medewerker' + idx"
-                    class="utrecht-textbox utrecht-textbox--html-input medewerker-search"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    class="utrecht-form-label required"
-                    :for="'verzoek-notitie' + idx"
-                    >Notitie</label
-                  >
-                  <textarea
-                    required
-                    rows="5"
-                    class="utrecht-textarea"
-                    :id="'verzoek-notitie' + idx"
-                    v-model="vraag.contactverzoek.notitie"
-                  ></textarea>
-                </div>
+                <contactverzoek-formulier v-model="vraag.contactverzoek" />
               </div>
             </template>
 
@@ -471,16 +419,19 @@ import {
   useGespreksResultaten,
   type Contactmoment,
   koppelZaakContactmoment,
+  CONTACTVERZOEK_GEMAAKT,
 } from "@/features/contactmoment";
 
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
-import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
-import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
+import {
+  ContactverzoekFormulier,
+  saveContactverzoek,
+  useAfdelingen,
+} from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
-
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -498,7 +449,7 @@ onMounted(() => {
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
-      vraag.gespreksresultaat = "Contactverzoek gemaakt";
+      vraag.gespreksresultaat = CONTACTVERZOEK_GEMAAKT;
     }
     if (!vraag.kanaal) {
       vraag.kanaal = userStore.preferences.kanaal;
@@ -879,6 +830,7 @@ select {
 }
 
 .contactverzoek-container {
+  grid-column: 2;
   padding-inline-start: var(--utrecht-form-input-padding-inline-start);
   padding-inline-end: var(--utrecht-form-input-padding-inline-end);
   padding-block: var(--spacing-default);
