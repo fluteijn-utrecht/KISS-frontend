@@ -376,17 +376,6 @@ export const useContactmomentStore = defineStore("contactmoment", {
       huidigeVraag.vraag = werkinstructie;
     },
 
-    updateContactverzoek(contactverzoek: ContactmomentContactVerzoek) {
-      const { huidigContactmoment } = this;
-
-      if (!huidigContactmoment) return;
-
-      huidigContactmoment.huidigeVraag.contactverzoek = {
-        ...contactverzoek,
-        isActive: true,
-      };
-    },
-
     removeVraag(vraagIndex: number) {
       const { huidigContactmoment } = this;
 
