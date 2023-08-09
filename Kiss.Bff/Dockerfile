@@ -12,9 +12,6 @@ RUN addgroup --group kiss --gid 2000 \
 RUN chown kiss:kiss  /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 as dotnetbuild
-RUN apt-get update && apt-get install unzip
-WORKDIR /custom-certs
-RUN wget https://developers.kvk.nl/cms/api/uploads/Private_Chain_api_kvk_nl.zip && unzip -j Private_Chain_api_kvk_nl.zip
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
@@ -53,7 +50,7 @@ RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 
 FROM base AS final
 WORKDIR /app
-COPY --from=dotnetpublish /custom-certs /usr/local/share/ca-certificates
+COPY certificates /usr/local/share/ca-certificates
 RUN update-ca-certificates
 COPY --from=dotnetpublish /app/publish .
 COPY --from=frontendbuild /app/dist ./wwwroot
