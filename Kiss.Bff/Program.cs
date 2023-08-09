@@ -2,6 +2,7 @@
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
+using Kiss.Bff.InterneTaak;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
@@ -89,6 +90,8 @@ try
 
     builder.Services.AddHealthChecks();
 
+    builder.Services.AddInterneTaakProxy(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"]);
+
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .Enrich.FromLogContext());
@@ -109,6 +112,7 @@ try
     app.UseAuthorization();
     app.MapKissAuthEndpoints();
     app.MapControllers();
+    app.MapInterneTaakObjectTypeUrlEndpoint(app.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"]);
     app.MapKissProxy();
     app.MapHealthChecks("/healthz");
     app.MapFallbackToIndexHtml();

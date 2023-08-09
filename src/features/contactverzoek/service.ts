@@ -1,12 +1,14 @@
 import {
   fetchLoggedIn,
-  getFormattedUtcDate,
   // parseJson,
   // parsePagination,
   ServiceResult,
   throwIfNotOk,
 } from "@/services";
-import type { NieuweKlant } from "@/stores/contactmoment";
+import type {
+  ContactmomentContactVerzoek,
+  NieuweKlant,
+} from "@/stores/contactmoment";
 // creating a klant will be done differently in the future. for now, jus reuse the type from the klant feature
 import { KlantType } from "../klant/types";
 
@@ -21,10 +23,57 @@ export interface Contactverzoek {
   specifiekevraag?: string;
 }
 
-export function saveContactverzoek(data: Contactverzoek) {
-  return Promise.reject("not implemented");
-  const url = "/api/contactmomenten";
-  const registratiedatum = getFormattedUtcDate();
+export const useContactverzoekObjectTypeUrl = ServiceResult.fromFetcher(
+  "/api/internetaak/objecttypeurl",
+  (url) =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then((r) => r.text())
+);
+
+export function saveContactverzoek({
+  data,
+  contactmomentUrl,
+  typeUrl,
+  klantUrl,
+  persoonsnaam,
+  organisatie,
+}: {
+  data: ContactmomentContactVerzoek;
+  contactmomentUrl: string;
+  typeUrl: string;
+  klantUrl: string;
+  persoonsnaam?: {
+    voornaam: string;
+    achternaam: string;
+    voorvoegselAchternaam?: string;
+  };
+  organisatie?: string | undefined;
+}) {
+  const url = "/api/internetaak/api/v2/objects";
+  const registratiedatum = new Date().toISOString();
+  const digitaleAdressen = [] as any[];
+  if (data.emailadres) {
+    digitaleAdressen.push({
+      adres: data.emailadres,
+      omschrijving: "e-mailadres",
+      soortDigitaalAdres: "e-mailadres",
+    });
+  }
+  if (data.telefoonnummer1) {
+    digitaleAdressen.push({
+      adres: data.telefoonnummer1,
+      omschrijving: "telefoonnummer",
+      soortDigitaalAdres: "telefoonnummer",
+    });
+  }
+  if (data.telefoonnummer2) {
+    digitaleAdressen.push({
+      adres: data.telefoonnummer2,
+      omschrijving: data.omschrijvingTelefoonnummer2 || "telefoonnummer",
+      soortDigitaalAdres: "telefoonnummer",
+    });
+  }
 
   return fetchLoggedIn(url, {
     method: "POST",
@@ -33,8 +82,27 @@ export function saveContactverzoek(data: Contactverzoek) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      ...data,
-      registratiedatum,
+      type: typeUrl,
+      record: {
+        typeVersion: 0,
+        startAt: registratiedatum,
+        data: {
+          contactmoment: contactmomentUrl,
+          registratiedatum,
+          toelichting: data.interneToelichting,
+          actor: {
+            identificatie: data.medewerker,
+            soortActor: "medewerker",
+          },
+          betrokkene: {
+            rol: "klant",
+            klant: klantUrl,
+            persoonsnaam,
+            organisatie,
+            digitaleAdressen,
+          },
+        },
+      },
     }),
   })
     .then(throwIfNotOk)
