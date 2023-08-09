@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Web;
 using Kiss.Bff.Beheer.Data;
 using Microsoft.AspNetCore.Mvc;
