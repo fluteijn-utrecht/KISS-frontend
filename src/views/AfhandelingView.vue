@@ -430,6 +430,7 @@ import {
   ContactverzoekFormulier,
   saveContactverzoek,
   useAfdelingen,
+  useContactverzoekObjectTypeUrl,
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 const router = useRouter();
@@ -437,6 +438,7 @@ const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
+const typeUrl = useContactverzoekObjectTypeUrl();
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.
@@ -575,28 +577,38 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   let contactverzoekUrl: string | undefined;
 
+  const savedContactmoment = await saveContactmoment(contactmoment);
+  await writeContactmomentDetails(contactmoment, savedContactmoment.url);
+
   if (vraag.gespreksresultaat === "Contactverzoek gemaakt") {
+    const klant = vraag.klanten
+      .filter((x) => x.shouldStore)
+      .map((x) => x.klant)
+      .find((x) => x.url);
+    const klantUrl = klant?.url;
+
+    const type = typeUrl.success ? typeUrl.data : "";
+
     const contactverzoek = await saveContactverzoek({
-      bronorganisatie: organisatieIds.value[0] || "",
-      todo: {
-        name: "contactverzoek",
-        description: vraag.contactverzoek.notitie,
-        attendees: [
-          vraag.contactverzoek.medewerker,
-          vraag.contactverzoek.afdeling,
-        ].filter(Boolean),
-      },
-      vraag: vraag.vraag?.title,
-      specifiekevraag: vraag.specifiekevraag || undefined,
+      data: vraag.contactverzoek,
+      contactmomentUrl: savedContactmoment.url,
+      klantUrl,
+      typeUrl: type,
+      organisatie: klant?.bedrijfsnaam,
+      persoonsnaam:
+        klant?.achternaam && klant.voornaam
+          ? {
+              voornaam: klant.voornaam,
+              achternaam: klant.achternaam,
+              voorvoegselAchternaam: klant.voorvoegselAchternaam,
+            }
+          : undefined,
     });
 
     await koppelKlanten(vraag, contactverzoek.id);
 
     contactverzoekUrl = contactverzoek.url;
   }
-
-  const savedContactmoment = await saveContactmoment(contactmoment);
-  await writeContactmomentDetails(contactmoment, savedContactmoment.url);
 
   await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
 
