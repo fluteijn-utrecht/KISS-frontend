@@ -13,17 +13,19 @@ export * from "./types";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
 export type ContactmomentContactVerzoek = {
-  url: string;
-  medewerker: string;
-  afdeling: string;
-  notitie: string;
-  naam: string;
-  telefoonnummer1: string;
-  telefoonnummer2: string;
-  omschrijvingTelefoonnummer2: string;
-  emailadres: string;
-  interneToelichting: string;
-  isActive: boolean;
+  url?: string;
+  medewerker?: string;
+  afdeling?: string;
+  organisatie?: string;
+  voornaam?: string;
+  achternaam?: string;
+  voorvoegselAchternaam?: string;
+  telefoonnummer1?: string;
+  telefoonnummer2?: string;
+  omschrijvingTelefoonnummer2?: string;
+  emailadres?: string;
+  interneToelichting?: string;
+  isActive?: boolean;
 };
 
 export type ContactmomentKlant = {
@@ -213,12 +215,22 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
+      const { contactverzoek } = huidigeVraag;
 
       const match = huidigeVraag.klanten.find((x) => x.klant.id === klant.id);
 
       huidigeVraag.klanten.forEach((x) => {
         x.shouldStore = false;
       });
+
+      if (!contactverzoek.isActive) {
+        contactverzoek.achternaam = klant.achternaam;
+        contactverzoek.voornaam = klant.voornaam;
+        contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
+        contactverzoek.telefoonnummer1 = klant.telefoonnummer;
+        contactverzoek.emailadres = klant.emailadres;
+        contactverzoek.organisatie = klant.bedrijfsnaam;
+      }
 
       if (match) {
         match.klant = klant;

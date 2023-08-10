@@ -25,6 +25,47 @@ namespace Kiss.Bff
     public delegate Task<HttpResponseMessage> SendRequestMessageAsync(HttpRequestMessage request, CancellationToken cancellationToken);
 }
 
+namespace Microsoft.AspNetCore.Mvc
+{
+    public sealed class ProxyResult : IActionResult, IDisposable
+    {
+        private readonly HttpRequestMessage _request;
+
+        public ProxyResult(HttpRequestMessage request)
+        {
+            _request = request;
+        }
+
+        public void Dispose() => _request?.Dispose();
+
+        public async Task ExecuteResultAsync(ActionContext context)
+        {
+            var factory = context.HttpContext.RequestServices.GetRequiredService<IHttpClientFactory>();
+
+            var token = context.HttpContext.RequestAborted;
+            var proxiedResponse = context.HttpContext.Response;
+
+            using var client = factory.CreateClient("default");
+            using var responseMessage = await client.SendAsync(_request, HttpCompletionOption.ResponseHeadersRead, token);
+
+            proxiedResponse.StatusCode = (int)responseMessage.StatusCode;
+
+            foreach (var item in responseMessage.Headers)
+            {
+                proxiedResponse.Headers[item.Key] = new(item.Value.ToArray());
+            }
+
+            foreach (var item in responseMessage.Content.Headers)
+            {
+                proxiedResponse.Headers[item.Key] = new(item.Value.ToArray());
+            }
+
+            await using var stream = await responseMessage.Content.ReadAsStreamAsync(token);
+            await stream.CopyToAsync(proxiedResponse.Body, token);
+        }
+    }
+}
+
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class KissProxyExtensions
@@ -65,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 _ = (context?.Route.WithTransformQueryValue("klant", value: $"hhhhhhh{klantPramValue}"));
 
 
-              //  context.AddQueryRouteValue("klant", "gggg");
+                //  context.AddQueryRouteValue("klant", "gggg");
                 context.AddRequestTransform(match.ApplyRequestTransform);
             }
         }
@@ -90,7 +131,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 RouteId = x.Route,
                 ClusterId = x.Route,
                 Match = new RouteMatch { Path = $"/api/{x.Route.Trim('/')}/{{*any}}" },
-                
+
                 Transforms = new[]
                 {
                     new Dictionary<string, string>
@@ -132,7 +173,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }).ToArray();
 
             _config = new SimpleProxyConfig(routes, clusters);
- 
+
         }
 
         public IProxyConfig GetConfig() => _config;
@@ -167,7 +208,7 @@ namespace Microsoft.Extensions.DependencyInjection
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler) 
+        protected override HttpMessageHandler WrapHandler(ForwarderHttpClientContext context, HttpMessageHandler handler)
             => new KissDelegatingHandler(_httpContextAccessor, _serviceScopeFactory) { InnerHandler = handler };
     }
 

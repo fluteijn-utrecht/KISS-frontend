@@ -71,6 +71,7 @@ import {
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
 import { TabList, TabListItem } from "@/components/tabs";
+import { watchEffect } from "vue";
 
 enum NotitieTabs {
   Regulier = "Reguliere notitie",
@@ -92,23 +93,6 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  }
-);
-
-watch(
-  () => state.value.currentNotitieTab,
-  (tab) => {
-    if (
-      tab !== NotitieTabs.Contactverzoek ||
-      !contactmomentStore.huidigContactmoment
-    )
-      return;
-
-    const { huidigeVraag } = contactmomentStore.huidigContactmoment;
-
-    if (huidigeVraag.notitie && !huidigeVraag.contactverzoek.notitie) {
-      huidigeVraag.contactverzoek.notitie = huidigeVraag.notitie;
-    }
   }
 );
 </script>

@@ -33,59 +33,92 @@
       />
     </label>
 
-    <label class="utrecht-form-label">
-      <span>Klantnaam</span>
-      <input
-        v-model="form.naam"
-        type="tel"
-        name="Naam"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        @input="setActive"
-      />
-    </label>
+    <form-fieldset>
+      <form-fieldset-legend>Klant</form-fieldset-legend>
+      <label class="utrecht-form-label">
+        <span>Voornaam</span>
+        <input
+          v-model="form.voornaam"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Tussenvoegsel</span>
+        <input
+          v-model="form.voorvoegselAchternaam"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Achternaam</span>
+        <input
+          v-model="form.achternaam"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Organisatie</span>
+        <input
+          v-model="form.organisatie"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Telefoonnummer 1</span>
+        <input
+          ref="telEl"
+          v-model="form.telefoonnummer1"
+          type="tel"
+          name="Telefoonnummer 1"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
 
-    <label class="utrecht-form-label">
-      <span>Telefoonnummer 1</span>
-      <input
-        v-model="form.telefoonnummer1"
-        type="tel"
-        name="Telefoonnummer 1"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        @input="setActive"
-      />
-    </label>
+      <label class="utrecht-form-label">
+        <span>Telefoonnummer 2</span>
+        <input
+          v-model="form.telefoonnummer2"
+          type="tel"
+          name="Telefoonnummer 2"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
 
-    <label class="utrecht-form-label">
-      <span>Telefoonnummer 2</span>
-      <input
-        v-model="form.telefoonnummer2"
-        type="tel"
-        name="Telefoonnummer 2"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        @input="setActive"
-      />
-    </label>
+      <label class="utrecht-form-label">
+        <span>Omschrijving telefoonnummer 2</span>
+        <input
+          v-model="form.omschrijvingTelefoonnummer2"
+          name="Omschrijving telefoonnummer 2"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
 
-    <label class="utrecht-form-label">
-      <span>Omschrijving telefoonnummer 2</span>
-      <input
-        v-model="form.omschrijvingTelefoonnummer2"
-        name="Omschrijving telefoonnummer 2"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        @input="setActive"
-      />
-    </label>
-
-    <label class="utrecht-form-label">
-      <span>E-mailadres</span>
-      <input
-        v-model="form.emailadres"
-        type="email"
-        name="E-mailadres"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        @input="setActive"
-      />
-    </label>
+      <label class="utrecht-form-label">
+        <span>E-mailadres</span>
+        <input
+          v-model="form.emailadres"
+          type="email"
+          name="E-mailadres"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+    </form-fieldset>
 
     <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
@@ -108,7 +141,10 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
+import {
+  FormFieldset,
+  FormFieldsetLegend,
+} from "@utrecht/component-library-vue";
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
 import { useAfdelingen } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
@@ -132,7 +168,7 @@ watch(
   (v) => {
     form.value = v;
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 
 watch(
@@ -150,6 +186,24 @@ const afdelingen = useAfdelingen();
 const setActive = () => {
   form.value.isActive = true;
 };
+
+const telEl = ref<HTMLInputElement>();
+
+watch(
+  [
+    telEl,
+    () =>
+      !!form.value.telefoonnummer1 ||
+      !!form.value.telefoonnummer2 ||
+      !!form.value.emailadres,
+  ],
+  ([el, hasContact]) => {
+    if (!el) return;
+    el.setCustomValidity(
+      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in"
+    );
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -161,5 +215,10 @@ const setActive = () => {
 
 textarea {
   resize: none;
+}
+
+fieldset {
+  display: grid;
+  gap: var(--spacing-extrasmall);
 }
 </style>

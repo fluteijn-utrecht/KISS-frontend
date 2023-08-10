@@ -11,35 +11,21 @@ import type {
 } from "@/stores/contactmoment";
 // creating a klant will be done differently in the future. for now, jus reuse the type from the klant feature
 import { KlantType } from "../klant/types";
-
-export const useContactverzoekObjectTypeUrl = () =>
-  ServiceResult.fromFetcher("/api/internetaak/objecttypeurl", (url) =>
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then((r) => r.text())
-  );
+import { formatIsoDate } from "@/helpers/date";
 
 export function saveContactverzoek({
   data,
   contactmomentUrl,
-  typeUrl,
   klantUrl,
-  persoonsnaam,
-  organisatie,
 }: {
   data: ContactmomentContactVerzoek;
   contactmomentUrl: string;
-  typeUrl: string;
   klantUrl?: string;
-  persoonsnaam?: {
-    voornaam: string;
-    achternaam: string;
-    voorvoegselAchternaam?: string;
-  };
-  organisatie?: string | undefined;
 }) {
   const url = "/api/internetaak/api/v2/objects";
-  const registratiedatum = new Date().toISOString();
+  const now = new Date();
+  const registratiedatum = now.toISOString();
+  const startAt = formatIsoDate(now);
   const digitaleAdressen = [] as any[];
   if (data.emailadres) {
     digitaleAdressen.push({
@@ -70,10 +56,9 @@ export function saveContactverzoek({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      type: typeUrl,
       record: {
         typeVersion: 0,
-        startAt: registratiedatum,
+        startAt,
         data: {
           contactmoment: contactmomentUrl,
           registratiedatum,
@@ -86,9 +71,11 @@ export function saveContactverzoek({
             rol: "klant",
             klant: klantUrl,
             persoonsnaam: {
-              voornaam: data.naam
+              voornaam: data.voornaam,
+              voorvoegselAchternaam: data.voorvoegselAchternaam,
+              achternaam: data.achternaam,
             },
-            organisatie,
+            organisatie: data.organisatie,
             digitaleAdressen,
           },
         },

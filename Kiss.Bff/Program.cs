@@ -90,7 +90,7 @@ try
 
     builder.Services.AddHealthChecks();
 
-    builder.Services.AddInterneTaakProxy(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"]);
+    builder.Services.AddInterneTaakProxy(new(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"], builder.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"]));
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -112,7 +112,6 @@ try
     app.UseAuthorization();
     app.MapKissAuthEndpoints();
     app.MapControllers();
-    app.MapInterneTaakObjectTypeUrlEndpoint(app.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"]);
     app.MapKissProxy();
     app.MapHealthChecks("/healthz");
     app.MapFallbackToIndexHtml();

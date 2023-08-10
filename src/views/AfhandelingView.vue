@@ -429,8 +429,6 @@ import { nanoid } from "nanoid";
 import {
   ContactverzoekFormulier,
   saveContactverzoek,
-  useAfdelingen,
-  useContactverzoekObjectTypeUrl,
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 const router = useRouter();
@@ -438,7 +436,6 @@ const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
-const typeUrl = useContactverzoekObjectTypeUrl();
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.
@@ -580,29 +577,17 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const savedContactmoment = await saveContactmoment(contactmoment);
   await writeContactmomentDetails(contactmoment, savedContactmoment.url);
 
-  if (vraag.gespreksresultaat === "Contactverzoek gemaakt") {
+  if (vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT) {
     const klant = vraag.klanten
       .filter((x) => x.shouldStore)
       .map((x) => x.klant)
       .find((x) => x.url);
     const klantUrl = klant?.url;
 
-    const type = typeUrl.success ? typeUrl.data : "";
-
     const contactverzoek = await saveContactverzoek({
       data: vraag.contactverzoek,
       contactmomentUrl: savedContactmoment.url,
       klantUrl,
-      typeUrl: type,
-      organisatie: klant?.bedrijfsnaam,
-      persoonsnaam:
-        klant?.achternaam && klant.voornaam
-          ? {
-              voornaam: klant.voornaam,
-              achternaam: klant.achternaam,
-              voorvoegselAchternaam: klant.voorvoegselAchternaam,
-            }
-          : undefined,
     });
 
     await koppelKlanten(vraag, contactverzoek.id);
@@ -763,8 +748,6 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
-
-const afdelingen = useAfdelingen();
 </script>
 
 <style scoped lang="scss">
