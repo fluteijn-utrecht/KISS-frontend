@@ -98,10 +98,7 @@
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import {
-  ContactmomentenOverzicht,
-  useContactverzoekenByKlantId,
-} from "@/features/contactmoment";
+import { ContactmomentenOverzicht } from "@/features/contactmoment";
 import {
   KlantDetails,
   useKlantById,
@@ -110,13 +107,13 @@ import {
 } from "@/features/klant";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
-import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-
+import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
+import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
@@ -126,7 +123,7 @@ const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
-  klantId,
+  klantUrl,
   contactverzoekenPage
 );
 

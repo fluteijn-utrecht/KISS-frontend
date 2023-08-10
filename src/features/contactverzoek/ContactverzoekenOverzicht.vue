@@ -18,10 +18,10 @@
         class="verzoek-item-header"
         :class="{ 'is-active': activeContactverzoeken[idx] }"
       >
-        <span>{{ contactverzoek.datum }}</span>
-        <span>{{ contactverzoek.status }}</span>
-        <span>{{ contactverzoek.behandelaar }}</span>
-        <span>{{ contactverzoek.afgerond }}</span>
+        <span>{{ contactverzoek.record.data.registratiedatum }}</span>
+        <span>{{ contactverzoek.record.data.status }}</span>
+        <span>{{ contactverzoek.record.data.actor.identificatie }}</span>
+        <span>???</span>
         <span class="chevron icon-after chevron-down"></span>
       </button>
 
@@ -30,39 +30,49 @@
         :class="{ 'is-active': activeContactverzoeken[idx] }"
       >
         <dl>
-          <dt>Starttijd</dt>
-          <dd>{{ contactverzoek.starttijd }}</dd>
-        </dl>
-
-        <dl>
-          <dt>Aanmaker</dt>
-          <dd>{{ contactverzoek.aanmaker }}</dd>
-        </dl>
-
-        <dl>
-          <dt>Status</dt>
-          <dd>{{ contactverzoek.status }}</dd>
-        </dl>
-
-        <template v-if="contactverzoek.vraag">
-          <dl>
-            <dt>Vraag</dt>
-            <dd>{{ contactverzoek.vraag }}</dd>
-          </dl>
-        </template>
-        <template v-if="contactverzoek.specifiekevraag">
-          <dl>
-            <dt>Specificatie</dt>
-            <dd>{{ contactverzoek.specifiekevraag }}</dd>
-          </dl>
-        </template>
-
-        <dl>
-          <dt>Notitie</dt>
+          <dt>Toelichting voor de collega</dt>
           <dd>
-            {{ contactverzoek.notitie }}
+            {{ contactverzoek.record.data.toelichting }}
           </dd>
         </dl>
+
+        <dl
+          v-if="contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam"
+        >
+          <dt>Klant</dt>
+          <dd>
+            {{
+              [
+                contactverzoek.record.data.betrokkene.persoonsnaam?.voornaam,
+                contactverzoek.record.data.betrokkene.persoonsnaam
+                  ?.voorvoegselAchternaam,
+                contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam,
+              ]
+                .filter(Boolean)
+                .join(" ")
+            }}
+          </dd>
+        </dl>
+
+        <dl v-if="contactverzoek.record.data.betrokkene.organisatie">
+          <dt>Organisatie</dt>
+          <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
+        </dl>
+
+        <dl
+          v-for="(adres, idx) in contactverzoek.record.data.betrokkene
+            .digitaleAdressen"
+          :key="idx"
+        >
+          <dt>
+            {{ adres.omschrijving || adres.soortDigitaalAdres || "Contact" }}
+          </dt>
+          <dd>
+            {{ adres.adres }}
+          </dd>
+        </dl>
+
+        <slot name="contactmoment"></slot>
       </div>
     </div>
   </section>
@@ -72,13 +82,23 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import type { ContactverzoekDetail } from "./types";
+import type { Contactverzoek } from "./service";
+import { watch } from "vue";
 
 const props = defineProps<{
-  contactverzoeken: ContactverzoekDetail[];
+  contactverzoeken: Contactverzoek[];
 }>();
 
-const activeContactverzoeken = ref(props.contactverzoeken.map(() => false));
+const activeContactverzoeken = ref([] as boolean[]);
+
+watch(
+  () => props.contactverzoeken.length - activeContactverzoeken.value.length,
+  (diff) => {
+    for (let index = 0; index < diff; index++) {
+      activeContactverzoeken.value.push(false);
+    }
+  }
+);
 
 const toggleItemContent = (idx: number) => {
   activeContactverzoeken.value[idx] = !activeContactverzoeken.value[idx];

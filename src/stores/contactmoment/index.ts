@@ -74,8 +74,6 @@ function initVraag(): Vraag {
       url: "",
       medewerker: "",
       afdeling: "",
-      notitie: "",
-      naam: "",
       telefoonnummer1: "",
       telefoonnummer2: "",
       omschrijvingTelefoonnummer2: "",
