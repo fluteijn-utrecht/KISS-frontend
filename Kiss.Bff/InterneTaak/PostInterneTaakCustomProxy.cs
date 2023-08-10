@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.InterneTaak
@@ -7,17 +6,17 @@ namespace Kiss.Bff.InterneTaak
     [ApiController]
     public class PostInterneTaakCustomProxy : ControllerBase
     {
-        private readonly InterneTaakSettings _settings;
+        private readonly InterneTaakProxyConfig _config;
 
-        public PostInterneTaakCustomProxy(InterneTaakSettings settings)
+        public PostInterneTaakCustomProxy(InterneTaakProxyConfig config)
         {
-            _settings = settings;
+            _config = config;
         }
 
         [HttpPost("api/internetaak/api/{version}/objects")]
         public IActionResult Post([FromRoute] string version, [FromBody] JsonObject node)
         {
-            node["type"] = _settings.ObjectTypeUrl;
+            node["type"] = _config.ObjectTypeUrl;
 
             if (node.TryGetPropertyValue("record", out var record)
                 && record is JsonObject recordObj
@@ -27,10 +26,9 @@ namespace Kiss.Bff.InterneTaak
                 dataObj["medewerkerIdentificatie"] = User.GetMedewerkerIdentificatie();
             }
 
-            var url = $"{_settings.Destination.AsSpan().TrimEnd('/')}/api/{version}/objects";
+            var url = $"{_config.Destination.AsSpan().TrimEnd('/')}/api/{version}/objects";
             var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(node) };
-            request.Headers.Authorization = new AuthenticationHeaderValue("Token", _settings.Token);
-            request.Headers.Add("Content-Crs", "EPSG:4326");
+            _config.ApplyHeaders(request.Headers);
 
             return new ProxyResult(request);
         }
