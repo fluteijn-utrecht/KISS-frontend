@@ -12,24 +12,12 @@ import type {
 // creating a klant will be done differently in the future. for now, jus reuse the type from the klant feature
 import { KlantType } from "../klant/types";
 
-export interface Contactverzoek {
-  bronorganisatie: string; //verplicht in de api
-  todo: {
-    name: "contactverzoek";
-    description: string;
-    attendees: string[];
-  };
-  vraag?: string;
-  specifiekevraag?: string;
-}
-
-export const useContactverzoekObjectTypeUrl = ServiceResult.fromFetcher(
-  "/api/internetaak/objecttypeurl",
-  (url) =>
+export const useContactverzoekObjectTypeUrl = () =>
+  ServiceResult.fromFetcher("/api/internetaak/objecttypeurl", (url) =>
     fetchLoggedIn(url)
       .then(throwIfNotOk)
       .then((r) => r.text())
-);
+  );
 
 export function saveContactverzoek({
   data,
@@ -42,7 +30,7 @@ export function saveContactverzoek({
   data: ContactmomentContactVerzoek;
   contactmomentUrl: string;
   typeUrl: string;
-  klantUrl: string;
+  klantUrl?: string;
   persoonsnaam?: {
     voornaam: string;
     achternaam: string;
@@ -97,7 +85,9 @@ export function saveContactverzoek({
           betrokkene: {
             rol: "klant",
             klant: klantUrl,
-            persoonsnaam,
+            persoonsnaam: {
+              voornaam: data.naam
+            },
             organisatie,
             digitaleAdressen,
           },
