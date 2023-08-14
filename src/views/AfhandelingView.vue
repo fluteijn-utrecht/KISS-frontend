@@ -313,12 +313,6 @@
               </option>
             </select>
 
-            <template v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT">
-              <div class="contactverzoek-container">
-                <contactverzoek-formulier v-model="vraag.contactverzoek" />
-              </div>
-            </template>
-
             <label
               :for="'hoofdvraag' + idx"
               class="utrecht-form-label required"
@@ -376,6 +370,14 @@
               v-model="vraag.notitie"
             ></textarea>
           </fieldset>
+        </section>
+
+        <section
+          v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT"
+          class="contactverzoek-container"
+        >
+          <utrecht-heading :level="3"> Contactverzoek</utrecht-heading>
+          <contactverzoek-formulier v-model="vraag.contactverzoek" />
         </section>
       </article>
       <menu>
@@ -809,22 +811,10 @@ select {
 }
 
 .contactverzoek-container {
-  grid-column: 2;
-  padding-inline-start: var(--utrecht-form-input-padding-inline-start);
-  padding-inline-end: var(--utrecht-form-input-padding-inline-end);
-  padding-block: var(--spacing-default);
-  border: 1px solid var(--color-primary);
-
-  & > :not(:last-child) {
-    margin-block-end: var(--spacing-default);
-    padding-block-end: var(--spacing-default);
-    border-bottom: var(--spacing-small) solid var(--color-primary);
-  }
-
-  span {
-    display: block;
-    font-weight: 600;
-    color: var(--utrecht-form-label-color);
+  :deep(label) {
+    display: grid;
+    grid-template-columns: 15rem auto;
+    gap: var(--spacing-default);
   }
 }
 
