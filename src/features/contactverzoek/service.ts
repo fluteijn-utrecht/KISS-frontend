@@ -24,6 +24,7 @@ type NewContactverzoek = {
       status: string;
       contactmoment: string;
       registratiedatum: string;
+      datumVerwerkt?: string;
       toelichting?: string;
       actor: {
         identificatie: string;
