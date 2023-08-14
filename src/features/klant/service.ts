@@ -341,3 +341,36 @@ export async function ensureKlantForVestigingsnummer(
 
   return newKlant;
 }
+
+export function createKlant({
+  telefoonnummer = "",
+  emailadres = "",
+  bronorganisatie = "",
+}) {
+  if (!bronorganisatie) return Promise.reject();
+  if (!telefoonnummer && !emailadres) return Promise.reject();
+
+  return fetchLoggedIn(klantRootUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      bronorganisatie,
+      emailadres,
+      telefoonnummer,
+      // TODO: WAT MOET HIER IN KOMEN?
+      klantnummer: nanoid(8),
+      subjectType: KlantType.Persoon,
+      subjectIdentificatie: { inpBsn: "" },
+    }),
+  })
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(mapKlant)
+    .then((newKlant) => {
+      const idUrl = getKlantIdUrl(newKlant.id);
+      mutate(idUrl, newKlant);
+      return newKlant;
+    });
+}

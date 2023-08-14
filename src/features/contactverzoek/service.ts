@@ -152,26 +152,6 @@ export function useContactverzoekenByKlantId(
   return ServiceResult.fromFetcher(getUrl, fetchContactverzoeken);
 }
 
-export function createKlant(klant: NieuweKlant) {
-  return Promise.reject("not implemented");
-  const url = "/api/klanten";
-  return fetchLoggedIn(url, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      ...klant,
-      bronorganisatie,
-      // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: "123",
-      subjectType: KlantType.Persoon,
-    }),
-  })
-    .then(throwIfNotOk)
-    .then((r) => r.json());
-}
-
 // interface Afdeling {
 //   id: string;
 //   name: string;

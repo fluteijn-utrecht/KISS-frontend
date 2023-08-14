@@ -433,6 +433,7 @@ import {
   saveContactverzoek,
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
+import { createKlant } from "@/features/klant/service";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -569,15 +570,29 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const promises = [
     writeContactmomentDetails(contactmoment, savedContactmoment.url),
     zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
-    koppelKlanten(vraag, savedContactmoment.url),
   ];
 
   if (vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT) {
-    const klant = vraag.klanten
+    let klantUrl = vraag.klanten
       .filter((x) => x.shouldStore)
-      .map((x) => x.klant)
-      .find((x) => x.url);
-    const klantUrl = klant?.url;
+      .map((x) => x.klant.url)
+      .find(Boolean);
+
+    if (!klantUrl) {
+      const newKlant = await createKlant({
+        bronorganisatie: organisatieIds.value[0],
+        emailadres: vraag.contactverzoek.emailadres,
+        telefoonnummer: vraag.contactverzoek.telefoonnummer1,
+      });
+      vraag.klanten.push({
+        shouldStore: true,
+        klant: {
+          ...newKlant,
+          hasContactInformation: true,
+        },
+      });
+      klantUrl = newKlant.url;
+    }
 
     promises.push(
       saveContactverzoek({
@@ -587,6 +602,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       })
     );
   }
+
+  promises.push(koppelKlanten(vraag, savedContactmoment.url));
 
   await Promise.all(promises);
 
