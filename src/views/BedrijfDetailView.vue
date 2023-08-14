@@ -57,7 +57,11 @@
       :disabled="(c) => !c.page.length"
     >
       <template #success="{ data }">
-        <contactverzoeken-overzicht :contactverzoeken="data.page" />
+        <contactverzoeken-overzicht :contactverzoeken="data.page">
+          <template #contactmoment="{ url }">
+            <contactmoment-details :url="url"> </contactmoment-details>
+          </template>
+        </contactverzoeken-overzicht>
       </template>
     </tab-list-data-item>
   </tab-list>
@@ -84,7 +88,7 @@ import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
-
+import ContactmomentDetails from "@/features/contactmoment/ContactmomentDetails.vue";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();

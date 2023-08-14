@@ -72,7 +72,10 @@
           </dd>
         </dl>
 
-        <slot name="contactmoment"></slot>
+        <slot
+          name="contactmoment"
+          :url="contactverzoek.record.data.contactmoment"
+        ></slot>
       </div>
     </div>
   </section>
@@ -145,20 +148,20 @@ const toggleItemContent = (idx: number) => {
 .verzoek-item-content {
   background-color: var(--color-secondary);
 
-  dt {
-    font-weight: bold;
-  }
-
-  dl {
+  :deep(dl) {
     display: flex;
     padding: var(--spacing-default);
+
+    dt {
+      font-weight: bold;
+    }
+
+    > * {
+      flex: 1;
+    }
   }
 
-  dl > * {
-    flex: 1;
-  }
-
-  dl > dt {
+  :deep(dt) dl > dt {
     max-width: 150px;
   }
 

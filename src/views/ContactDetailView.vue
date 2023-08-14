@@ -31,7 +31,11 @@
 
       <contactverzoeken-overzicht
         :contactverzoeken="contactverzoeken.data.page"
-      />
+      >
+        <template #contactmoment="{ url }">
+          <contactmoment-details :url="url"> </contactmoment-details>
+        </template>
+      </contactverzoeken-overzicht>
     </template>
 
     <!-- Contactmomenten -->
@@ -70,11 +74,11 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactmomentDetails from "@/features/contactmoment/ContactmomentDetails.vue";
 const props = defineProps<{ contactId: string }>();
 const klantId = computed(() => props.contactId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
-
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 watch(

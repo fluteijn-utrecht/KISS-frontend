@@ -43,7 +43,11 @@
 
       <contactverzoeken-overzicht
         :contactverzoeken="contactverzoeken.data.page"
-      />
+      >
+        <template #contactmoment="{ url }">
+          <contactmoment-details :url="url"> </contactmoment-details>
+        </template>
+      </contactverzoeken-overzicht>
     </template>
 
     <!-- Zaken -->
@@ -114,11 +118,11 @@ import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactmomentDetails from "@/features/contactmoment/ContactmomentDetails.vue";
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
-
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 const contactverzoekenPage = ref(1);
