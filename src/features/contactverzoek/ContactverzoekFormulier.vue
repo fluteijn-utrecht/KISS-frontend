@@ -138,10 +138,6 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import {
-  FormFieldset,
-  FormFieldsetLegend,
-} from "@utrecht/component-library-vue";
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
 import { useAfdelingen } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
