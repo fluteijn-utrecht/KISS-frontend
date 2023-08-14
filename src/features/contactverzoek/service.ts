@@ -90,7 +90,7 @@ export function saveContactverzoek({
 
   const body: NewContactverzoek = {
     record: {
-      typeVersion: 0,
+      typeVersion: 1,
       startAt,
       data: {
         status: "te verwerken",
@@ -125,7 +125,7 @@ export function saveContactverzoek({
     body: JSON.stringify(body),
   })
     .then(throwIfNotOk)
-    .then((r) => r.json() as Promise<{ id: string; url: string }>);
+    .then((r) => r.json() as Promise<{ url: string }>);
 }
 
 export function useContactverzoekenByKlantId(

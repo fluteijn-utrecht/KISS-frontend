@@ -533,16 +533,6 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
-const koppelContactverzoek = (
-  contacmomentId: string,
-  contactverzoekUrl: string
-) =>
-  koppelObject({
-    contactmoment: contacmomentId,
-    object: contactverzoekUrl,
-    objectType: "contactmomentobject",
-  });
-
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const contactmoment: Contactmoment = {
     bronorganisatie: organisatieIds.value[0] || "",
@@ -572,10 +562,13 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   addWerkinstructiesToContactmoment(contactmoment, vraag);
   addVacToContactmoment(contactmoment, vraag);
 
-  let contactverzoekUrl: string | undefined;
-
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await writeContactmomentDetails(contactmoment, savedContactmoment.url);
+
+  const promises = [
+    writeContactmomentDetails(contactmoment, savedContactmoment.url),
+    zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
+    koppelKlanten(vraag, savedContactmoment.url),
+  ];
 
   if (vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT) {
     const klant = vraag.klanten
@@ -584,24 +577,16 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       .find((x) => x.url);
     const klantUrl = klant?.url;
 
-    const contactverzoek = await saveContactverzoek({
-      data: vraag.contactverzoek,
-      contactmomentUrl: savedContactmoment.url,
-      klantUrl,
-    });
-
-    await koppelKlanten(vraag, contactverzoek.id);
-
-    contactverzoekUrl = contactverzoek.url;
+    promises.push(
+      saveContactverzoek({
+        data: vraag.contactverzoek,
+        contactmomentUrl: savedContactmoment.url,
+        klantUrl,
+      })
+    );
   }
 
-  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
-
-  await koppelKlanten(vraag, savedContactmoment.url);
-
-  if (contactverzoekUrl) {
-    await koppelContactverzoek(savedContactmoment.url, contactverzoekUrl);
-  }
+  await Promise.all(promises);
 
   return savedContactmoment;
 };
@@ -623,9 +608,8 @@ async function submit() {
       gespreksId = nanoid();
     }
 
-    for (const vraag of otherVragen) {
-      await saveVraag(vraag, gespreksId);
-    }
+    const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
+    await Promise.all(promises);
 
     // klaar
     contactmomentStore.stop();
