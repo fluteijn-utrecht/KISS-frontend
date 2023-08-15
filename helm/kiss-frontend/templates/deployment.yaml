@@ -168,6 +168,12 @@ spec:
             value: {{ .Values.env.VAC_OBJECTTYPES_BASE_URL | quote }}
           - name: VAC_OBJECTTYPES_TOKEN
             value: {{ .Values.env.VAC_OBJECTTYPES_TOKEN | quote }}
+          - name: INTERNE_TAAK_BASE_URL
+            value: {{ .Values.env.INTERNE_TAAK_BASE_URL | quote }}
+          - name: INTERNE_TAAK_TOKEN
+            value: {{ .Values.env.INTERNE_TAAK_TOKEN | quote }}
+          - name: INTERNE_TAAK_OBJECT_TYPE_URL
+            value: {{ .Values.env.INTERNE_TAAK_OBJECT_TYPE_URL | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
