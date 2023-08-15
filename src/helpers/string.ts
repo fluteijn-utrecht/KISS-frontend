@@ -3,7 +3,7 @@ export function fullName({
   voornaam = "",
   voorvoegselAchternaam = "",
   achternaam = "",
-}) {
+} = {}) {
   return [voornaam || voorletters, voorvoegselAchternaam, achternaam]
     .filter(Boolean)
     .join(" ");

@@ -14,7 +14,14 @@ export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
 export type ContactmomentContactVerzoek = {
   url?: string;
-  medewerker?: string;
+  medewerker?: {
+    user: string;
+    contact: {
+      voornaam?: string;
+      voorvoegselAchternaam?: string;
+      achternaam?: string;
+    };
+  };
   afdeling?: string;
   organisatie?: string;
   voornaam?: string;
@@ -262,6 +269,8 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
+
+      huidigeVraag.contactverzoek.medewerker = medewerker;
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
         (m) => m.medewerker.id === medewerker.id
