@@ -20,11 +20,12 @@ export default {
 
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useGlobalSearch, useSources } from "./service";
 import type { SearchResult } from "./types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
+import type { PropType } from "vue";
 
 type DatalistItem = {
   value: string;
@@ -33,7 +34,7 @@ type DatalistItem = {
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: Object as PropType<Record<string, any> | undefined>,
     required: true,
   },
   id: {
@@ -46,7 +47,9 @@ const props = defineProps({
   },
 });
 
-function mapDatalistItem(x: SearchResult): DatalistItem {
+function mapDatalistItem(
+  x: SearchResult
+): DatalistItem & { obj: Record<string, any> } {
   const { contact, department, function: functie, user } = x?.jsonObject ?? {};
   const { voornaam, voorvoegselAchternaam, achternaam } = contact ?? {};
   const naam = [voornaam, voorvoegselAchternaam, achternaam]
@@ -55,6 +58,7 @@ function mapDatalistItem(x: SearchResult): DatalistItem {
   const werk = [functie, department].filter(Boolean).join(" bij ");
   const description = [naam, werk].filter(Boolean).join(": ");
   return {
+    obj: x.jsonObject,
     value: user,
     description,
   };
@@ -62,13 +66,24 @@ function mapDatalistItem(x: SearchResult): DatalistItem {
 
 const emit = defineEmits(["update:modelValue"]);
 
-const searchText = computed({
-  get: () => props.modelValue,
-  set(val) {
-    emit("update:modelValue", val);
-  },
-});
+const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
+
+watch(searchText, (v) => {
+  if (result.success) {
+    const match = result.data.page
+      .map((x) => x.jsonObject)
+      .find((x) => x?.user === v);
+    emit("update:modelValue", match);
+  }
+});
+watch(
+  () => props.modelValue,
+  (v) => {
+    searchText.value = v?.user;
+  },
+  { immediate: true }
+);
 
 const sources = useSources();
 

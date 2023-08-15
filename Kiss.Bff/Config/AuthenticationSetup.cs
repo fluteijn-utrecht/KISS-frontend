@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using System.Text.Json.Nodes;
+using AngleSharp.Io;
 using IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
@@ -19,6 +21,23 @@ namespace Kiss
         public static string? GetEmail(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.Email) ?? user?.FindFirstValue(JwtClaimTypes.PreferredUserName);
         public static string? GetLastName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.FamilyName) ?? user?.FindFirstValue(JwtClaimTypes.Name) ?? user?.Identity?.Name;
         public static string? GetFirstName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.GivenName);
+        public static JsonObject GetMedewerkerIdentificatie(this ClaimsPrincipal? user)
+        {
+            var email = user?.GetEmail();
+            var lastName = user?.GetLastName();
+            var firstName = user?.GetFirstName();
+
+            return new JsonObject
+            {
+                ["achternaam"] = Truncate(lastName, 200) ?? "",
+                ["identificatie"] = Truncate(email, 24) ?? "",
+                ["voorletters"] = Truncate(firstName, 20) ?? "",
+                ["voorvoegselAchternaam"] = "",
+            };
+        }
+        private static string? Truncate(string? value, int maxLength) => value != null && value.Length > maxLength
+            ? value[..maxLength]
+            : value;
     }
 }
 

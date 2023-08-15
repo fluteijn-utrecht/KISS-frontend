@@ -13,11 +13,26 @@ export * from "./types";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
 export type ContactmomentContactVerzoek = {
-  url: string;
-  medewerker: string;
-  afdeling: string;
-  notitie: string;
-  isActive: boolean;
+  url?: string;
+  medewerker?: {
+    user: string;
+    contact: {
+      voornaam?: string;
+      voorvoegselAchternaam?: string;
+      achternaam?: string;
+    };
+  };
+  afdeling?: string;
+  organisatie?: string;
+  voornaam?: string;
+  achternaam?: string;
+  voorvoegselAchternaam?: string;
+  telefoonnummer1?: string;
+  telefoonnummer2?: string;
+  omschrijvingTelefoonnummer2?: string;
+  emailadres?: string;
+  interneToelichting?: string;
+  isActive?: boolean;
 };
 
 export type ContactmomentKlant = {
@@ -66,7 +81,11 @@ function initVraag(): Vraag {
       url: "",
       medewerker: "",
       afdeling: "",
-      notitie: "",
+      telefoonnummer1: "",
+      telefoonnummer2: "",
+      omschrijvingTelefoonnummer2: "",
+      emailadres: "",
+      interneToelichting: "",
       isActive: false,
     },
     startdatum: new Date().toISOString(),
@@ -201,12 +220,22 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
+      const { contactverzoek } = huidigeVraag;
 
       const match = huidigeVraag.klanten.find((x) => x.klant.id === klant.id);
 
       huidigeVraag.klanten.forEach((x) => {
         x.shouldStore = false;
       });
+
+      if (!contactverzoek.isActive) {
+        contactverzoek.achternaam = klant.achternaam;
+        contactverzoek.voornaam = klant.voornaam;
+        contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
+        contactverzoek.telefoonnummer1 = klant.telefoonnummer;
+        contactverzoek.emailadres = klant.emailadres;
+        contactverzoek.organisatie = klant.bedrijfsnaam;
+      }
 
       if (match) {
         match.klant = klant;
@@ -240,6 +269,8 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
+
+      huidigeVraag.contactverzoek.medewerker = medewerker;
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
         (m) => m.medewerker.id === medewerker.id
@@ -362,17 +393,6 @@ export const useContactmomentStore = defineStore("contactmoment", {
       });
 
       huidigeVraag.vraag = werkinstructie;
-    },
-
-    updateContactverzoek(contactverzoek: ContactmomentContactVerzoek) {
-      const { huidigContactmoment } = this;
-
-      if (!huidigContactmoment) return;
-
-      huidigContactmoment.huidigeVraag.contactverzoek = {
-        ...contactverzoek,
-        isActive: true,
-      };
     },
 
     removeVraag(vraagIndex: number) {

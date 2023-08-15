@@ -1,8 +1,6 @@
-import { formatDateOnly, formatTimeOnly } from "@/helpers/date";
 import {
   throwIfNotOk,
   ServiceResult,
-  type Paginated,
   parsePagination,
   parseJson,
 } from "@/services";
@@ -13,10 +11,8 @@ import type {
   Gespreksresultaat,
   ContactmomentObject,
   Contactmoment,
-  ContactverzoekDetail,
   ZaakContactmoment,
   ObjectContactmoment,
-  // KlantContactmoment,
 } from "./types";
 import type { ContactmomentViewModel } from "../shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -47,6 +43,8 @@ export const saveContactmoment = (
     .then(throwIfNotOk)
     .then((r) => r.json());
 
+export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
+
 export const useGespreksResultaten = () => {
   const fetchBerichten = (url: string) =>
     fetchLoggedIn(url)
@@ -58,10 +56,19 @@ export const useGespreksResultaten = () => {
         }
         return r.json();
       })
-      .then((results) => {
+      .then((results: Array<Gespreksresultaat>) => {
         if (!Array.isArray(results))
           throw new Error("unexpected json result: " + JSON.stringify(results));
-        return results as Array<Gespreksresultaat>;
+        const hasContactverzoekResultaat = results.some(
+          ({ definitie }) => definitie === CONTACTVERZOEK_GEMAAKT
+        );
+        if (!hasContactverzoekResultaat) {
+          results.push({
+            definitie: CONTACTVERZOEK_GEMAAKT,
+          });
+          results.sort((a, b) => a.definitie.localeCompare(b.definitie));
+        }
+        return results;
       });
 
   return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
@@ -107,34 +114,6 @@ export function koppelKlant({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  page: Ref<number>
-) {
-  function getUrl() {
-    return "not implemented";
-    const url = new URL("/api/klantcontactmomenten", location.href);
-    url.searchParams.set(
-      "_order[embedded.contactmoment.registratiedatum]",
-      "desc"
-    );
-    url.searchParams.append("extend[]", "medewerker");
-    url.searchParams.append("extend[]", "embedded._self.owner");
-    url.searchParams.append("extend[]", "embedded.contactmoment.todo");
-    url.searchParams.set("_limit", "10");
-    url.searchParams.set("_page", page.value.toString());
-    url.searchParams.set("embedded.klant._self.id", id.value);
-    url.searchParams.set("embedded.contactmoment.todo", "IS NOT NULL");
-    return url.toString();
-  }
-
-  return ServiceResult.fromFetcher(getUrl, fetchContactverzoeken, {
-    getUniqueId() {
-      return getUrl() + "contactverzoek";
-    },
-  });
-}
-
 const fetchObject = (u: string) =>
   fetchLoggedIn(u)
     .then(throwIfNotOk)
@@ -146,7 +125,8 @@ const fetchContactmoment = (u: string) =>
     .then(parseJson)
     .then(async (cm) => {
       const { objectcontactmomenten } = cm || {};
-      if (!Array.isArray(objectcontactmomenten)) return cm;
+      if (!Array.isArray(objectcontactmomenten))
+        return cm as ContactmomentViewModel;
 
       const promises = objectcontactmomenten.map((x: string) => {
         const oUrl = toRelativeProxyUrl(x, contactmomentenProxyRoot);
@@ -199,13 +179,12 @@ export function useContactmomentenByKlantId(id: Ref<string>) {
   return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
 }
 
-export const fetchContactmomentDetails = (contactMomentDetailsId: string) => {
+const fetchContactmomentDetails = (contactMomentDetailsId: string) => {
   const getUrl = () => {
     const searchParams = new URLSearchParams();
     searchParams.set("id", contactMomentDetailsId);
     return `${contactmomentDetails}?${searchParams.toString()}`;
   };
-
   return fetchLoggedIn(getUrl())
     .then(throwIfNotOk)
     .then((response) => response.json())
@@ -214,38 +193,11 @@ export const fetchContactmomentDetails = (contactMomentDetailsId: string) => {
     });
 };
 
-function fetchContactverzoeken(url: string): Promise<Paginated<any>> {
-  return Promise.reject("not implemented");
-  return fetchLoggedIn(url)
-    .then(throwIfNotOk)
-    .then((r) => r.json())
-    .then((x) => parsePagination(x, mapContactverzoekDetail))
-    .then((paginated) => {
-      const page = paginated.page.filter((p) => p !== undefined);
-
-      return { ...paginated, page };
-    });
-}
-
-const mapContactverzoekDetail = (
-  rawContactverzoek: any
-): ContactverzoekDetail | undefined => {
-  const contactmoment = rawContactverzoek.embedded.contactmoment;
-  const todo = rawContactverzoek.embedded.contactmoment.embedded.todo;
-
-  return {
-    id: contactmoment.id,
-    datum: formatDateOnly(new Date(contactmoment.registratiedatum)),
-    status: todo.completed ? "Gesloten" : "Open",
-    behandelaar: todo.attendees?.[0] ?? "-",
-    afgerond: todo.completed ? formatDateOnly(new Date(todo.completed)) : "-",
-    starttijd: formatTimeOnly(new Date(contactmoment.registratiedatum)),
-    aanmaker: contactmoment["_self"].owner,
-    notitie: todo.description,
-    vraag: contactmoment.vraag,
-    specifiekevraag: contactmoment.specifiekevraag,
-  };
-};
+export const useContactmomentDetails = (url: () => string) =>
+  ServiceResult.fromFetcher(
+    () => toRelativeProxyUrl(url(), contactmomentenProxyRoot) || "",
+    fetchContactmoment
+  );
 
 export function useContactmomentenByObjectUrl(url: Ref<string>) {
   const getUrl = () => {

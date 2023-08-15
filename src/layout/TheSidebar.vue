@@ -40,12 +40,15 @@
               <template #tab="{ label }">
                 <span :title="label" class="icon-after phone-flip" />
               </template>
-              <contactverzoek-formulier
-                :huidige-vraag="
-                  contactmomentStore.huidigContactmoment.huidigeVraag
-                "
-                :huidige-klant="contactmomentStore.klantVoorHuidigeVraag"
-              />
+              <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
+              <form @submit.prevent>
+                <contactverzoek-formulier
+                  v-model="
+                    contactmomentStore.huidigContactmoment.huidigeVraag
+                      .contactverzoek
+                  "
+                />
+              </form>
             </tab-list-item>
           </tab-list>
         </div>
@@ -68,6 +71,7 @@ import {
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
 import { TabList, TabListItem } from "@/components/tabs";
+import { watchEffect } from "vue";
 
 enum NotitieTabs {
   Regulier = "Reguliere notitie",
@@ -89,23 +93,6 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  }
-);
-
-watch(
-  () => state.value.currentNotitieTab,
-  (tab) => {
-    if (
-      tab !== NotitieTabs.Contactverzoek ||
-      !contactmomentStore.huidigContactmoment
-    )
-      return;
-
-    const { huidigeVraag } = contactmomentStore.huidigContactmoment;
-
-    if (huidigeVraag.notitie && !huidigeVraag.contactverzoek.notitie) {
-      huidigeVraag.contactverzoek.notitie = huidigeVraag.notitie;
-    }
   }
 );
 </script>
