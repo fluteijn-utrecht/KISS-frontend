@@ -27,16 +27,14 @@ namespace Kiss.Bff
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public sealed class ProxyResult : IActionResult, IDisposable
+    public sealed class ProxyResult : IActionResult
     {
-        private readonly HttpRequestMessage _request;
-
-        public ProxyResult(HttpRequestMessage request)
+        public ProxyResult(Func<HttpRequestMessage> requestFactory)
         {
-            _request = request;
+            RequestFactory = requestFactory;
         }
 
-        public void Dispose() => _request?.Dispose();
+        public Func<HttpRequestMessage> RequestFactory { get; }
 
         public async Task ExecuteResultAsync(ActionContext context)
         {
@@ -46,7 +44,8 @@ namespace Microsoft.AspNetCore.Mvc
             var proxiedResponse = context.HttpContext.Response;
 
             using var client = factory.CreateClient("default");
-            using var responseMessage = await client.SendAsync(_request, HttpCompletionOption.ResponseHeadersRead, token);
+            using var request = RequestFactory();
+            using var responseMessage = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
 
             proxiedResponse.StatusCode = (int)responseMessage.StatusCode;
 

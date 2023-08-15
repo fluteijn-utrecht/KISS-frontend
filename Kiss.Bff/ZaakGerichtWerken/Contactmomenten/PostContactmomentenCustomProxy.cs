@@ -34,16 +34,18 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var accessToken = _tokenProvider.GenerateToken(email, userRepresentation);
 
             var url = _destination.TrimEnd('/') + "/contactmomenten/api/v1/contactmomenten";
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
+
+            return new ProxyResult(() =>
             {
-                Content = JsonContent.Create(parsedModel)
-            };
+                var request = new HttpRequestMessage(HttpMethod.Post, url)
+                {
+                    Content = JsonContent.Create(parsedModel)
+                };
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            return new ProxyResult(request);
+                return request;
+            });
         }
-
-
     }
 }

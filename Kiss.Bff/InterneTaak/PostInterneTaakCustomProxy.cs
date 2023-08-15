@@ -25,11 +25,15 @@ namespace Kiss.Bff.InterneTaak
             {
                 dataObj["medewerkerIdentificatie"] = User.GetMedewerkerIdentificatie();
             }
-            var url = $"{_config.Destination.AsSpan().TrimEnd('/')}/api/{version}/objects";
-            var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(node) };
-            _config.ApplyHeaders(request.Headers);
 
-            return new ProxyResult(request);
+            var url = $"{_config.Destination.AsSpan().TrimEnd('/')}/api/{version}/objects";
+
+            return new ProxyResult(() =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(node) };
+                _config.ApplyHeaders(request.Headers);
+                return request;
+            });
         }
     }
 }
