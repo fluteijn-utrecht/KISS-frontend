@@ -760,6 +760,9 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
   // content stacked
   display: flex;
   flex-direction: column;
+
+  --label-width: 15rem;
+  --label-gap: var(--spacing-default);
 }
 
 :deep(.notitie) {
@@ -804,8 +807,8 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
 
 fieldset {
   display: grid;
-  grid-template-columns: 15rem auto;
-  gap: var(--spacing-default);
+  grid-template-columns: var(--label-width) auto;
+  gap: var(--label-gap);
 }
 
 article {
@@ -830,8 +833,12 @@ select {
 .contactverzoek-container {
   :deep(label) {
     display: grid;
-    grid-template-columns: 15rem auto;
-    gap: var(--spacing-default);
+    grid-template-columns: var(--label-width) auto;
+    gap: var(--label-gap);
+  }
+
+  :deep(fieldset) {
+    gap: var(--label-gap);
   }
 }
 

@@ -45,8 +45,8 @@
       />
     </label>
 
-    <fieldset>
-      <legend>Contact opnemen met</legend>
+    <form-fieldset>
+      <form-fieldset-legend>Contact opnemen met</form-fieldset-legend>
       <label class="utrecht-form-label">
         <span>Voornaam</span>
         <input
@@ -127,7 +127,7 @@
           @input="setActive"
         />
       </label>
-    </fieldset>
+    </form-fieldset>
   </div>
 </template>
 
@@ -144,7 +144,10 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
-
+import {
+  FormFieldsetLegend,
+  FormFieldset,
+} from "@utrecht/component-library-vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
