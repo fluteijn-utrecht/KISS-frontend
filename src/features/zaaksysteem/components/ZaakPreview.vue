@@ -12,13 +12,13 @@
     <dd>{{ zaak.data.identificatie }}</dd>
     <dt>Zaaktype</dt>
     <dd>{{ zaak.data.zaaktypeLabel }}</dd>
-    <dt>Status</dt>
+    <dt>Zaakstatus</dt>
     <dd>{{ zaak.data.status }}</dd>
   </template>
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref } from "vue";
+import { computed } from "vue";
 import { useZakenPreviewByUrl } from "../service";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
@@ -27,5 +27,5 @@ const props = defineProps<{
   zaakurl: string;
 }>();
 
-const zaak = useZakenPreviewByUrl(ref<string>(props.zaakurl));
+const zaak = useZakenPreviewByUrl(computed(() => props.zaakurl));
 </script>

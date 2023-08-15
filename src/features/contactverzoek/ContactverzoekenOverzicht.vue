@@ -18,7 +18,11 @@
         class="verzoek-item-header"
         :class="{ 'is-active': activeContactverzoeken[idx] }"
       >
-        <span>{{ contactverzoek.record.data.registratiedatum }}</span>
+        <dutch-date
+          v-if="contactverzoek.record.data.registratiedatum"
+          :date="new Date(contactverzoek.record.data.registratiedatum)"
+        />
+        <span v-else />
         <span>{{ contactverzoek.record.data.status }}</span>
         <span>{{ contactverzoek.record.data.actor.identificatie }}</span>
         <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
@@ -30,52 +34,67 @@
         :class="{ 'is-active': activeContactverzoeken[idx] }"
       >
         <dl>
+          <dt>Starttijd</dt>
+          <dd>
+            <dutch-time
+              v-if="contactverzoek.record.data.registratiedatum"
+              :date="new Date(contactverzoek.record.data.registratiedatum)"
+            />
+          </dd>
+
           <dt>Toelichting voor de collega</dt>
           <dd>
             {{ contactverzoek.record.data.toelichting }}
           </dd>
-        </dl>
 
-        <dl
-          v-if="contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam"
-        >
-          <dt>Klant</dt>
-          <dd>
-            {{
-              [
-                contactverzoek.record.data.betrokkene.persoonsnaam?.voornaam,
-                contactverzoek.record.data.betrokkene.persoonsnaam
-                  ?.voorvoegselAchternaam,
-                contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam,
-              ]
-                .filter(Boolean)
-                .join(" ")
-            }}
-          </dd>
-        </dl>
+          <template
+            v-if="
+              contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam
+            "
+          >
+            <dt>Klant</dt>
+            <dd>
+              {{
+                [
+                  contactverzoek.record.data.betrokkene.persoonsnaam?.voornaam,
+                  contactverzoek.record.data.betrokkene.persoonsnaam
+                    ?.voorvoegselAchternaam,
+                  contactverzoek.record.data.betrokkene.persoonsnaam
+                    ?.achternaam,
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+              }}
+            </dd>
+          </template>
 
-        <dl v-if="contactverzoek.record.data.betrokkene.organisatie">
-          <dt>Organisatie</dt>
-          <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
-        </dl>
+          <template v-if="contactverzoek.record.data.betrokkene.organisatie">
+            <dt>Organisatie</dt>
+            <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
+          </template>
 
-        <dl
-          v-for="(adres, idx) in contactverzoek.record.data.betrokkene
-            .digitaleAdressen"
-          :key="idx"
-        >
-          <dt>
-            {{ adres.omschrijving || adres.soortDigitaalAdres || "Contact" }}
-          </dt>
-          <dd>
-            {{ adres.adres }}
-          </dd>
-        </dl>
+          <template
+            v-for="(adres, idx) in contactverzoek.record.data.betrokkene
+              .digitaleAdressen"
+            :key="idx"
+          >
+            <dt>
+              {{
+                capitalizeFirstLetter(
+                  adres.omschrijving || adres.soortDigitaalAdres || "contact"
+                )
+              }}
+            </dt>
+            <dd>
+              {{ adres.adres }}
+            </dd>
+          </template>
 
-        <slot
-          name="contactmoment"
-          :url="contactverzoek.record.data.contactmoment"
-        ></slot>
+          <slot
+            name="contactmoment"
+            :url="contactverzoek.record.data.contactmoment"
+          ></slot>
+        </dl>
       </div>
     </div>
   </section>
@@ -87,10 +106,15 @@
 import { ref } from "vue";
 import type { Contactverzoek } from "./service";
 import { watch } from "vue";
+import DutchDate from "@/components/DutchDate.vue";
+import DutchTime from "@/components/DutchTime.vue";
 
 const props = defineProps<{
   contactverzoeken: Contactverzoek[];
 }>();
+
+const capitalizeFirstLetter = (val: string) =>
+  `${val?.[0]?.toLocaleUpperCase() || ""}${val?.substring(1) || ""}`;
 
 const activeContactverzoeken = ref([] as boolean[]);
 
@@ -109,6 +133,18 @@ const toggleItemContent = (idx: number) => {
 </script>
 
 <style lang="scss" scoped>
+dl {
+  --column-width: 25ch;
+  --gap: var(--spacing-default);
+
+  padding-inline-start: var(--spacing-default);
+  display: grid;
+  column-gap: var(--gap);
+  row-gap: var(--spacing-default);
+  grid-template-columns: var(--column-width) 1fr;
+  padding-block: var(--spacing-large);
+}
+
 .header {
   display: flex;
   background-color: var(--color-tertiary);
@@ -147,19 +183,6 @@ const toggleItemContent = (idx: number) => {
 
 .verzoek-item-content {
   background-color: var(--color-secondary);
-
-  :deep(dl) {
-    display: flex;
-    padding: var(--spacing-default);
-
-    dt {
-      font-weight: bold;
-    }
-
-    > * {
-      flex: 1;
-    }
-  }
 
   :deep(dt) dl > dt {
     max-width: 150px;
