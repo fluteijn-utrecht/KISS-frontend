@@ -99,13 +99,6 @@ namespace Microsoft.Extensions.DependencyInjection
             var match = _proxyRoutes.FirstOrDefault(x => x.Route == context?.Cluster?.ClusterId);
             if (match != null)
             {
-                var klantParam = context?.Route?.Match?.QueryParameters?.FirstOrDefault(x => x.Name == "klant");
-                var klantPramValue = klantParam?.Values?.FirstOrDefault();
-
-                _ = (context?.Route.WithTransformQueryValue("klant", value: $"hhhhhhh{klantPramValue}"));
-
-
-                //  context.AddQueryRouteValue("klant", "gggg");
                 context.AddRequestTransform(match.ApplyRequestTransform);
             }
         }
