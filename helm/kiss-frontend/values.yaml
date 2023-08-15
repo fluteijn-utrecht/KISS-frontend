@@ -135,7 +135,9 @@ env:
   VAC_OBJECTEN_TOKEN: ""
   VAC_OBJECTTYPES_BASE_URL: ""
   VAC_OBJECTTYPES_TOKEN: ""
-
+  INTERNE_TAAK_BASE_URL: ""
+  INTERNE_TAAK_TOKEN: ""
+  INTERNE_TAAK_OBJECT_TYPE_URL: ""
 postgresql:
   enabled: true
   service:
