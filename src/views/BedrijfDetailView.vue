@@ -35,10 +35,8 @@
     >
       <template #success="{ data }">
         <contactmomenten-overzicht :contactmomenten="data.page">
-          <template v-slot:zaken="{ zaken }">
-            <template v-for="zaakurl in zaken" :key="zaakurl">
-              <zaak-preview :zaakurl="zaakurl" />
-            </template>
+          <template #object="{ object }">
+            <zaak-preview :zaakurl="object.object" />
           </template>
         </contactmomenten-overzicht>
       </template>
@@ -59,7 +57,11 @@
       <template #success="{ data }">
         <contactverzoeken-overzicht :contactverzoeken="data.page">
           <template #contactmoment="{ url }">
-            <contactmoment-details :url="url"> </contactmoment-details>
+            <contactmoment-preview :url="url">
+              <template #object="{ object }">
+                <zaak-preview v-if="object.object" :zaakurl="object.object" />
+              </template>
+            </contactmoment-preview>
           </template>
         </contactverzoeken-overzicht>
       </template>
@@ -88,7 +90,7 @@ import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
-import ContactmomentDetails from "@/features/contactmoment/ContactmomentDetails.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();

@@ -37,10 +37,8 @@
             <div class="contactmomenten">
               <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
               <contactmomenten-overzicht :contactmomenten="data.page">
-                <template v-slot:zaken="{ zaken }">
-                  <template v-for="zaakurl in zaken" :key="zaakurl">
-                    <zaak-preview :zaakurl="zaakurl"></zaak-preview>
-                  </template>
+                <template #object="{ object }">
+                  <zaak-preview :zaakurl="object.object"></zaak-preview>
                 </template>
               </contactmomenten-overzicht>
             </div>
