@@ -38,6 +38,7 @@ ul {
   --column-width: 25ch;
   --gap: var(--spacing-default);
   --columns: 1fr 1fr 1fr 1fr 1rem;
+  --spinner-size: 1em;
 
   display: grid;
   list-style: none;
