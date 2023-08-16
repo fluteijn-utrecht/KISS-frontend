@@ -101,6 +101,7 @@ jobs:
           push: false
           load: false
           context: .
+          tags: ${{ env.TAG_RELEASE }}
           file: Kiss.Bff/Dockerfile
           target: test
           outputs: testresults
