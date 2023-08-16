@@ -107,9 +107,13 @@ jobs:
       - name: push image
         uses: docker/build-push-action@v4
         if: github.event_name != 'pull_request'
+        env: 
+          TAG_RELEASE: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.RELEASE}}
+          TAG_LATEST: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:latest
+          TAG_LATEST_BRANCH: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ BRANCH_NAME }}_latest
         with:
           context: .
           file: Kiss.Bff/Dockerfile
           push: true
-          tags: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.RELEASE}},${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:latest
+          tags: ${{ TAG_RELEASE }},${{ TAG_LATEST }},${{ TAG_LATEST_BRANCH }}
           target: final
