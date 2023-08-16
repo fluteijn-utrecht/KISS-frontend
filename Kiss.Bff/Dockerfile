@@ -30,9 +30,9 @@ RUN dotnet test -c Release --no-build --logger trx --results-directory /testresu
 
 FROM node:18-alpine AS frontend
 WORKDIR /app
-COPY package*.json .
+COPY frontend/package*.json .
 RUN npm ci
-COPY . .
+COPY frontend .
 
 FROM frontend as frontendtest
 RUN npm run test:unitci -- --reporter junit --outputFile /testresults/vitest-junit.xml
