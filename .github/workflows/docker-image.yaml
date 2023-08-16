@@ -72,7 +72,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build only
-        if: github.event_name == 'pull_request'
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -93,8 +92,6 @@ jobs:
           push: true
           load: false
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-          cache-from: type=registry,ref=${{ env.WEB_CACHE }}
-          cache-to: type=registry,ref=${{ env.WEB_CACHE }},mode=max
           target: final
 
       - name: copy testresults
