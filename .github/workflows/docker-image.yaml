@@ -83,16 +83,16 @@ jobs:
           cache-to: type=registry,ref=${{ env.WEB_CACHE }},mode=max
           target: final
 
-      - name: push image
-        uses: docker/build-push-action@v4
-        if: github.event_name != 'pull_request'
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          push: true
-          load: false
-          tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-          target: final
+      # - name: push image
+      #   uses: docker/build-push-action@v4
+      #   if: github.event_name != 'pull_request'
+      #   with:
+      #     context: .
+      #     file: Kiss.Bff/Dockerfile
+      #     push: true
+      #     load: false
+      #     tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
+      #     target: final
 
       - name: copy testresults
         uses: docker/build-push-action@v4
