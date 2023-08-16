@@ -79,7 +79,7 @@ function initVraag(): Vraag {
     notitie: "",
     contactverzoek: {
       url: "",
-      medewerker: "",
+      medewerker: undefined,
       afdeling: "",
       telefoonnummer1: "",
       telefoonnummer2: "",

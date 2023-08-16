@@ -48,7 +48,7 @@
               <dt>Notitie</dt>
               <dd class="tekst">{{ contactmoment.tekst }}</dd>
             </dl>
-            <p
+            <!-- <p
               v-for="(
                 { medewerker, completed }, i
               ) in contactmoment.contactverzoeken"
@@ -56,7 +56,7 @@
             >
               Contactverzoek verstuurd aan {{ medewerker }}. Dit verzoek
               {{ completed ? "is afgerond" : "staat open" }}.
-            </p>
+            </p> -->
           </details>
         </li>
       </ul>

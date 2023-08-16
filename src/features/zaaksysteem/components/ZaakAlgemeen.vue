@@ -55,7 +55,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from "vue";
 import type { ZaakDetails } from "./../types";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import TimeOrOnbekend from "./TimeOrOnbekend.vue";

@@ -244,7 +244,7 @@ const searchParameters = computed(() => ({
 const searchResults = useGlobalSearch(searchParameters);
 const sources = useSources();
 
-const automaticSearchTimeout = ref<number | null>(null);
+let automaticSearchTimeout: number | NodeJS.Timeout
 
 function applySearch() {
   state.value.currentSearch = state.value.searchInput;
@@ -255,9 +255,9 @@ function applySearch() {
 watch(
   () => state.value.searchInput,
   () => {
-    automaticSearchTimeout.value && clearTimeout(automaticSearchTimeout.value);
+    automaticSearchTimeout && clearTimeout(automaticSearchTimeout);
 
-    automaticSearchTimeout.value = setTimeout(applySearch, 300);
+    automaticSearchTimeout = setTimeout(applySearch, 300);
   }
 );
 

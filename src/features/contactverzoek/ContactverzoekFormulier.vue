@@ -1,7 +1,7 @@
 <template>
   <SimpleSpinner v-if="afdelingen.loading" />
   <div class="container" @submit.prevent>
-    <label
+    <!-- <label
       class="utrecht-form-label"
       v-if="afdelingen.success && afdelingen.data.length"
     >
@@ -20,7 +20,7 @@
           {{ afdeling.name }}
         </option>
       </select>
-    </label>
+    </label> -->
 
     <label class="utrecht-form-label">
       <span class="required">Contactverzoek versturen naar</span>
