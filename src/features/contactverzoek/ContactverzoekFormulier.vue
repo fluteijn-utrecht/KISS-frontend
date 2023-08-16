@@ -152,11 +152,6 @@ const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", v: ContactmomentContactVerzoek): void;
-  (e: "active"): void;
-}>();
-
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
 watch(
@@ -165,16 +160,6 @@ watch(
     form.value = v;
   },
   { immediate: true }
-);
-
-watch(
-  form,
-  (f) =>
-    emit("update:modelValue", {
-      ...props.modelValue,
-      ...f,
-    }),
-  { deep: true }
 );
 
 const afdelingen = useAfdelingen();
