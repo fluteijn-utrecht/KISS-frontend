@@ -54,9 +54,11 @@ jobs:
           NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
           echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
 
+      - name: Set full container name
+        run: echo "CONTAINER_NAME=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}" >> $GITHUB_ENV
+
       - name: Setting tags
         run: |
-          echo "CONTAINER_NAME=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}" >> $GITHUB_ENV
           echo "WEB_CACHE=${{ env.CONTAINER_NAME }}:webcache" >> $GITHUB_ENV
           echo "FRONTENDTEST_CACHE=${{ env.CONTAINER_NAME }}:frontendtestcache" >> $GITHUB_ENV
           echo "DOTNETTEST_CACHE=${{ env.CONTAINER_NAME }}:dotnettestcache" >> $GITHUB_ENV
