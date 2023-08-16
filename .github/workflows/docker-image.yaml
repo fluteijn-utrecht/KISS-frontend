@@ -56,9 +56,12 @@ jobs:
 
       - name: Setting tags
         run: |
-          echo "WEB_CACHE=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:webcache" >> $GITHUB_ENV
-          echo "TAG_RELEASE=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
-          echo "TAG_LATEST=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:latest" >> $GITHUB_ENV
+          echo "CONTAINER_NAME=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}" >> $GITHUB_ENV
+          echo "WEB_CACHE=${{ env.CONTAINER_NAME }}:webcache" >> $GITHUB_ENV
+          echo "FRONTENDTEST_CACHE=${{ env.CONTAINER_NAME }}:frontendtestcache" >> $GITHUB_ENV
+          echo "DOTNETTEST_CACHE=${{ env.CONTAINER_NAME }}:dotnettestcache" >> $GITHUB_ENV
+          echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
+          echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
           echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
@@ -71,41 +74,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build only
-        uses: docker/build-push-action@v4
+      - name: Build containers
+        uses: docker/bake-action@v3
         with:
-          context: .
-          file: Kiss.Bff/Dockerfile
           push: false
           load: true
-          tags: ${{ env.TAG_RELEASE }}
-          cache-from: type=registry,ref=${{ env.WEB_CACHE }}
-          cache-to: type=registry,ref=${{ env.WEB_CACHE }},mode=max
-          target: final
-
-      # - name: push image
-      #   uses: docker/build-push-action@v4
-      #   if: github.event_name != 'pull_request'
-      #   with:
-      #     context: .
-      #     file: Kiss.Bff/Dockerfile
-      #     push: true
-      #     load: false
-      #     tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-      #     target: final
+          files: docker-compose.deploy.yaml
+          set: |
+            web.cache-from=type=registry,ref=${{ env.WEB_CACHE }}
+            web.cache-to=type=registry,ref=${{ env.WEB_CACHE }},mode=max
+            dotnettest.cache-from=type=registry,ref=${{ env.DOTNETTEST_CACHE }}
+            dotnettest.cache-to=type=registry,ref=${{ env.DOTNETTEST_CACHE }},mode=max
+            frontendtest.cache-from=type=registry,ref=${{ env.FRONTENDTEST_CACHE }}
+            frontendtest.cache-to=type=registry,ref=${{ env.FRONTENDTEST_CACHE }},mode=max
 
       - name: copy testresults
-        uses: docker/build-push-action@v4
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          push: false
-          load: false
-          context: .
-          tags: ${{ env.TAG_RELEASE }}
-          file: Kiss.Bff/Dockerfile
-          target: test
-          cache-from: type=registry,ref=${{ env.WEB_CACHE }}
-          outputs: testresults
+        run: docker compose -f docker-compose.deploy.yaml up dotnettest frontendtest
 
       - name: dotnet test report
         uses: dorny/test-reporter@v1
@@ -122,3 +106,12 @@ jobs:
           path: testresults/*.xml # Path to test results
           reporter: jest-junit # Format of test results
 
+      - name: push image
+        uses: docker/build-push-action@v4
+        if: github.event_name != 'pull_request'
+        with:
+          context: .
+          file: Kiss.Bff/Dockerfile
+          push: true
+          tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
+          target: final
