@@ -45,7 +45,11 @@
         :contactverzoeken="contactverzoeken.data.page"
       >
         <template #contactmoment="{ url }">
-          <contactmoment-details :url="url"> </contactmoment-details>
+          <contactmoment-preview :url="url">
+            <template #object="{ object }">
+              <zaak-preview :zaakurl="object.object" />
+            </template>
+          </contactmoment-preview>
         </template>
       </contactverzoeken-overzicht>
     </template>
@@ -118,7 +122,7 @@ import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
-import ContactmomentDetails from "@/features/contactmoment/ContactmomentDetails.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();

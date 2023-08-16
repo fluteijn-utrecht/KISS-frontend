@@ -1,19 +1,14 @@
 export interface ContactmomentViewModel {
-  id: string;
   url: string;
-  startdatum: Date;
-  registratiedatum: Date;
+  registratiedatum: string;
   medewerker: string;
   kanaal: string;
-  gespreksresultaat: string;
   tekst: string;
-  vraag: string;
-  specifiekevraag: string;
-  zaken: string[];
-  //contactverzoeken: ContactmomentContactverzoek[];
-  _self: {
-    owner: string;
-  };
+  objectcontactmomenten: {
+    object: string;
+    objectType: "zaak";
+    contactmoment: string;
+  }[];
   medewerkerIdentificatie: MedewerkerIdentificatie;
 }
 

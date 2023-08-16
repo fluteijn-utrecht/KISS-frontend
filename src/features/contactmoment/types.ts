@@ -28,6 +28,16 @@ export interface Contactmoment {
   gespreksId?: string;
 }
 
+export interface ContactmomentDetails {
+  id: string;
+  startdatum: string;
+  einddatum: string;
+  gespreksresultaat?: string;
+  vraag?: string;
+  specifiekeVraag?: string;
+  emailadresKcm?: string;
+}
+
 export interface Gespreksresultaat {
   definitie: string;
 }

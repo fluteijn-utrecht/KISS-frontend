@@ -33,11 +33,11 @@
         :contactverzoeken="contactverzoeken.data.page"
       >
         <template #contactmoment="{ url }">
-          <contactmoment-details :url="url">
-            <template #zaak="{ url }">
-              <zaak-preview :zaakurl="url" />
+          <contactmoment-preview :url="url">
+            <template #object="{ object }">
+              <zaak-preview :zaakurl="object.object" />
             </template>
-          </contactmoment-details>
+          </contactmoment-preview>
         </template>
       </contactverzoeken-overzicht>
     </template>
@@ -78,7 +78,7 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
-import ContactmomentDetails from "@/features/contactmoment/ContactmomentDetails.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 const props = defineProps<{ contactId: string }>();
 const klantId = computed(() => props.contactId);
