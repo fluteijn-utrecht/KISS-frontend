@@ -93,6 +93,9 @@ jobs:
       - name: copy testresults
         run: docker compose -f docker-compose.deploy.yaml up dotnettest frontendtest
 
+      - name: cleanup compose
+        run: docker compose -f docker-compose.deploy.yaml down --remove-orphans -v
+
       - name: dotnet test report
         uses: dorny/test-reporter@v1
         if: success() || failure() # run this step even if previous step failed
