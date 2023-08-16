@@ -52,6 +52,8 @@ FROM base AS final
 WORKDIR /app
 COPY certificates /usr/local/share/ca-certificates
 RUN update-ca-certificates
+COPY --from=dotnettest /testresults/*.trx /testresults
+COPY --from=frontendtest /testresults/*.xml /testresults
 COPY --from=dotnetpublish /app/publish .
 COPY --from=frontendbuild /app/dist ./wwwroot
 USER kiss:kiss
