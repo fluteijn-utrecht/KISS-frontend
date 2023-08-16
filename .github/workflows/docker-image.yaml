@@ -66,13 +66,18 @@ jobs:
 
       - name: Build containers
         uses: docker/bake-action@v3
+        env:
+          WEB_CACHE: '${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:webcache'
+          TEST_CACHE: '${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:testcache'
         with:
           push: false
           load: true
           files: docker-compose.deploy.yaml
           set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
+            web.cache-from=type=registry,ref=${{ env.WEB_CACHE }}
+            web.cache-to=type=registry,ref=${{ env.WEB_CACHE }},mode=max
+            test.cache-from=type=registry,ref=${{ env.WEB_CACHE }}
+            test.cache-to=type=registry,ref=${{ env.WEB_CACHE }},mode=max
 
       - name: copy testresults
         uses: docker/build-push-action@v4
