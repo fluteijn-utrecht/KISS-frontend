@@ -91,7 +91,7 @@ jobs:
           context: .
           file: Kiss.Bff/Dockerfile
           push: true
-          load: true
+          load: false
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
           cache-from: type=registry,ref=${{ env.WEB_CACHE }}
           cache-to: type=registry,ref=${{ env.WEB_CACHE }},mode=max
