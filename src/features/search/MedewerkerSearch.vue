@@ -35,7 +35,6 @@ type DatalistItem = {
 const props = defineProps({
   modelValue: {
     type: Object as PropType<Record<string, any> | undefined>,
-    required: true,
   },
   id: {
     type: String,

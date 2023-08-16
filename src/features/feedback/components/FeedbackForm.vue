@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, defineProps, computed } from "vue";
+import { ref, reactive, computed } from "vue";
 import { useFeedbackService } from "../service";
 import type { CurrentFeedbackSection, Feedback } from "../types";
 import { useConfirmDialog } from "@vueuse/core";
@@ -110,7 +110,7 @@ const currentSectionLabel = computed(() => props.currentSection.label);
 
 const userStore = useUserStore();
 
-const serviceResult = ref<ServiceData<Feedback>>();
+const serviceResult = ref<ServiceData<void>>();
 const service = useFeedbackService();
 const cancelDialog = useConfirmDialog();
 const emit = defineEmits(["cancelled", "saved"]);
