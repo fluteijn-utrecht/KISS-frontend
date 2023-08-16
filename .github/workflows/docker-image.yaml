@@ -53,16 +53,19 @@ jobs:
         run: |
           NAME=$(grep CONTAINER_REGISTRY_BASE= .env | cut -d '=' -f2)
           echo "CONTAINER_REGISTRY_BASE=$NAME" >> $GITHUB_ENV
+
+      - name: Setting tags
+        run: |
+          echo "WEB_CACHE=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:webcache" >> $GITHUB_ENV
+          echo "TAG_RELEASE=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
+          echo "TAG_LATEST=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:latest" >> $GITHUB_ENV
+          echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
-        env:
-          WEB_CACHE: "${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:webcache"
-          TAG_RELEASE: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.RELEASE}}
-          TAG_LATEST: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:latest
-          TAG_LATEST_BRANCH: ${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.BRANCH_NAME }}_latest
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -96,6 +99,7 @@ jobs:
 
       - name: copy testresults
         uses: docker/build-push-action@v4
+        if: success() || failure() # run this step even if previous step failed
         with:
           push: false
           load: false
