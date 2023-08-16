@@ -83,12 +83,12 @@ jobs:
           load: true
           files: docker-compose.deploy.yaml
           set: |
-            web.cache-from=type=registry,ref=${{ env.WEB_CACHE }}
-            web.cache-to=type=registry,ref=${{ env.WEB_CACHE }},mode=max
-            dotnettest.cache-from=type=registry,ref=${{ env.DOTNETTEST_CACHE }}
-            dotnettest.cache-to=type=registry,ref=${{ env.DOTNETTEST_CACHE }},mode=max
-            frontendtest.cache-from=type=registry,ref=${{ env.FRONTENDTEST_CACHE }}
-            frontendtest.cache-to=type=registry,ref=${{ env.FRONTENDTEST_CACHE }},mode=max
+            web.cache-from=type=gha,scope=web
+            web.cache-to=type=gha,mode=max,scope=web
+            dotnettest.cache-from=type=gha,scope=dotnettest
+            dotnettest.cache-to=type=gha,mode=max,scope=dotnettest
+            frontendtest.cache-from=type=gha,scope=frontendtest
+            frontendtest.cache-to=type=gha,mode=max,scope=frontendtest
 
       - name: copy testresults
         run: docker compose -f docker-compose.deploy.yaml up dotnettest frontendtest
