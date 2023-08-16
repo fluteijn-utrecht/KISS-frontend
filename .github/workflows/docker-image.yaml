@@ -104,6 +104,7 @@ jobs:
           tags: ${{ env.TAG_RELEASE }}
           file: Kiss.Bff/Dockerfile
           target: test
+          cache-from: type=registry,ref=${{ env.WEB_CACHE }}
           outputs: testresults
 
       - name: dotnet test report
