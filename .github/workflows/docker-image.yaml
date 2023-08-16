@@ -81,7 +81,7 @@ jobs:
           load: true
           tags: ${{ env.TAG_RELEASE }}
           cache-from: type=registry,ref=${{ env.WEB_CACHE }}
-          cache-to: registry,ref=${{ env.WEB_CACHE }},mode=max
+          cache-to: type=registry,ref=${{ env.WEB_CACHE }},mode=max
           target: final
 
       - name: push image
