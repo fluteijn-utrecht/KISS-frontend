@@ -94,7 +94,7 @@ jobs:
           load: true
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
           cache-from: type=registry,ref=${{ env.WEB_CACHE }}
-          cache-to: registry,ref=${{ env.WEB_CACHE }},mode=max
+          cache-to: type=registry,ref=${{ env.WEB_CACHE }},mode=max
           target: final
 
       - name: copy testresults
