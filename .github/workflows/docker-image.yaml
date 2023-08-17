@@ -80,6 +80,7 @@ jobs:
         with:
           push: false
           load: true
+          files: docker-bake.hcl
 
       # - name: Expose GitHub Runtime
       #   uses: crazy-max/ghaction-github-runtime@v2
