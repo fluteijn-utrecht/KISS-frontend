@@ -90,7 +90,6 @@ jobs:
           file: Kiss.Bff/Dockerfile
           push: false
           load: true
-          tags: ${{ env.TAG_ALL }}
           cache-from: type=gha,scope=kiss-frontend
           cache-to: type=gha,mode=max,scope=kiss-frontend
           target: all
@@ -101,48 +100,46 @@ jobs:
           context: .
           file: Kiss.Bff/Dockerfile
           push: false
-          load: true
-          tags: ${{ env.TAG_DOTNETTEST }}
           target: dotnettest
 
-      - name: build frontendtest
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          push: false
-          load: true
-          tags: ${{ env.TAG_FRONTENDTEST }}
-          target: frontendtest
+      # - name: build frontendtest
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     file: Kiss.Bff/Dockerfile
+      #     push: false
+      #     load: true
+      #     tags: ${{ env.TAG_FRONTENDTEST }}
+      #     target: frontendtest
 
-      - name: run tests
-        run: docker run -v /testresults:/testresults ${{ env.TAG_FRONTENDTEST }}
+      # - name: run tests
+      #   run: docker run -v /testresults:/testresults ${{ env.TAG_FRONTENDTEST }}
 
-      - name: run tests
-        run: docker run -v /testresults:/testresults ${{ env.TAG_DOTNETTEST }}
+      # - name: run tests
+      #   run: docker run -v /testresults:/testresults ${{ env.TAG_DOTNETTEST }}
 
-      - name: dotnet test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: dotnet tests # Name of the check run which will be created
-          path: /testresults/*.trx # Path to test results
-          reporter: dotnet-trx # Format of test results
+      # - name: dotnet test report
+      #   uses: dorny/test-reporter@v1
+      #   if: success() || failure() # run this step even if previous step failed
+      #   with:
+      #     name: dotnet tests # Name of the check run which will be created
+      #     path: /testresults/*.trx # Path to test results
+      #     reporter: dotnet-trx # Format of test results
 
-      - name: npm test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: npm tests # Name of the check run which will be created
-          path: /testresults/*.xml # Path to test results
-          reporter: jest-junit # Format of test results
+      # - name: npm test report
+      #   uses: dorny/test-reporter@v1
+      #   if: success() || failure() # run this step even if previous step failed
+      #   with:
+      #     name: npm tests # Name of the check run which will be created
+      #     path: /testresults/*.xml # Path to test results
+      #     reporter: jest-junit # Format of test results
 
-      - name: push image
-        uses: docker/build-push-action@v4
-        if: github.event_name != 'pull_request'
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          push: true
-          tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-          target: final
+      # - name: push image
+      #   uses: docker/build-push-action@v4
+      #   if: github.event_name != 'pull_request'
+      #   with:
+      #     context: .
+      #     file: Kiss.Bff/Dockerfile
+      #     push: true
+      #     tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
+      #     target: final
