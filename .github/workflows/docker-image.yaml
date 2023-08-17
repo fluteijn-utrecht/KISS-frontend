@@ -61,7 +61,7 @@ jobs:
         run: |
           echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
           echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
-          echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
+          echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
