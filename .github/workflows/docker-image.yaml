@@ -75,23 +75,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: build all stages
         uses: docker/bake-action@v3
         with:
           push: false
           load: true
-          files: docker-compose.deploy.yaml
-          set: |
-           *.cache-from=type=gha,scope=kiss-frontend
-           all.cache-to=type=gha,mode=max,scope=kiss-frontend
 
       # - name: Expose GitHub Runtime
       #   uses: crazy-max/ghaction-github-runtime@v2
@@ -103,14 +91,14 @@ jobs:
       #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --load --tag dotnettest --cache-from type=gha,scope=kiss-frontend
 
       - name: run dotnettest
-        run: docker run --rm -v /testresults:/testresults $TAG_DOTNETTEST
+        run: docker run --rm -v /testresults:/testresults backendtest
 
       # - name: build frontendtest
       #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target frontendtest --load --tag frontendtest --cache-from type=gha,scope=kiss-frontend
 
       - name: run frontendtest
         if: success() || failure() # run this step even if previous step failed
-        run: docker run --rm -v /testresults:/testresults $TAG_FRONTENDTEST
+        run: docker run --rm -v /testresults:/testresults frontendtest
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
@@ -143,6 +131,14 @@ jobs:
           name: npm tests # Name of the check run which will be created
           path: /testresults/*.xml # Path to test results
           reporter: jest-junit # Format of test results
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: push image
         uses: docker/build-push-action@v4
