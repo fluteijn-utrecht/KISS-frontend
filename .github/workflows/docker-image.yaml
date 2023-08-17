@@ -68,9 +68,9 @@ jobs:
           echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
           echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
           echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}-latest" >> $GITHUB_ENV
-          echo "TAG_ALL=${{ env.CONTAINER_REGISTRY_BASE }}/all" >> $GITHUB_ENV
-          echo "TAG_DOTNETTEST=${{ env.CONTAINER_REGISTRY_BASE }}/dotnettest" >> $GITHUB_ENV
-          echo "TAG_FRONTENDTEST=${{ env.CONTAINER_REGISTRY_BASE }}/frontendtest" >> $GITHUB_ENV
+          echo "TAG_ALL=${{ env.CONTAINER_NAME }}:cache-all" >> $GITHUB_ENV
+          echo "TAG_DOTNETTEST=${{ env.CONTAINER_NAME }}:cache-dotnettest" >> $GITHUB_ENV
+          echo "TAG_FRONTENDTEST=${{ env.CONTAINER_NAME }}:cache-frontendtest" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -126,7 +126,7 @@ jobs:
         if: success() || failure() # run this step even if previous step failed
         with:
           name: dotnet tests # Name of the check run which will be created
-          path: testresults/*.trx # Path to test results
+          path: /testresults/*.trx # Path to test results
           reporter: dotnet-trx # Format of test results
 
       - name: npm test report
@@ -134,7 +134,7 @@ jobs:
         if: success() || failure() # run this step even if previous step failed
         with:
           name: npm tests # Name of the check run which will be created
-          path: testresults/*.xml # Path to test results
+          path: /testresults/*.xml # Path to test results
           reporter: jest-junit # Format of test results
 
       - name: push image
