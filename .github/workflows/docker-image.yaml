@@ -84,10 +84,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build all
-        run: docker build . --file Kiss.Bff/Dockerfile --target all
+        run: docker buildx build . --file Kiss.Bff/Dockerfile --target all
 
       - name: build dotnettest
-        run: docker build . --file Kiss.Bff/Dockerfile --target dotnettest
+        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
