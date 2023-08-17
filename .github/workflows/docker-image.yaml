@@ -59,9 +59,6 @@ jobs:
 
       - name: Setting tags
         run: |
-          echo "WEB_CACHE=${{ env.CONTAINER_NAME }}:webcache" >> $GITHUB_ENV
-          echo "FRONTENDTEST_CACHE=${{ env.CONTAINER_NAME }}:frontendtestcache" >> $GITHUB_ENV
-          echo "DOTNETTEST_CACHE=${{ env.CONTAINER_NAME }}:dotnettestcache" >> $GITHUB_ENV
           echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
           echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
           echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_REGISTRY_BASE }}/${{ env.CONTAINER_PROJECT_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
@@ -82,6 +79,7 @@ jobs:
           context: .
           file: Kiss.Bff/Dockerfile
           load: true
+          tags: ${{ env.TAG_LATEST_BRANCH }}
           cache-from: type=gha,scope=${{ env.CONTAINER_PROJECT_NAME }}
           cache-to: type=gha,mode=max,scope=${{ env.CONTAINER_PROJECT_NAME }}
 
