@@ -87,7 +87,7 @@ jobs:
         uses: crazy-max/ghaction-github-runtime@v2
 
       - name: build all
-        run: docker buildx build . --file Kiss.Bff/Dockerfile --target all --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max --load
+        run: docker buildx build . --file Kiss.Bff/Dockerfile --target all --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
 
       - name: build dotnettest
         run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend
