@@ -84,15 +84,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build all
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          push: false
-          load: true
-          cache-from: type=gha,scope=kiss-frontend
-          cache-to: type=gha,mode=max,scope=kiss-frontend
-          target: all
+        run: docker build . --file Kiss.Bff/Dockerfile --target all
 
       - name: build dotnettest
         run: docker build . --file Kiss.Bff/Dockerfile --target dotnettest
