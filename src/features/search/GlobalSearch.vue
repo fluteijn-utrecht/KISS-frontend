@@ -54,7 +54,7 @@
                       source,
                       jsonObject,
                       title,
-                      documentUrl
+                      documentUrl,
                     )
                   "
                   class="icon-after chevron-down"
@@ -128,7 +128,6 @@
                   :raw="jsonObject"
                   :title="title"
                   :heading-level="2"
-            
                 />
 
                 <article v-else>
@@ -196,7 +195,7 @@ import type {
   Medewerker,
   Kennisartikel,
   Website,
-  Vac
+  Vac,
 } from "@/features/search/types";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
@@ -213,7 +212,7 @@ const emit = defineEmits<{
       jsonObject: any;
       source: string;
       documentUrl: URL;
-    }
+    },
   ): void;
 }>();
 
@@ -244,7 +243,7 @@ const searchParameters = computed(() => ({
 const searchResults = useGlobalSearch(searchParameters);
 const sources = useSources();
 
-let automaticSearchTimeout: number | NodeJS.Timeout
+let automaticSearchTimeout: number | NodeJS.Timeout;
 
 function applySearch() {
   state.value.currentSearch = state.value.searchInput;
@@ -258,7 +257,7 @@ watch(
     automaticSearchTimeout && clearTimeout(automaticSearchTimeout);
 
     automaticSearchTimeout = setTimeout(applySearch, 300);
-  }
+  },
 );
 
 function handlePaginationNavigation(page: number) {
@@ -270,11 +269,11 @@ function handlePaginationNavigation(page: number) {
 }
 
 const buttonText = computed(() =>
-  state.value.isExpanded ? "Inklappen" : "Uitklappen"
+  state.value.isExpanded ? "Inklappen" : "Uitklappen",
 );
 
 const hasResults = computed(
-  () => searchResults.success && !!searchResults.data.page.length
+  () => searchResults.success && !!searchResults.data.page.length,
 );
 
 watch(hasResults, (x) => {
@@ -288,16 +287,22 @@ const selectSearchResult = (
   source: string,
   jsonObject: any,
   title: string,
-  documentUrl: URL
+  documentUrl: URL,
 ) => {
   state.value.currentId = id;
 
   if (contactmomentStore.contactmomentLoopt) {
     if (source === "Smoelenboek")
-      handleSmoelenboekSelected(jsonObject, documentUrl.toString());
+      handleSmoelenboekSelected(
+        {
+          ...jsonObject,
+          title,
+        },
+        documentUrl.toString(),
+      );
 
-    if ((source || "" ).toUpperCase() === "VAC")
-      handleVacSelected(jsonObject, documentUrl.toString()); 
+    if ((source || "").toUpperCase() === "VAC")
+      handleVacSelected(jsonObject, documentUrl.toString());
   }
 
   emit("result-selected", {
@@ -323,15 +328,12 @@ const backToResults = () => {
 
 const handleSmoelenboekSelected = (
   medewerker: Medewerker,
-  url: string
+  url: string,
 ): void => {
   contactmomentStore.addMedewerker(medewerker, url);
 };
 
-const handleVacSelected = (
-  vac: Vac,
-  url: string
-): void => {
+const handleVacSelected = (vac: Vac, url: string): void => {
   contactmomentStore.addVac(vac.vraag, url);
 };
 
@@ -346,13 +348,13 @@ const handleWebsiteSelected = (website: Website): void => {
 
 const debounceInput = debouncedRef(
   computed(() => state.value.searchInput),
-  300
+  300,
 );
 
 const suggestions = useSuggestions(debounceInput);
 
 const listItems = mapServiceData(suggestions, (items) =>
-  items.map((value) => ({ value }))
+  items.map((value) => ({ value })),
 );
 </script>
 

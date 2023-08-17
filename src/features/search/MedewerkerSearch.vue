@@ -50,17 +50,13 @@ const props = defineProps({
 function mapDatalistItem(
   x: SearchResult,
 ): DatalistItem & { obj: Record<string, any> } {
-  const { contact, department, function: functie, user } = x?.jsonObject ?? {};
-  const { voornaam, voorvoegselAchternaam, achternaam } = contact ?? {};
-  const naam = [voornaam, voorvoegselAchternaam, achternaam]
-    .filter(Boolean)
-    .join(" ");
+  const { department, function: functie } = x?.jsonObject ?? {};
+
   const werk = [functie, department].filter(Boolean).join(" bij ");
-  const description = [naam, werk].filter(Boolean).join(": ");
   return {
     obj: x.jsonObject,
-    value: user,
-    description,
+    value: x.title,
+    description: werk,
   };
 }
 
@@ -70,18 +66,23 @@ const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
 
 function updateModelValue(v: any) {
+  searchText.value = v;
   if (result.success) {
-    const match = result.data.page
-      .map((x) => x.jsonObject)
-      .find((x) => x?.user === v);
-    emit("update:modelValue", match);
+    const match = result.data.page.find((x) => x?.title === v);
+    emit(
+      "update:modelValue",
+      match && {
+        ...match.jsonObject,
+        title: match.title,
+      },
+    );
   }
 }
 
 watch(
   () => props.modelValue,
   (v) => {
-    searchText.value = v?.user;
+    searchText.value = v?.title;
   },
   { immediate: true },
 );
