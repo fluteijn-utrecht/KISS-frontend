@@ -55,7 +55,6 @@ namespace Kiss.Bff.Test
             }
 
             Assert.AreEqual(2, count);
-            Assert.Fail();
         }
 
         [TestMethod]
