@@ -461,7 +461,7 @@ onMounted(() => {
 
 const zakenToevoegenAanContactmoment = async (
   vraag: Vraag,
-  contactmomentId: string
+  contactmomentId: string,
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
@@ -477,7 +477,7 @@ const zakenToevoegenAanContactmoment = async (
           try {
             console.log(
               "koppelZaakContactmoment in openzaak attempt 1 failed",
-              e
+              e,
             );
             await koppelZaakContactmoment({
               contactmoment: contactmomentId,
@@ -487,7 +487,7 @@ const zakenToevoegenAanContactmoment = async (
             try {
               console.log(
                 "koppelZaakContactmoment in openzaak attempt 2 failed",
-                e
+                e,
               );
               await koppelZaakContactmoment({
                 contactmoment: contactmomentId,
@@ -496,7 +496,7 @@ const zakenToevoegenAanContactmoment = async (
             } catch (e) {
               console.log(
                 "koppelZaakContactmoment in openzaak attempt 3 failed",
-                e
+                e,
               );
             }
           }
@@ -514,7 +514,7 @@ const zakenToevoegenAanContactmoment = async (
                 object: zaak.self,
                 objectType: "zaak",
               }),
-            1000
+            1000,
           );
         } catch (e) {
           console.log("koppelZaakContactmoment in openklant", e);
@@ -599,7 +599,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         data: vraag.contactverzoek,
         contactmomentUrl: savedContactmoment.url,
         klantUrl,
-      })
+      }),
     );
   }
 
@@ -643,7 +643,7 @@ async function submit() {
 }
 const addKennisartikelenToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.kennisartikelen) return;
 
@@ -666,7 +666,7 @@ const addVacToContactmoment = (contactmoment: Contactmoment, vraag: Vraag) => {
 
 const addWebsitesToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.websites) return;
 
@@ -679,7 +679,7 @@ const addWebsitesToContactmoment = (
 
 const addMedewerkersToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.medewerkers) return;
 
@@ -692,7 +692,7 @@ const addMedewerkersToContactmoment = (
 
 const addNieuwsberichtToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.nieuwsberichten) return;
 
@@ -702,7 +702,7 @@ const addNieuwsberichtToContactmoment = (
     // make absolute if not already
     const absoluteUrl = new URL(
       nieuwsbericht.nieuwsbericht.url,
-      window.location.origin
+      window.location.origin,
     );
 
     contactmoment.onderwerpLinks.push(absoluteUrl.toString());
@@ -711,7 +711,7 @@ const addNieuwsberichtToContactmoment = (
 
 const addWerkinstructiesToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.werkinstructies) return;
 
@@ -721,7 +721,7 @@ const addWerkinstructiesToContactmoment = (
     // make absolute if not already
     const absoluteUrl = new URL(
       werkinstructie.werkinstructie.url,
-      window.location.origin
+      window.location.origin,
     );
 
     contactmoment.onderwerpLinks.push(absoluteUrl.toString());
@@ -761,7 +761,7 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
   display: flex;
   flex-direction: column;
 
-  --label-width: 15rem;
+  --label-width: 16rem;
   --label-gap: var(--spacing-default);
 }
 
