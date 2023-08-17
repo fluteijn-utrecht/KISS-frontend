@@ -54,7 +54,7 @@ USER kiss:kiss
 ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
 
 # this stage only exists so we can build all stages in one go
-FROM scratch
+FROM scratch as all
 COPY --from=final dummy?.txt .
 COPY --from=dotnettest dummy?.txt .
 COPY --from=frontendtest dummy?.txt .
