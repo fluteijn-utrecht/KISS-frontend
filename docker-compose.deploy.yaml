@@ -1,12 +1,13 @@
 version: "3.4"
 
 services:
-  web:
+  all:
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
-      target: final
   frontendtest:
+    depends_on:
+      - all
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
@@ -14,6 +15,8 @@ services:
     volumes:
       - ./testresults:/testresults
   dotnettest:
+    depends_on:
+      - all
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile

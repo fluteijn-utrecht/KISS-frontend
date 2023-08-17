@@ -89,7 +89,7 @@ jobs:
            dotnettest.cache-to=type=gha,mode=max,scope=kiss-frontend-dotnettest
 
       - name: run tests
-        run: docker compose -f docker-compose.deploy.yaml up --no-build
+        run: docker compose -f docker-compose.deploy.yaml up frontendtest dotnettest --no-build
 
       - name: cleanup compose
         if: success() || failure() # run this step even if previous step failed
