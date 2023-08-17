@@ -97,7 +97,7 @@ export function saveContactverzoek({
         registratiedatum,
         toelichting: data.interneToelichting,
         actor: {
-          identificatie: data.medewerker?.user || "",
+          identificatie: data.medewerker?.identificatie || "",
           naam: fullName(data.medewerker?.contact),
           soortActor: "medewerker",
         },
@@ -130,7 +130,7 @@ export function saveContactverzoek({
 
 export function useContactverzoekenByKlantId(
   id: Ref<string>,
-  page: Ref<number>
+  page: Ref<number>,
 ) {
   function getUrl() {
     if (!id.value) return "";
@@ -176,6 +176,6 @@ export function useAfdelingen() {
   //     .then((all) => all.sort((a, b) => a.name.localeCompare(b.name)));
 
   return ServiceResult.fromFetcher(url, () =>
-    Promise.reject("not implemented")
+    Promise.reject("not implemented"),
   );
 }

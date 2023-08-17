@@ -16,6 +16,7 @@ export type ContactmomentContactVerzoek = {
   url?: string;
   medewerker?: {
     user: string;
+    identificatie: string;
     contact: {
       voornaam?: string;
       voorvoegselAchternaam?: string;
@@ -120,6 +121,20 @@ function initContactmoment(): ContactmomentState {
   };
 }
 
+function mapKlantToContactverzoek(
+  klant: ContactmomentKlant,
+  contactverzoek: ContactmomentContactVerzoek,
+) {
+  if (!contactverzoek.isActive) {
+    contactverzoek.achternaam = klant.achternaam;
+    contactverzoek.voornaam = klant.voornaam;
+    contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
+    contactverzoek.telefoonnummer1 = klant.telefoonnummer;
+    contactverzoek.emailadres = klant.emailadres;
+    contactverzoek.organisatie = klant.bedrijfsnaam;
+  }
+}
+
 interface ContactmomentenState {
   contactmomenten: ContactmomentState[];
   huidigContactmoment: ContactmomentState | undefined;
@@ -162,8 +177,15 @@ export const useContactmomentStore = defineStore("contactmoment", {
         nieuweVraag.klanten = huidigContactmoment.huidigeVraag.klanten.map(
           (klantKoppeling) => ({
             ...klantKoppeling,
-          })
+          }),
         );
+        const activeKlanten = nieuweVraag.klanten.filter((x) => x.shouldStore);
+        if (activeKlanten.length === 1) {
+          mapKlantToContactverzoek(
+            activeKlanten[0].klant,
+            nieuweVraag.contactverzoek,
+          );
+        }
       }
       huidigContactmoment.vragen.push(nieuweVraag);
       this.switchVraag(nieuweVraag);
@@ -178,7 +200,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
     stop() {
       if (!this.huidigContactmoment) return;
       const currentIndex = this.contactmomenten.indexOf(
-        this.huidigContactmoment
+        this.huidigContactmoment,
       );
       if (currentIndex == -1) return;
       this.contactmomenten.splice(currentIndex, 1);
@@ -195,7 +217,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
     },
     upsertZaak(zaak: ZaakDetails, vraag: Vraag, shouldStore = true) {
       const existingZaak = vraag.zaken.find(
-        (contacmomentZaak) => contacmomentZaak.zaak.id === zaak.id
+        (contacmomentZaak) => contacmomentZaak.zaak.id === zaak.id,
       );
 
       if (existingZaak) {
@@ -212,7 +234,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
     },
     isZaakLinkedToContactmoment(id: string, vraag: Vraag) {
       return vraag.zaken.some(
-        ({ zaak, shouldStore }) => shouldStore && zaak.id === id
+        ({ zaak, shouldStore }) => shouldStore && zaak.id === id,
       );
     },
 
@@ -228,14 +250,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         x.shouldStore = false;
       });
 
-      if (!contactverzoek.isActive) {
-        contactverzoek.achternaam = klant.achternaam;
-        contactverzoek.voornaam = klant.voornaam;
-        contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
-        contactverzoek.telefoonnummer1 = klant.telefoonnummer;
-        contactverzoek.emailadres = klant.emailadres;
-        contactverzoek.organisatie = klant.bedrijfsnaam;
-      }
+      mapKlantToContactverzoek(klant, contactverzoek);
 
       if (match) {
         match.klant = klant;
@@ -257,7 +272,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const targetKlantIndex = huidigeVraag.klanten.findIndex(
-        (k) => k.klant.id === klantId
+        (k) => k.klant.id === klantId,
       );
 
       if (targetKlantIndex === -1) return;
@@ -270,10 +285,12 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
-      huidigeVraag.contactverzoek.medewerker = medewerker;
+      if (!huidigeVraag.contactverzoek.isActive) {
+        huidigeVraag.contactverzoek.medewerker = medewerker;
+      }
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
-        (m) => m.medewerker.id === medewerker.id
+        (m) => m.medewerker.id === medewerker.id,
       );
 
       if (newMedewerkerIndex === -1) {
@@ -299,7 +316,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const record = huidigeVraag.kennisartikelen.find(
-        (k) => k.kennisartikel.url === kennisartikel.url
+        (k) => k.kennisartikel.url === kennisartikel.url,
       );
 
       if (!record) {
@@ -320,7 +337,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const record = huidigeVraag.websites.find(
-        (w) => w.website.url === website.url
+        (w) => w.website.url === website.url,
       );
 
       if (!record) {
@@ -357,7 +374,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const foundBerichtIndex = huidigeVraag.nieuwsberichten.findIndex(
-        (n) => n.nieuwsbericht.url === nieuwsbericht.url
+        (n) => n.nieuwsbericht.url === nieuwsbericht.url,
       );
 
       if (foundBerichtIndex !== -1) {
@@ -379,7 +396,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const foundWerkinstructieIndex = huidigeVraag.werkinstructies.findIndex(
-        (w) => w.werkinstructie.url === werkinstructie.url
+        (w) => w.werkinstructie.url === werkinstructie.url,
       );
 
       if (foundWerkinstructieIndex !== -1) {
