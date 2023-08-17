@@ -6,8 +6,6 @@ services:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
   frontendtest:
-    depends_on:
-      - all
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
@@ -15,8 +13,6 @@ services:
     volumes:
       - ./testresults:/testresults
   dotnettest:
-    depends_on:
-      - all
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
