@@ -121,6 +121,20 @@ function initContactmoment(): ContactmomentState {
   };
 }
 
+function mapKlantToContactverzoek(
+  klant: ContactmomentKlant,
+  contactverzoek: ContactmomentContactVerzoek,
+) {
+  if (!contactverzoek.isActive) {
+    contactverzoek.achternaam = klant.achternaam;
+    contactverzoek.voornaam = klant.voornaam;
+    contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
+    contactverzoek.telefoonnummer1 = klant.telefoonnummer;
+    contactverzoek.emailadres = klant.emailadres;
+    contactverzoek.organisatie = klant.bedrijfsnaam;
+  }
+}
+
 interface ContactmomentenState {
   contactmomenten: ContactmomentState[];
   huidigContactmoment: ContactmomentState | undefined;
@@ -165,6 +179,13 @@ export const useContactmomentStore = defineStore("contactmoment", {
             ...klantKoppeling,
           }),
         );
+        const activeKlanten = nieuweVraag.klanten.filter((x) => x.shouldStore);
+        if (activeKlanten.length === 1) {
+          mapKlantToContactverzoek(
+            activeKlanten[0].klant,
+            nieuweVraag.contactverzoek,
+          );
+        }
       }
       huidigContactmoment.vragen.push(nieuweVraag);
       this.switchVraag(nieuweVraag);
@@ -229,14 +250,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         x.shouldStore = false;
       });
 
-      if (!contactverzoek.isActive) {
-        contactverzoek.achternaam = klant.achternaam;
-        contactverzoek.voornaam = klant.voornaam;
-        contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
-        contactverzoek.telefoonnummer1 = klant.telefoonnummer;
-        contactverzoek.emailadres = klant.emailadres;
-        contactverzoek.organisatie = klant.bedrijfsnaam;
-      }
+      mapKlantToContactverzoek(klant, contactverzoek);
 
       if (match) {
         match.klant = klant;
