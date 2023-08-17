@@ -125,5 +125,5 @@ jobs:
           file: Kiss.Bff/Dockerfile
           push: true
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-          # cache-from: type=gha,scope=kiss-frontend
+          cache-from: type=gha,scope=kiss-frontend
           target: final
