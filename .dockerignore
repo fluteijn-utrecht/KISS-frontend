@@ -18,6 +18,7 @@
 **/bin
 **/charts
 **/docker-compose*
+**/docker-bake*
 **/Dockerfile*
 **/node_modules
 **/npm-debug.log
