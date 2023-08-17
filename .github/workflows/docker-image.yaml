@@ -147,6 +147,7 @@ jobs:
         uses: docker/build-push-action@v4
         if: github.event_name != 'pull_request'
         with:
+          cache-from: type=gha,scope=kiss-frontend
           context: .
           file: Kiss.Bff/Dockerfile
           push: true
