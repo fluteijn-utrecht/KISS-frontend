@@ -90,7 +90,8 @@ jobs:
         run: docker buildx build . --file Kiss.Bff/Dockerfile --target all --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
 
       - name: build dotnettest
-        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q 
+        id: dotnettestbuild
+        run: echo "DOTNETTEST_HASH=$(docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q)" >> $GITHUB_OUTPUT 
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
