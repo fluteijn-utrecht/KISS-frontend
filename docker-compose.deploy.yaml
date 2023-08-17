@@ -2,7 +2,6 @@ version: "3.4"
 
 services:
   frontendtest:
-    image: ${CONTAINER_NAME}:frontendtest
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
@@ -10,7 +9,6 @@ services:
     volumes:
       - ./testresults:/testresults
   dotnettest:
-    image: ${CONTAINER_NAME}:dotnettest
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile

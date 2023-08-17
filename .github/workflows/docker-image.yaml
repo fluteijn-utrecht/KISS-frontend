@@ -17,6 +17,46 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: build all stages
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Kiss.Bff/Dockerfile
+          load: true
+          cache-from: type=gha,scope=${{ env.CONTAINER_PROJECT_NAME }}
+          cache-to: type=gha,mode=max,scope=${{ env.CONTAINER_PROJECT_NAME }}
+
+      - name: run tests
+        run: docker compose -f docker-compose.deploy.yaml up
+
+      - name: cleanup compose
+        if: success() || failure() # run this step even if previous step failed
+        run: docker compose -f docker-compose.deploy.yaml down --remove-orphans -v
+
+      - name: dotnet test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure() # run this step even if previous step failed
+        with:
+          name: dotnet tests # Name of the check run which will be created
+          path: testresults/*.trx # Path to test results
+          reporter: dotnet-trx # Format of test results
+
+      - name: npm test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure() # run this step even if previous step failed
+        with:
+          name: npm tests # Name of the check run which will be created
+          path: testresults/*.xml # Path to test results
+          reporter: jest-junit # Format of test results
+
+  push:
+    needs: build-node
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
       - name: Get date
         id: date
         run: |
@@ -34,7 +74,6 @@ jobs:
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Set release code
-        if: (success() || failure())
         id: releasecode
         run: |
           VERSION=$(grep APP_VERSION= .env | cut -d '=' -f2)
@@ -63,9 +102,6 @@ jobs:
           echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
           echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -73,42 +109,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: build all stages
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          load: true
-          tags: ${{ env.TAG_LATEST_BRANCH }}
-          cache-from: type=gha,scope=${{ env.CONTAINER_PROJECT_NAME }}
-          cache-to: type=gha,mode=max,scope=${{ env.CONTAINER_PROJECT_NAME }}
-
-      - name: run tests
-        run: docker compose -f docker-compose.deploy.yaml up
-
-      - name: cleanup compose
-        if: success() || failure() # run this step even if previous step failed
-        run: docker compose -f docker-compose.deploy.yaml down --remove-orphans -v
-
-      - name: dotnet test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: dotnet tests # Name of the check run which will be created
-          path: testresults/*.trx # Path to test results
-          reporter: dotnet-trx # Format of test results
-
-      - name: npm test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: npm tests # Name of the check run which will be created
-          path: testresults/*.xml # Path to test results
-          reporter: jest-junit # Format of test results
-
       - name: push image
         uses: docker/build-push-action@v4
-        if: github.event_name != 'pull_request'
         with:
           context: .
           file: Kiss.Bff/Dockerfile
