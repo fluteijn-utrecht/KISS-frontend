@@ -81,12 +81,8 @@ jobs:
           load: true
           files: docker-compose.deploy.yaml
           set: |
-           web.cache-from=type=gha,scope=kiss-frontend
-           web.cache-to=type=gha,mode=max,scope=kiss-frontend
-           frontendtest.cache-from=type=gha,scope=kiss-frontend-frontendtest
-           frontendtest.cache-to=type=gha,mode=max,scope=kiss-frontend-frontendtest
-           dotnettest.cache-from=type=gha,scope=kiss-frontend-dotnettest
-           dotnettest.cache-to=type=gha,mode=max,scope=kiss-frontend-dotnettest
+           all.cache-from=type=gha,scope=kiss-frontend
+           all.cache-to=type=gha,mode=max,scope=kiss-frontend
 
       - name: run tests
         run: docker compose -f docker-compose.deploy.yaml up frontendtest dotnettest --no-build
