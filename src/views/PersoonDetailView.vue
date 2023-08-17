@@ -86,10 +86,8 @@
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
       <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-        <template v-slot:zaken="{ zaken }">
-          <template v-for="zaakurl in zaken" :key="zaakurl">
-            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
-          </template>
+        <template v-slot:object="{ object }">
+          <zaak-preview :zaakurl="object.object"></zaak-preview>
         </template>
       </contactmomenten-overzicht>
       <!-- 
@@ -132,12 +130,12 @@ const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage
+  contactverzoekenPage,
 );
 
 // const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl
+  klantUrl,
   // contactmomentenPage
 );
 
@@ -161,7 +159,7 @@ watch(
       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 
