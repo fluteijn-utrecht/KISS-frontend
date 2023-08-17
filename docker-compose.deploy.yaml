@@ -1,8 +1,12 @@
 version: "3.4"
 
 services:
+  web:
+    build:
+      context: .
+      dockerfile: Kiss.Bff/Dockerfile
+      target: final
   frontendtest:
-    image: ${TAG_FRONTENDTEST}
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile
@@ -10,7 +14,6 @@ services:
     volumes:
       - ./testresults:/testresults
   dotnettest:
-    image: ${TAG_DOTNETTEST}
     build:
       context: .
       dockerfile: Kiss.Bff/Dockerfile

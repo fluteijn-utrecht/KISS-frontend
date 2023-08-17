@@ -75,24 +75,18 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: build all stages
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          load: true
-          push: false
-          tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }},${{ env.TAG_DOTNETTEST }},${{ env.TAG_FRONTENDTEST }}
-          cache-from: type=gha,scope=kiss-frontend
-          cache-to: type=gha,mode=max,scope=kiss-frontend
-
-      - name: Build containers
         uses: docker/bake-action@v3
         with:
           push: false
           load: true
           files: docker-compose.deploy.yaml
-      #     set: |
-      #       *.cache-from=type=gha,scope=kiss-frontend
+          set: |
+           web.cache-from=type=gha,scope=kiss-frontend-web
+           web.cache-to=type=gha,mode=max,scope=kiss-frontend-web
+           frontendtest.cache-from=type=gha,scope=kiss-frontend-frontendtest
+           frontendtest.cache-to=type=gha,mode=max,scope=kiss-frontend-frontendtest
+           dotnettest.cache-from=type=gha,scope=kiss-frontend-dotnettest
+           dotnettest.cache-to=type=gha,mode=max,scope=kiss-frontend-dotnettest
 
       - name: run tests
         run: docker compose -f docker-compose.deploy.yaml up --no-build
