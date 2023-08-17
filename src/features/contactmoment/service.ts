@@ -32,7 +32,7 @@ const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
 const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
 export const saveContactmoment = (
-  data: Contactmoment
+  data: Contactmoment,
 ): Promise<{ url: string; gespreksId: string }> =>
   fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
@@ -53,7 +53,7 @@ export const useGespreksResultaten = () => {
       .then((r) => {
         if (!r.ok) {
           throw new Error(
-            "Er is een fout opgetreden bij het laden van de gespreksresultaten"
+            "Er is een fout opgetreden bij het laden van de gespreksresultaten",
           );
         }
         return r.json();
@@ -62,7 +62,7 @@ export const useGespreksResultaten = () => {
         if (!Array.isArray(results))
           throw new Error("unexpected json result: " + JSON.stringify(results));
         const hasContactverzoekResultaat = results.some(
-          ({ definitie }) => definitie === CONTACTVERZOEK_GEMAAKT
+          ({ definitie }) => definitie === CONTACTVERZOEK_GEMAAKT,
         );
         if (!hasContactverzoekResultaat) {
           results.push({
@@ -124,6 +124,7 @@ const fetchContactmomenten = (u: string) =>
 
 export function useContactmomentenByKlantId(id: Ref<string>) {
   function getUrl() {
+    if (!id.value) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("klant", id.value);
     searchParams.set("ordering", "-registratiedatum");
@@ -137,8 +138,10 @@ export function useContactmomentenByKlantId(id: Ref<string>) {
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
     () => {
+      const u = url();
+      if (!u) return "";
       const searchParams = new URLSearchParams();
-      searchParams.set("id", url());
+      searchParams.set("id", u);
       return `${contactmomentDetails}?${searchParams.toString()}`;
     },
     (url) =>
@@ -146,7 +149,7 @@ export const useContactmomentDetails = (url: () => string) =>
         if (r.status === 404) return null;
         throwIfNotOk(r);
         return r.json() as Promise<ContactmomentDetails>;
-      })
+      }),
   );
 
 export function useContactmomentenByObjectUrl(url: Ref<string>) {
@@ -164,18 +167,24 @@ export function useContactmomentenByObjectUrl(url: Ref<string>) {
 
 export function useContactmomentObject(getUrl: () => string) {
   return ServiceResult.fromFetcher(
-    () => toRelativeProxyUrl(getUrl(), contactmomentenProxyRoot) || "",
+    () => {
+      const u = getUrl();
+      if (!u) return "";
+      return toRelativeProxyUrl(u, contactmomentenProxyRoot) || "";
+    },
     (u) =>
       fetchLoggedIn(u)
         .then(throwIfNotOk)
-        .then(parseJson) as Promise<ObjectContactmoment>
+        .then(parseJson) as Promise<ObjectContactmoment>,
   );
 }
 
 export function useContactmomentByUrl(getUrl: () => string) {
   return ServiceResult.fromFetcher(
     () => {
-      const url = toRelativeProxyUrl(getUrl(), contactmomentenProxyRoot);
+      const u = getUrl();
+      if (!u) return "";
+      const url = toRelativeProxyUrl(u, contactmomentenProxyRoot);
       if (!url) return "";
       const params = new URLSearchParams({
         expand: "objectcontactmomenten",
@@ -186,6 +195,6 @@ export function useContactmomentByUrl(getUrl: () => string) {
       fetchLoggedIn(u)
         .then(throwIfNotOk)
         .then(parseJson)
-        .then((r) => r as ContactmomentViewModel)
+        .then((r) => r as ContactmomentViewModel),
   );
 }
