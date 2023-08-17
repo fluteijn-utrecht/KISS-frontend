@@ -91,7 +91,7 @@ jobs:
 
       - name: build dotnettest
         id: dotnettestbuild
-        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q
+        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q --load
 
       - name: run dotnettest
         run: docker run --rm -it dotnettest
