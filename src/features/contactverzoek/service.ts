@@ -97,7 +97,7 @@ export function saveContactverzoek({
         registratiedatum,
         toelichting: data.interneToelichting,
         actor: {
-          identificatie: data.medewerker?.identificatie || "",
+          identificatie: data.medewerker?.contact?.identificatie || "",
           naam: fullName(data.medewerker?.contact),
           soortActor: "medewerker",
         },

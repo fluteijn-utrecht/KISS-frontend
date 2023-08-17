@@ -24,7 +24,7 @@
         />
         <span v-else />
         <span>{{ contactverzoek.record.data.status }}</span>
-        <span>{{ contactverzoek.record.data.actor.identificatie }}</span>
+        <span>{{ contactverzoek.record.data.actor.naam }}</span>
         <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
         <span class="chevron icon-after chevron-down"></span>
       </button>
