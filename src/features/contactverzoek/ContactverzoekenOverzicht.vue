@@ -52,19 +52,9 @@
               contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam
             "
           >
-            <dt>Klant</dt>
+            <dt>Naam betrokkene</dt>
             <dd>
-              {{
-                [
-                  contactverzoek.record.data.betrokkene.persoonsnaam?.voornaam,
-                  contactverzoek.record.data.betrokkene.persoonsnaam
-                    ?.voorvoegselAchternaam,
-                  contactverzoek.record.data.betrokkene.persoonsnaam
-                    ?.achternaam,
-                ]
-                  .filter(Boolean)
-                  .join(" ")
-              }}
+              {{ fullName(contactverzoek.record.data.betrokkene.persoonsnaam) }}
             </dd>
           </template>
 
@@ -81,7 +71,7 @@
             <dt>
               {{
                 capitalizeFirstLetter(
-                  adres.omschrijving || adres.soortDigitaalAdres || "contact"
+                  adres.omschrijving || adres.soortDigitaalAdres || "contact",
                 )
               }}
             </dt>
@@ -108,6 +98,7 @@ import type { Contactverzoek } from "./service";
 import { watch } from "vue";
 import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
+import { fullName } from "@/helpers/string";
 
 const props = defineProps<{
   contactverzoeken: Contactverzoek[];
@@ -124,7 +115,7 @@ watch(
     for (let index = 0; index < diff; index++) {
       activeContactverzoeken.value.push(false);
     }
-  }
+  },
 );
 
 const toggleItemContent = (idx: number) => {
