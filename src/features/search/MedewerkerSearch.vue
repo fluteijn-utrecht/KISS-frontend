@@ -3,7 +3,8 @@
     <search-combobox
       v-bind="{ ...$attrs, ...props }"
       placeholder="Zoek een medewerker"
-      v-model="searchText"
+      :model-value="searchText"
+      @update:model-value="updateModelValue"
       :result="result"
       :list-items="datalistItems"
       :exact-match="true"
@@ -47,7 +48,7 @@ const props = defineProps({
 });
 
 function mapDatalistItem(
-  x: SearchResult
+  x: SearchResult,
 ): DatalistItem & { obj: Record<string, any> } {
   const { contact, department, function: functie, user } = x?.jsonObject ?? {};
   const { voornaam, voorvoegselAchternaam, achternaam } = contact ?? {};
@@ -68,20 +69,21 @@ const emit = defineEmits(["update:modelValue"]);
 const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
 
-watch(searchText, (v) => {
+function updateModelValue(v: any) {
   if (result.success) {
     const match = result.data.page
       .map((x) => x.jsonObject)
       .find((x) => x?.user === v);
     emit("update:modelValue", match);
   }
-});
+}
+
 watch(
   () => props.modelValue,
   (v) => {
     searchText.value = v?.user;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const sources = useSources();
@@ -103,7 +105,7 @@ const searchParams = computed(() => {
 
 const result = useGlobalSearch(searchParams);
 const datalistItems = mapServiceData(result, (paginated) =>
-  paginated.page.map(mapDatalistItem)
+  paginated.page.map(mapDatalistItem),
 );
 </script>
 

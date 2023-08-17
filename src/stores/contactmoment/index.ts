@@ -285,7 +285,9 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
-      huidigeVraag.contactverzoek.medewerker = medewerker;
+      if (!huidigeVraag.contactverzoek.isActive) {
+        huidigeVraag.contactverzoek.medewerker = medewerker;
+      }
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
         (m) => m.medewerker.id === medewerker.id,
