@@ -1,30 +1,28 @@
-group "default" {
-  targets = ["app", "frontendtest", "backendtest"]
+group "tests" {
+  targets = ["frontendtest", "backendtest"]
 }
 
 target "dotnetbuild" {
   dockerfile = "Kiss.Bff/Dockerfile"
   target     = "dotnetbuild"
-  cache-from = ["type=gha,scope=dotnetbuild"]
-  cache-to = ["type=gha,mode=max,scope=dotnetbuild"]
+  cache-from = ["type=gha,scope=cache"]
 }
 
 target "frontend" {
   dockerfile = "Kiss.Bff/Dockerfile"
   target     = "frontend"
-  cache-from = ["type=gha,scope=frontend"]
-  cache-to = ["type=gha,mode=max,scope=frontend"]
+  cache-from = ["type=gha,scope=cache"]
 }
 
-target "app" {
+target "all" {
   contexts = {
     frontend    = "target:frontend",
     dotnetbuild = "target:dotnetbuild",
   }
   dockerfile = "Kiss.Bff/Dockerfile"
-  tags = ["app"]
-  cache-from = ["type=gha,scope=app"]
-  cache-to = ["type=gha,mode=max,scope=app"]
+  tags = ["all"]
+  cache-from = ["type=gha,scope=cache"]
+  cache-to = ["type=gha,mode=max,scope=cache"]
 }
 
 target "frontendtest" {
@@ -34,8 +32,7 @@ target "frontendtest" {
   dockerfile = "Kiss.Bff/Dockerfile"
   target     = "frontendtest"
   tags = ["frontendtest"]
-  cache-from = ["type=gha,scope=frontendtest"]
-  cache-to = ["type=gha,mode=max,scope=frontendtest"]
+  cache-from = ["type=gha,scope=cache"]
 }
 
 target "backendtest" {
@@ -45,6 +42,5 @@ target "backendtest" {
   dockerfile = "Kiss.Bff/Dockerfile"
   target     = "dotnettest"
   tags = ["backendtest"]
-  cache-from = ["type=gha,scope=backendtest"]
-  cache-to = ["type=gha,mode=max,scope=backendtest"]
+  cache-from = ["type=gha,scope=cache"]
 }
