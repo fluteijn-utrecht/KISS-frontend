@@ -1,6 +1,8 @@
 on:
   workflow_dispatch:
-
+  push:
+    branches:
+      - cache_in_registry
 jobs:
   my-job:
     name: Delete all caches
