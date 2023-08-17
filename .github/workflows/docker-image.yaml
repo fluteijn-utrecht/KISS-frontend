@@ -93,6 +93,9 @@ jobs:
         id: dotnettestbuild
         run: echo "DOTNETTEST_HASH=$(docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q)" >> $GITHUB_OUTPUT 
 
+      - name: run dotnettest
+        run: docker run --rm -it ${{ steps.dotnettestbuild.outputs.DOTNETTEST_HASH }}
+
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
       #   with:
