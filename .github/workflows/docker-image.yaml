@@ -95,12 +95,7 @@ jobs:
           target: all
 
       - name: build dotnettest
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Kiss.Bff/Dockerfile
-          push: false
-          target: dotnettest
+        run: docker build . --file Kiss.Bff/Dockerfile --target dotnettest
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
