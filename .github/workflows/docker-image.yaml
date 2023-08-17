@@ -67,7 +67,7 @@ jobs:
         run: |
           echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
           echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
-          echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}_latest" >> $GITHUB_ENV
+          echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}-latest" >> $GITHUB_ENV
           echo "TAG_DOTNETTEST=${{ env.CONTAINER_NAME }}:dotnettest" >> $GITHUB_ENV
           echo "TAG_FRONTENDTEST=${{ env.CONTAINER_NAME }}:frontendtest" >> $GITHUB_ENV
 
@@ -85,14 +85,14 @@ jobs:
           cache-from: type=gha,scope=kiss-frontend
           cache-to: type=gha,mode=max,scope=kiss-frontend
 
-      - name: Build containers
-        uses: docker/bake-action@v3
-        with:
-          push: false
-          load: true
-          files: docker-compose.deploy.yaml
-          set: |
-            *.cache-from=type=gha,scope=kiss-frontend
+      # - name: Build containers
+      #   uses: docker/bake-action@v3
+      #   with:
+      #     push: false
+      #     load: true
+      #     files: docker-compose.deploy.yaml
+      #     set: |
+      #       *.cache-from=type=gha,scope=kiss-frontend
 
       - name: run tests
         run: docker compose -f docker-compose.deploy.yaml up --no-build
@@ -133,5 +133,5 @@ jobs:
           file: Kiss.Bff/Dockerfile
           push: true
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-          cache-from: type=gha,scope=kiss-frontend
+          # cache-from: type=gha,scope=kiss-frontend
           target: final
