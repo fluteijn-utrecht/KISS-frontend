@@ -76,24 +76,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build containers
-        uses: docker/bake-action@v3
+      - name: build all stages
+        uses: docker/build-push-action@v4
         with:
-          push: false
+          context: .
+          file: Kiss.Bff/Dockerfile
           load: true
-          files: docker-compose.deploy.yaml
-          set: |
-            web.cache-from=type=gha,scope=web
-            web.cache-to=type=gha,mode=max,scope=web
-            dotnettest.cache-from=type=gha,scope=dotnettest
-            dotnettest.cache-to=type=gha,mode=max,scope=dotnettest
-            frontendtest.cache-from=type=gha,scope=frontendtest
-            frontendtest.cache-to=type=gha,mode=max,scope=frontendtest
+          cache-from: type=gha,scope=${{ env.CONTAINER_PROJECT_NAME }}
+          cache-to: type=gha,mode=max,scope=${{ env.CONTAINER_PROJECT_NAME }}
 
-      - name: copy testresults
-        run: docker compose -f docker-compose.deploy.yaml up dotnettest frontendtest
+      - name: run tests
+        run: docker compose -f docker-compose.deploy.yaml up
 
       - name: cleanup compose
+        if: success() || failure() # run this step even if previous step failed
         run: docker compose -f docker-compose.deploy.yaml down --remove-orphans -v
 
       - name: dotnet test report
@@ -103,6 +99,7 @@ jobs:
           name: dotnet tests # Name of the check run which will be created
           path: testresults/*.trx # Path to test results
           reporter: dotnet-trx # Format of test results
+
       - name: npm test report
         uses: dorny/test-reporter@v1
         if: success() || failure() # run this step even if previous step failed

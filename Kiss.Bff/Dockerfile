@@ -52,3 +52,9 @@ COPY --from=dotnetpublish /app/publish .
 COPY --from=frontendbuild /app/dist ./wwwroot
 USER kiss:kiss
 ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
+
+# this stage only exists so we can build all stages in one go
+FROM scratch
+COPY --from=final dummy?.txt .
+COPY --from=dotnettest dummy?.txt .
+COPY --from=frontendtest dummy?.txt .
