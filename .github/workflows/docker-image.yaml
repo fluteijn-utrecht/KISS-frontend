@@ -90,7 +90,7 @@ jobs:
         run: docker buildx build . --file Kiss.Bff/Dockerfile --target all --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
 
       - name: build dotnettest
-        run: docker run --rm -it $(docker buildx build . -q --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend)
+        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q 
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
