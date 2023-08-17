@@ -87,14 +87,14 @@ jobs:
         uses: crazy-max/ghaction-github-runtime@v2
 
       - name: build all
-        run: docker buildx build . --load --file Kiss.Bff/Dockerfile --target all --tag dotnettest --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
+        run: docker buildx build . --load --file Kiss.Bff/Dockerfile --target all --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
 
       - name: build dotnettest
         id: dotnettestbuild
-        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --cache-from type=gha,scope=kiss-frontend -q --load
+        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --tag dotnettest --cache-from type=gha,scope=kiss-frontend
 
       - name: run dotnettest
-        run: docker run --rm -it dotnettest
+        run: docker run --rm dotnettest
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
