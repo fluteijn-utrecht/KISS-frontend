@@ -109,6 +109,7 @@ jobs:
       #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target frontendtest --load --tag frontendtest --cache-from type=gha,scope=kiss-frontend
 
       - name: run frontendtest
+        if: success() || failure() # run this step even if previous step failed
         run: docker run --rm -v /testresults:/testresults $TAG_FRONTENDTEST
 
       # - name: build frontendtest
