@@ -16,8 +16,8 @@ export type ContactmomentContactVerzoek = {
   url?: string;
   medewerker?: {
     user: string;
-    identificatie: string;
-    contact: {
+    contact?: {
+      identificatie?: string;
       voornaam?: string;
       voorvoegselAchternaam?: string;
       achternaam?: string;
