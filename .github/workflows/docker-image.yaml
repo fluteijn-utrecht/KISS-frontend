@@ -26,8 +26,8 @@ jobs:
           context: .
           file: Kiss.Bff/Dockerfile
           load: true
-          cache-from: type=gha,scope=${{ env.CONTAINER_PROJECT_NAME }}
-          cache-to: type=gha,mode=max,scope=${{ env.CONTAINER_PROJECT_NAME }}
+          cache-from: type=gha,scope=kiss-frontend
+          cache-to: type=gha,mode=max,scope=kiss-frontend
 
       - name: run tests
         run: docker compose -f docker-compose.deploy.yaml up
