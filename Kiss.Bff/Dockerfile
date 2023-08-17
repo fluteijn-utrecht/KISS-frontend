@@ -44,7 +44,7 @@ FROM dotnetbuild AS dotnetpublish
 WORKDIR "/src/Kiss.Bff"
 RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-FROM base AS final
+FROM base AS web
 WORKDIR /app
 COPY certificates /usr/local/share/ca-certificates
 RUN update-ca-certificates
@@ -55,6 +55,6 @@ ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
 
 # this stage only exists so we can build all stages in one go
 FROM scratch as all
-COPY --from=final dummy?.txt .
+COPY --from=web dummy?.txt .
 COPY --from=dotnettest dummy?.txt .
 COPY --from=frontendtest dummy?.txt .

@@ -150,13 +150,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: push image
-        uses: docker/build-push-action@v4
-        if: github.event_name != 'pull_request'
+      - name: push web
+        uses: docker/bake-action@v3
         with:
-          cache-from: type=gha,scope=kiss-frontend
-          context: .
-          file: Kiss.Bff/Dockerfile
           push: true
-          tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
-          target: final
+          load: false
+          targets: web
+          files: docker-bake.hcl

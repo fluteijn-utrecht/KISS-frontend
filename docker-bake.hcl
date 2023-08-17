@@ -22,3 +22,10 @@ target "backendtest" {
   tags       = ["backendtest"]
   cache-from = ["type=gha,scope=cache"]
 }
+
+target "web" {
+  dockerfile = "Kiss.Bff/Dockerfile"
+  target     = "web"
+  tags       = ["backendtest"]
+  cache-from = ["type=gha,scope=cache"]
+}
