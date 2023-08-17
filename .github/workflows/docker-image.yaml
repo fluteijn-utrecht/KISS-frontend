@@ -83,23 +83,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Expose GitHub Runtime
-        uses: crazy-max/ghaction-github-runtime@v2
+      - name: build all stages
+        uses: docker/bake-action@v3
+        with:
+          push: false
+          load: true
+          files: docker-compose.deploy.yaml
+          set: |
+           *.cache-from=type=gha,scope=kiss-frontend
+           all.cache-to=type=gha,mode=max,scope=kiss-frontend
 
-      - name: build all
-        run: docker buildx build . --load --file Kiss.Bff/Dockerfile --target all --load --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
+      # - name: Expose GitHub Runtime
+      #   uses: crazy-max/ghaction-github-runtime@v2
 
-      - name: build dotnettest
-        run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --load --tag dotnettest --cache-from type=gha,scope=kiss-frontend
+      # - name: build all
+      #   run: docker buildx build . --load --file Kiss.Bff/Dockerfile --target all --load --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
 
-      - name: run dotnettest
-        run: docker run --rm dotnettest
+      # - name: build dotnettest
+      #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --load --tag dotnettest --cache-from type=gha,scope=kiss-frontend
 
-      - name: build frontendtest
-        run: docker buildx build . --file Kiss.Bff/Dockerfile --target frontendtest --load --tag frontendtest --cache-from type=gha,scope=kiss-frontend
+      # - name: run dotnettest
+      #   run: docker run --rm dotnettest
 
-      - name: run frontendtest
-        run: docker run --rm frontendtest
+      # - name: build frontendtest
+      #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target frontendtest --load --tag frontendtest --cache-from type=gha,scope=kiss-frontend
+
+      # - name: run frontendtest
+      #   run: docker run --rm frontendtest
 
       # - name: build frontendtest
       #   uses: docker/build-push-action@v4
