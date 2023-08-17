@@ -85,12 +85,12 @@ jobs:
           cache-from: type=gha,scope=kiss-frontend
           cache-to: type=gha,mode=max,scope=kiss-frontend
 
-      # - name: Build containers
-      #   uses: docker/bake-action@v3
-      #   with:
-      #     push: false
-      #     load: true
-      #     files: docker-compose.deploy.yaml
+      - name: Build containers
+        uses: docker/bake-action@v3
+        with:
+          push: false
+          load: true
+          files: docker-compose.deploy.yaml
       #     set: |
       #       *.cache-from=type=gha,scope=kiss-frontend
 
