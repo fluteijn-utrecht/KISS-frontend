@@ -157,4 +157,3 @@ jobs:
           load: false
           targets: web
           files: docker-bake.hcl
-          set: web.tags=${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
