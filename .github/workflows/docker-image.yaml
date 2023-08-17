@@ -80,6 +80,7 @@ jobs:
           context: .
           file: Kiss.Bff/Dockerfile
           load: true
+          push: false
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }},${{ env.TAG_DOTNETTEST }},${{ env.TAG_FRONTENDTEST }}
           cache-from: type=gha,scope=kiss-frontend
           cache-to: type=gha,mode=max,scope=kiss-frontend
@@ -132,4 +133,5 @@ jobs:
           file: Kiss.Bff/Dockerfile
           push: true
           tags: ${{ env.TAG_RELEASE }},${{ env.TAG_LATEST }},${{ env.TAG_LATEST_BRANCH }}
+          cache-from: type=gha,scope=kiss-frontend
           target: final
