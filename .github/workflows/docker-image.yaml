@@ -93,7 +93,7 @@ jobs:
         if: success() || failure() # run this step even if previous step failed
         with:
           name: npm tests # Name of the check run which will be created
-          path: testresults/*.xml # Path to test results
+          path: testresults/vitest-junit.xml # Path to test results
           reporter: jest-junit # Format of test results
 
       - name: Login to GitHub Container Registry
