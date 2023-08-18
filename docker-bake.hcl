@@ -10,8 +10,8 @@ variable "TAG_LATEST_BRANCH" {
   default = "latest"
 }
 
-group "tests" {
-  targets = ["frontendtest", "backendtest"]
+group "default" {
+  targets = ["all","frontendtest", "backendtest"]
 }
 
 target "all" {

@@ -79,16 +79,8 @@ jobs:
         uses: docker/bake-action@v3
         with:
           push: false
-          load: false
-          targets: all
-          files: docker-bake.hcl
-
-      - name: build tests
-        uses: docker/bake-action@v3
-        with:
-          push: false
           load: true
-          targets: tests
+          targets: default
           files: docker-bake.hcl
 
       # - name: Expose GitHub Runtime
