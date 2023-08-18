@@ -4,7 +4,6 @@ import vue from "@vitejs/plugin-vue";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import { createRequire } from "node:module";
 import ckeditor5 from "@ckeditor/vite-plugin-ckeditor5";
-import GithubActionsReporter from "vitest-github-actions-reporter";
 const require = createRequire(import.meta.url);
 
 const proxyCalls = [
@@ -15,7 +14,7 @@ const proxyCalls = [
 ];
 
 const getProxy = (
-  env?: Record<string, string>,
+  env?: Record<string, string>
 ): Record<string, ProxyOptions> | undefined => {
   const targetPort = env?.BFF_SSL_PORT;
   if (!targetPort) return undefined;
@@ -55,7 +54,6 @@ export default defineConfig(({ mode }) => {
     test: {
       coverage: {
         all: true,
-        reporter: new GithubActionsReporter(),
       },
     },
   };
