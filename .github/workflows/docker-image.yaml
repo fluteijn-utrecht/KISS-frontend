@@ -81,7 +81,7 @@ jobs:
           files: docker-bake.hcl
 
       - name: dotnet test report
-        uses: dorny/test-reporter@v1
+        uses: phoenix-actions/test-reporting@v8
         if: success() || failure() # run this step even if previous step failed
         with:
           name: dotnet tests # Name of the check run which will be created
@@ -89,7 +89,7 @@ jobs:
           reporter: dotnet-trx # Format of test results
 
       - name: npm test report
-        uses: dorny/test-reporter@v1
+        uses: phoenix-actions/test-reporting@v8
         if: success() || failure() # run this step even if previous step failed
         with:
           name: npm tests # Name of the check run which will be created
