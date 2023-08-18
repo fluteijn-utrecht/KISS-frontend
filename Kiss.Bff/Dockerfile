@@ -32,9 +32,11 @@ FROM node:18-alpine AS frontend
 WORKDIR /app
 COPY frontend/package*.json .
 RUN npm ci
-COPY frontend .
+COPY frontend/*.* .
+COPY frontend/src ./src
 
 FROM frontend as frontendtest
+COPY frontend/test ./test
 RUN npm run test:unitci -- --reporter junit --outputFile /testresults/vitest-junit.xml; exit 0
 
 FROM frontend as frontendbuild

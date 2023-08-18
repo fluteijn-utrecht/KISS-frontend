@@ -6,7 +6,7 @@
     "src/**/*.vue"
   ],
   "exclude": [
-    "src/test/**"
+    "test/**"
   ],
   "compilerOptions": {
     "composite": true,
