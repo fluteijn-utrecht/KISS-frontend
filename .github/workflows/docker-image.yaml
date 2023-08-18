@@ -84,7 +84,7 @@ jobs:
         with:
           files: |
             testresults/*.xml
-            test-results/*.trx
+            testresults/*.trx
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
