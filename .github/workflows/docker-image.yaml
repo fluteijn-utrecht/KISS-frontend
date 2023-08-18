@@ -88,7 +88,7 @@ jobs:
           path: testresults/*.trx # Path to test results
           reporter: dotnet-trx # Format of test results
 
-      - uses: IgnusG/jest-report-action@v{ current version }
+      - uses: IgnusG/jest-report-action@v2.3.3
         if: success() || failure() # run this step even if previous step failed
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
