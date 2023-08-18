@@ -26,6 +26,6 @@ target "backendtest" {
 target "web" {
   dockerfile = "Kiss.Bff/Dockerfile"
   target     = "web"
-  tags       = ["${{ env.TAG_RELEASE }}","${{ env.TAG_LATEST }}","${{ env.TAG_LATEST_BRANCH }}"]
+  tags       = ["${TAG_RELEASE}","${TAG_LATEST}","${TAG_LATEST_BRANCH}"]
   cache-from = ["type=gha,scope=cache"]
 }
