@@ -26,7 +26,7 @@ RUN dotnet restore "Kiss.Bff.Test/Kiss.Bff.Test.csproj"
 COPY Kiss.Bff.Test Kiss.Bff.Test
 WORKDIR "/src/Kiss.Bff.Test"
 RUN dotnet build "Kiss.Bff.Test.csproj" -c Release --no-restore
-ENTRYPOINT dotnet test -c Release --no-build --logger trx --results-directory /testresults -v n
+RUN dotnet test -c Release --no-build --logger trx --results-directory /testresults -v n; exit 0
 
 FROM node:18-alpine AS frontend
 WORKDIR /app
@@ -35,7 +35,7 @@ RUN npm ci
 COPY frontend .
 
 FROM frontend as frontendtest
-ENTRYPOINT npm run test:unitci -- --reporter junit --outputFile /testresults/vitest-junit.xml
+RUN npm run test:unitci -- --reporter junit --outputFile /testresults/vitest-junit.xml; exit 0
 
 FROM frontend as frontendbuild
 RUN npm run build --if-present
@@ -53,8 +53,8 @@ COPY --from=frontendbuild /app/dist ./wwwroot
 USER kiss:kiss
 ENTRYPOINT ["dotnet", "Kiss.Bff.dll"]
 
-# this stage only exists so we can build all stages in one go
-FROM scratch as all
-COPY --from=web dummy?.txt .
-COPY --from=dotnettest dummy?.txt .
-COPY --from=frontendtest dummy?.txt .
+FROM scratch as test
+COPY --from=dotnettest /testresults/*.trx .
+COPY --from=frontendtest /testresults/*.xml .
+# this line only exists so we can build and cache all stages in one go
+COPY --from=web dummy?.txt . 

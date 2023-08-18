@@ -10,34 +10,17 @@ variable "TAG_LATEST_BRANCH" {
   default = "latest"
 }
 
-group "default" {
-  targets = ["all","frontendtest", "backendtest"]
-}
-
-target "all" {
+target "test" {
   dockerfile = "Kiss.Bff/Dockerfile"
-  tags       = ["all"]
+  tags       = ["test"]
   cache-from = ["type=gha,scope=cache"]
   cache-to   = ["type=gha,mode=max,scope=cache"]
-}
-
-target "frontendtest" {
-  dockerfile = "Kiss.Bff/Dockerfile"
-  target     = "frontendtest"
-  tags       = ["frontendtest"]
-  cache-from = ["type=gha,scope=cache"]
-}
-
-target "backendtest" {
-  dockerfile = "Kiss.Bff/Dockerfile"
-  target     = "dotnettest"
-  tags       = ["backendtest"]
-  cache-from = ["type=gha,scope=cache"]
+  output     = "testresults"
 }
 
 target "web" {
   dockerfile = "Kiss.Bff/Dockerfile"
   target     = "web"
-  tags       = ["${TAG_RELEASE}","${TAG_LATEST}","${TAG_LATEST_BRANCH}"]
+  tags       = ["${TAG_RELEASE}", "${TAG_LATEST}", "${TAG_LATEST_BRANCH}"]
   cache-from = ["type=gha,scope=cache"]
 }

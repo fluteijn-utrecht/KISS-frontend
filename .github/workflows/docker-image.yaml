@@ -68,9 +68,6 @@ jobs:
           echo "TAG_RELEASE=${{ env.CONTAINER_NAME }}:${{ env.RELEASE}}" >> $GITHUB_ENV
           echo "TAG_LATEST=${{ env.CONTAINER_NAME }}:latest" >> $GITHUB_ENV
           echo "TAG_LATEST_BRANCH=${{ env.CONTAINER_NAME }}:${{ env.BRANCH_NAME }}-latest" >> $GITHUB_ENV
-          echo "TAG_ALL=${{ env.CONTAINER_NAME }}:cache-all" >> $GITHUB_ENV
-          echo "TAG_DOTNETTEST=${{ env.CONTAINER_NAME }}:cache-dotnettest" >> $GITHUB_ENV
-          echo "TAG_FRONTENDTEST=${{ env.CONTAINER_NAME }}:cache-frontendtest" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -79,44 +76,9 @@ jobs:
         uses: docker/bake-action@v3
         with:
           push: false
-          load: true
-          targets: default
+          load: false
+          targets: test
           files: docker-bake.hcl
-
-      # - name: Expose GitHub Runtime
-      #   uses: crazy-max/ghaction-github-runtime@v2
-
-      # - name: build all
-      #   run: docker buildx build . --load --file Kiss.Bff/Dockerfile --target all --load --cache-from type=gha,scope=kiss-frontend --cache-to type=gha,scope=kiss-frontend,mode=max
-
-      # - name: build dotnettest
-      #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target dotnettest --load --tag dotnettest --cache-from type=gha,scope=kiss-frontend
-
-      - name: run dotnettest
-        run: docker run --rm -v /testresults:/testresults backendtest
-
-      # - name: build frontendtest
-      #   run: docker buildx build . --file Kiss.Bff/Dockerfile --target frontendtest --load --tag frontendtest --cache-from type=gha,scope=kiss-frontend
-
-      - name: run frontendtest
-        if: success() || failure() # run this step even if previous step failed
-        run: docker run --rm -v /testresults:/testresults frontendtest
-
-      # - name: build frontendtest
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     context: .
-      #     file: Kiss.Bff/Dockerfile
-      #     push: false
-      #     load: true
-      #     tags: ${{ env.TAG_FRONTENDTEST }}
-      #     target: frontendtest
-
-      # - name: run tests
-      #   run: docker run -v /testresults:/testresults ${{ env.TAG_FRONTENDTEST }}
-
-      # - name: run tests
-      #   run: docker run -v /testresults:/testresults ${{ env.TAG_DOTNETTEST }}
 
       - name: dotnet test report
         uses: dorny/test-reporter@v1
