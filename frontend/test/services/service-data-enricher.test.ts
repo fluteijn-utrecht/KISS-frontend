@@ -23,7 +23,7 @@ describe("service-data-enricher", () => {
           dataBoth: "bothLeft",
           dataLeftOnly: "left",
           _typeOf: "left",
-        })
+        }),
       );
     }
 
@@ -33,12 +33,12 @@ describe("service-data-enricher", () => {
           dataBoth: "bothRight",
           dataRightOnly: "right",
           _typeOf: "right",
-        })
+        }),
       );
     }
 
     const isLeft = (
-      leftOrRight: LeftType | RightType
+      leftOrRight: LeftType | RightType,
     ): leftOrRight is LeftType => {
       return leftOrRight._typeOf === "left";
     };
@@ -47,7 +47,7 @@ describe("service-data-enricher", () => {
       left,
       right,
       (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object. afhankelijk van de input die je meegeeft aan de functie die combineEnrichers creeert is dat left of right
-      isLeft
+      isLeft,
     );
 
     const [common, leftData, rightData] = testEnricher(() => {
@@ -80,6 +80,7 @@ describe("service-data-enricher", () => {
     //de aan de testenricher meegegeven data is gebruikt voor de leftdata
     expect(leftData.success).toBeTruthy();
     expect(rightData.success).toBeTruthy();
+    expect(false).toBe(true);
   });
 
   test("should attempt to retrieve data of type Left, when the input is of type Right", async () => {
@@ -101,7 +102,7 @@ describe("service-data-enricher", () => {
           dataBoth: "bothLeft",
           dataLeftOnly: "left",
           _typeOf: "left",
-        })
+        }),
       );
     }
 
@@ -111,12 +112,12 @@ describe("service-data-enricher", () => {
           dataBoth: "bothRight",
           dataRightOnly: "right",
           _typeOf: "right",
-        })
+        }),
       );
     }
 
     const isLeft = (
-      leftOrRight: LeftType | RightType
+      leftOrRight: LeftType | RightType,
     ): leftOrRight is LeftType => {
       return leftOrRight._typeOf === "left";
     };
@@ -125,7 +126,7 @@ describe("service-data-enricher", () => {
       left,
       right,
       (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object. afhankelijk van de input die je meegeeft aan de functie die combineEnrichers creeert is dat left of right
-      isLeft
+      isLeft,
     );
 
     const [common, leftData, rightData] = testEnricher(() => {
@@ -179,7 +180,7 @@ describe("service-data-enricher", () => {
           dataBoth: "bothLeft",
           dataLeftOnly: "left",
           _typeOf: "left",
-        })
+        }),
       );
     }
 
@@ -189,12 +190,12 @@ describe("service-data-enricher", () => {
           dataBoth: "bothRight",
           dataRightOnly: "right",
           _typeOf: "right",
-        })
+        }),
       );
     }
 
     const isLeft = (
-      leftOrRight: LeftType | RightType
+      leftOrRight: LeftType | RightType,
     ): leftOrRight is LeftType => {
       return leftOrRight._typeOf === "right"; //wrong!
     };
@@ -203,7 +204,7 @@ describe("service-data-enricher", () => {
       left,
       right,
       (either) => either.dataBoth, //wordt als parameter meegegeven bij het ophalen van het andere object. afhankelijk van de input die je meegeeft aan de functie die combineEnrichers creeert is dat left of right
-      isLeft
+      isLeft,
     );
 
     const [common, leftData, rightData] = testEnricher(() => {
