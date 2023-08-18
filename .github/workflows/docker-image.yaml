@@ -73,12 +73,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: build all stages
-        uses: docker/bake-action@v3
-        with:
-          push: false
-          load: false
-          targets: test
-          files: docker-bake.hcl
+        run: docker buildx bake --file docker-bake.hcl --progress plain test
 
       - name: dotnet test report
         uses: dorny/test-reporter@v1
