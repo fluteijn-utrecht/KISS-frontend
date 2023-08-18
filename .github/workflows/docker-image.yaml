@@ -81,20 +81,18 @@ jobs:
           files: docker-bake.hcl
 
       - name: dotnet test report
-        uses: phoenix-actions/test-reporting@v8
+        uses: dorny/test-reporter@v1
         if: success() || failure() # run this step even if previous step failed
         with:
           name: dotnet tests # Name of the check run which will be created
           path: testresults/*.trx # Path to test results
           reporter: dotnet-trx # Format of test results
 
-      - name: npm test report
-        uses: phoenix-actions/test-reporting@v8
+      - uses: IgnusG/jest-report-action@v{ current version }
         if: success() || failure() # run this step even if previous step failed
         with:
-          name: npm tests # Name of the check run which will be created
-          path: testresults/vitest-junit.xml # Path to test results
-          reporter: jest-junit # Format of test results
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          junit-file: testresults/*.trx
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
