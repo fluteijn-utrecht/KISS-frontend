@@ -85,7 +85,7 @@ jobs:
         if: success() || failure() # run this step even if previous step failed
         with:
           name: dotnet tests # Name of the check run which will be created
-          path: /testresults/*.trx # Path to test results
+          path: testresults/*.trx # Path to test results
           reporter: dotnet-trx # Format of test results
 
       - name: npm test report
@@ -93,7 +93,7 @@ jobs:
         if: success() || failure() # run this step even if previous step failed
         with:
           name: npm tests # Name of the check run which will be created
-          path: /testresults/*.xml # Path to test results
+          path: testresults/*.xml # Path to test results
           reporter: jest-junit # Format of test results
 
       - name: Login to GitHub Container Registry
