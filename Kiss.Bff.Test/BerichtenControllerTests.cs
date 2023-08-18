@@ -36,6 +36,7 @@ namespace Kiss.Bff.Test
             Assert.AreEqual(2, overviewModels?.Count());
             Assert.AreEqual("Bericht 1", overviewModels?.First().Titel);
             Assert.AreEqual("Bericht 2", overviewModels?.Last().Titel);
+            Assert.Fail();
         }
 
         [TestMethod]
