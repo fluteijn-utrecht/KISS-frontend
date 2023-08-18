@@ -92,7 +92,7 @@ jobs:
         if: success() || failure() # run this step even if previous step failed
         with:
           access-token: ${{ secrets.GITHUB_TOKEN }}
-          junit-file: testresults/*.trx
+          junit-file: testresults/vitest-junit.xml
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
