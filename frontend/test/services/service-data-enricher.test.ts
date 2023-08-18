@@ -80,7 +80,6 @@ describe("service-data-enricher", () => {
     //de aan de testenricher meegegeven data is gebruikt voor de leftdata
     expect(leftData.success).toBeTruthy();
     expect(rightData.success).toBeTruthy();
-    expect(false).toBe(true);
   });
 
   test("should attempt to retrieve data of type Left, when the input is of type Right", async () => {
