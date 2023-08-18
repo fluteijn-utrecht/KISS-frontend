@@ -1,3 +1,15 @@
+variable "TAG_RELEASE" {
+  default = "latest"
+}
+
+variable "TAG_LATEST" {
+  default = "latest"
+}
+
+variable "TAG_LATEST_BRANCH" {
+  default = "latest"
+}
+
 group "tests" {
   targets = ["frontendtest", "backendtest"]
 }
