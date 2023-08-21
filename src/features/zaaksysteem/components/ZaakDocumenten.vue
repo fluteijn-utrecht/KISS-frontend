@@ -1,45 +1,42 @@
 <template>
-  <section>
-    <utrecht-heading :level="2" modelValue>Documenten</utrecht-heading>
+  <utrecht-heading :level="2" modelValue>Documenten</utrecht-heading>
 
-    <template v-if="zaak.documenten?.length">
-      <table>
-        <thead>
-          <tr>
-            <th>Naam</th>
-            <th>Formaat</th>
-            <th>Creatiedatum</th>
-            <th>Vertrouwelijk</th>
-            <th>Downloaden</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="document in zaak.documenten" :key="document.id">
-            <td class="wrap">{{ document.titel }}</td>
-            <td>{{ formatBytes(document.bestandsomvang) }}</td>
-            <td>{{ formatDateOnly(document.creatiedatum) }}</td>
-            <td class="vertrouwelijkheid-label">
-              {{ document.vertrouwelijkheidaanduiding }}
-            </td>
-            <td>
-              <a
-                :href="document.downloadUrl"
-                target="_blank"
-                :download="document.titel"
-                >> Downloaden</a
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </template>
+  <template v-if="zaak.documenten?.length">
+    <table>
+      <thead>
+        <tr>
+          <th>Naam</th>
+          <th>Formaat</th>
+          <th>Creatiedatum</th>
+          <th>Vertrouwelijk</th>
+          <th>Downloaden</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="document in zaak.documenten" :key="document.id">
+          <td class="wrap">{{ document.titel }}</td>
+          <td>{{ formatBytes(document.bestandsomvang) }}</td>
+          <td>{{ formatDateOnly(document.creatiedatum) }}</td>
+          <td class="vertrouwelijkheid-label">
+            {{ document.vertrouwelijkheidaanduiding }}
+          </td>
+          <td>
+            <a
+              :href="document.downloadUrl"
+              target="_blank"
+              :download="document.titel"
+              >> Downloaden</a
+            >
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
 
-    <span v-if="!zaak.documenten?.length">Geen documenten gevonden.</span>
-  </section>
+  <span v-if="!zaak.documenten?.length">Geen documenten gevonden.</span>
 </template>
 
 <script setup lang="ts">
-import { defineProps } from "vue";
 import type { ZaakDetails } from "./../types";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { formatDateOnly } from "@/helpers/date";

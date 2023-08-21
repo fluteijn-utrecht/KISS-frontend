@@ -11,7 +11,7 @@
       </ul>
     </nav>
     <simple-spinner v-if="klant.loading" />
-    <persoon-details v-else-if="klant.success" :klant="klant.data" />
+    <klant-details v-else-if="klant.success" :klant="klant.data" />
     <application-message
       v-if="klant.error"
       message="Er ging iets mis bij het ophalen van de klant. Probeer het later
@@ -43,7 +43,15 @@
 
       <contactverzoeken-overzicht
         :contactverzoeken="contactverzoeken.data.page"
-      />
+      >
+        <template #contactmoment="{ url }">
+          <contactmoment-preview :url="url">
+            <template #object="{ object }">
+              <zaak-preview :zaakurl="object.object" />
+            </template>
+          </contactmoment-preview>
+        </template>
+      </contactverzoeken-overzicht>
     </template>
 
     <!-- Zaken -->
@@ -78,10 +86,8 @@
       <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
       <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-        <template v-slot:zaken="{ zaken }">
-          <template v-for="zaakurl in zaken" :key="zaakurl">
-            <zaak-preview :zaakurl="zaakurl"></zaak-preview>
-          </template>
+        <template v-slot:object="{ object }">
+          <zaak-preview :zaakurl="object.object"></zaak-preview>
         </template>
       </contactmomenten-overzicht>
       <!-- 
@@ -98,53 +104,38 @@
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
+import { ContactmomentenOverzicht } from "@/features/contactmoment";
 import {
-  ContactmomentenOverzicht,
-  useContactverzoekenByKlantId,
-} from "@/features/contactmoment";
-import {
-  PersoonDetails,
+  KlantDetails,
   useKlantById,
   BrpGegevens,
   usePersoonByBsn,
 } from "@/features/klant";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
-import ContactverzoekenOverzicht from "@/features/contactmoment/ContactverzoekenOverzicht.vue";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-
+import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
+import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
-
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
-
-watch(
-  () => klant.success && klant.data,
-  (k) => {
-    if (!k) return;
-    contactmomentStore.setKlant({
-      ...k,
-      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
-    });
-  },
-  { immediate: true }
-);
 
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
-  klantId,
-  contactverzoekenPage
+  klantUrl,
+  contactverzoekenPage,
 );
 
 // const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl
+  klantUrl,
   // contactmomentenPage
 );
 
@@ -157,6 +148,19 @@ const klantBsn = computed(getBsn);
 
 const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
+
+watch(
+  [() => klant.success && klant.data, () => persoon.success && persoon.data],
+  ([k, p]) => {
+    if (!k) return;
+    contactmomentStore.setKlant({
+      ...k,
+      ...p,
+      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
+    });
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped lang="scss">

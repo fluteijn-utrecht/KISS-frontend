@@ -92,34 +92,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.ToTable("Links");
                 });
 
-            modelBuilder.Entity("Kiss.Bff.Beheer.Management.ContactmomentManagementLog", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("AfwijkendOnderwerp")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Einddatum")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EmailadresKcm")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PrimaireVraagWeergave")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Resultaat")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Startdatum")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ContactmomentManagementLogs");
-                });
-
             modelBuilder.Entity("Kiss.Bff.Beheer.Verwerking.VerwerkingsLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -234,22 +206,34 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.KlantContactmoment", b =>
+            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.ContactmomentDetails", b =>
                 {
-                    b.Property<string>("Klant")
+                    b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Contactmoment")
+                    b.Property<DateTimeOffset>("Einddatum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EmailadresKcm")
                         .HasColumnType("text");
 
-                    b.Property<string>("Rol")
+                    b.Property<string>("Gespreksresultaat")
                         .HasColumnType("text");
 
-                    b.HasKey("Klant", "Contactmoment", "Rol");
+                    b.Property<string>("SpecifiekeVraag")
+                        .HasColumnType("text");
 
-                    b.HasIndex("Klant");
+                    b.Property<DateTimeOffset>("Startdatum")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.ToTable("KlantContactmomenten");
+                    b.Property<string>("Vraag")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Vraag");
+
+                    b.ToTable("ContactMomentDetails");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>

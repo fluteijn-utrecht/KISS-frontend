@@ -3,7 +3,8 @@
     <search-combobox
       v-bind="{ ...$attrs, ...props }"
       placeholder="Zoek een medewerker"
-      v-model="searchText"
+      :model-value="searchText"
+      @update:model-value="updateModelValue"
       :result="result"
       :list-items="datalistItems"
       :exact-match="true"
@@ -20,11 +21,12 @@ export default {
 
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useGlobalSearch, useSources } from "./service";
 import type { SearchResult } from "./types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
+import type { PropType } from "vue";
 
 type DatalistItem = {
   value: string;
@@ -33,8 +35,7 @@ type DatalistItem = {
 
 const props = defineProps({
   modelValue: {
-    type: String,
-    required: true,
+    type: Object as PropType<Record<string, any> | undefined>,
   },
   id: {
     type: String,
@@ -46,29 +47,45 @@ const props = defineProps({
   },
 });
 
-function mapDatalistItem(x: SearchResult): DatalistItem {
-  const { contact, department, function: functie, user } = x?.jsonObject ?? {};
-  const { voornaam, voorvoegselAchternaam, achternaam } = contact ?? {};
-  const naam = [voornaam, voorvoegselAchternaam, achternaam]
-    .filter(Boolean)
-    .join(" ");
+function mapDatalistItem(
+  x: SearchResult,
+): DatalistItem & { obj: Record<string, any> } {
+  const { department, function: functie } = x?.jsonObject ?? {};
+
   const werk = [functie, department].filter(Boolean).join(" bij ");
-  const description = [naam, werk].filter(Boolean).join(": ");
   return {
-    value: user,
-    description,
+    obj: x.jsonObject,
+    value: x.title,
+    description: werk,
   };
 }
 
 const emit = defineEmits(["update:modelValue"]);
 
-const searchText = computed({
-  get: () => props.modelValue,
-  set(val) {
-    emit("update:modelValue", val);
-  },
-});
+const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
+
+function updateModelValue(v: any) {
+  searchText.value = v;
+  if (result.success) {
+    const match = result.data.page.find((x) => x?.title === v);
+    emit(
+      "update:modelValue",
+      match && {
+        ...match.jsonObject,
+        title: match.title,
+      },
+    );
+  }
+}
+
+watch(
+  () => props.modelValue,
+  (v) => {
+    searchText.value = v?.title;
+  },
+  { immediate: true },
+);
 
 const sources = useSources();
 
@@ -89,7 +106,7 @@ const searchParams = computed(() => {
 
 const result = useGlobalSearch(searchParams);
 const datalistItems = mapServiceData(result, (paginated) =>
-  paginated.page.map(mapDatalistItem)
+  paginated.page.map(mapDatalistItem),
 );
 </script>
 

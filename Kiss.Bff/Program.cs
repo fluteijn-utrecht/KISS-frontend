@@ -2,6 +2,7 @@
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
+using Kiss.Bff.InterneTaak;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
@@ -29,8 +30,18 @@ try
 
     // Add services to the container.
     builder.Services.AddControllers();
+
+    const string AuthorityKey = "OIDC_AUTHORITY";
+
+    var authority = builder.Configuration[AuthorityKey];
+
+    if (string.IsNullOrWhiteSpace(authority))
+    {
+        Log.Fatal("Environment variable {variableKey} is missing", AuthorityKey);
+    }
+
     builder.Services.AddKissAuth(
-        builder.Configuration["OIDC_AUTHORITY"],
+        authority,
         builder.Configuration["OIDC_CLIENT_ID"],
         builder.Configuration["OIDC_CLIENT_SECRET"],
         builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"],
@@ -52,13 +63,16 @@ try
     builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
     builder.Services.AddContactmomentenProxy(builder.Configuration["CONTACTMOMENTEN_BASE_URL"], builder.Configuration["CONTACTMOMENTEN_API_CLIENT_ID"], builder.Configuration["CONTACTMOMENTEN_API_KEY"]);
 
-    builder.Services.AddSmtpClient(
-        builder.Configuration["EMAIL_HOST"],
-        int.Parse(builder.Configuration["EMAIL_PORT"]),
-        builder.Configuration["EMAIL_USERNAME"],
-        builder.Configuration["EMAIL_PASSWORD"],
-        bool.TryParse(builder.Configuration["EMAIL_ENABLE_SSL"], out var enableSsl) && enableSsl
-    );
+    if(int.TryParse(builder.Configuration["EMAIL_PORT"], out var emailPort)) 
+    {
+        builder.Services.AddSmtpClient(
+            builder.Configuration["EMAIL_HOST"],
+            emailPort,
+            builder.Configuration["EMAIL_USERNAME"],
+            builder.Configuration["EMAIL_PASSWORD"],
+            bool.TryParse(builder.Configuration["EMAIL_ENABLE_SSL"], out var enableSsl) && enableSsl
+        );
+    }
 
     builder.Services.AddDataProtection()
         .PersistKeysToDbContext<BeheerDbContext>()
@@ -77,6 +91,7 @@ try
     builder.Services.AddHealthChecks();
 
     builder.Services.AddElasticsearch(builder.Configuration["ELASTIC_BASE_URL"], builder.Configuration["ELASTIC_USERNAME"], builder.Configuration["ELASTIC_PASSWORD"]);
+    builder.Services.AddInterneTaakProxy(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"], builder.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"]);
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
@@ -105,7 +120,10 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<BeheerDbContext>();
-        await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+        if (db.Database.IsRelational())
+        {
+            await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+        }
     }
 
     app.Run();
@@ -124,3 +142,5 @@ finally
     Log.Information("Shut down complete");
     Log.CloseAndFlush();
 }
+
+public partial class Program { }

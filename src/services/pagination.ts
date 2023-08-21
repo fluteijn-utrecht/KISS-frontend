@@ -2,8 +2,8 @@ import type { PaginatedResult } from "./zgw";
 
 export interface Paginated<T> {
   pageSize?: number;
-  pageNumber?: number | string;
-  totalPages?: number;
+  pageNumber: number;
+  totalPages: number;
   totalRecords?: number;
   page: T[];
 }

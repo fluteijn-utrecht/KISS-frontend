@@ -54,7 +54,7 @@
                       source,
                       jsonObject,
                       title,
-                      documentUrl
+                      documentUrl,
                     )
                   "
                   class="icon-after chevron-down"
@@ -123,6 +123,13 @@
                   :heading-level="2"
                   @kennisartikel-selected="handleKennisartikelSelected"
                 />
+                <vac-detail
+                  v-else-if="source === 'VAC'"
+                  :raw="jsonObject"
+                  :title="title"
+                  :heading-level="2"
+                />
+
                 <article v-else>
                   <header>
                     <utrecht-heading :level="2"
@@ -183,10 +190,12 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import type { Source } from "./types";
 import MedewerkerDetail from "./MedewerkerDetail.vue";
 import KennisartikelDetail from "./KennisartikelDetail.vue";
+import VacDetail from "./VacDetail.vue";
 import type {
   Medewerker,
   Kennisartikel,
   Website,
+  Vac,
 } from "@/features/search/types";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
@@ -203,7 +212,7 @@ const emit = defineEmits<{
       jsonObject: any;
       source: string;
       documentUrl: URL;
-    }
+    },
   ): void;
 }>();
 
@@ -241,7 +250,7 @@ const searchParameters = computed(() => ({
 
 const searchResults = useGlobalSearch(searchParameters);
 
-const automaticSearchTimeout = ref<number | null>(null);
+let automaticSearchTimeout: number | NodeJS.Timeout;
 
 function applySearch() {
   state.value.currentSearch = state.value.searchInput;
@@ -252,10 +261,10 @@ function applySearch() {
 watch(
   () => state.value.searchInput,
   () => {
-    automaticSearchTimeout.value && clearTimeout(automaticSearchTimeout.value);
+    automaticSearchTimeout && clearTimeout(automaticSearchTimeout);
 
-    automaticSearchTimeout.value = setTimeout(applySearch, 300);
-  }
+    automaticSearchTimeout = setTimeout(applySearch, 300);
+  },
 );
 
 function handlePaginationNavigation(page: number) {
@@ -267,11 +276,11 @@ function handlePaginationNavigation(page: number) {
 }
 
 const buttonText = computed(() =>
-  state.value.isExpanded ? "Inklappen" : "Uitklappen"
+  state.value.isExpanded ? "Inklappen" : "Uitklappen",
 );
 
 const hasResults = computed(
-  () => searchResults.success && !!searchResults.data.page.length
+  () => searchResults.success && !!searchResults.data.page.length,
 );
 
 watch(hasResults, (x) => {
@@ -285,13 +294,22 @@ const selectSearchResult = (
   source: string,
   jsonObject: any,
   title: string,
-  documentUrl: URL
+  documentUrl: URL,
 ) => {
   state.value.currentId = id;
 
   if (contactmomentStore.contactmomentLoopt) {
     if (source === "Smoelenboek")
-      handleSmoelenboekSelected(jsonObject, documentUrl.toString());
+      handleSmoelenboekSelected(
+        {
+          ...jsonObject,
+          title,
+        },
+        documentUrl.toString(),
+      );
+
+    if ((source || "").toUpperCase() === "VAC")
+      handleVacSelected(jsonObject, documentUrl.toString());
   }
 
   emit("result-selected", {
@@ -317,9 +335,13 @@ const backToResults = () => {
 
 const handleSmoelenboekSelected = (
   medewerker: Medewerker,
-  url: string
+  url: string,
 ): void => {
   contactmomentStore.addMedewerker(medewerker, url);
+};
+
+const handleVacSelected = (vac: Vac, url: string): void => {
+  contactmomentStore.addVac(vac.vraag, url);
 };
 
 const handleKennisartikelSelected = (kennisartikel: Kennisartikel): void => {
@@ -333,13 +355,13 @@ const handleWebsiteSelected = (website: Website): void => {
 
 const debounceInput = debouncedRef(
   computed(() => state.value.searchInput),
-  300
+  300,
 );
 
 const suggestions = useSuggestions(debounceInput, sourceParameter);
 
 const listItems = mapServiceData(suggestions, (items) =>
-  items.map((value) => ({ value }))
+  items.map((value) => ({ value })),
 );
 </script>
 

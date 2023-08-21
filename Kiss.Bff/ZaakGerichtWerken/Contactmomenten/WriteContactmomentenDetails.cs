@@ -2,20 +2,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.Beheer.Managementinfo
+namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
     [ApiController]
-    public class UpsertContactmomentenManagementinfoLog: ControllerBase
+    public class WriteContactmomentenDetails : ControllerBase
     {
         private readonly BeheerDbContext _db;
 
-        public UpsertContactmomentenManagementinfoLog(BeheerDbContext db)
+        public WriteContactmomentenDetails(BeheerDbContext db)
         {
             _db = db;
         }
 
-        [HttpPut("/api/managementInfo/contactmomenten")]
-        public async Task<IActionResult> Post(ContactmomentManagementinfoLog model, CancellationToken cancellationToken)
+        [HttpPut("/api/contactmomentdetails")]
+        public async Task<IActionResult> Post(ContactmomentDetails model, CancellationToken cancellationToken)
         {
             model.EmailadresKcm = User.GetEmail();
             await _db.AddAsync(model, cancellationToken);

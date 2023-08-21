@@ -224,14 +224,8 @@ export function useUpdateContactGegevens() {
 export async function ensureKlantForBsn(
   {
     bsn,
-    voornaam,
-    voorvoegselAchternaam,
-    achternaam,
   }: {
     bsn: string;
-    voornaam?: string;
-    voorvoegselAchternaam?: string;
-    achternaam?: string;
   },
   bronorganisatie: string
 ) {
@@ -258,9 +252,6 @@ export async function ensureKlantForBsn(
       klantnummer: nanoid(8),
       subjectIdentificatie: { inpBsn: bsn },
       subjectType: KlantType.Persoon,
-      voornaam,
-      voorvoegselAchternaam,
-      achternaam,
     }),
   });
 
@@ -349,4 +340,37 @@ export async function ensureKlantForVestigingsnummer(
   mutate(uniqueId, newKlant);
 
   return newKlant;
+}
+
+export function createKlant({
+  telefoonnummer = "",
+  emailadres = "",
+  bronorganisatie = "",
+}) {
+  if (!bronorganisatie) return Promise.reject();
+  if (!telefoonnummer && !emailadres) return Promise.reject();
+
+  return fetchLoggedIn(klantRootUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      bronorganisatie,
+      emailadres,
+      telefoonnummer,
+      // TODO: WAT MOET HIER IN KOMEN?
+      klantnummer: nanoid(8),
+      subjectType: KlantType.Persoon,
+      subjectIdentificatie: { inpBsn: "" },
+    }),
+  })
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(mapKlant)
+    .then((newKlant) => {
+      const idUrl = getKlantIdUrl(newKlant.id);
+      mutate(idUrl, newKlant);
+      return newKlant;
+    });
 }

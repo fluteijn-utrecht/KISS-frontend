@@ -13,23 +13,44 @@ export * from "./types";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
 export type ContactmomentContactVerzoek = {
-  url: string;
-  medewerker: string;
-  afdeling: string;
-  notitie: string;
-  isActive: boolean;
+  url?: string;
+  medewerker?: {
+    user: string;
+    contact?: {
+      identificatie?: string;
+      voornaam?: string;
+      voorvoegselAchternaam?: string;
+      achternaam?: string;
+    };
+  };
+  afdeling?: string;
+  organisatie?: string;
+  voornaam?: string;
+  achternaam?: string;
+  voorvoegselAchternaam?: string;
+  telefoonnummer1?: string;
+  telefoonnummer2?: string;
+  omschrijvingTelefoonnummer2?: string;
+  emailadres?: string;
+  interneToelichting?: string;
+  isActive?: boolean;
 };
 
 export type ContactmomentKlant = {
   id: string;
-  voornaam: string;
+  voornaam?: string;
   voorvoegselAchternaam?: string;
-  achternaam: string;
+  achternaam?: string;
   bedrijfsnaam?: string;
   telefoonnummer?: string;
   emailadres?: string;
   hasContactInformation: boolean;
   url?: string;
+};
+
+export type Bron = {
+  title: string;
+  url: string;
 };
 
 export interface Vraag {
@@ -38,15 +59,19 @@ export interface Vraag {
   contactverzoek: ContactmomentContactVerzoek;
   startdatum: string;
   kanaal: string;
-  resultaat: string;
+  gespreksresultaat: string;
   klanten: { klant: ContactmomentKlant; shouldStore: boolean }[];
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
-  websites: { website: Website; shouldStore: boolean }[];
-  kennisartikelen: { kennisartikel: Kennisartikel; shouldStore: boolean }[];
-  nieuwsberichten: { nieuwsbericht: Nieuwsbericht; shouldStore: boolean }[];
-  werkinstructies: { werkinstructie: Werkinstructie; shouldStore: boolean }[];
-  primaireVraag: { url: string; title: string } | undefined;
-  afwijkendOnderwerp: string;
+  websites: { website: Bron; shouldStore: boolean }[];
+  kennisartikelen: {
+    kennisartikel: Kennisartikel;
+    shouldStore: boolean;
+  }[];
+  nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
+  werkinstructies: { werkinstructie: Bron; shouldStore: boolean }[];
+  vraag: Bron | undefined;
+  specifiekevraag: string;
+  vacs: { vac: Bron; shouldStore: boolean }[];
 }
 
 function initVraag(): Vraag {
@@ -55,22 +80,27 @@ function initVraag(): Vraag {
     notitie: "",
     contactverzoek: {
       url: "",
-      medewerker: "",
+      medewerker: undefined,
       afdeling: "",
-      notitie: "",
+      telefoonnummer1: "",
+      telefoonnummer2: "",
+      omschrijvingTelefoonnummer2: "",
+      emailadres: "",
+      interneToelichting: "",
       isActive: false,
     },
     startdatum: new Date().toISOString(),
     kanaal: "",
-    resultaat: "",
+    gespreksresultaat: "",
     klanten: [],
     medewerkers: [],
     websites: [],
     kennisartikelen: [],
     nieuwsberichten: [],
     werkinstructies: [],
-    primaireVraag: undefined,
-    afwijkendOnderwerp: "",
+    vacs: [],
+    vraag: undefined,
+    specifiekevraag: "",
   };
 }
 
@@ -89,6 +119,20 @@ function initContactmoment(): ContactmomentState {
     session: createSession(),
     route: "",
   };
+}
+
+function mapKlantToContactverzoek(
+  klant: ContactmomentKlant,
+  contactverzoek: ContactmomentContactVerzoek,
+) {
+  if (!contactverzoek.isActive) {
+    contactverzoek.achternaam = klant.achternaam;
+    contactverzoek.voornaam = klant.voornaam;
+    contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
+    contactverzoek.telefoonnummer1 = klant.telefoonnummer;
+    contactverzoek.emailadres = klant.emailadres;
+    contactverzoek.organisatie = klant.bedrijfsnaam;
+  }
 }
 
 interface ContactmomentenState {
@@ -133,8 +177,15 @@ export const useContactmomentStore = defineStore("contactmoment", {
         nieuweVraag.klanten = huidigContactmoment.huidigeVraag.klanten.map(
           (klantKoppeling) => ({
             ...klantKoppeling,
-          })
+          }),
         );
+        const activeKlanten = nieuweVraag.klanten.filter((x) => x.shouldStore);
+        if (activeKlanten.length === 1) {
+          mapKlantToContactverzoek(
+            activeKlanten[0].klant,
+            nieuweVraag.contactverzoek,
+          );
+        }
       }
       huidigContactmoment.vragen.push(nieuweVraag);
       this.switchVraag(nieuweVraag);
@@ -149,7 +200,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
     stop() {
       if (!this.huidigContactmoment) return;
       const currentIndex = this.contactmomenten.indexOf(
-        this.huidigContactmoment
+        this.huidigContactmoment,
       );
       if (currentIndex == -1) return;
       this.contactmomenten.splice(currentIndex, 1);
@@ -166,7 +217,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
     },
     upsertZaak(zaak: ZaakDetails, vraag: Vraag, shouldStore = true) {
       const existingZaak = vraag.zaken.find(
-        (contacmomentZaak) => contacmomentZaak.zaak.id === zaak.id
+        (contacmomentZaak) => contacmomentZaak.zaak.id === zaak.id,
       );
 
       if (existingZaak) {
@@ -183,7 +234,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
     },
     isZaakLinkedToContactmoment(id: string, vraag: Vraag) {
       return vraag.zaken.some(
-        ({ zaak, shouldStore }) => shouldStore && zaak.id === id
+        ({ zaak, shouldStore }) => shouldStore && zaak.id === id,
       );
     },
 
@@ -191,12 +242,15 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
+      const { contactverzoek } = huidigeVraag;
 
       const match = huidigeVraag.klanten.find((x) => x.klant.id === klant.id);
 
       huidigeVraag.klanten.forEach((x) => {
         x.shouldStore = false;
       });
+
+      mapKlantToContactverzoek(klant, contactverzoek);
 
       if (match) {
         match.klant = klant;
@@ -218,7 +272,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const targetKlantIndex = huidigeVraag.klanten.findIndex(
-        (k) => k.klant.id === klantId
+        (k) => k.klant.id === klantId,
       );
 
       if (targetKlantIndex === -1) return;
@@ -231,8 +285,12 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
+      if (!huidigeVraag.contactverzoek.isActive) {
+        huidigeVraag.contactverzoek.medewerker = medewerker;
+      }
+
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
-        (m) => m.medewerker.id === medewerker.id
+        (m) => m.medewerker.id === medewerker.id,
       );
 
       if (newMedewerkerIndex === -1) {
@@ -258,7 +316,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const record = huidigeVraag.kennisartikelen.find(
-        (k) => k.kennisartikel.url === kennisartikel.url
+        (k) => k.kennisartikel.url === kennisartikel.url,
       );
 
       if (!record) {
@@ -270,7 +328,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         record.kennisartikel = kennisartikel;
       }
 
-      huidigeVraag.primaireVraag = kennisartikel;
+      huidigeVraag.vraag = kennisartikel;
     },
 
     addWebsite(website: Website) {
@@ -279,7 +337,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const record = huidigeVraag.websites.find(
-        (w) => w.website.url === website.url
+        (w) => w.website.url === website.url,
       );
 
       if (!record) {
@@ -288,7 +346,26 @@ export const useContactmomentStore = defineStore("contactmoment", {
         record.website = website;
       }
 
-      huidigeVraag.primaireVraag = website;
+      huidigeVraag.vraag = website;
+    },
+
+    addVac(vraag: string, url: string) {
+      const { huidigContactmoment } = this;
+      if (!huidigContactmoment) return;
+      const { huidigeVraag } = huidigContactmoment;
+
+      const record = huidigeVraag.vacs.find((k) => k.vac.title === vraag);
+
+      if (!record) {
+        const vacVraag = { title: vraag, url: url };
+        huidigeVraag.vacs.push({
+          vac: vacVraag,
+          shouldStore: true,
+        });
+        huidigeVraag.vraag = vacVraag;
+      } else {
+        huidigeVraag.vraag = record.vac;
+      }
     },
 
     toggleNieuwsbericht(nieuwsbericht: Nieuwsbericht) {
@@ -297,7 +374,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const foundBerichtIndex = huidigeVraag.nieuwsberichten.findIndex(
-        (n) => n.nieuwsbericht.url === nieuwsbericht.url
+        (n) => n.nieuwsbericht.url === nieuwsbericht.url,
       );
 
       if (foundBerichtIndex !== -1) {
@@ -310,7 +387,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         shouldStore: true,
       });
 
-      huidigeVraag.primaireVraag = nieuwsbericht;
+      huidigeVraag.vraag = nieuwsbericht;
     },
 
     toggleWerkinstructie(werkinstructie: Werkinstructie) {
@@ -319,7 +396,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       const foundWerkinstructieIndex = huidigeVraag.werkinstructies.findIndex(
-        (w) => w.werkinstructie.url === werkinstructie.url
+        (w) => w.werkinstructie.url === werkinstructie.url,
       );
 
       if (foundWerkinstructieIndex !== -1) {
@@ -332,18 +409,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
         shouldStore: true,
       });
 
-      huidigeVraag.primaireVraag = werkinstructie;
-    },
-
-    updateContactverzoek(contactverzoek: ContactmomentContactVerzoek) {
-      const { huidigContactmoment } = this;
-
-      if (!huidigContactmoment) return;
-
-      huidigContactmoment.huidigeVraag.contactverzoek = {
-        ...contactverzoek,
-        isActive: true,
-      };
+      huidigeVraag.vraag = werkinstructie;
     },
 
     removeVraag(vraagIndex: number) {

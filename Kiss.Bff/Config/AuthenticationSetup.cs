@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using System.Text.Json.Nodes;
+using AngleSharp.Io;
 using IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
@@ -19,6 +21,23 @@ namespace Kiss
         public static string? GetEmail(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.Email) ?? user?.FindFirstValue(JwtClaimTypes.PreferredUserName);
         public static string? GetLastName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.FamilyName) ?? user?.FindFirstValue(JwtClaimTypes.Name) ?? user?.Identity?.Name;
         public static string? GetFirstName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.GivenName);
+        public static JsonObject GetMedewerkerIdentificatie(this ClaimsPrincipal? user)
+        {
+            var email = user?.GetEmail();
+            var lastName = user?.GetLastName();
+            var firstName = user?.GetFirstName();
+
+            return new JsonObject
+            {
+                ["achternaam"] = Truncate(lastName, 200) ?? "",
+                ["identificatie"] = Truncate(email, 24) ?? "",
+                ["voorletters"] = Truncate(firstName, 20) ?? "",
+                ["voorvoegselAchternaam"] = "",
+            };
+        }
+        private static string? Truncate(string? value, int maxLength) => value != null && value.Length > maxLength
+            ? value[..maxLength]
+            : value;
     }
 }
 
@@ -39,10 +58,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<IsRedacteur>(user => user?.IsInRole(redacteurRole) ?? false);
 
-            services.AddAuthentication(options =>
+            var authBuilder = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieSchemeName;
-                options.DefaultChallengeScheme = ChallengeSchemeName;
+                if(!string.IsNullOrWhiteSpace(authority))
+                {
+                    options.DefaultChallengeScheme = ChallengeSchemeName;
+                }
             }).AddCookie(CookieSchemeName, options =>
             {
                 options.Cookie.SameSite = SameSiteMode.Strict;
@@ -55,35 +77,49 @@ namespace Microsoft.Extensions.DependencyInjection
                 //options.Events.OnSigningOut = (e) => e.HttpContext.RevokeRefreshTokenAsync();
                 options.Events.OnRedirectToAccessDenied = HandleLoggedOut;
                 options.Events.OnRedirectToLogin = HandleLoggedOut;
-            })
-            .AddOpenIdConnect(ChallengeSchemeName, options =>
-            {
-                options.NonceCookie.HttpOnly = true;
-                options.NonceCookie.IsEssential = true;
-                options.NonceCookie.SameSite = SameSiteMode.None;
-                options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.CorrelationCookie.HttpOnly = true;
-                options.CorrelationCookie.IsEssential = true;
-                options.CorrelationCookie.SameSite = SameSiteMode.None;
-                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
-                options.Authority = authority;
-                options.ClientId = clientId;
-                options.ClientSecret = clientSecret;
-                options.SignedOutRedirectUri = SignOutCallback;
-                options.ResponseType = OidcConstants.ResponseTypes.Code;
-                options.UsePkce = true;
-                options.GetClaimsFromUserInfoEndpoint = true;
-
-                options.Scope.Clear();
-                options.Scope.Add(OidcConstants.StandardScopes.OpenId);
-                options.Scope.Add(OidcConstants.StandardScopes.Profile);
-                options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
-                options.SaveTokens = true;
-
-                options.Events.OnRemoteFailure = RedirectToRoot;
-                options.Events.OnSignedOutCallbackRedirect = RedirectToRoot;
             });
+
+            if (!string.IsNullOrWhiteSpace(authority))
+            {
+                authBuilder.AddOpenIdConnect(ChallengeSchemeName, options =>
+                {
+                    options.NonceCookie.HttpOnly = true;
+                    options.NonceCookie.IsEssential = true;
+                    options.NonceCookie.SameSite = SameSiteMode.None;
+                    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.CorrelationCookie.HttpOnly = true;
+                    options.CorrelationCookie.IsEssential = true;
+                    options.CorrelationCookie.SameSite = SameSiteMode.None;
+                    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                    options.Authority = authority;
+                    options.ClientId = clientId;
+                    options.ClientSecret = clientSecret;
+                    options.SignedOutRedirectUri = SignOutCallback;
+                    options.ResponseType = OidcConstants.ResponseTypes.Code;
+                    options.UsePkce = true;
+                    options.GetClaimsFromUserInfoEndpoint = true;
+
+                    options.Scope.Clear();
+                    options.Scope.Add(OidcConstants.StandardScopes.OpenId);
+                    options.Scope.Add(OidcConstants.StandardScopes.Profile);
+                    //options.Scope.Add(OidcConstants.StandardScopes.OfflineAccess);
+                    //options.SaveTokens = true;
+
+                    options.Events.OnRemoteFailure = RedirectToRoot;
+                    options.Events.OnSignedOutCallbackRedirect = RedirectToRoot;
+                    options.Events.OnRedirectToIdentityProvider = (ctx) =>
+                    {
+                        if (ctx.Request.Headers.ContainsKey("is-api"))
+                        {
+                            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            ctx.Response.Headers.Location = ctx.ProtocolMessage.CreateAuthenticationRequestUrl();
+                            ctx.HandleResponse();
+                        }
+                        return Task.CompletedTask;
+                    };
+                });
+            }
 
             services.AddDistributedMemoryCache();
             services.AddOpenIdConnectAccessTokenManagement();
@@ -143,7 +179,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static Task HandleLoggedOut<TOptions>(RedirectContext<TOptions> ctx) where TOptions : AuthenticationSchemeOptions
         {
-            if (ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
+            if (ctx.Request.Headers.ContainsKey("is-api"))
             {
                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 ctx.Response.Headers.Location = ctx.RedirectUri;

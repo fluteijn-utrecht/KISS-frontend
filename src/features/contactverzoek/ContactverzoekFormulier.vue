@@ -1,14 +1,14 @@
 <template>
   <SimpleSpinner v-if="afdelingen.loading" />
-  <form class="container" @submit.prevent>
-    <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
-    <label
+  <div class="container" @submit.prevent>
+    <!-- <label
       class="utrecht-form-label"
       v-if="afdelingen.success && afdelingen.data.length"
     >
       Afdeling
       <select
-        v-model="afdeling"
+        v-model="form.afdeling"
+        @change="setActive"
         name="afdeling"
         class="utrecht-select utrecht-select--html-select"
       >
@@ -20,26 +20,115 @@
           {{ afdeling.name }}
         </option>
       </select>
-    </label>
+    </label> -->
 
     <label class="utrecht-form-label">
       <span class="required">Contactverzoek versturen naar</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="medewerker"
-        :defaultValue="medewerker"
+        required
+        v-model="form.medewerker"
+        :defaultValue="form.medewerker"
+        @update:model-value="setActive"
       />
     </label>
 
     <label class="utrecht-form-label notitieveld">
-      <span class="required">Notitie bij het contactverzoek</span>
+      <span class="required">Interne toelichting voor medewerker</span>
       <textarea
-        v-model="notitie"
+        v-model="form.interneToelichting"
+        name="Interne toelichting"
+        required
         class="utrecht-textarea utrecht-textarea--html-textarea"
-        rows="10"
+        rows="5"
+        @input="setActive"
       />
     </label>
-  </form>
+
+    <form-fieldset>
+      <form-fieldset-legend>Contact opnemen met</form-fieldset-legend>
+      <label class="utrecht-form-label">
+        <span>Voornaam</span>
+        <input
+          v-model="form.voornaam"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Tussenvoegsel</span>
+        <input
+          v-model="form.voorvoegselAchternaam"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Achternaam</span>
+        <input
+          v-model="form.achternaam"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Organisatie</span>
+        <input
+          v-model="form.organisatie"
+          type="tel"
+          name="Naam"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Telefoonnummer 1</span>
+        <input
+          ref="telEl"
+          v-model="form.telefoonnummer1"
+          type="tel"
+          name="Telefoonnummer 1"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Telefoonnummer 2</span>
+        <input
+          v-model="form.telefoonnummer2"
+          type="tel"
+          name="Telefoonnummer 2"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>Omschrijving telefoonnummer 2</span>
+        <input
+          v-model="form.omschrijvingTelefoonnummer2"
+          name="Omschrijving telefoonnummer 2"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        <span>E-mailadres</span>
+        <input
+          v-model="form.emailadres"
+          type="email"
+          name="E-mailadres"
+          class="utrecht-textbox utrecht-textbox--html-input"
+          @input="setActive"
+        />
+      </label>
+    </form-fieldset>
+  </div>
 </template>
 
 <script lang="ts">
@@ -49,66 +138,68 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
-import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
-import { computed } from "@vue/reactivity";
 import { useAfdelingen } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
-
+import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
+import { ref } from "vue";
+import { watch } from "vue";
+import {
+  FormFieldsetLegend,
+  FormFieldset,
+} from "@utrecht/component-library-vue";
 const props = defineProps<{
-  huidigeVraag: Vraag;
+  modelValue: ContactmomentContactVerzoek;
 }>();
 
-const contactmomentStore = useContactmomentStore();
+const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
-const medewerker = computed({
-  get: () => props.huidigeVraag.contactverzoek.medewerker,
-  set(medewerker) {
-    if (!medewerker) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      medewerker,
-    });
+watch(
+  () => props.modelValue,
+  (v) => {
+    form.value = v;
   },
-});
-
-const notitie = computed({
-  get: () => props.huidigeVraag.contactverzoek.notitie,
-  set: (notitie) => {
-    if (!notitie) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      notitie,
-    });
-  },
-});
-
-const afdeling = computed({
-  get: () => props.huidigeVraag.contactverzoek.afdeling,
-  set: (afdeling) => {
-    if (!afdeling) return;
-
-    contactmomentStore.updateContactverzoek({
-      ...props.huidigeVraag.contactverzoek,
-      afdeling,
-    });
-  },
-});
+  { immediate: true }
+);
 
 const afdelingen = useAfdelingen();
+
+const setActive = () => {
+  form.value.isActive = true;
+};
+
+const telEl = ref<HTMLInputElement>();
+
+watch(
+  [
+    telEl,
+    () =>
+      !!form.value.telefoonnummer1 ||
+      !!form.value.telefoonnummer2 ||
+      !!form.value.emailadres,
+  ],
+  ([el, hasContact]) => {
+    if (!el) return;
+    el.setCustomValidity(
+      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in"
+    );
+  }
+);
 </script>
 
 <style lang="scss" scoped>
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-large);
+  gap: var(--spacing-default);
 }
 
 textarea {
   resize: none;
+}
+
+fieldset {
+  display: grid;
+  gap: var(--spacing-extrasmall);
 }
 </style>

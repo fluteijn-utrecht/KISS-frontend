@@ -54,7 +54,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { computed } from "@vue/reactivity";
+import { computed } from "vue";
 import { useFocus } from "@vueuse/core";
 import { ref, watch, type PropType } from "vue";
 import { nanoid } from "nanoid";
@@ -214,7 +214,7 @@ function handleHover(i: number) {
   activeIndex.value = i;
 }
 
-let timeoutId: number;
+let timeoutId: number | NodeJS.Timeout;
 
 function scrollIntoView() {
   const el = ulref.value;

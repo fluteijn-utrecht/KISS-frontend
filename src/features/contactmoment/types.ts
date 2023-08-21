@@ -12,6 +12,9 @@ export interface Contactmoment {
   tekst: string;
   onderwerpLinks: string[];
   initiatiefnemer: string;
+  vraag?: string;
+  specifiekevraag?: string;
+  gespreksresultaat: string;
 
   //bovenstaande slaan we op bij een contactmoment.
   //de rest is mogelijk obsolete.
@@ -20,17 +23,22 @@ export interface Contactmoment {
   voorkeurskanaal: string;
   voorkeurstaal: string;
   medewerker: string;
-  resultaat: string;
   startdatum: string;
   einddatum: string;
   gespreksId?: string;
-  primaireVraag?: string;
-  primaireVraagWeergave?: string;
-  afwijkendOnderwerp?: string;
+}
+
+export interface ContactmomentDetails {
+  id: string;
+  startdatum: string;
+  einddatum: string;
+  gespreksresultaat?: string;
+  vraag?: string;
+  specifiekeVraag?: string;
+  emailadresKcm?: string;
 }
 
 export interface Gespreksresultaat {
-  id: string;
   definitie: string;
 }
 
@@ -54,8 +62,8 @@ export interface ContactverzoekDetail {
   starttijd: string;
   aanmaker: string;
   notitie: string;
-  primaireVraagWeergave?: string;
-  afwijkendOnderwerp?: string;
+  vraag?: string;
+  specifiekevraag?: string;
 }
 
 export interface ObjectContactmoment {

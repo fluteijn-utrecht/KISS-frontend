@@ -8,66 +8,44 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
     [ApiController]
     public class PostContactmomentenCustomProxy : ControllerBase
     {
-        private readonly HttpClient _defaultClient;
         private readonly ZgwTokenProvider _tokenProvider;
         private readonly string _destination;
 
-        public PostContactmomentenCustomProxy(IConfiguration configuration, IHttpClientFactory factory)
+        public PostContactmomentenCustomProxy(IConfiguration configuration)
         {
             _destination = configuration["CONTACTMOMENTEN_BASE_URL"];
             var clientId = configuration["CONTACTMOMENTEN_API_CLIENT_ID"];
             var apiKey = configuration["CONTACTMOMENTEN_API_KEY"];
 
-            _defaultClient = factory.CreateClient("default");
             _tokenProvider = new ZgwTokenProvider(apiKey, clientId);
         }
 
         [HttpPost]
-        public async Task Post([FromBody] JsonObject parsedModel, CancellationToken token)
+        public IActionResult Post([FromBody] JsonObject parsedModel)
         {
-            var email = Request.HttpContext.User?.GetEmail();
-            var userRepresentation = Request.HttpContext.User?.Identity?.Name;
-            var lastName = Request.HttpContext.User?.GetLastName();
-            var firstName = Request.HttpContext.User?.GetFirstName();
+            var email = User?.GetEmail();
+            var userRepresentation = User?.Identity?.Name;
             if (parsedModel != null)
             {
                 //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
-                parsedModel["medewerkerIdentificatie"] = new JsonObject
-                {
-                    ["achternaam"] = Truncate(lastName, 200) ?? "",
-                    ["identificatie"] = Truncate(email, 24) ?? "",
-                    ["voorletters"] = Truncate(firstName, 20) ?? "",
-                    ["voorvoegselAchternaam"] = "",
-
-                };
+                parsedModel["medewerkerIdentificatie"] = User?.GetMedewerkerIdentificatie();
             }
 
             var accessToken = _tokenProvider.GenerateToken(email, userRepresentation);
 
             var url = _destination.TrimEnd('/') + "/contactmomenten/api/v1/contactmomenten";
 
-            _defaultClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-            using var response = await _defaultClient.PostAsJsonAsync(url, parsedModel, cancellationToken: token);
-
-            Response.StatusCode = (int)response.StatusCode;
-
-            foreach (var item in response.Headers)
+            return new ProxyResult(() =>
             {
-                Response.Headers[item.Key] = new(item.Value.ToArray());
-            }
+                var request = new HttpRequestMessage(HttpMethod.Post, url)
+                {
+                    Content = JsonContent.Create(parsedModel)
+                };
 
-            foreach (var item in response.Content.Headers)
-            {
-                Response.Headers[item.Key] = new(item.Value.ToArray());
-            }
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            await using var stream = await response.Content.ReadAsStreamAsync(token);
-            await stream.CopyToAsync(Response.Body, token);
+                return request;
+            });
         }
-
-        private static string? Truncate(string? value, int maxLength) => value != null && value.Length > maxLength
-            ? value[..maxLength]
-            : value;
     }
 }

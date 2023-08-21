@@ -1,4 +1,5 @@
-import { type Klant, useKlantByVestigingsnummer } from "@/features/klant";
+import type { Klant } from "../../types";
+import { useKlantByVestigingsnummer } from "../../service";
 import { combineEnrichers } from "@/services";
 import { useBedrijfByVestigingsnummer } from "../service";
 import type { Bedrijf } from "../types";

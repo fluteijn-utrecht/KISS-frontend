@@ -3,10 +3,11 @@
 import { mapServiceData, ServiceResult } from "@/services";
 import { computed, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { ensureKlantForVestigingsnummer, type Klant } from "@/features/klant";
 import type { Bedrijf as Bedrijf, EnrichedBedrijf } from "../types";
 import { useEnrichedBedrijf } from "./bedrijf-enricher";
 import { useOrganisatieIds } from "@/stores/user";
+import type { Klant } from "../../types";
+import { ensureKlantForVestigingsnummer } from "../../service";
 
 const props = defineProps<{ record: Bedrijf | Klant }>();
 const [vestigingsnummer, klantData, handelsregisterData] = useEnrichedBedrijf(

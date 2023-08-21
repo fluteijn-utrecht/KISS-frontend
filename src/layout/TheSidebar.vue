@@ -18,38 +18,40 @@
         <current-contactmoment-info />
         <h2>Vragen</h2>
         <contactmoment-vragen-menu />
-        <tabs-component v-model="state.currentNotitieTab" class="notitie-tabs">
-          <template #tab="{ tabName }">
-            <span
-              :title="tabName"
-              :class="[
-                'icon-after',
-                tabName === NotitieTabs.Contactverzoek ? 'phone-flip' : 'note',
-              ]"
-            ></span>
-          </template>
-          <template #[NotitieTabs.Regulier]>
-            <utrecht-heading id="notitieblok" :level="2"
-              >Notitieblok</utrecht-heading
-            >
-            <textarea
-              aria-labelledby="notitieblok"
-              id="cm-notitieblok"
-              class="utrecht-textarea"
-              v-model="
-                contactmomentStore.huidigContactmoment.huidigeVraag.notitie
-              "
-            />
-          </template>
-          <template #[NotitieTabs.Contactverzoek]>
-            <ContactverzoekFormulier
-              :huidige-vraag="
-                contactmomentStore.huidigContactmoment.huidigeVraag
-              "
-              :huidige-klant="contactmomentStore.klantVoorHuidigeVraag"
-            />
-          </template>
-        </tabs-component>
+        <div class="notitie-tabs">
+          <tab-list v-model="state.currentNotitieTab">
+            <tab-list-item :label="NotitieTabs.Regulier">
+              <template #tab="{ label }">
+                <span :title="label" class="icon-after note" />
+              </template>
+              <utrecht-heading id="notitieblok" :level="2"
+                >Notitieblok</utrecht-heading
+              >
+              <textarea
+                aria-labelledby="notitieblok"
+                id="cm-notitieblok"
+                class="utrecht-textarea"
+                v-model="
+                  contactmomentStore.huidigContactmoment.huidigeVraag.notitie
+                "
+              />
+            </tab-list-item>
+            <tab-list-item :label="NotitieTabs.Contactverzoek">
+              <template #tab="{ label }">
+                <span :title="label" class="icon-after phone-flip" />
+              </template>
+              <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
+              <form @submit.prevent>
+                <contactverzoek-formulier
+                  v-model="
+                    contactmomentStore.huidigContactmoment.huidigeVraag
+                      .contactverzoek
+                  "
+                />
+              </form>
+            </tab-list-item>
+          </tab-list>
+        </div>
       </section>
     </template>
   </aside>
@@ -57,7 +59,6 @@
 
 <script lang="ts" setup>
 import { ContactverzoekFormulier } from "@/features/contactverzoek";
-import TabsComponent from "@/components/TabsComponent.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import ContactmomentVragenMenu from "@/features/contactmoment/ContactmomentVragenMenu.vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
@@ -69,12 +70,13 @@ import {
   CurrentContactmomentInfo,
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
+import { TabList, TabListItem } from "@/components/tabs";
+import { watchEffect } from "vue";
 
 enum NotitieTabs {
   Regulier = "Reguliere notitie",
   Contactverzoek = "Contactverzoek maken",
 }
-
 const contactmomentStore = useContactmomentStore();
 const route = useRoute();
 
@@ -91,23 +93,6 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  }
-);
-
-watch(
-  () => state.value.currentNotitieTab,
-  (tab) => {
-    if (
-      tab !== NotitieTabs.Contactverzoek ||
-      !contactmomentStore.huidigContactmoment
-    )
-      return;
-
-    const { huidigeVraag } = contactmomentStore.huidigContactmoment;
-
-    if (huidigeVraag.notitie && !huidigeVraag.contactverzoek.notitie) {
-      huidigeVraag.contactverzoek.notitie = huidigeVraag.notitie;
-    }
   }
 );
 </script>
@@ -154,6 +139,7 @@ aside {
     padding: var(--spacing-default);
     display: flex;
     flex-direction: column;
+    flex: 1;
   }
 
   :deep([role="tab"]) {

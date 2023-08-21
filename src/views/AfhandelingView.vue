@@ -68,10 +68,7 @@
                   }}</span
                 >
                 <span v-else>{{
-                  [
-                    record.klant.emails[0]?.email,
-                    record.klant.telefoonnummers[0]?.telefoonnummer,
-                  ]
+                  [record.klant.emailadres, record.klant.telefoonnummer]
                     .filter((x) => x)
                     .join(", ")
                 }}</span>
@@ -252,6 +249,25 @@
             </li>
           </ul>
         </section>
+
+        <section v-if="vraag.vacs.length" class="gerelateerde-resources">
+          <utrecht-heading :level="3">{{
+            vraag.vacs.length > 1 ? "Gerelateerde VACs" : "Gerelateerde VAC"
+          }}</utrecht-heading>
+          <ul>
+            <li v-for="record in vraag.vacs" :key="record.vac.url">
+              <label>
+                {{ record.vac.title }}
+                <input
+                  title="Deze VAC opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
+              </label>
+            </li>
+          </ul>
+        </section>
+
         <section class="details">
           <utrecht-heading :level="3"> Details </utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
@@ -284,74 +300,18 @@
             </label>
             <select
               :id="'gespreksresultaat' + idx"
-              v-model="vraag.resultaat"
+              v-model="vraag.gespreksresultaat"
               class="utrecht-select utrecht-select--html-select"
               required
               v-if="gespreksresultaten.success"
             >
               <option
-                v-for="gespreksresultaat in gespreksresultaten.data"
-                :key="gespreksresultaat.id"
+                v-for="(gespreksresultaat, i) in gespreksresultaten.data"
+                :key="`gespreksresultaat_${i}`"
               >
                 {{ gespreksresultaat.definitie }}
               </option>
             </select>
-
-            <template v-if="vraag.resultaat === 'Contactverzoek gemaakt'">
-              <label />
-
-              <div class="contactverzoek-container">
-                <div v-if="afdelingen.success && afdelingen.data.length">
-                  <label
-                    class="utrecht-form-label"
-                    :for="'verzoek-afdeling' + idx"
-                    >Afdeling</label
-                  >
-                  <select
-                    v-model="vraag.contactverzoek.afdeling"
-                    class="utrecht-select utrecht-select--html-select"
-                    :id="'verzoek-afdeling' + idx"
-                  >
-                    <option
-                      v-for="afdeling in afdelingen.data"
-                      :key="idx + afdeling.id"
-                      :value="afdeling.name"
-                    >
-                      {{ afdeling.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    class="utrecht-form-label required"
-                    :for="'verzoek-medewerker' + idx"
-                    >Contactverzoek versturen naar</label
-                  >
-                  <medewerker-search
-                    v-model="vraag.contactverzoek.medewerker"
-                    :id="'verzoek-medewerker' + idx"
-                    class="utrecht-textbox utrecht-textbox--html-input medewerker-search"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    class="utrecht-form-label required"
-                    :for="'verzoek-notitie' + idx"
-                    >Notitie</label
-                  >
-                  <textarea
-                    required
-                    rows="5"
-                    class="utrecht-textarea"
-                    :id="'verzoek-notitie' + idx"
-                    v-model="vraag.contactverzoek.notitie"
-                  ></textarea>
-                </div>
-              </div>
-            </template>
 
             <label
               :for="'hoofdvraag' + idx"
@@ -360,7 +320,7 @@
               Vraag
             </label>
             <select
-              v-model="vraag.primaireVraag"
+              v-model="vraag.vraag"
               :id="'hoofdvraag' + idx"
               class="utrecht-select utrecht-select--html-select"
               required
@@ -377,6 +337,7 @@
                   ]),
                   ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
                   ...vraag.werkinstructies.map((item) => item.werkinstructie),
+                  ...vraag.vacs.map((item) => item.vac),
                 ]"
                 :key="itemIdx + '|' + idx"
                 :value="item"
@@ -387,20 +348,17 @@
             </select>
 
             <label
-              :class="[
-                'utrecht-form-label',
-                { required: !vraag.primaireVraag },
-              ]"
-              :for="'afwijkendOnderwerp' + idx"
+              :class="['utrecht-form-label', { required: !vraag.vraag }]"
+              :for="'specifiekevraag' + idx"
             >
-              Specificatie
+              Specifieke vraag
             </label>
             <input
-              :required="!vraag.primaireVraag"
+              :required="!vraag.vraag"
               type="text"
               class="utrecht-textbox utrecht-textbox--html-input"
-              :id="'afwijkendOnderwerp' + idx"
-              v-model="vraag.afwijkendOnderwerp"
+              :id="'specifiekevraag' + idx"
+              v-model="vraag.specifiekevraag"
             />
 
             <label class="utrecht-form-label" :for="'notitie' + idx"
@@ -412,6 +370,14 @@
               v-model="vraag.notitie"
             ></textarea>
           </fieldset>
+        </section>
+
+        <section
+          v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT"
+          class="contactverzoek-container"
+        >
+          <utrecht-heading :level="3"> Contactverzoek</utrecht-heading>
+          <contactverzoek-formulier v-model="vraag.contactverzoek" />
         </section>
       </article>
       <menu>
@@ -455,16 +421,19 @@ import {
   useGespreksResultaten,
   type Contactmoment,
   koppelZaakContactmoment,
+  CONTACTVERZOEK_GEMAAKT,
 } from "@/features/contactmoment";
 
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
-import MedewerkerSearch from "../features/search/MedewerkerSearch.vue";
-import { saveContactverzoek, useAfdelingen } from "@/features/contactverzoek";
-import { upsertContactmomentManagementInfo } from "@/features/contactmoment/upsert-contactmoment-management";
-
+import {
+  ContactverzoekFormulier,
+  saveContactverzoek,
+} from "@/features/contactverzoek";
+import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
+import { createKlant } from "@/features/klant/service";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -482,7 +451,7 @@ onMounted(() => {
   if (!contactmomentStore.huidigContactmoment) return;
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
-      vraag.resultaat = "Contactverzoek gemaakt";
+      vraag.gespreksresultaat = CONTACTVERZOEK_GEMAAKT;
     }
     if (!vraag.kanaal) {
       vraag.kanaal = userStore.preferences.kanaal;
@@ -492,7 +461,7 @@ onMounted(() => {
 
 const zakenToevoegenAanContactmoment = async (
   vraag: Vraag,
-  contactmomentId: string
+  contactmomentId: string,
 ) => {
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
@@ -508,7 +477,7 @@ const zakenToevoegenAanContactmoment = async (
           try {
             console.log(
               "koppelZaakContactmoment in openzaak attempt 1 failed",
-              e
+              e,
             );
             await koppelZaakContactmoment({
               contactmoment: contactmomentId,
@@ -518,7 +487,7 @@ const zakenToevoegenAanContactmoment = async (
             try {
               console.log(
                 "koppelZaakContactmoment in openzaak attempt 2 failed",
-                e
+                e,
               );
               await koppelZaakContactmoment({
                 contactmoment: contactmomentId,
@@ -527,7 +496,7 @@ const zakenToevoegenAanContactmoment = async (
             } catch (e) {
               console.log(
                 "koppelZaakContactmoment in openzaak attempt 3 failed",
-                e
+                e,
               );
             }
           }
@@ -545,7 +514,7 @@ const zakenToevoegenAanContactmoment = async (
                 object: zaak.self,
                 objectType: "zaak",
               }),
-            1000
+            1000,
           );
         } catch (e) {
           console.log("koppelZaakContactmoment in openklant", e);
@@ -567,16 +536,6 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
-const koppelContactverzoek = (
-  contacmomentId: string,
-  contactverzoekUrl: string
-) =>
-  koppelObject({
-    contactmoment: contacmomentId,
-    object: contactverzoekUrl,
-    objectType: "contactmomentobject",
-  });
-
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const contactmoment: Contactmoment = {
     bronorganisatie: organisatieIds.value[0] || "",
@@ -585,6 +544,9 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     tekst: vraag.notitie,
     onderwerpLinks: [],
     initiatiefnemer: "klant", //enum "gemeente" of "klant"
+    vraag: vraag.vraag?.title,
+    specifiekevraag: vraag.specifiekevraag || undefined,
+    gespreksresultaat: vraag.gespreksresultaat,
 
     // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
     gespreksId,
@@ -592,12 +554,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurskanaal: "",
     voorkeurstaal: "",
     medewerker: "",
-    resultaat: vraag.resultaat,
     startdatum: vraag.startdatum,
     einddatum: new Date().toISOString(),
-    primaireVraag: vraag.primaireVraag?.url,
-    primaireVraagWeergave: vraag.primaireVraag?.title,
-    afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
   };
 
   addKennisartikelenToContactmoment(contactmoment, vraag);
@@ -605,42 +563,49 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   addMedewerkersToContactmoment(contactmoment, vraag);
   addNieuwsberichtToContactmoment(contactmoment, vraag);
   addWerkinstructiesToContactmoment(contactmoment, vraag);
-
-  let contactverzoekUrl: string | undefined;
-
-  if (vraag.resultaat === "Contactverzoek gemaakt") {
-    const contactverzoek = await saveContactverzoek({
-      bronorganisatie: organisatieIds.value[0] || "",
-      todo: {
-        name: "contactverzoek",
-        description: vraag.contactverzoek.notitie,
-        attendees: [
-          vraag.contactverzoek.medewerker,
-          vraag.contactverzoek.afdeling,
-        ].filter(Boolean),
-      },
-      primaireVraagWeergave: vraag.primaireVraag?.title,
-      afwijkendOnderwerp: vraag.afwijkendOnderwerp || undefined,
-    });
-
-    await koppelKlanten(vraag, contactverzoek.id);
-
-    contactverzoekUrl = contactverzoek.url;
-  }
+  addVacToContactmoment(contactmoment, vraag);
 
   const savedContactmoment = await saveContactmoment(contactmoment);
-  await upsertContactmomentManagementInfo(
-    contactmoment,
-    savedContactmoment.url
-  );
 
-  await zakenToevoegenAanContactmoment(vraag, savedContactmoment.url);
+  const promises = [
+    writeContactmomentDetails(contactmoment, savedContactmoment.url),
+    zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
+  ];
 
-  await koppelKlanten(vraag, savedContactmoment.url);
+  if (vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT) {
+    let klantUrl = vraag.klanten
+      .filter((x) => x.shouldStore)
+      .map((x) => x.klant.url)
+      .find(Boolean);
 
-  if (contactverzoekUrl) {
-    await koppelContactverzoek(savedContactmoment.url, contactverzoekUrl);
+    if (!klantUrl) {
+      const newKlant = await createKlant({
+        bronorganisatie: organisatieIds.value[0],
+        emailadres: vraag.contactverzoek.emailadres,
+        telefoonnummer: vraag.contactverzoek.telefoonnummer1,
+      });
+      vraag.klanten.push({
+        shouldStore: true,
+        klant: {
+          ...newKlant,
+          hasContactInformation: true,
+        },
+      });
+      klantUrl = newKlant.url;
+    }
+
+    promises.push(
+      saveContactverzoek({
+        data: vraag.contactverzoek,
+        contactmomentUrl: savedContactmoment.url,
+        klantUrl,
+      }),
+    );
   }
+
+  promises.push(koppelKlanten(vraag, savedContactmoment.url));
+
+  await Promise.all(promises);
 
   return savedContactmoment;
 };
@@ -662,9 +627,8 @@ async function submit() {
       gespreksId = nanoid();
     }
 
-    for (const vraag of otherVragen) {
-      await saveVraag(vraag, gespreksId);
-    }
+    const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
+    await Promise.all(promises);
 
     // klaar
     contactmomentStore.stop();
@@ -679,7 +643,7 @@ async function submit() {
 }
 const addKennisartikelenToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.kennisartikelen) return;
 
@@ -690,9 +654,19 @@ const addKennisartikelenToContactmoment = (
   });
 };
 
+const addVacToContactmoment = (contactmoment: Contactmoment, vraag: Vraag) => {
+  if (!vraag.vacs) return;
+
+  vraag.vacs.forEach((item) => {
+    if (!item.shouldStore) return;
+
+    contactmoment.onderwerpLinks.push(item.vac.url);
+  });
+};
+
 const addWebsitesToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.websites) return;
 
@@ -705,7 +679,7 @@ const addWebsitesToContactmoment = (
 
 const addMedewerkersToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.medewerkers) return;
 
@@ -718,7 +692,7 @@ const addMedewerkersToContactmoment = (
 
 const addNieuwsberichtToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.nieuwsberichten) return;
 
@@ -728,7 +702,7 @@ const addNieuwsberichtToContactmoment = (
     // make absolute if not already
     const absoluteUrl = new URL(
       nieuwsbericht.nieuwsbericht.url,
-      window.location.origin
+      window.location.origin,
     );
 
     contactmoment.onderwerpLinks.push(absoluteUrl.toString());
@@ -737,7 +711,7 @@ const addNieuwsberichtToContactmoment = (
 
 const addWerkinstructiesToContactmoment = (
   contactmoment: Contactmoment,
-  vraag: Vraag
+  vraag: Vraag,
 ) => {
   if (!vraag.werkinstructies) return;
 
@@ -747,7 +721,7 @@ const addWerkinstructiesToContactmoment = (
     // make absolute if not already
     const absoluteUrl = new URL(
       werkinstructie.werkinstructie.url,
-      window.location.origin
+      window.location.origin,
     );
 
     contactmoment.onderwerpLinks.push(absoluteUrl.toString());
@@ -777,8 +751,6 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
-
-const afdelingen = useAfdelingen();
 </script>
 
 <style scoped lang="scss">
@@ -788,6 +760,9 @@ const afdelingen = useAfdelingen();
   // content stacked
   display: flex;
   flex-direction: column;
+
+  --label-width: 16rem;
+  --label-gap: var(--spacing-default);
 }
 
 :deep(.notitie) {
@@ -832,8 +807,8 @@ const afdelingen = useAfdelingen();
 
 fieldset {
   display: grid;
-  grid-template-columns: 15rem auto;
-  gap: var(--spacing-default);
+  grid-template-columns: var(--label-width) auto;
+  gap: var(--label-gap);
 }
 
 article {
@@ -856,21 +831,14 @@ select {
 }
 
 .contactverzoek-container {
-  padding-inline-start: var(--utrecht-form-input-padding-inline-start);
-  padding-inline-end: var(--utrecht-form-input-padding-inline-end);
-  padding-block: var(--spacing-default);
-  border: 1px solid var(--color-primary);
-
-  & > :not(:last-child) {
-    margin-block-end: var(--spacing-default);
-    padding-block-end: var(--spacing-default);
-    border-bottom: var(--spacing-small) solid var(--color-primary);
+  :deep(label) {
+    display: grid;
+    grid-template-columns: var(--label-width) auto;
+    gap: var(--label-gap);
   }
 
-  span {
-    display: block;
-    font-weight: 600;
-    color: var(--utrecht-form-label-color);
+  :deep(fieldset) {
+    gap: var(--label-gap);
   }
 }
 

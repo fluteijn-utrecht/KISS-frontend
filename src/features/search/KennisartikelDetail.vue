@@ -22,7 +22,7 @@
       :id="id"
     >
       <utrecht-heading :level="headingLevel + 1">{{ label }}</utrecht-heading>
-      <div v-html="html"></div>
+      <div v-html="html" class="htmlcontent"></div>
     </section>
   </article>
 
@@ -34,11 +34,7 @@
   />
 </template>
 <script setup lang="ts">
-import {
-  sanitizeHtmlToBerichtFormat,
-  unescapeHtml,
-  increaseHeadings,
-} from "@/helpers/html";
+import { unescapedSanatizedWithIncreadesHeadingsHtml } from "@/helpers/html";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { nanoid } from "nanoid";
 import { computed, ref, watch } from "vue";
@@ -67,16 +63,6 @@ const props = defineProps<{
   title: string;
   headingLevel: 2 | 3 | 4;
 }>();
-
-function processHtml(html: string) {
-  const unescapedHtml = unescapeHtml(html);
-  const cleanedHtml = sanitizeHtmlToBerichtFormat(unescapedHtml);
-  const htmlWithIncreasedHeadings = increaseHeadings(
-    cleanedHtml,
-    (props.headingLevel + 1) as any
-  );
-  return htmlWithIncreasedHeadings;
-}
 
 const currentSectionIndex = ref(0);
 
@@ -108,7 +94,7 @@ const processedSections = computed(() => {
     ({ label, text, key }) => ({
       key: key,
       label,
-      html: processHtml(text),
+      html: unescapedSanatizedWithIncreadesHeadingsHtml(text, props.headingLevel),
     })
   );
 
@@ -175,35 +161,7 @@ article {
     &.is-active {
       display: block;
     }
-
-    div :deep(h3),
-    div :deep(h4) {
-      margin-block-start: var(--spacing-default);
-    }
-
-    :deep(ul) {
-      list-style: disc;
-      margin-inline-start: var(--spacing-default);
-      margin-block: var(--spacing-small);
-
-      ul {
-        list-style: circle;
-        margin-block: 0;
-      }
-    }
-
-    :deep(td) {
-      border: 1px var(--color-tertiary) solid;
-      padding: var(--spacing-small);
-    }
-
-    :deep(table) {
-      margin-block: var(--spacing-small);
-    }
-
-    :deep(p + p) {
-      margin-block-start: var(--spacing-small);
-    }
+     
   }
 }
 

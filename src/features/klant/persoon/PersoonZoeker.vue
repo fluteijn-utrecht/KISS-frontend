@@ -1,132 +1,139 @@
 <template>
-  <klant-aanmaken
-    v-if="showKlantAanmaken"
-    :handle-cancel="handleCancelKlantAanmaken"
-  />
-
-  <template v-else>
-    <section class="actions">
-      <form @submit.prevent="handleSearch">
-        <fieldset class="radio-group">
-          <legend>Waar wil je op zoeken?</legend>
-          <label v-for="(label, field) in labels" :key="field">
-            <input type="radio" :value="field" v-model="store.field" required />
-            {{ label }}
-          </label>
-        </fieldset>
-        <fieldset class="search-bar">
-          <label>
-            <span>Zoek naar een persoon</span>
-            <input
-              type="search"
-              placeholder="Zoek naar een persoon"
-              ref="inputRef"
-              v-model="store.currentSearch"
-              @search="handleSearch"
-            />
-          </label>
-          <button title="Zoeken">
-            <span>Zoeken</span>
-          </button>
-        </fieldset>
-      </form>
-      <!-- temporarily disabled -->
-      <button
-        v-if="false"
-        @click="toggleKlantAanmaken"
-        type="button"
-        class="klant-aanmaken icon-before plus utrecht-button utrecht-button--secondary-action"
-      >
-        <span>Klant aanmaken</span>
-      </button>
-    </section>
-
-    <section class="search-section" v-if="store.klantSearchQuery?.query">
-      <simple-spinner v-if="klanten.loading" />
-      <template v-if="klanten.success">
-        <personen-overzicht :records="klanten.data.page">
-          <template #caption>
-            <SearchResultsCaption :results="klanten.data" />
-          </template>
-        </personen-overzicht>
-      </template>
-      <application-message
-        v-if="klanten.error"
-        messageType="error"
-        message="Er is een fout opgetreden"
-      />
-    </section>
-
-    <section class="search-section" v-else-if="store.persoonSearchQuery?.value">
-      <simple-spinner v-if="personen.loading" />
-      <template v-if="personen.success">
-        <personen-overzicht :records="personen.data.page">
-          <template #caption>
-            <SearchResultsCaption :results="personen.data" />
-          </template>
-        </personen-overzicht>
-        <pagination
-          class="pagination"
-          :pagination="personen.data"
-          @navigate="navigate"
+  <section class="actions">
+    <form @submit.prevent="zoekOpGeboortedatum">
+      <label class="utrecht-form-label">
+        Achternaam
+        <input
+          v-validate="store.achternaam"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
         />
-      </template>
-      <application-message
-        v-if="personen.error"
-        messageType="error"
-        message="Er is een fout opgetreden"
-      />
-    </section>
-  </template>
+      </label>
+      <label class="utrecht-form-label">
+        Geboortedatum
+        <input
+          v-validate="store.geboortedatum"
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <utrecht-button type="submit" appearance="primary-action-button">
+        Zoeken
+      </utrecht-button>
+    </form>
+    <form @submit.prevent="zoekOpPostcode">
+      <label class="utrecht-form-label">
+        Postcode
+        <input
+          v-validate="store.postcode"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        Huisnummer
+        <input
+          v-validate="store.huisnummer"
+          required
+          inputmode="numeric"
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        Huisletter
+        <input
+          v-validate="store.huisletter"
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        Toevoeging
+        <input
+          v-validate="store.toevoeging"
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <utrecht-button type="submit" appearance="primary-action-button">
+        Zoeken
+      </utrecht-button>
+    </form>
+    <form @submit.prevent="zoekOpBsn">
+      <label class="utrecht-form-label">
+        Burgerservicenummer
+        <input
+          v-validate="store.bsn"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <utrecht-button type="submit" appearance="primary-action-button">
+        Zoeken
+      </utrecht-button>
+    </form>
+  </section>
+
+  <section class="search-section" v-if="store.persoonSearchQuery?.value">
+    <simple-spinner v-if="personen.loading" />
+    <template v-if="personen.success">
+      <personen-overzicht :records="personen.data">
+        <template #caption>
+          <SearchResultsCaption :results="personen.data" />
+        </template>
+      </personen-overzicht>
+    </template>
+    <application-message
+      v-if="personen.error"
+      messageType="error"
+      :message="
+        personen.error instanceof FriendlyError
+          ? personen.error.message
+          : 'Er is een fout opgetreden'
+      "
+    />
+  </section>
 </template>
 
 <script lang="ts" setup>
-import { watch, ref, computed } from "vue";
-import {
-  createKlantQuery,
-  type KlantSearch,
-  useSearchKlanten,
-  type KlantSearchField,
-} from "../service";
+import { watch, computed } from "vue";
 import PersonenOverzicht from "./PersonenOverzicht.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
 import Pagination from "@/nl-design-system/components/Pagination.vue"; //todo: ook via slot?
-import KlantAanmaken from "./PersoonAanmaken.vue";
 import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
 import { useRouter } from "vue-router";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import {
   parseBsn,
-  parseGeslachtsnaamGeboortedatum,
-  parsePostcodeHuisnummer,
+  parsePostcode,
+  parseDutchDate,
+  validateWith,
+  vValidate,
+  parseAchternaam,
+  parseToevoeging,
+  parseHuisletter,
+  parseHuisnummer,
 } from "@/helpers/validation";
 import {
-  persoonQuery,
   useSearchPersonen,
   type PersoonQuery,
   type PersoonSearchField,
 } from "./service";
-
-type SearchFields = KlantSearchField | PersoonSearchField;
-
-const labels: {
-  readonly [K in SearchFields]: string;
-} = {
-  geslachtsnaamGeboortedatum: "Achternaam + geboortedatum",
-  postcodeHuisnummer: "Postcode + huisnummer",
-  email: "E-mailadres",
-  telefoonnummer: "Telefoonnummer",
-  bsn: "BSN",
-};
+import { Button as UtrechtButton } from "@utrecht/component-library-vue";
+import { ensureKlantForBsn } from "../service";
+import { useOrganisatieIds } from "@/stores/user";
+import { FriendlyError } from "@/services";
 
 const store = ensureState({
   stateId: "klant-zoeker",
   stateFactory() {
     return {
       currentSearch: "",
-      field: "geboortedatum" as SearchFields,
-      klantSearchQuery: undefined as KlantSearch<KlantSearchField> | undefined,
+      achternaam: validateWith(parseAchternaam),
+      geboortedatum: validateWith(parseDutchDate),
+      postcode: validateWith(parsePostcode),
+      huisnummer: validateWith(parseHuisnummer),
+      toevoeging: validateWith(parseToevoeging),
+      huisletter: validateWith(parseHuisletter),
+      bsn: validateWith(parseBsn),
       persoonSearchQuery: undefined as
         | PersoonQuery<PersoonSearchField>
         | undefined,
@@ -135,111 +142,64 @@ const store = ensureState({
   },
 });
 
-const inputRef = ref();
-
-const currentKlantQuery = computed(() => {
-  const { currentSearch, field } = store.value;
-
-  if (field === "telefoonnummer" || field === "email")
-    return createKlantQuery({
-      field,
-      query: currentSearch,
-    });
-
-  return undefined;
-});
-
-const currentPersoonQuery = computed(() => {
-  const { currentSearch, field } = store.value;
-
-  if (field === "geslachtsnaamGeboortedatum") {
-    const parsed = parseGeslachtsnaamGeboortedatum(currentSearch);
-    return parsed instanceof Error
-      ? parsed
-      : persoonQuery({
-          field,
-          value: parsed,
-        });
+const zoekOpGeboortedatum = () => {
+  if (store.value.geboortedatum.validated && store.value.achternaam.validated) {
+    store.value.persoonSearchQuery = {
+      field: "geslachtsnaamGeboortedatum",
+      value: {
+        geslachtsnaam: store.value.achternaam.validated,
+        geboortedatum: store.value.geboortedatum.validated,
+      },
+    };
   }
+};
 
-  if (field === "postcodeHuisnummer") {
-    const parsed = parsePostcodeHuisnummer(currentSearch);
-    return parsed instanceof Error
-      ? parsed
-      : persoonQuery({
-          field,
-          value: parsed,
-        });
+const zoekOpPostcode = () => {
+  if (store.value.postcode.validated && store.value.huisnummer.validated) {
+    store.value.persoonSearchQuery = {
+      field: "postcodeHuisnummer",
+      value: {
+        postcode: store.value.postcode.validated,
+        huisnummer: store.value.huisnummer.validated,
+        toevoeging: store.value.toevoeging.validated,
+        huisletter: store.value.huisletter.validated,
+      },
+    };
   }
+};
 
-  if (field === "bsn") {
-    const parsed = parseBsn(currentSearch);
-    return parsed instanceof Error
-      ? parsed
-      : persoonQuery({
-          field,
-          value: parsed,
-        });
+const zoekOpBsn = () => {
+  if (store.value.bsn.validated) {
+    store.value.persoonSearchQuery = {
+      field: "bsn",
+      value: store.value.bsn.validated,
+    };
   }
-
-  return undefined;
-});
-
-watch(
-  [currentPersoonQuery, inputRef],
-  ([query, input]) => {
-    if (!(input instanceof HTMLInputElement)) return;
-    input.setCustomValidity(query instanceof Error ? query.message : "");
-  },
-  { immediate: true }
-);
-
-const klanten = useSearchKlanten({
-  query: computed(() => store.value.klantSearchQuery),
-  page: computed(() => store.value.page),
-});
+};
 
 const personen = useSearchPersonen({
   query: computed(() => store.value.persoonSearchQuery),
 });
 
-const navigate = (val: number) => {
-  store.value.page = val;
-};
-
-const showKlantAanmaken = ref(false);
-const toggleKlantAanmaken = (): void => {
-  showKlantAanmaken.value = !showKlantAanmaken.value;
-};
-const handleCancelKlantAanmaken = () => {
-  showKlantAanmaken.value = false;
-};
-
-const singleKlantId = computed(() => {
-  if (klanten.success && klanten.data.page.length === 1) {
-    const first = klanten.data.page[0];
-    if (first?._typeOfKlant === "klant") {
-      return first.id;
-    }
+const singleBsn = computed(() => {
+  if (personen.success && personen.data.length === 1) {
+    const first = personen.data[0];
+    return first?.bsn;
   }
   return undefined;
 });
 
 const router = useRouter();
-
-watch(singleKlantId, (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    router.push(`/personen/${newId}`);
+const organisatieIds = useOrganisatieIds();
+watch(
+  [singleBsn, () => organisatieIds.value[0]],
+  async ([bsn, org], [oldBsn]) => {
+    if (org && bsn && bsn !== oldBsn) {
+      const { id } = await ensureKlantForBsn({ bsn }, org);
+      await router.push(`/personen/${id}`);
+    }
   }
-});
-
-const handleSearch = () => {
-  store.value.klantSearchQuery = currentKlantQuery.value;
-  if (!(currentPersoonQuery.value instanceof Error)) {
-    store.value.persoonSearchQuery = currentPersoonQuery.value;
-  }
-  store.value.page = 1;
-};
+);
 </script>
 
 <style lang="scss" scoped>
@@ -294,8 +254,22 @@ input[type="radio"] {
 
 .actions {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--spacing-default);
+  inline-size: min(40rem, 100%);
+
+  form {
+    display: flex;
+    gap: var(--spacing-default);
+    align-items: flex-end;
+
+    > :not(button) {
+      flex-basis: 33%;
+
+      &:first-child {
+        flex-grow: 1;
+      }
+    }
+  }
 }
 </style>

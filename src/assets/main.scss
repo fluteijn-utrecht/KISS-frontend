@@ -15,7 +15,7 @@ body {
   position: relative;
   min-height: 100vh;
   display: grid;
-  grid-template: "aside header" auto "nothing main" 1fr / 20.75rem 1fr;
+  grid-template: "aside header" auto "nothing main" 1fr / 21.25rem 1fr;
   border-top: 4px solid var(--color-primary);
 
   &.contactmoment-loopt {
@@ -50,47 +50,9 @@ body {
   appearance: auto;
 }
 
-.main-tabs > nav {
-  background-color: var(--color-secondary);
-}
-
-.tabs-component-zaken {
-  > ul li.is-active {
-    background-color: var(--color-secondary);
-    border-radius: var(--radius-default) var(--radius-default) 0 0;
-  }
-
-  > ul li {
-    display: inline-block;
-    padding: var(--spacing-default);
-
-    a {
-      text-decoration: none;
-      font-size: var(--utrecht-typography-scale-lg);
-      color: var(--utrecht-document-color);
-    }
-  }
-
-  > div {
-    background-color: var(--color-secondary);
-  }
-}
-
-.tabs-component-contactmoment {
-  > ul li.is-active {
-    background-color: var(--color-white);
-  }
-
-  > ul li {
-    display: inline-block;
-    padding: var(--spacing-default);
-
-    a {
-      text-decoration: none;
-      font-size: var(--utrecht-typography-scale-lg);
-      color: var(--utrecht-document-color);
-    }
-  }
+.klant-panel {
+  display: grid;
+  gap: var(--spacing-large);
 }
 
 a[aria-current="page"] {
@@ -260,6 +222,10 @@ table.overview {
       font-weight: 600;
     }
 
+    td:empty::after {
+      content: "-";
+    }
+
     &.row-link {
       a,
       button {
@@ -389,4 +355,35 @@ th.row-link-header {
 
 dt {
   font-weight: bold;
+}
+
+.htmlcontent {
+  h3,
+  h4 {
+    margin-block-start: var(--spacing-default);
+  }
+
+  ul {
+    list-style: disc;
+    margin-inline-start: var(--spacing-default);
+    margin-block: var(--spacing-small);
+
+    ul {
+      list-style: circle;
+      margin-block: 0;
+    }
+  }
+
+  td {
+    border: 1px var(--color-tertiary) solid;
+    padding: var(--spacing-small);
+  }
+
+  table {
+    margin-block: var(--spacing-small);
+  }
+
+  p + p {
+    margin-block-start: var(--spacing-small);
+  }
 }
