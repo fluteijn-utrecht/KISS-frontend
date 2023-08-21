@@ -180,7 +180,7 @@ const handleToggleBerichtInContactmoment = (): void => {
 
 <style lang="scss" scoped>
 article {
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-default);
   background-color: var(--color-secondary);
   padding: 0.75rem var(--text-margin);
   width: 100%;
