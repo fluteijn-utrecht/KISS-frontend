@@ -3,16 +3,7 @@
     :dialog="dialog"
     message="Let op, je hebt het contactverzoek niet afgerond. Als je deze vraag verlaat, wordt het contactverzoek niet verstuurd."
   />
-  <menu class="vragen-menu" v-if="vragen">
-    <li>
-      <utrecht-button
-        appearance="subtle-button"
-        class="icon-after plus new-question icon-only"
-        type="button"
-        title="Nieuwe vraag"
-        @click="startNieuweVraag"
-      ></utrecht-button>
-    </li>
+  <menu class="vragen-menu" v-if="vragen">   
     <li v-for="(vraag, idx) in vragen" :key="idx">
       <utrecht-button
         appearance="subtle-button"
@@ -24,6 +15,15 @@
       >
         {{ idx + 1 }}
       </utrecht-button>
+    </li>
+    <li>
+      <utrecht-button
+        appearance="subtle-button"
+        class="icon-after plus new-question icon-only"
+        type="button"
+        title="Nieuwe vraag"
+        @click="startNieuweVraag"
+      ></utrecht-button>
     </li>
   </menu>
 </template>
@@ -61,7 +61,8 @@ async function startNieuweVraag() {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-small);
-  padding: var(--spacing-small);
+
+  //padding: var(--spacing-small);
 
   button {
     color: var(--color-white);

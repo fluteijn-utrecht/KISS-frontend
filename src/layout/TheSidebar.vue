@@ -15,26 +15,18 @@
         class="within-moment"
         v-if="contactmomentStore.huidigContactmoment"
       >
-        <div
-          style="
-            background-color: var(--color-primary);
-            padding-block-start: var(--spacing-default);
-            padding-block-end: var(--spacing-small);
-          "
-        >
+        <div class="contactmoment-header">
           <current-contactmoment-info />
-          <h2>Vragen</h2>
+          <utrecht-heading :level="3">Vragen</utrecht-heading>
           <contactmoment-vragen-menu />
         </div>
         <div class="notitie-tabs">
           <tab-list v-model="state.currentNotitieTab">
             <tab-list-item :label="NotitieTabs.Regulier">
               <template #tab="{ label }">
-                <span :title="label" class="icon-after note" />
+                <span :title="label">Notitieblok</span> 
               </template>
-              <utrecht-heading id="notitieblok" :level="2"
-                >Notitieblok</utrecht-heading
-              >
+             
               <textarea
                 aria-labelledby="notitieblok"
                 id="cm-notitieblok"
@@ -42,11 +34,12 @@
                 v-model="
                   contactmomentStore.huidigContactmoment.huidigeVraag.notitie
                 "
+                placeholder="Schrijf een notitie…"
               />
             </tab-list-item>
             <tab-list-item :label="NotitieTabs.Contactverzoek">
               <template #tab="{ label }">
-                <span :title="label" class="icon-after phone-flip" />
+                <span :title="label" >Contactverzoek</span>
               </template>
               <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
               <form @submit.prevent>
@@ -154,6 +147,11 @@ aside {
     display: flex;
     flex-direction: column;
     flex: 1;
+
+    textarea::placeholder {
+      font-style: italic;
+    }
+    
   }
 
   :deep([role="tab"]) {
@@ -187,36 +185,41 @@ menu.starter {
     flex-direction: column;
     align-items: stretch;
   }
-
-  
 }
 
 menu.finisher {
   position: fixed;
   bottom: var(--spacing-large);
-
-
 }
 
 .within-moment {
   display: flex;
   flex-direction: column;
   flex: 1;
-
-  // background-color: var(--sidebar-color-2);
   background-color: var(--color-white);
-
-  // border-start-start-radius: var(--radius-large);
-  // border-start-end-radius: var(--radius-large);
   color: var(--color-white);
   margin-block-start: var(--spacing-default);
-
-  //padding-block-start: var(--spacing-default);
 
   > h2 {
     margin-block-start: var(--spacing-small);
     margin-inline: var(--spacing-default);
     color: inherit;
+  }
+
+  > .contactmoment-header {
+    background-color: var(--color-primary);
+    padding-block-start: var(--spacing-default);
+    padding-block-end: var(--spacing-default);
+    padding-inline: var(--spacing-small);
+
+    --utrecht-heading-color: var(--color-white);
+
+    > h3 {
+      margin-block-start: var(--spacing-large);
+      margin-block-end: var(--spacing-small);
+    }
+
+ 
   }
 }
 </style>
