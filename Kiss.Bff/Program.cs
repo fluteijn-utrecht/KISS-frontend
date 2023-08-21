@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Kiss.Bff.Afdelingen;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;

@@ -1,28 +1,21 @@
 <template>
   <SimpleSpinner v-if="afdelingen.loading" />
   <div class="container" @submit.prevent>
-    <!-- <label
-      class="utrecht-form-label"
-      v-if="afdelingen.success && afdelingen.data.length"
-    >
-      Afdeling
+    <label class="utrecht-form-label">
+      Contactverzoek maken voor
       <select
-        v-model="form.afdeling"
+        required
+        v-model="form.isMedewerker"
         @change="setActive"
-        name="afdeling"
+        name="afdelingOfMedewerker"
         class="utrecht-select utrecht-select--html-select"
       >
-        <option
-          v-for="afdeling in afdelingen.data"
-          :key="afdeling.id"
-          :value="afdeling.name"
-        >
-          {{ afdeling.name }}
-        </option>
+        <option :value="undefined">Afdeling</option>
+        <option :value="true">Medewerker</option>
       </select>
-    </label> -->
+    </label>
 
-    <label class="utrecht-form-label">
+    <label class="utrecht-form-label" v-if="form.isMedewerker">
       <span class="required">Contactverzoek versturen naar</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
@@ -32,6 +25,49 @@
         @update:model-value="setActive"
       />
     </label>
+
+    <template v-else>
+      <label
+        class="utrecht-form-label"
+        v-if="afdelingen.success && afdelingen.data.count"
+      >
+        Afdeling
+        <select
+          v-model="form.afdeling"
+          @change="setActive"
+          name="afdeling"
+          class="utrecht-select utrecht-select--html-select"
+        >
+          <option
+            v-for="afdeling in afdelingen.data.page"
+            :key="afdeling.identificatie"
+            :value="afdeling"
+          >
+            {{ afdeling.naam }}
+          </option>
+        </select>
+      </label>
+      <label
+        class="utrecht-form-label"
+        v-if="groepen.success && groepen.data.count"
+      >
+        Afdeling
+        <select
+          v-model="form.groep"
+          @change="setActive"
+          name="afdeling"
+          class="utrecht-select utrecht-select--html-select"
+        >
+          <option
+            v-for="groep in groepen.data.page"
+            :key="groep.identificatie"
+            :value="groep"
+          >
+            {{ groep.naam }}
+          </option>
+        </select>
+      </label>
+    </template>
 
     <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
@@ -139,7 +175,7 @@ export default {
 
 <script lang="ts" setup>
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
-import { useAfdelingen } from "./service";
+import { useAfdelingen, useGroepen } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
@@ -159,10 +195,11 @@ watch(
   (v) => {
     form.value = v;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const afdelingen = useAfdelingen();
+const groepen = useGroepen(() => form.value.afdeling?.id);
 
 const setActive = () => {
   form.value.isActive = true;
@@ -181,9 +218,9 @@ watch(
   ([el, hasContact]) => {
     if (!el) return;
     el.setCustomValidity(
-      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in"
+      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in",
     );
-  }
+  },
 );
 </script>
 

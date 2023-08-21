@@ -14,6 +14,7 @@ export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
 export type ContactmomentContactVerzoek = {
   url?: string;
+  isMedewerker?: true;
   medewerker?: {
     user: string;
     contact?: {
@@ -23,7 +24,15 @@ export type ContactmomentContactVerzoek = {
       achternaam?: string;
     };
   };
-  afdeling?: string;
+  afdeling?: {
+    id: string;
+    identificatie: string;
+    naam: string;
+  };
+  groep?: {
+    identificatie: string;
+    naam: string;
+  };
   organisatie?: string;
   voornaam?: string;
   achternaam?: string;

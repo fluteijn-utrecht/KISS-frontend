@@ -1,13 +1,12 @@
 ﻿using System.Net.Http.Headers;
 using Yarp.ReverseProxy.Transforms;
 
-namespace Kiss.Bff.InterneTaak
+namespace Kiss.Bff.Afdelingen
 {
     public static class AfdelingenExtensions
     {
         public static IServiceCollection AddAfdelingenProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl)
-            => services.AddSingleton(new AfdelingenProxyConfig(destination, token, objectTypeUrl))
-            .AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<InterneTaakProxyConfig>());
+            => services.AddSingleton<IKissProxyRoute>(new AfdelingenProxyConfig(destination, token, objectTypeUrl));
     }
 
     public class AfdelingenProxyConfig : IKissProxyRoute

@@ -6,8 +6,7 @@ namespace Kiss.Bff.Groepen
     public static class GroepenExtensions
     {
         public static IServiceCollection AddGroepenProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl)
-            => services.AddSingleton(new GroepenProxyConfig(destination, token, objectTypeUrl))
-            .AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<GroepenProxyConfig>());
+            => services.AddSingleton<IKissProxyRoute>(new GroepenProxyConfig(destination, token, objectTypeUrl));
     }
 
     public class GroepenProxyConfig : IKissProxyRoute
