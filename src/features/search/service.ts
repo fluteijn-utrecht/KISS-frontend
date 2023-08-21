@@ -21,7 +21,7 @@ function mapResult(obj: any): SearchResult {
   // documentUrl.pathname = searchUrl;
   documentUrl.searchParams.set("query", id);
 
-  const jsonObject = obj?._source?.object ?? null;
+  const jsonObject = obj?._source?.[source] ?? null;
   return {
     source,
     id,
@@ -54,18 +54,18 @@ export function useGlobalSearch(
     search?: string;
     page?: number;
     filters: Source[];
-  }>
+  }>,
 ) {
   const templateResult = useQueryTemplate();
   const template = computed(
-    () => templateResult.success && templateResult.data.template
+    () => templateResult.success && templateResult.data.template,
   );
 
   const getUrl = () => {
     if (!template.value) return "";
     return getSearchUrl(
       parameters.value.search || "",
-      parameters.value.filters
+      parameters.value.filters,
     );
   };
 
@@ -76,7 +76,7 @@ export function useGlobalSearch(
 
     const replaced = template.value.replace(
       /\{\{query\}\}/g,
-      parameters.value.search
+      parameters.value.search,
     );
 
     const query = JSON.parse(replaced);
@@ -194,7 +194,7 @@ export function useSources() {
     () =>
       templateResult.success &&
       !!templateResult.data.indices.length &&
-      templateResult.data.indices
+      templateResult.data.indices,
   );
 
   const getUrl = () =>
@@ -221,7 +221,7 @@ export function useSources() {
         buckets.map((x: any) => ({
           index: x.key,
           name: key,
-        }))
+        })),
     );
 
     return sources;
@@ -234,7 +234,7 @@ export function useSuggestions(input: Ref<string>, sources: Ref<Source[]>) {
   function mapSuggestions(json: any): string[] {
     if (!Array.isArray(json?.suggest?.suggestions)) return [];
     const result = [...json.suggest.suggestions].flatMap(({ options }: any) =>
-      options.map(({ text }: any) => (text as string).toLocaleLowerCase())
+      options.map(({ text }: any) => (text as string).toLocaleLowerCase()),
     ) as string[];
     return [...new Set(result)];
   }
