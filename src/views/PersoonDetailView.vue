@@ -10,93 +10,61 @@
         </li>
       </ul>
     </nav>
-    <simple-spinner v-if="klant.loading" />
-    <klant-details v-else-if="klant.success" :klant="klant.data" />
-    <application-message
-      v-if="klant.error"
-      message="Er ging iets mis bij het ophalen van de klant. Probeer het later
-      nog eens."
-      messageType="error"
-    />
 
-    <simple-spinner v-if="persoon.loading" />
-    <brp-gegevens
-      v-if="persoon.success && persoon.data"
-      :persoon="persoon.data"
-    />
-    <application-message
-      v-if="persoon.error"
-      message="Er ging iets mis bij het ophalen van de BRP gegevens. Probeer het later nog eens."
-      messageType="error"
-    />
+    <tab-list v-model="activeTab">
+      <tab-list-data-item label="Contactgegevens" :data="klant">
+        <template #success="{ data }">
+          <klant-details :klant="data" />
+        </template>
+      </tab-list-data-item>
 
-    <simple-spinner v-if="contactverzoeken.loading" />
-    <application-message
-      v-if="contactverzoeken.error"
-      message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
-      messageType="error"
-    />
-    <template
-      v-if="contactverzoeken.success && contactverzoeken.data.page.length"
-    >
-      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+      <tab-list-data-item label="BRP gegevens" :data="persoon">
+        <template #success="{ data }">
+          <brp-gegevens :persoon="data" />
+        </template>
+      </tab-list-data-item>
 
-      <contactverzoeken-overzicht
-        :contactverzoeken="contactverzoeken.data.page"
-      >
-        <template #contactmoment="{ url }">
-          <contactmoment-preview :url="url">
-            <template #object="{ object }">
-              <zaak-preview :zaakurl="object.object" />
+      <tab-list-data-item label="Contactverzoeken" :data="contactverzoeken" :disabled="(c) => !c.count">
+        <template #success="{ data }">
+          <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+
+          <contactverzoeken-overzicht :contactverzoeken="data.page">
+            <template #contactmoment="{ url }">
+              <contactmoment-preview :url="url">
+                <template #object="{ object }">
+                  <zaak-preview :zaakurl="object.object" />
+                </template>
+              </contactmoment-preview>
             </template>
-          </contactmoment-preview>
+          </contactverzoeken-overzicht>
         </template>
-      </contactverzoeken-overzicht>
-    </template>
+      </tab-list-data-item>
 
-    <!-- Zaken -->
+      <tab-list-data-item label="Zaken" :data="zaken"  :disabled="(c) => !c.count">
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Zaken </utrecht-heading>
 
-    <simple-spinner v-if="zaken.loading" />
-
-    <application-message
-      v-if="zaken.error"
-      message="Er ging iets mis bij het ophalen van de zaken. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <template v-if="zaken.success && zaken.data.page.length">
-      <utrecht-heading :level="2"> Zaken </utrecht-heading>
-
-      <zaken-overzicht
-        :zaken="zaken.data.page"
-        :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-      />
-    </template>
-
-    <!-- Contactmomenten -->
-    <simple-spinner v-if="contactmomenten.loading" />
-
-    <application-message
-      v-if="contactmomenten.error"
-      message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
-      messageType="error"
-    />
-
-    <template v-if="contactmomenten.success && contactmomenten.data">
-      <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-        <template v-slot:object="{ object }">
-          <zaak-preview :zaakurl="object.object"></zaak-preview>
+          <zaken-overzicht
+            :zaken="data.page"
+            :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+          />
         </template>
-      </contactmomenten-overzicht>
-      <!-- 
-      <pagination
-        class="pagination"
-        :pagination="contactmomenten.data"
-        @navigate="onContactmomentenNavigate"
-      /> -->
-    </template>
+      </tab-list-data-item>
+
+      <tab-list-data-item label="Contactmomenten" :data="contactmomenten" :disabled="(c) => !c.count">
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+
+          <contactmomenten-overzicht :contactmomenten="data.page">
+            <template v-slot:object="{ object }">
+              <zaak-preview :zaakurl="object.object"></zaak-preview>
+            </template>
+          </contactmomenten-overzicht>
+        </template>
+      </tab-list-data-item>
+    </tab-list>
+
+
   </section>
 </template>
 
@@ -121,6 +89,10 @@ import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
+
+const activeTab = ref("");
+
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
@@ -130,12 +102,12 @@ const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage,
+  contactverzoekenPage
 );
 
 // const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
+  klantUrl
   // contactmomentenPage
 );
 
@@ -159,7 +131,7 @@ watch(
       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>
 
