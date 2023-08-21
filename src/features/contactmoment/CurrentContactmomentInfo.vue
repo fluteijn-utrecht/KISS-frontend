@@ -8,24 +8,20 @@
       <h2>{{ klantInfo?.name || "onbekend" }}</h2>
       <p v-if="klantInfo?.contact">{{ klantInfo.contact }}</p>
     </header>
-    <utrecht-button @click="onStopContactMoment" title="Contactmoment afronden">
-      Afronden
-    </utrecht-button>
+
   </article>
 </template>
 
 <script setup lang="ts">
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 import { useConfirmDialog } from "@vueuse/core";
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 import PromptModal from "@/components/PromptModal.vue";
 import { getKlantInfo } from "./helpers";
 
 const beforeStopDialog = useConfirmDialog();
 
-const router = useRouter();
+
 const contactmomentStore = useContactmomentStore();
 
 const klantInfo = computed(() =>
@@ -33,10 +29,6 @@ const klantInfo = computed(() =>
     ? getKlantInfo(contactmomentStore.huidigContactmoment)
     : undefined
 );
-
-const onStopContactMoment = async () => {
-  router.push({ name: "afhandeling" }); //een link zou wellicht toepasselijker zijn, maar de styling adhv het designsystem wordt lastig.
-};
 </script>
 
 <style lang="scss" scoped>

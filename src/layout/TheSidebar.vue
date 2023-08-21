@@ -15,9 +15,17 @@
         class="within-moment"
         v-if="contactmomentStore.huidigContactmoment"
       >
-        <current-contactmoment-info />
-        <h2>Vragen</h2>
-        <contactmoment-vragen-menu />
+        <div
+          style="
+            background-color: var(--color-primary);
+            padding-block-start: var(--spacing-default);
+            padding-block-end: var(--spacing-small);
+          "
+        >
+          <current-contactmoment-info />
+          <h2>Vragen</h2>
+          <contactmoment-vragen-menu />
+        </div>
         <div class="notitie-tabs">
           <tab-list v-model="state.currentNotitieTab">
             <tab-list-item :label="NotitieTabs.Regulier">
@@ -52,6 +60,12 @@
             </tab-list-item>
           </tab-list>
         </div>
+
+        <menu class="finisher">
+          <li>
+            <contactmoment-finisher />
+          </li>
+        </menu>
       </section>
     </template>
   </aside>
@@ -67,11 +81,11 @@ import { watch } from "vue";
 import { useRoute } from "vue-router";
 import {
   ContactmomentStarter,
+  ContactmomentFinisher,
   CurrentContactmomentInfo,
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
 import { TabList, TabListItem } from "@/components/tabs";
-import { watchEffect } from "vue";
 
 enum NotitieTabs {
   Regulier = "Reguliere notitie",
@@ -119,7 +133,6 @@ aside {
 }
 
 .notitie-tabs {
-  margin-block-start: var(--spacing-small);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -133,6 +146,7 @@ aside {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     color: inherit;
+    background-color: var(--color-primary);
   }
 
   :deep([role="tabpanel"]) {
@@ -155,9 +169,13 @@ aside {
   }
 }
 
-.starter {
-  color: var(--color-white);
+menu {
   align-self: center;
+
+  --utrecht-button-min-inline-size: 17rem;
+}
+
+menu.starter {
   margin-block-start: 4rem;
   margin-block-end: var(--spacing-default);
   display: flex;
@@ -170,19 +188,30 @@ aside {
     align-items: stretch;
   }
 
-  --utrecht-button-min-inline-size: 17rem;
+  
+}
+
+menu.finisher {
+  position: fixed;
+  bottom: var(--spacing-large);
+
+
 }
 
 .within-moment {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--sidebar-color-2);
-  border-start-start-radius: var(--radius-large);
-  border-start-end-radius: var(--radius-large);
+
+  // background-color: var(--sidebar-color-2);
+  background-color: var(--color-white);
+
+  // border-start-start-radius: var(--radius-large);
+  // border-start-end-radius: var(--radius-large);
   color: var(--color-white);
   margin-block-start: var(--spacing-default);
-  padding-block-start: var(--spacing-default);
+
+  //padding-block-start: var(--spacing-default);
 
   > h2 {
     margin-block-start: var(--spacing-small);
