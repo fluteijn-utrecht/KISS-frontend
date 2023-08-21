@@ -89,8 +89,10 @@ function initVraag(): Vraag {
     notitie: "",
     contactverzoek: {
       url: "",
+      isMedewerker: undefined,
       medewerker: undefined,
-      afdeling: "",
+      afdeling: undefined,
+      groep: undefined,
       telefoonnummer1: "",
       telefoonnummer2: "",
       omschrijvingTelefoonnummer2: "",
