@@ -227,14 +227,6 @@ watch(
   () => form.value.afdeling,
   () => {
     form.value.groep = undefined;
-    form.value.medewerker = undefined;
-  },
-);
-
-watch(
-  () => form.value.medewerker,
-  () => {
-    form.value.afdeling = undefined;
   },
 );
 </script>
