@@ -6,7 +6,7 @@
     ref="searchBarRef"
   >
     <fieldset class="bronnen" v-if="sources.success">
-      <label v-for="bron in sources.data" :key="bron.name + bron.type">
+      <label v-for="bron in sources.data" :key="bron.name + bron.index">
         <input type="checkbox" v-model="state.selectedSources" :value="bron" />
         {{ bron.name.replace(/(^\w+:|^)\/\//, "").replace("www.", "") }}
       </label>
@@ -239,7 +239,7 @@ const sources = useSources();
 const sourceParameter = computed(() =>
   sources.success && !state.value.selectedSources.length
     ? sources.data
-    : state.value.selectedSources
+    : state.value.selectedSources,
 );
 
 const searchParameters = computed(() => ({
