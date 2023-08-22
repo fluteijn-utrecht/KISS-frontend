@@ -2,14 +2,11 @@ import {
   fetchLoggedIn,
   parseJson,
   parsePagination,
-  // parseJson,
-  // parsePagination,
   ServiceResult,
   throwIfNotOk,
   type PaginatedResult,
 } from "@/services";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
-// creating a klant will be done differently in the future. for now, jus reuse the type from the klant feature
 import { formatIsoDate } from "@/helpers/date";
 import type { Ref } from "vue";
 import { fullName } from "@/helpers/string";
