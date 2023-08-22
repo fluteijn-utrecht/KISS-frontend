@@ -10,59 +10,52 @@
         </li>
       </ul>
     </nav>
-    <simple-spinner v-if="klant.loading" />
-    <klant-details v-else-if="klant.success" :klant="klant.data" />
-    <application-message
-      v-if="klant.error"
-      message="Er ging iets mis bij het ophalen van de klant. Probeer het later
-      nog eens."
-      messageType="error"
-    />
-    <simple-spinner v-if="contactverzoeken.loading" />
-    <application-message
-      v-if="contactverzoeken.error"
-      message="Er ging iets mis bij het ophalen van de contactverzoeken. Probeer het later nog eens."
-      messageType="error"
-    />
-    <template
-      v-if="contactverzoeken.success && contactverzoeken.data.page.length"
-    >
-      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
-      <contactverzoeken-overzicht
-        :contactverzoeken="contactverzoeken.data.page"
-      >
-        <template #contactmoment="{ url }">
-          <contactmoment-preview :url="url">
-            <template #object="{ object }">
-              <zaak-preview :zaakurl="object.object" />
-            </template>
-          </contactmoment-preview>
+    <tab-list v-model="activeTab">
+      <tab-list-data-item label="Contactgegevens" :data="klant">
+        <template #success="{ data }">
+          <klant-details :klant="data" />
         </template>
-      </contactverzoeken-overzicht>
-    </template>
+      </tab-list-data-item>
 
-    <!-- Contactmomenten -->
-    <simple-spinner v-if="contactmomenten.loading" />
+      <tab-list-data-item
+        label="Contactverzoeken"
+        :data="contactverzoeken"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
-    <application-message
-      v-if="contactmomenten.error"
-      message="Er ging iets mis bij het ophalen van de contactmomenten. Probeer het later nog eens."
-      messageType="error"
-    />
+          <contactverzoeken-overzicht :contactverzoeken="data.page">
+            <template #contactmoment="{ url }">
+              <contactmoment-preview :url="url">
+                <template #object="{ object }">
+                  <zaak-preview :zaakurl="object.object" />
+                </template>
+              </contactmoment-preview>
+            </template>
+          </contactverzoeken-overzicht>
+        </template>
+      </tab-list-data-item>
 
-    <template v-if="contactmomenten.success && contactmomenten.data">
-      <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-
-      <contactmomenten-overzicht :contactmomenten="contactmomenten.data.page">
-      </contactmomenten-overzicht>
-      <!-- 
-      <pagination
-        class="pagination"
-        :pagination="contactmomenten.data"
-        @navigate="onContactmomentenNavigate"
-      /> -->
-    </template>
+      <tab-list-data-item
+        label="Contactmomenten"
+        :data="contactmomenten"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+          <contactmomenten-overzicht :contactmomenten="data.page">
+          </contactmomenten-overzicht>
+          <!-- 
+          <pagination
+            class="pagination"
+            :pagination="contactmomenten.data"
+            @navigate="onContactmomentenNavigate"
+          /> -->
+        </template>
+      </tab-list-data-item>
+    </tab-list>
   </section>
 </template>
 
@@ -72,14 +65,16 @@ import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contactmoment";
 import { useKlantById, KlantDetails } from "@/features/klant";
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import SimpleSpinner from "@/components/SimpleSpinner.vue";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import { TabList, TabListDataItem } from "@/components/tabs";
+
+const activeTab = ref("");
+
 const props = defineProps<{ contactId: string }>();
 const klantId = computed(() => props.contactId);
 const contactmomentStore = useContactmomentStore();
@@ -104,27 +99,17 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage
 );
 
-// const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl
-  // contactmomentenPage
 );
 
-// const onContactmomentenNavigate = (page: number) => {
-//   contactmomentenPage.value = page;
-// };
 </script>
 
 <style scoped lang="scss">
-nav {
-  list-style: none;
-}
+ 
 
 section > * {
   margin-block-end: var(--spacing-large);
 }
 
-utrecht-heading {
-  margin-block-end: 0;
-}
 </style>

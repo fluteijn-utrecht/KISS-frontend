@@ -1,4 +1,5 @@
 <template>
+  <section>
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
   <nav>
     <ul>
@@ -67,6 +68,7 @@
       </template>
     </tab-list-data-item>
   </tab-list>
+</section>
 </template>
 
 <script setup lang="ts">
@@ -137,3 +139,14 @@ const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
 </script>
+
+
+<style scoped lang="scss">
+ 
+
+section > * {
+  margin-block-end: var(--spacing-large);
+}
+
+ 
+</style>

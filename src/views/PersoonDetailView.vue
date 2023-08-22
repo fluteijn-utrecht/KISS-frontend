@@ -79,9 +79,6 @@ import {
   BrpGegevens,
   usePersoonByBsn,
 } from "@/features/klant";
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import SimpleSpinner from "@/components/SimpleSpinner.vue";
-// import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
@@ -89,7 +86,7 @@ import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
-import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
+import { TabList, TabListDataItem } from "@/components/tabs";
 
 const activeTab = ref("");
 
@@ -136,15 +133,10 @@ watch(
 </script>
 
 <style scoped lang="scss">
-nav {
-  list-style: none;
-}
+ 
 
 section > * {
   margin-block-end: var(--spacing-large);
 }
-
-utrecht-heading {
-  margin-block-end: 0;
-}
+ 
 </style>
