@@ -1,18 +1,117 @@
 <template>
   <section v-if="contactverzoeken.length">
-    <div class="header">
+    <!-- <div class="header">
       <span>Datum</span>
       <span>Status</span>
       <span>Behandelaar</span>
       <span>Afgerond op</span>
       <span class="chevron"></span>
-    </div>
-
+    </div> -->
+<!-- 
     <div
       v-for="(contactverzoek, idx) in contactverzoeken"
       :key="idx"
       class="verzoek-item"
-    >
+    > -->
+
+
+    <ul>
+        <li class="header-row">
+          <span id="datum-header">Datum</span>
+          <span id="medewerker-header">Status</span>
+          <span id="kanaal-header">Behandelaar</span>
+          <span id="gespreksresultaat-header">Afgerond op</span>
+          <span class="chevron"></span>
+        </li>
+        <li v-for="contactverzoek in contactverzoeken" :key="contactverzoek.url">
+
+
+
+
+    <details @click="toggleDetails">
+    <summary>
+      <dutch-date
+          v-if="contactverzoek.record.data.registratiedatum"
+          :date="new Date(contactverzoek.record.data.registratiedatum)"
+        />
+        <span v-else />
+        <span>{{ contactverzoek.record.data.status }}</span>
+        <span>{{ contactverzoek.record.data.actor.naam }}</span>
+        <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
+
+    </summary>
+    <dl>
+          <dt>Starttijd</dt>
+          <dd>
+            <dutch-time
+              v-if="contactverzoek.record.data.registratiedatum"
+              :date="new Date(contactverzoek.record.data.registratiedatum)"
+            />
+          </dd>
+
+          <dt>Toelichting voor de collega</dt>
+          <dd>
+            {{ contactverzoek.record.data.toelichting }}
+          </dd>
+
+          <template
+            v-if="
+              contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam
+            "
+          >
+            <dt>Naam betrokkene</dt>
+            <dd>
+              {{ fullName(contactverzoek.record.data.betrokkene.persoonsnaam) }}
+            </dd>
+          </template>
+
+          <template v-if="contactverzoek.record.data.betrokkene.organisatie">
+            <dt>Organisatie</dt>
+            <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
+          </template>
+
+          <template
+            v-for="(adres, idx) in contactverzoek.record.data.betrokkene
+              .digitaleAdressen"
+            :key="idx"
+          >
+            <dt>
+              {{
+                capitalizeFirstLetter(
+                  adres.omschrijving || adres.soortDigitaalAdres || "contact",
+                )
+              }}
+            </dt>
+            <dd>
+              {{ adres.adres }}
+            </dd>
+          </template>
+
+          <slot
+            name="contactmoment"
+            :url="contactverzoek.record.data.contactmoment"
+          ></slot>
+        </dl>
+  </details>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
       <button
         @click="toggleItemContent(idx)"
         class="verzoek-item-header"
@@ -85,8 +184,11 @@
             :url="contactverzoek.record.data.contactmoment"
           ></slot>
         </dl>
-      </div>
-    </div>
+      </div> -->
+    <!-- </div> -->
+
+  </li>
+      </ul>
   </section>
 
   <div v-else>Geen contactverzoeken gevonden.</div>
@@ -118,16 +220,148 @@ watch(
   },
 );
 
-const toggleItemContent = (idx: number) => {
-  activeContactverzoeken.value[idx] = !activeContactverzoeken.value[idx];
+// const toggleItemContent = (idx: number) => {
+//   activeContactverzoeken.value[idx] = !activeContactverzoeken.value[idx];
+// };
+
+
+ 
+  const toggleDetails = (e: Event) => {
+  e.preventDefault();
+  if (e.currentTarget instanceof HTMLDetailsElement) {
+    e.currentTarget.open = !e.currentTarget.open;
+  }
 };
+
 </script>
 
 <style lang="scss" scoped>
-dl {
+// dl {
+//   --column-width: 25ch;
+//   --gap: var(--spacing-default);
+
+//   padding-inline-start: var(--spacing-default);
+//   display: grid;
+//   column-gap: var(--gap);
+//   row-gap: var(--spacing-default);
+//   grid-template-columns: var(--column-width) 1fr;
+//   padding-block: var(--spacing-large);
+// }
+
+// .header {
+//   display: flex;
+//   background-color: var(--color-tertiary);
+//   color: var(--color-white);
+// }
+
+// .header > *,
+// .verzoek-item-header > * {
+//   flex: 1;
+//   max-width: 250px;
+//   padding: var(--spacing-default);
+// }
+
+// .verzoek-item-header {
+//   all: unset;
+//   width: 100%;
+//   display: flex;
+//   border-bottom: 1px solid var(--color-tertiary);
+
+//   &:focus-visible {
+//     outline: auto currentcolor;
+//   }
+
+//   &.is-active {
+//     background-color: var(--color-secondary);
+
+//     .chevron::after {
+//       transform: rotate(180deg);
+//     }
+//   }
+
+//   &:hover {
+//     background-color: var(--color-secondary);
+//   }
+// }
+
+// .verzoek-item-content {
+//   background-color: var(--color-secondary);
+
+//   :deep(dt) dl > dt {
+//     max-width: 150px;
+//   }
+
+//   &:not(.is-active) {
+//     display: none;
+//   }
+// }
+
+// .chevron {
+//   display: flex;
+//   max-width: 50px;
+//   align-items: center;
+//   margin-inline-start: auto;
+
+//   &::after {
+//     transition: transform 250ms;
+//   }
+// }
+
+ul {
   --column-width: 25ch;
   --gap: var(--spacing-default);
+  --columns: 1fr 1fr 1fr 1fr 1rem;
+  --spinner-size: 1em;
 
+  display: grid;
+  list-style: none;
+  padding: 0;
+}
+
+li:not(:first-child, :last-child) {
+  border-bottom: 2px solid var(--color-tertiary);
+}
+
+.header-row {
+  display: grid;
+  grid-template-columns: var(--columns);
+  gap: var(--gap);
+  padding-inline: var(--gap);
+  padding-block: var(--spacing-default);
+  background: var(--color-tertiary);
+  color: var(--color-white);
+}
+
+
+summary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: var(--columns);
+  gap: var(--gap);
+  padding-block-start: var(--spacing-default);
+  padding-block-end: var(--spacing-default);
+}
+
+details {
+  display: grid;
+  gap: var(--spacing-default);
+  background: var(--color-white);
+
+  &[open],
+  &:hover {
+    background-color: var(--color-secondary);
+  }
+
+  > * {
+    padding-inline: var(--gap);
+  }
+}
+
+dt {
+  font-weight: bold;
+}
+
+dl {
   padding-inline-start: var(--spacing-default);
   display: grid;
   column-gap: var(--gap);
@@ -136,62 +370,8 @@ dl {
   padding-block: var(--spacing-large);
 }
 
-.header {
-  display: flex;
-  background-color: var(--color-tertiary);
-  color: var(--color-white);
-}
-
-.header > *,
-.verzoek-item-header > * {
-  flex: 1;
-  max-width: 250px;
-  padding: var(--spacing-default);
-}
-
-.verzoek-item-header {
-  all: unset;
-  width: 100%;
-  display: flex;
-  border-bottom: 1px solid var(--color-tertiary);
-
-  &:focus-visible {
-    outline: auto currentcolor;
-  }
-
-  &.is-active {
-    background-color: var(--color-secondary);
-
-    .chevron::after {
-      transform: rotate(180deg);
-    }
-  }
-
-  &:hover {
-    background-color: var(--color-secondary);
-  }
-}
-
-.verzoek-item-content {
-  background-color: var(--color-secondary);
-
-  :deep(dt) dl > dt {
-    max-width: 150px;
-  }
-
-  &:not(.is-active) {
-    display: none;
-  }
-}
-
-.chevron {
-  display: flex;
-  max-width: 50px;
-  align-items: center;
-  margin-inline-start: auto;
-
-  &::after {
-    transition: transform 250ms;
-  }
+.tekst {
+  max-width: 90ch;
+  white-space: pre-wrap;
 }
 </style>
