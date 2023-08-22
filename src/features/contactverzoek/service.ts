@@ -208,7 +208,7 @@ export function useAfdelingen(search: () => string | undefined) {
 
 export function useGroepen(
   getAfdelingId: () => string | undefined,
-  search: () => string | undefined,
+  search?: () => string | undefined,
 ) {
   const getUrl = () => {
     const afdelingId = getAfdelingId();
@@ -217,7 +217,7 @@ export function useGroepen(
     searchParams.set("ordering", "record__data__naam");
     searchParams.set("data_attrs", `afdelingId__exact__${afdelingId}`);
 
-    const searchStr = search();
+    const searchStr = search?.();
     if (searchStr) {
       searchParams.set("data_icontains", searchStr);
     }

@@ -34,7 +34,14 @@
           @update:model-value="setActive"
         />
       </label>
-      <label class="utrecht-form-label" v-if="form.afdeling">
+      <label
+        class="utrecht-form-label"
+        v-if="
+          form.afdeling &&
+          groepenFirstPage.success &&
+          groepenFirstPage.data.count
+        "
+      >
         Groep
         <groep-search
           class="utrecht-textbox utrecht-textbox--html-input"
@@ -154,6 +161,7 @@ import {
 } from "@utrecht/component-library-vue";
 import AfdelingSearch from "./AfdelingSearch.vue";
 import GroepSearch from "./GroepSearch.vue";
+import { useGroepen } from ".";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -171,6 +179,8 @@ const setActive = () => {
 };
 
 const telEl = ref<HTMLInputElement>();
+
+const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
 
 watch(
   [
