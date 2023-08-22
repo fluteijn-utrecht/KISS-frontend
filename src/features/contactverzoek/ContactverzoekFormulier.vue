@@ -7,7 +7,7 @@
         required
         v-model="form.isMedewerker"
         @change="setActive"
-        name="afdelingOfMedewerker"
+        name="isMedewerker"
         class="utrecht-select utrecht-select--html-select"
       >
         <option :value="undefined">Afdeling</option>
@@ -51,11 +51,11 @@
         class="utrecht-form-label"
         v-if="groepen.success && groepen.data.count"
       >
-        Afdeling
+        Groep
         <select
           v-model="form.groep"
           @change="setActive"
-          name="afdeling"
+          name="groep"
           class="utrecht-select utrecht-select--html-select"
         >
           <option
