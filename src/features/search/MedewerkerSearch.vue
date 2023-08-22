@@ -5,7 +5,6 @@
       placeholder="Zoek een medewerker"
       :model-value="searchText"
       @update:model-value="updateModelValue"
-      :result="result"
       :list-items="datalistItems"
       :exact-match="true"
       :required="true"
@@ -24,14 +23,11 @@ import { debouncedRef } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
 import { useGlobalSearch, useSources } from "./service";
 import type { SearchResult } from "./types";
-import SearchCombobox from "@/components/SearchCombobox.vue";
+import SearchCombobox, {
+  type DatalistItem,
+} from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
 import type { PropType } from "vue";
-
-type DatalistItem = {
-  value: string;
-  description: string;
-};
 
 const props = defineProps({
   modelValue: {

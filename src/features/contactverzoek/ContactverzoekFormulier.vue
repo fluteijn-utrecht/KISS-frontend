@@ -1,5 +1,4 @@
 <template>
-  <SimpleSpinner v-if="afdelingen.loading" />
   <div class="container" @submit.prevent>
     <label class="utrecht-form-label">
       <span class="required">Contactverzoek maken voor</span>
@@ -21,51 +20,28 @@
         class="utrecht-textbox utrecht-textbox--html-input"
         required
         v-model="form.medewerker"
-        :defaultValue="form.medewerker"
         @update:model-value="setActive"
       />
     </label>
 
     <template v-else>
-      <label
-        class="utrecht-form-label"
-        v-if="afdelingen.success && afdelingen.data.count"
-      >
+      <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
-        <select
+        <afdeling-search
+          class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.afdeling"
-          @change="setActive"
-          name="afdeling"
-          class="utrecht-select utrecht-select--html-select"
-        >
-          <option
-            v-for="afdeling in afdelingen.data.page"
-            :key="afdeling.identificatie"
-            :value="afdeling"
-          >
-            {{ afdeling.naam }}
-          </option>
-        </select>
+          :required="true"
+          @update:model-value="setActive"
+        />
       </label>
-      <label
-        class="utrecht-form-label"
-        v-if="groepen.success && groepen.data.count"
-      >
+      <label class="utrecht-form-label" v-if="form.afdeling">
         Groep
-        <select
+        <groep-search
+          class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.groep"
-          @change="setActive"
-          name="groep"
-          class="utrecht-select utrecht-select--html-select"
-        >
-          <option
-            v-for="groep in groepen.data.page"
-            :key="groep.identificatie"
-            :value="groep"
-          >
-            {{ groep.naam }}
-          </option>
-        </select>
+          :afdeling-id="form.afdeling.id"
+          @update:model-value="setActive"
+        />
       </label>
     </template>
 
@@ -167,16 +143,8 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
-</script>
-
 <script lang="ts" setup>
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
-import { useAfdelingen, useGroepen } from "./service";
-import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
@@ -184,12 +152,12 @@ import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
+import AfdelingSearch from "./AfdelingSearch.vue";
+import GroepSearch from "./GroepSearch.vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
-
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
-
 watch(
   () => props.modelValue,
   (v) => {
@@ -197,9 +165,6 @@ watch(
   },
   { immediate: true },
 );
-
-const afdelingen = useAfdelingen();
-const groepen = useGroepen(() => form.value.afdeling?.id);
 
 const setActive = () => {
   form.value.isActive = true;

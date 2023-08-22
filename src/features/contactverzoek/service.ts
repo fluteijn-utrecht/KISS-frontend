@@ -180,10 +180,16 @@ interface Groep {
   afdelingId: string;
 }
 
-export function useAfdelingen() {
-  const searchParams = new URLSearchParams();
-  searchParams.set("ordering", "record__data__naam");
-  const url = "/api/afdelingen/api/v2/objects?" + searchParams;
+export function useAfdelingen(search: () => string | undefined) {
+  const getUrl = () => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("ordering", "record__data__naam");
+    const searchStr = search();
+    if (searchStr) {
+      searchParams.set("data_icontains", searchStr);
+    }
+    return "/api/afdelingen/api/v2/objects?" + searchParams;
+  };
 
   const mapOrganisatie = (x: any) =>
     ({
@@ -197,16 +203,24 @@ export function useAfdelingen() {
       .then(parseJson)
       .then((json) => parsePagination(json, mapOrganisatie));
 
-  return ServiceResult.fromFetcher(url, fetcher);
+  return ServiceResult.fromFetcher(getUrl, fetcher);
 }
 
-export function useGroepen(getAfdelingId: () => string | undefined) {
+export function useGroepen(
+  getAfdelingId: () => string | undefined,
+  search: () => string | undefined,
+) {
   const getUrl = () => {
     const afdelingId = getAfdelingId();
     if (!afdelingId) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("ordering", "record__data__naam");
     searchParams.set("data_attrs", `afdelingId__exact__${afdelingId}`);
+
+    const searchStr = search();
+    if (searchStr) {
+      searchParams.set("data_icontains", searchStr);
+    }
 
     return "/api/groepen/api/v2/objects?" + searchParams;
   };
