@@ -2,7 +2,7 @@
   <SimpleSpinner v-if="afdelingen.loading" />
   <div class="container" @submit.prevent>
     <label class="utrecht-form-label">
-      Contactverzoek maken voor
+      <span class="required">Contactverzoek maken voor</span>
       <select
         required
         v-model="form.isMedewerker"
@@ -31,7 +31,7 @@
         class="utrecht-form-label"
         v-if="afdelingen.success && afdelingen.data.count"
       >
-        Afdeling
+        <span class="required">Afdeling</span>
         <select
           v-model="form.afdeling"
           @change="setActive"
