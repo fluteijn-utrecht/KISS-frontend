@@ -183,7 +183,7 @@ export default {
 <script lang="ts" setup>
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { computed, nextTick, ref, watch } from "vue";
-import { useGlobalSearch, useSources, useSuggestions } from "./service";
+import { useGlobalSearch, useSources } from "./service";
 
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
@@ -201,7 +201,6 @@ import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
 import SearchCombobox from "../../components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
-import { debouncedRef } from "@vueuse/core";
 
 const emit = defineEmits<{
   (
@@ -353,12 +352,7 @@ const handleWebsiteSelected = (website: Website): void => {
   window.open(website.url);
 };
 
-const debounceInput = debouncedRef(
-  computed(() => state.value.searchInput),
-  300,
-);
-
-const suggestions = useSuggestions(debounceInput, sourceParameter);
+const suggestions = mapServiceData(searchResults, (x) => x.suggestions);
 
 const listItems = mapServiceData(suggestions, (items) =>
   items.map((value) => ({ value })),

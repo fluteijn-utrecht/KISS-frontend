@@ -49,6 +49,14 @@ const getSearchUrl = (query: string, sources: Source[]) => {
   return url.toString();
 };
 
+function mapSuggestions(json: any): string[] {
+  if (!Array.isArray(json?.suggest?.suggestions)) return [];
+  const result = [...json.suggest.suggestions].flatMap(({ options }: any) =>
+    options.map(({ text }: any) => (text as string).toLocaleLowerCase()),
+  ) as string[];
+  return [...new Set(result)];
+}
+
 export function useGlobalSearch(
   parameters: Ref<{
     search?: string;
@@ -86,7 +94,9 @@ export function useGlobalSearch(
     return JSON.stringify(query);
   };
 
-  async function fetcher(url: string): Promise<Paginated<SearchResult>> {
+  async function fetcher(
+    url: string,
+  ): Promise<Paginated<SearchResult> & { suggestions: string[] }> {
     const r = await fetchLoggedIn(url, {
       method: "POST",
       headers: {
@@ -106,6 +116,7 @@ export function useGlobalSearch(
       pageSize,
       pageNumber: parameters.value.page || 1,
       totalPages,
+      suggestions: mapSuggestions(json),
     };
   }
 
@@ -144,6 +155,16 @@ function useQueryTemplate() {
         delete query_body.size;
         delete query_body._source;
         query_body.indices_boost = [{ ".ent-search*": 1 }, { "*": 10 }];
+        query_body.suggest = {
+          suggestions: {
+            prefix: "{{query}}",
+            completion: {
+              field: "_completion",
+              skip_duplicates: true,
+              fuzzy: {},
+            },
+          },
+        };
 
         const searchUrl: string = query_string.split(" ").at(-1);
         const indicesStr = searchUrl.split("/")[0];
@@ -228,49 +249,4 @@ export function useSources() {
   }
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
-}
-
-export function useSuggestions(input: Ref<string>, sources: Ref<Source[]>) {
-  function mapSuggestions(json: any): string[] {
-    if (!Array.isArray(json?.suggest?.suggestions)) return [];
-    const result = [...json.suggest.suggestions].flatMap(({ options }: any) =>
-      options.map(({ text }: any) => (text as string).toLocaleLowerCase()),
-    ) as string[];
-    return [...new Set(result)];
-  }
-
-  const getPayload = () =>
-    JSON.stringify({
-      _source: { exclude: ["*"] },
-      suggest: {
-        suggestions: {
-          prefix: input.value,
-          completion: {
-            field: "_completion",
-            skip_duplicates: true,
-            fuzzy: {},
-          },
-        },
-      },
-    });
-
-  const getUrl = () => getSearchUrl(input.value, sources.value);
-  function fetchSuggestions(url: string) {
-    return fetchLoggedIn(url, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: getPayload(),
-    })
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then(mapSuggestions);
-  }
-  function getUniqueId() {
-    return input.value && getPayload() + getUrl();
-  }
-  return ServiceResult.fromFetcher(getUrl, fetchSuggestions, {
-    getUniqueId,
-  });
 }
