@@ -88,9 +88,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  delayFocusNext: {
-    type: Number,
-  },
 });
 
 const generatedLabelId = nanoid();
@@ -136,9 +133,7 @@ function selectItem() {
   if (item) {
     emit("update:modelValue", item.value);
   }
-  setTimeout(() => {
-    focusNextFormItem(inputRef.value);
-  }, props.delayFocusNext);
+  focusNextFormItem(inputRef.value);
 }
 
 const emit = defineEmits(["update:modelValue"]);

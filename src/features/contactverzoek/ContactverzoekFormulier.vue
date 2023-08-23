@@ -35,7 +35,6 @@
           :get-data="useAfdelingen"
           :map-value="(x) => x?.naam"
           :map-description="(x) => x?.identificatie"
-          :delay-focus-next="500"
         />
       </label>
       <label
@@ -54,6 +53,7 @@
           :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
           :map-value="(x) => x?.naam"
           :map-description="(x) => x?.identificatie"
+          ref="groepSearchRef"
         />
       </label>
     </template>
@@ -167,6 +167,8 @@ import {
 } from "@utrecht/component-library-vue";
 import { useAfdelingen, useGroepen } from ".";
 import ServiceDataSearch from "./ServiceDataSearch.vue";
+import { whenever } from "@vueuse/core";
+import { nextTick } from "vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -185,6 +187,15 @@ const setActive = () => {
 const telEl = ref<HTMLInputElement>();
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
+
+const groepSearchRef = ref();
+
+// focus groep search element whenever it appears on the page (so when you select a Afdeling that has Groepen)
+whenever(groepSearchRef, (v) => {
+  nextTick(() => {
+    (v.$el as HTMLElement)?.getElementsByTagName("input")?.[0]?.focus();
+  });
+});
 
 watch(
   [

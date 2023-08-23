@@ -9,7 +9,6 @@
       @update:model-value="updateModelValue"
       :list-items="datalistItems"
       :exact-match="true"
-      :delay-focus-next="delayFocusNext"
     />
   </div>
 </template>
@@ -33,7 +32,6 @@ const props = defineProps<{
   mapValue: (x: T) => string;
   mapDescription: (x: T) => string;
   getData: (x: () => string | undefined) => ServiceData<PaginatedResult<T>>;
-  delayFocusNext?: number;
 }>();
 
 function mapDatalistItem(x: T): DatalistItem & { obj: T } {
