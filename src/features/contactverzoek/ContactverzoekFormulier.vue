@@ -156,6 +156,12 @@
   </div>
 </template>
 
+<script lang="ts">
+export default {
+  inheritAttrs: false,
+};
+</script>
+
 <script lang="ts" setup>
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
