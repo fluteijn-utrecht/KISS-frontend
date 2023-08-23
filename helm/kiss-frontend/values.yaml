@@ -145,6 +145,9 @@ env:
   GROEPEN_BASE_URL: ""
   GROEPEN_TOKEN: ""
   GROEPEN_OBJECT_TYPE_URL: ""
+  ELASTIC_USERNAME: ""
+  ELASTIC_PASSWORD: ""
+  ELASTIC_BASE_URL: ""
 postgresql:
   enabled: true
   service:
