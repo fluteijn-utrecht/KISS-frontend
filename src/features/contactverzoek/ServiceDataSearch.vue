@@ -5,7 +5,7 @@
       :id="id"
       :required="required"
       placeholder="Zoek een afdeling"
-      :model-value="searchText"
+      v-model="searchText"
       @update:model-value="updateModelValue"
       :list-items="datalistItems"
       :exact-match="true"
@@ -49,7 +49,7 @@ const emit = defineEmits<{
 const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
 
-function updateModelValue(v: any) {
+function updateModelValue(v: string) {
   searchText.value = v;
   if (data.success) {
     const match = data.data.page.find((x) => props.mapValue(x) === v);

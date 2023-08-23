@@ -136,7 +136,7 @@ function selectItem() {
   focusNextFormItem(inputRef.value);
 }
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits<{ "update:modelValue": [string] }>();
 
 const inputRef = ref();
 const ulref = ref();
