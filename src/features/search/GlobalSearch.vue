@@ -352,10 +352,8 @@ const handleWebsiteSelected = (website: Website): void => {
   window.open(website.url);
 };
 
-const suggestions = mapServiceData(searchResults, (x) => x.suggestions);
-
-const listItems = mapServiceData(suggestions, (items) =>
-  items.map((value) => ({ value })),
+const listItems = mapServiceData(searchResults, (result) =>
+  result.suggestions.map((value) => ({ value })),
 );
 </script>
 

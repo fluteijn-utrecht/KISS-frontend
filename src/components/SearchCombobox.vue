@@ -193,7 +193,7 @@ watch(
     );
     workingList.value = r.data;
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
 
 function isInViewport(el: HTMLElement) {
