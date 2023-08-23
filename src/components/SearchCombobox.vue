@@ -136,7 +136,7 @@ function selectItem() {
   focusNextFormItem(inputRef.value);
 }
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits<{ "update:modelValue": [string] }>();
 
 const inputRef = ref();
 const ulref = ref();
@@ -151,14 +151,13 @@ const isScrolling = ref(false);
 const hasFocus = useFocus(inputRef);
 
 const showList = computed(
-  () =>
-    !!workingList.value.length && hasFocus.focused.value && !!props.modelValue
+  () => !!workingList.value.length && hasFocus.focused.value,
 );
 
 watch(workingList.value, (r) => {
   activeIndex.value = Math.max(
     minIndex.value,
-    Math.min(activeIndex.value, r.length - 1)
+    Math.min(activeIndex.value, r.length - 1),
   );
 });
 
@@ -169,9 +168,9 @@ const matchingResult = computed(() => {
 });
 
 const validity = computed(() => {
-  if (!props.modelValue && props.required) return "Vul dit veld in.";
+  if (!props.modelValue && props.required) return "";
   if (!matchingResult.value && !!props.modelValue && props.exactMatch)
-    return "Kies een optie uit de lijst";
+    return "Kies een optie uit de lijst.";
   return "";
 });
 
@@ -181,7 +180,7 @@ watch([inputRef, validity], ([r, v]) => {
 });
 
 watch(
-  props.listItems,
+  () => props.listItems,
   (r) => {
     if (r.loading) return;
     if (!r.success) {
@@ -190,11 +189,11 @@ watch(
     }
     activeIndex.value = Math.max(
       minIndex.value,
-      Math.min(activeIndex.value, r.data.length - 1)
+      Math.min(activeIndex.value, r.data.length - 1),
     );
     workingList.value = r.data;
   },
-  { immediate: true }
+  { immediate: true, deep: true },
 );
 
 function isInViewport(el: HTMLElement) {
