@@ -29,6 +29,7 @@
         <span class="required">Afdeling</span>
         <service-data-search
           class="utrecht-textbox utrecht-textbox--html-input"
+          :required="true"
           v-model="form.afdeling"
           @update:model-value="setActive"
           :get-data="useAfdelingen"
