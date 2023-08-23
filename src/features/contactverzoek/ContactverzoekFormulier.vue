@@ -27,11 +27,14 @@
     <template v-else>
       <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
-        <afdeling-search
+        <service-data-search
           class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.afdeling"
-          :required="true"
           @update:model-value="setActive"
+          :get-data="useAfdelingen"
+          :map-value="(x) => x?.naam"
+          :map-description="(x) => x?.identificatie"
+          :delay-focus-next="500"
         />
       </label>
       <label
@@ -43,11 +46,13 @@
         "
       >
         Groep
-        <groep-search
+        <service-data-search
           class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.groep"
-          :afdeling-id="form.afdeling.id"
           @update:model-value="setActive"
+          :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
+          :map-value="(x) => x?.naam"
+          :map-description="(x) => x?.identificatie"
         />
       </label>
     </template>
@@ -159,9 +164,8 @@ import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
-import AfdelingSearch from "./AfdelingSearch.vue";
-import GroepSearch from "./GroepSearch.vue";
-import { useGroepen } from ".";
+import { useAfdelingen, useGroepen } from ".";
+import ServiceDataSearch from "./ServiceDataSearch.vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -173,7 +177,6 @@ watch(
   },
   { immediate: true },
 );
-
 const setActive = () => {
   form.value.isActive = true;
 };
