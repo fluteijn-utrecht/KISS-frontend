@@ -91,6 +91,21 @@ spec:
               secretKeyRef:
                 name: kiss-secrets
                 key: ENTERPRISE_SEARCH_PRIVATE_API_KEY
+          - name: ELASTIC_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: kiss-secrets
+                key: ELASTIC_USERNAME
+          - name: ELASTIC_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kiss-secrets
+                key: ELASTIC_PASSWORD
+          - name: ELASTIC_BASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: kiss-secrets
+                key: ELASTIC_BASE_URL
           - name: ZAKEN_API_KEY
             valueFrom:
               secretKeyRef:
