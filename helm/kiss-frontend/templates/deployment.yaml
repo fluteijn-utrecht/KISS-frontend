@@ -86,6 +86,11 @@ spec:
               secretKeyRef:
                 name: kiss-secrets
                 key: ENTERPRISE_SEARCH_PUBLIC_API_KEY
+          - name: ENTERPRISE_SEARCH_PRIVATE_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: kiss-secrets
+                key: ENTERPRISE_SEARCH_PRIVATE_API_KEY
           - name: ZAKEN_API_KEY
             valueFrom:
               secretKeyRef:
