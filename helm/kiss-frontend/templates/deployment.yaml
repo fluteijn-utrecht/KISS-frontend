@@ -174,6 +174,18 @@ spec:
             value: {{ .Values.env.INTERNE_TAAK_TOKEN | quote }}
           - name: INTERNE_TAAK_OBJECT_TYPE_URL
             value: {{ .Values.env.INTERNE_TAAK_OBJECT_TYPE_URL | quote }}
+          - name: AFDELINGEN_BASE_URL
+            value: {{ .Values.env.AFDELINGEN_BASE_URL | quote }}
+          - name: AFDELINGEN_TOKEN
+            value: {{ .Values.env.AFDELINGEN_TOKEN | quote }}
+          - name: AFDELINGEN_OBJECT_TYPE_URL
+            value: {{ .Values.env.AFDELINGEN_OBJECT_TYPE_URL | quote }}
+          - name: GROEPEN_BASE_URL
+            value: {{ .Values.env.GROEPEN_BASE_URL | quote }}
+          - name: GROEPEN_TOKEN
+            value: {{ .Values.env.GROEPEN_TOKEN | quote }}
+          - name: GROEPEN_OBJECT_TYPE_URL
+            value: {{ .Values.env.GROEPEN_OBJECT_TYPE_URL | quote }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
