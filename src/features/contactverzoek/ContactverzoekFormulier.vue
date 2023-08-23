@@ -1,37 +1,62 @@
 <template>
-  <SimpleSpinner v-if="afdelingen.loading" />
   <div class="container" @submit.prevent>
-    <!-- <label
-      class="utrecht-form-label"
-      v-if="afdelingen.success && afdelingen.data.length"
-    >
-      Afdeling
+    <label class="utrecht-form-label">
+      <span class="required">Contactverzoek maken voor</span>
       <select
-        v-model="form.afdeling"
+        required
+        v-model="form.isMedewerker"
         @change="setActive"
-        name="afdeling"
+        name="isMedewerker"
         class="utrecht-select utrecht-select--html-select"
       >
-        <option
-          v-for="afdeling in afdelingen.data"
-          :key="afdeling.id"
-          :value="afdeling.name"
-        >
-          {{ afdeling.name }}
-        </option>
+        <option :value="undefined">Afdeling</option>
+        <option :value="true">Medewerker</option>
       </select>
-    </label> -->
+    </label>
 
-    <label class="utrecht-form-label">
+    <label class="utrecht-form-label" v-if="form.isMedewerker">
       <span class="required">Contactverzoek versturen naar</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
         required
         v-model="form.medewerker"
-        :defaultValue="form.medewerker"
         @update:model-value="setActive"
       />
     </label>
+
+    <template v-else>
+      <label class="utrecht-form-label">
+        <span class="required">Afdeling</span>
+        <service-data-search
+          class="utrecht-textbox utrecht-textbox--html-input"
+          :required="true"
+          v-model="form.afdeling"
+          @update:model-value="setActive"
+          :get-data="useAfdelingen"
+          :map-value="(x) => x?.naam"
+          :map-description="(x) => x?.identificatie"
+        />
+      </label>
+      <label
+        class="utrecht-form-label"
+        v-if="
+          form.afdeling &&
+          groepenFirstPage.success &&
+          groepenFirstPage.data.count
+        "
+      >
+        Groep
+        <service-data-search
+          class="utrecht-textbox utrecht-textbox--html-input"
+          v-model="form.groep"
+          @update:model-value="setActive"
+          :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
+          :map-value="(x) => x?.naam"
+          :map-description="(x) => x?.identificatie"
+          ref="groepSearchRef"
+        />
+      </label>
+    </template>
 
     <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
@@ -139,8 +164,6 @@ export default {
 
 <script lang="ts" setup>
 import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
-import { useAfdelingen } from "./service";
-import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
@@ -148,27 +171,37 @@ import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
+import { useAfdelingen, useGroepen } from ".";
+import ServiceDataSearch from "./ServiceDataSearch.vue";
+import { whenever } from "@vueuse/core";
+import { nextTick } from "vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
-
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
-
 watch(
   () => props.modelValue,
   (v) => {
     form.value = v;
   },
-  { immediate: true }
+  { immediate: true },
 );
-
-const afdelingen = useAfdelingen();
-
 const setActive = () => {
   form.value.isActive = true;
 };
 
 const telEl = ref<HTMLInputElement>();
+
+const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
+
+const groepSearchRef = ref();
+
+// focus groep search element whenever it appears on the page (so when you select a Afdeling that has Groepen)
+whenever(groepSearchRef, (v) => {
+  nextTick(() => {
+    (v.$el as HTMLElement)?.getElementsByTagName("input")?.[0]?.focus();
+  });
+});
 
 watch(
   [
@@ -181,9 +214,16 @@ watch(
   ([el, hasContact]) => {
     if (!el) return;
     el.setCustomValidity(
-      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in"
+      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in",
     );
-  }
+  },
+);
+
+watch(
+  () => form.value.afdeling,
+  () => {
+    form.value.groep = undefined;
+  },
 );
 </script>
 
