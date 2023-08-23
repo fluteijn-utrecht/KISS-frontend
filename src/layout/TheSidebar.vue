@@ -143,10 +143,7 @@ aside {
   }
 
   :deep([role="tabpanel"]) {
-    padding: var(--spacing-default);
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+    padding: var(--spacing-default);   
 
     textarea::placeholder {
       font-style: italic;
@@ -155,12 +152,6 @@ aside {
   }
 
   :deep([role="tab"]) {
-    margin: 0;
-    padding: var(--spacing-default);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     &[aria-selected="true"] {
       color: var(--color-headings);
     }
