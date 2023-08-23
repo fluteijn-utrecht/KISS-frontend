@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
+using Kiss.Bff.Afdelingen;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
+using Kiss.Bff.Groepen;
 using Kiss.Bff.InterneTaak;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
@@ -92,6 +94,8 @@ try
 
     builder.Services.AddElasticsearch(builder.Configuration["ELASTIC_BASE_URL"], builder.Configuration["ELASTIC_USERNAME"], builder.Configuration["ELASTIC_PASSWORD"]);
     builder.Services.AddInterneTaakProxy(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"], builder.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"]);
+    builder.Services.AddAfdelingenProxy(builder.Configuration["AFDELINGEN_BASE_URL"], builder.Configuration["AFDELINGEN_TOKEN"], builder.Configuration["AFDELINGEN_OBJECT_TYPE_URL"]);
+    builder.Services.AddGroepenProxy(builder.Configuration["GROEPEN_BASE_URL"], builder.Configuration["GROEPEN_TOKEN"], builder.Configuration["GROEPEN_OBJECT_TYPE_URL"]);
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
