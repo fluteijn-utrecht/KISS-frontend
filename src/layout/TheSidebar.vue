@@ -22,7 +22,7 @@
         </div>
         <div class="notitie-tabs">
           <tab-list v-model="state.currentNotitieTab">
-            <tab-list-item :label="NotitieTabs.Regulier">
+            <tab-list-item :label="NotitieTabs.Regulier" class="notitie-tab">
               <template #tab="{ label }">
                 <span :title="label">Notitieblok</span> 
               </template>
@@ -37,7 +37,7 @@
                 placeholder="Schrijf een notitie…"
               />
             </tab-list-item>
-            <tab-list-item :label="NotitieTabs.Contactverzoek">
+            <tab-list-item :label="NotitieTabs.Contactverzoek" class="contactverzoek-tab">
               <template #tab="{ label }">
                 <span :title="label" >Contactverzoek</span>
               </template>
@@ -53,13 +53,17 @@
             </tab-list-item>
           </tab-list>
         </div>
+   
 
         <menu class="finisher">
           <li>
             <contactmoment-finisher />
           </li>
         </menu>
+
+
       </section>
+      
     </template>
   </aside>
 </template>
@@ -118,14 +122,21 @@ aside {
     outline: none;
     flex: 1;
     resize: none;
+    
   }
 
   [role="tablist"] {
     height: 3rem;
   }
+
+
+  #cm-notitieblok{
+    height: 100%;
+  }
 }
 
 .notitie-tabs {
+  overflow: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -142,8 +153,17 @@ aside {
     background-color: var(--color-primary);
   }
 
+
+
+ 
+
+  :deep(.contactverzoek-tab[role="tabpanel"]){
+    overflow-y: auto;
+  }
+
   :deep([role="tabpanel"]) {
     padding: var(--spacing-default);   
+    min-height: 90%;
 
     textarea::placeholder {
       font-style: italic;
@@ -179,11 +199,12 @@ menu.starter {
 }
 
 menu.finisher {
-  position: fixed;
-  bottom: var(--spacing-large);
+  margin-block: var(--spacing-large);
+
 }
 
 .within-moment {
+  overflow: auto;
   display: flex;
   flex-direction: column;
   flex: 1;
