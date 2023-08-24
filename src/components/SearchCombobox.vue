@@ -3,6 +3,7 @@
     v-bind="$attrs"
     :id="inputId"
     :required="required"
+    type="search"
     autocomplete="off"
     role="combobox"
     :aria-expanded="showList ? 'true' : 'false'"
