@@ -24,9 +24,9 @@
           <tab-list v-model="state.currentNotitieTab">
             <tab-list-item :label="NotitieTabs.Regulier" class="notitie-tab">
               <template #tab="{ label }">
-                <span :title="label">Notitieblok</span> 
+                <span :title="label">Notitieblok</span>
               </template>
-             
+
               <textarea
                 aria-labelledby="notitieblok"
                 id="cm-notitieblok"
@@ -37,9 +37,12 @@
                 placeholder="Schrijf een notitie…"
               />
             </tab-list-item>
-            <tab-list-item :label="NotitieTabs.Contactverzoek" class="contactverzoek-tab">
+            <tab-list-item
+              :label="NotitieTabs.Contactverzoek"
+              class="contactverzoek-tab"
+            >
               <template #tab="{ label }">
-                <span :title="label" >Contactverzoek</span>
+                <span :title="label">Contactverzoek</span>
               </template>
               <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
               <form @submit.prevent>
@@ -53,17 +56,13 @@
             </tab-list-item>
           </tab-list>
         </div>
-   
 
         <menu class="finisher">
           <li>
             <contactmoment-finisher />
           </li>
         </menu>
-
-
       </section>
-      
     </template>
   </aside>
 </template>
@@ -104,7 +103,7 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  },
+  }
 );
 </script>
 
@@ -122,15 +121,13 @@ aside {
     outline: none;
     flex: 1;
     resize: none;
-    
   }
 
   [role="tablist"] {
     height: 3rem;
   }
 
-
-  #cm-notitieblok{
+  #cm-notitieblok {
     height: 100%;
   }
 }
@@ -153,11 +150,7 @@ aside {
     background-color: var(--color-primary);
   }
 
-
-
- 
-
-  :deep(.contactverzoek-tab[role="tabpanel"]){
+  :deep(.contactverzoek-tab[role="tabpanel"]) {
     overflow-y: auto;
   }
 
@@ -166,15 +159,12 @@ aside {
     flex-direction: column;
     flex: 1;
     color: var(--utrecht-form-label-color);
- 
-    padding: var(--spacing-default);   
+    padding: var(--spacing-default);
     min-height: 90%;
 
     textarea::placeholder {
       font-style: italic;
     }
-    
- 
   }
 
   :deep([role="tab"]) {
@@ -206,7 +196,6 @@ menu.starter {
 
 menu.finisher {
   margin-block: var(--spacing-large);
-
 }
 
 .within-moment {
@@ -236,8 +225,6 @@ menu.finisher {
       margin-block-start: var(--spacing-large);
       margin-block-end: var(--spacing-small);
     }
-
- 
   }
 }
 </style>
