@@ -57,7 +57,6 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { computed, ref, watch } from "vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import ZaakToelichting from "@/features/zaaksysteem/components/ZaakToelichting.vue";
 import ZaakDocumenten from "@/features/zaaksysteem/components/ZaakDocumenten.vue";
 import ZaakAlgemeen from "@/features/zaaksysteem/components/ZaakAlgemeen.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
