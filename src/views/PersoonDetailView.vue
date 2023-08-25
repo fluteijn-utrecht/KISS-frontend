@@ -20,7 +20,7 @@
 
       <tab-list-data-item label="BRP gegevens" :data="persoon">
         <template #success="{ data }">
-          <brp-gegevens :persoon="data" />
+          <brp-gegevens v-if="data" :persoon="data" />
         </template>
       </tab-list-data-item>
 
