@@ -104,7 +104,7 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  }
+  },
 );
 </script>
 
@@ -166,6 +166,7 @@ aside {
     flex-direction: column;
     flex: 1;
     color: var(--utrecht-form-label-color);
+ 
     padding: var(--spacing-default);   
     min-height: 90%;
 
@@ -173,6 +174,7 @@ aside {
       font-style: italic;
     }
     
+ 
   }
 
   :deep([role="tab"]) {
