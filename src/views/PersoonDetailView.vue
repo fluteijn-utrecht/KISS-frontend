@@ -24,7 +24,42 @@
         </template>
       </tab-list-data-item>
 
-      <tab-list-data-item label="Contactverzoeken" :data="contactverzoeken" :disabled="(c) => !c.count">
+      <tab-list-data-item
+        label="Contactmomenten"
+        :data="contactmomenten"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+
+          <contactmomenten-overzicht :contactmomenten="data.page">
+            <template v-slot:object="{ object }">
+              <zaak-preview :zaakurl="object.object"></zaak-preview>
+            </template>
+          </contactmomenten-overzicht>
+        </template>
+      </tab-list-data-item>
+
+      <tab-list-data-item
+        label="Zaken"
+        :data="zaken"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Zaken </utrecht-heading>
+
+          <zaken-overzicht
+            :zaken="data.page"
+            :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+          />
+        </template>
+      </tab-list-data-item>
+
+      <tab-list-data-item
+        label="Contactverzoeken"
+        :data="contactverzoeken"
+        :disabled="(c) => !c.count"
+      >
         <template #success="{ data }">
           <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
@@ -39,32 +74,7 @@
           </contactverzoeken-overzicht>
         </template>
       </tab-list-data-item>
-
-      <tab-list-data-item label="Zaken" :data="zaken"  :disabled="(c) => !c.count">
-        <template #success="{ data }">
-          <utrecht-heading :level="2"> Zaken </utrecht-heading>
-
-          <zaken-overzicht
-            :zaken="data.page"
-            :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-          />
-        </template>
-      </tab-list-data-item>
-
-      <tab-list-data-item label="Contactmomenten" :data="contactmomenten" :disabled="(c) => !c.count">
-        <template #success="{ data }">
-          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-
-          <contactmomenten-overzicht :contactmomenten="data.page">
-            <template v-slot:object="{ object }">
-              <zaak-preview :zaakurl="object.object"></zaak-preview>
-            </template>
-          </contactmomenten-overzicht>
-        </template>
-      </tab-list-data-item>
     </tab-list>
-
-
   </section>
 </template>
 
@@ -133,10 +143,7 @@ watch(
 </script>
 
 <style scoped lang="scss">
- 
-
 section > * {
   margin-block-end: var(--spacing-large);
 }
- 
 </style>

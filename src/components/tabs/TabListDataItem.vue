@@ -3,7 +3,7 @@
     <template #tab="{ isActive }">
       <div class="data-tab" :data-active="isActive">
         <span :class="data.error ? 'alert icon-after' : ''">{{ label }}</span>
-        <simple-spinner class="small-spinner" v-if="data.loading" />
+        <simple-spinner class="small-spinner" v-if="data.loading " />
       </div>
     </template>
     <template #default="{ isActive }">
@@ -39,17 +39,15 @@ const disabled = computed(
 <style lang="scss" scoped>
 .data-tab {
   position: relative;
-
-  > span {
     display: flex;
-    gap: 1ch;
-  }
+    gap: var(--spacing-default);
+
 }
 
 .small-spinner {
   --spinner-size: 1em;
 
-  position: absolute;
+  margin:0;
   inset: 0;
   translate: 0 50%;
 }

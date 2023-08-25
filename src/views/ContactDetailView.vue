@@ -18,7 +18,28 @@
         </template>
       </tab-list-data-item>
 
+      
       <tab-list-data-item
+        label="Contactmomenten"
+        :data="contactmomenten"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+          <contactmomenten-overzicht :contactmomenten="data.page">
+          </contactmomenten-overzicht>
+          <!-- 
+          <pagination
+            class="pagination"
+            :pagination="contactmomenten.data"
+            @navigate="onContactmomentenNavigate"
+          /> -->
+        </template>
+      </tab-list-data-item>
+    </tab-list>
+
+
+    <tab-list-data-item
         label="Contactverzoeken"
         :data="contactverzoeken"
         :disabled="(c) => !c.count"
@@ -38,24 +59,6 @@
         </template>
       </tab-list-data-item>
 
-      <tab-list-data-item
-        label="Contactmomenten"
-        :data="contactmomenten"
-        :disabled="(c) => !c.count"
-      >
-        <template #success="{ data }">
-          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-          <contactmomenten-overzicht :contactmomenten="data.page">
-          </contactmomenten-overzicht>
-          <!-- 
-          <pagination
-            class="pagination"
-            :pagination="contactmomenten.data"
-            @navigate="onContactmomentenNavigate"
-          /> -->
-        </template>
-      </tab-list-data-item>
-    </tab-list>
   </section>
 </template>
 

@@ -23,6 +23,10 @@
         <span class="label">Zaaknummer</span>
         <span class="value">{{ zaak.identificatie }}</span>
       </li>
+      <li>
+        <span class="label">Toelichting</span>
+        <span class="value">{{ zaak.toelichting }}</span>
+      </li>
     </ul>
 
     <ul>

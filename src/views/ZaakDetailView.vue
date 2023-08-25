@@ -46,9 +46,7 @@
         </tab-list-data-item>
       </tab-list>
 
-      <div class="toelichting">
-        <zaak-toelichting :zaak="zaak.data" @success="onNotitieUpdate" />
-      </div>
+   
     </section>
   </article>
 </template>
