@@ -14,9 +14,10 @@
     @input="onInput"
     :value="modelValue"
     ref="inputRef"
+    :disabled="disabled"
     @keydown.down.prevent="nextIndex"
     @keydown.up.prevent="previousIndex"
-    @keydown.enter="selectItem"
+    @keydown.enter="selectItem(true)"
     @mouseenter="setMinIndex"
   />
   <simple-spinner
@@ -30,7 +31,7 @@
     :id="listboxId"
     :aria-labelledby="labelId"
     ref="ulref"
-    @mousedown="selectItem"
+    @mousedown="selectItem()"
   >
     <li
       v-for="(r, i) in workingList"
@@ -88,6 +89,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const generatedLabelId = nanoid();
@@ -128,20 +133,28 @@ function setMinIndex() {
   activeIndex.value = minIndex.value;
 }
 
-function selectItem() {
+function selectItem(focusNext = false) {
   const item = workingList.value[activeIndex.value];
   if (item) {
     emit("update:modelValue", item.value);
   }
-  focusNextFormItem(inputRef.value);
+  if (focusNext && inputRef.value) {
+    focusNextFormItem(inputRef.value);
+  } else {
+    forceclosed.value = true;
+    setTimeout(() => {
+      inputRef.value?.focus?.();
+    });
+  }
 }
 
 const emit = defineEmits<{ "update:modelValue": [string] }>();
 
-const inputRef = ref();
+const inputRef = ref<HTMLInputElement>();
 const ulref = ref();
 
 function onInput(e: Event) {
+  forceclosed.value = false;
   if (!(e.currentTarget instanceof HTMLInputElement)) return;
   emit("update:modelValue", e.currentTarget.value);
 }
@@ -149,9 +162,14 @@ function onInput(e: Event) {
 const isScrolling = ref(false);
 
 const hasFocus = useFocus(inputRef);
+const forceclosed = ref(false);
 
 const showList = computed(
-  () => !!workingList.value.length && hasFocus.focused.value,
+  () =>
+    !props.disabled &&
+    !forceclosed.value &&
+    !!workingList.value.length &&
+    hasFocus.focused.value,
 );
 
 watch(workingList.value, (r) => {

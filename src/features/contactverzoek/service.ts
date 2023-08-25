@@ -183,7 +183,7 @@ export function useAfdelingen(search: () => string | undefined) {
     searchParams.set("ordering", "record__data__naam");
     const searchStr = search();
     if (searchStr) {
-      searchParams.set("data_icontains", searchStr);
+      searchParams.set("data_attrs", `naam__icontains__${searchStr}`);
     }
     return "/api/afdelingen/api/v2/objects?" + searchParams;
   };
@@ -216,7 +216,7 @@ export function useGroepen(
 
     const searchStr = search?.();
     if (searchStr) {
-      searchParams.set("data_icontains", searchStr);
+      searchParams.set("data_attrs", `naam__icontains__${searchStr}`);
     }
 
     return "/api/groepen/api/v2/objects?" + searchParams;

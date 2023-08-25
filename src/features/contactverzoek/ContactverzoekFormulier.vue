@@ -1,18 +1,30 @@
 <template>
   <div class="container" @submit.prevent>
-    <label class="utrecht-form-label">
-      <span class="required">Contactverzoek maken voor</span>
-      <select
-        required
-        v-model="form.isMedewerker"
-        @change="setActive"
-        name="isMedewerker"
-        class="utrecht-select utrecht-select--html-select"
+    <form-fieldset class="radio-group">
+      <form-fieldset-legend class="required"
+        >Contactverzoek maken voor</form-fieldset-legend
       >
-        <option :value="undefined">Afdeling</option>
-        <option :value="true">Medewerker</option>
-      </select>
-    </label>
+      <label>
+        <input
+          type="radio"
+          name="isMedewerker"
+          :value="undefined"
+          class="utrecht-radio-button utrecht-radio-button--html-input"
+          v-model="form.isMedewerker"
+        />
+        Afdeling
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="isMedewerker"
+          :value="true"
+          class="utrecht-radio-button utrecht-radio-button--html-input"
+          v-model="form.isMedewerker"
+        />
+        Medewerker
+      </label>
+    </form-fieldset>
 
     <label class="utrecht-form-label" v-if="form.isMedewerker">
       <span class="required">Contactverzoek versturen naar</span>
@@ -31,31 +43,46 @@
           class="utrecht-textbox utrecht-textbox--html-input"
           :required="true"
           v-model="form.afdeling"
+          placeholder="Zoek een afdeling"
           @update:model-value="setActive"
           :get-data="useAfdelingen"
           :map-value="(x) => x?.naam"
+          @keydown.enter="setEnterPressed"
           :map-description="(x) => x?.identificatie"
         />
       </label>
-      <label
-        class="utrecht-form-label"
-        v-if="
-          form.afdeling &&
-          groepenFirstPage.success &&
-          groepenFirstPage.data.count
-        "
-      >
-        Groep
-        <service-data-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          v-model="form.groep"
-          @update:model-value="setActive"
-          :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
-          :map-value="(x) => x?.naam"
-          :map-description="(x) => x?.identificatie"
-          ref="groepSearchRef"
-        />
-      </label>
+
+      <service-data-wrapper :data="groepenFirstPage">
+        <template #init>
+          <label class="disabled utrecht-form-label">
+            Groep
+            <input
+              type="text"
+              class="utrecht-textbox utrecht-textbox--html-input"
+              disabled
+              placeholder="Kies eerst een afdeling"
+            />
+          </label>
+        </template>
+        <template #success="{ data }">
+          <label :class="['utrecht-form-label', { disabled: !data.count }]">
+            Groep
+            <service-data-search
+              class="utrecht-textbox utrecht-textbox--html-input"
+              v-model="form.groep"
+              :placeholder="
+                !data.count ? 'Geen groepen gevonden' : 'Zoek een groep'
+              "
+              @update:model-value="setActive"
+              :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
+              :map-value="(x) => x?.naam"
+              :map-description="(x) => x?.identificatie"
+              ref="groepSearchRef"
+              :disabled="!data.count"
+            />
+          </label>
+        </template>
+      </service-data-wrapper>
     </template>
 
     <label class="utrecht-form-label notitieveld">
@@ -171,10 +198,12 @@ import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
+import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
 import { useAfdelingen, useGroepen } from ".";
 import ServiceDataSearch from "./ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
+import { computed } from "vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -196,8 +225,15 @@ const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
 
 const groepSearchRef = ref();
 
+const enterPressed = ref(false);
+const setEnterPressed = () => {
+  enterPressed.value = true;
+};
+
 // focus groep search element whenever it appears on the page (so when you select a Afdeling that has Groepen)
 whenever(groepSearchRef, (v) => {
+  if (!enterPressed.value) return;
+  enterPressed.value = false;
   nextTick(() => {
     (v.$el as HTMLElement)?.getElementsByTagName("input")?.[0]?.focus();
   });
@@ -241,5 +277,9 @@ textarea {
 fieldset {
   display: grid;
   gap: var(--spacing-extrasmall);
+}
+
+.radio-group > legend {
+  font-size: inherit;
 }
 </style>
