@@ -62,8 +62,6 @@ async function startNieuweVraag() {
   flex-wrap: wrap;
   gap: var(--spacing-small);
 
-  //padding: var(--spacing-small);
-
   button {
     color: var(--color-white);
 
