@@ -123,8 +123,6 @@ fieldset {
   input {
     accent-color: black;
     transform: scale(1.25) translateY(10%);
-
-    // margin: 10px;
   }
 }
 </style>
