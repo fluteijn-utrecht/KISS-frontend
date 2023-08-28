@@ -35,7 +35,7 @@ function mapResult(obj: any): SearchResult {
 
 const globalSearchBaseUri = "/api/elasticsearch";
 
-const pageSize = 20;
+const pageSize = 10;
 
 const getSearchUrl = (query: string, sources: Source[]) => {
   if (!query) return "";
