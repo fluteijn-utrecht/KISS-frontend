@@ -117,7 +117,7 @@
                   :heading-level="2"
                 />
                 <kennisartikel-detail
-                  v-else-if="source === 'Kennisartikel'"
+                  v-else-if="source === 'Kennisbank'"
                   :kennisartikel-raw="jsonObject"
                   :title="title"
                   :heading-level="2"
