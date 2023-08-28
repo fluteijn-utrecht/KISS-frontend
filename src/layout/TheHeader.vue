@@ -78,7 +78,11 @@
               </router-link>
             </li>
             <li class="log-out">
-              <a :href="logoutUrl" @click="onLogout" @keydown.enter="onLogout"
+              <a
+                :href="logoutUrl"
+                @click="onLogout"
+                @keydown.enter="onLogout"
+                class="icon-before exit"
                 >Uitloggen</a
               >
             </li>

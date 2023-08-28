@@ -142,3 +142,8 @@
 .icon-after.sort-ascending::after {
   rotate: 180deg;
 }
+
+.icon-before.exit::before,
+.icon-after.exit::after {
+  mask-image: url("@/assets/icons/exit.svg");
+}
