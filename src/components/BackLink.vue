@@ -1,16 +1,21 @@
 <template>
-  <router-link v-if="back" :to="back" class="icon-before chevron-left">
+  <a
+    v-if="back"
+    :href="back"
+    class="icon-before chevron-left"
+    @click.prevent.stop="$router.back()"
+  >
     <slot>Terug</slot>
-  </router-link>
+  </a>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
-const router = useRouter();
+const route = useRoute();
 const back = computed(() => {
-  const { back } = router.options.history.state;
+  const { back } = route.meta;
   return typeof back === "string" && back;
 });
 </script>

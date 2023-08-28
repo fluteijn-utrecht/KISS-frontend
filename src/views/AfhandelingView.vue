@@ -13,12 +13,12 @@
     confirm-message="Ja"
   />
 
+  <back-link />
+
   <simple-spinner v-if="saving || gespreksresultaten.loading" />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
-
-    <a @click="$router.back()" href="#">{{ "< Terug" }}</a>
 
     <application-message
       v-if="errorMessage != ''"
@@ -434,6 +434,7 @@ import {
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
+import BackLink from "@/components/BackLink.vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);

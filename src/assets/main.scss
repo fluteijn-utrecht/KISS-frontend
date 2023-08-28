@@ -251,7 +251,7 @@ ul.overview {
 
   li:nth-child(odd) summary,
   li:nth-child(odd) details,
-  tbody > tr:nth-child(even) {
+  tbody > tr:nth-child(odd) {
     background-color: var(--color-secondary);
   }
 
