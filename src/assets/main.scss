@@ -1,8 +1,7 @@
 @import "./icons/icons";
 
 html,
-body,
-.app-layout {
+body {
   height: 100%;
   line-height: var(--line-height-default);
 }
@@ -16,12 +15,15 @@ body {
   display: grid;
   grid-template: "aside header" auto "nothing main" 1fr / 21.25rem 1fr;
   height: 100vh;
+  overflow: auto;
 
   &.contactmoment-loopt {
     grid-template-areas: "aside  header" "aside   main";
 
     > aside {
       height: 100vh;
+
+      // min-height: 20rem;
     }
   }
 
@@ -40,13 +42,15 @@ body {
 
 .app-layout > aside {
   grid-area: aside;
+  position: sticky;
+  inset-block-end: 0;
+  inset-block-start: 0;
 }
 
 .app-layout > main {
   grid-area: main;
   padding: var(--spacing-large);
   padding-inline-end: var(--container-padding);
-  overflow-y: auto;
 }
 
 .utrecht-select {
