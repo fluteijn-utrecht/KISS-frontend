@@ -136,9 +136,9 @@ nav {
 nav ul {
   width: 100%;
   background-color: var(--color-primary);
-  gap: var(--spacing-default);
   display: flex;
   flex-wrap: wrap;
+  gap: var(--spacing-default);
   padding-block: var(--spacing-small);
   list-style: none;
 
