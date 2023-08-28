@@ -73,7 +73,7 @@ const moments = computed(() =>
         closeDetails();
       },
     };
-  })
+  }),
 );
 
 const detailsEl = ref();
@@ -106,6 +106,7 @@ menu {
   inline-size: 100%;
   border-radius: var(--radius-default);
   box-shadow: var(--shadow-default);
+  justify-content: flex-start;
 
   li {
     border-block-end: 1px solid black;
@@ -133,12 +134,11 @@ menu {
   }
 
   .current-moment {
-    color: var(--color-accent);
     font-style: italic;
   }
 
   .name {
-    font-weight: bold;
+    font-weight: 400;
   }
 
   .contact,

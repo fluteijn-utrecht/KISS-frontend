@@ -5,13 +5,7 @@
         :class="{ contactmomentLoopt: contactmomentStore.contactmomentLoopt }"
       >
         <global-search class="search-bar" v-if="route.meta.showSearch" />
-        <a
-          :href="logoutUrl"
-          @click="onLogout"
-          @keydown.enter="onLogout"
-          class="log-out"
-          >Uitloggen</a
-        >
+
         <nav v-if="route.meta.showNav">
           <ul>
             <li v-if="contactmomentStore.contactmomentLoopt">
@@ -61,10 +55,15 @@
                 ><span>Links</span></router-link
               >
             </li>
-            <li v-if="isRedacteur">
+            <li v-if="isRedacteur && !contactmomentStore.contactmomentLoopt">
               <router-link :to="{ name: 'Beheer' }">
                 <span>Beheer</span>
               </router-link>
+            </li>
+            <li class="log-out">
+              <a :href="logoutUrl" @click="onLogout" @keydown.enter="onLogout"
+                >Uitloggen</a
+              >
             </li>
           </ul>
         </nav>
@@ -88,7 +87,7 @@ const contactmomentStore = useContactmomentStore();
 const featuredWerkberichtenCount = useFeaturedWerkberichtenCount();
 
 const isRedacteur = computed(
-  () => user.success && user.data.isLoggedIn && user.data.isRedacteur
+  () => user.success && user.data.isLoggedIn && user.data.isRedacteur,
 );
 </script>
 
@@ -97,7 +96,7 @@ header {
   background-color: var(--color-primary);
   display: grid;
   grid-template-areas:
-    "bar logout"
+    "bar bar"
     "results results"
     "expand expand"
     "nav nav";
@@ -105,11 +104,8 @@ header {
   align-items: center;
 
   .log-out {
-    grid-area: logout;
-    color: var(--color-white);
-    padding: var(--spacing-small);
-    margin-left: auto;
-    margin-right: var(--container-padding);
+    margin-inline-start: auto;
+    margin-inline-end: 0;
   }
 }
 

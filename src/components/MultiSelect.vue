@@ -53,16 +53,28 @@ onClickOutside(detailsEl, () => {
 </script>
 
 <style scoped lang="scss">
-summary {
+details > summary.utrecht-button.utrecht-button--secondary-action {
   display: flex;
   justify-content: space-between;
-  border-radius: var(--radius-large);
-  margin-inline-start: auto;
+  border-radius: var(--radius-default);
+
+  // margin-inline-start: auto;
   font-weight: 500;
   padding-block: var(--spacing-small);
   padding-inline: var(--padding-inline);
   width: 100%;
   user-select: none;
+  border: var(--border-style);
+  color: inherit;
+
+  &:not(:disabled, .utrecht-button--disabled) {
+    &:active,
+    &:hover,
+    &:focus {
+      color: inherit;
+      border: var(--border-style);
+    }
+  }
 
   > * {
     display: inline;
@@ -71,8 +83,8 @@ summary {
 
 details {
   --box-shadow: var(--shadow-default);
-  --border-width: 2px;
-  --border-style: var(--color-primary) var(--border-width) solid;
+  --border-width: 1px;
+  --border-style: currentcolor var(--border-width) solid;
   --padding-inline: 1.5rem;
 
   position: relative;
@@ -80,7 +92,7 @@ details {
   z-index: 1;
   display: flex;
   gap: var(--spacing-default);
-  color: var(--color-primary);
+  color: black;
 }
 
 legend {
@@ -91,19 +103,20 @@ fieldset {
   display: grid;
   position: absolute;
   inline-size: 100%;
-  margin-block-start: var(--spacing-small);
-  gap: var(--spacing-small);
+  margin-block-start: 1px;
+  gap: var(--spacing-extrasmall);
   background-color: var(--color-white);
   box-shadow: var(--box-shadow);
   padding-block: var(--spacing-default);
   padding-inline-end: var(--padding-inline);
   padding-inline-start: calc(1rem + var(--border-width));
   border-radius: var(--radius-default);
+  border: var(--border-style);
 
   label {
     display: flex;
     align-items: baseline;
-    gap: var(--spacing-default);
+    gap: var(--spacing-small);
     line-height: var(
       --utrecht-paragraph-line-height,
       var(--utrecht-document-line-height, normal)
@@ -111,10 +124,10 @@ fieldset {
   }
 
   input {
-    accent-color: var(--color-primary);
-    transform: scale(1.25);
-    margin: 0;
-    margin-inline-start: 2px;
+    accent-color: black;
+    transform: scale(1.25) translateY(10%);
+
+    // margin: 10px;
   }
 }
 </style>
