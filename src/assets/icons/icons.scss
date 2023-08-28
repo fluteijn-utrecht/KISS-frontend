@@ -40,7 +40,9 @@
 .icon-before.chevron-down::before,
 .icon-after.chevron-down::after,
 .icon-before.chevron-right::before,
-.icon-after.chevron-right::after {
+.icon-after.chevron-right::after,
+.icon-before.chevron-left::before,
+.icon-after.chevron-left::after {
   min-block-size: 0.6rem;
   mask-image: url("@/assets/icons/chevron-down.svg");
 }
@@ -48,6 +50,11 @@
 .icon-before.chevron-right::before,
 .icon-after.chevron-right::after {
   rotate: (-90deg);
+}
+
+.icon-before.chevron-left::before,
+.icon-after.chevron-left::after {
+  rotate: (90deg);
 }
 
 .icon-before.circle-xmark::before,
@@ -110,4 +117,28 @@
 .icon-before.loupe::before,
 .icon-after.loupe::after {
   mask-image: url("@/assets/icons/loupe.svg");
+}
+
+.icon-before.sort-descending::before,
+.icon-after.sort-descending::after,
+.icon-before.sort-ascending::before,
+.icon-after.sort-ascending::after {
+  mask-image: url("@/assets/icons/sort.svg");
+  min-inline-size: 0.5rem;
+  min-block-size: 0.5rem;
+}
+
+.icon-before.sort-descending::before,
+.icon-before.sort-ascending::before {
+  margin-inline-end: 0.5ch;
+}
+
+.icon-after.sort-descending::after,
+.icon-after.sort-ascending::after {
+  margin-inline-start: 0.5ch;
+}
+
+.icon-before.sort-ascending::before,
+.icon-after.sort-ascending::after {
+  rotate: 180deg;
 }

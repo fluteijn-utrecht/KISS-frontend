@@ -1,60 +1,44 @@
 <template>
   <utrecht-heading :level="2" modelValue>Algemeen</utrecht-heading>
-
-  <div class="content">
-    <ul>
-      <li>
-        <span class="label">Zaaktype</span>
-        <span class="value">{{ zaak.zaaktypeOmschrijving }}</span>
-      </li>
-      <li>
-        <span class="label">Aanvrager</span>
-        <span class="value">{{ zaak.aanvrager }}</span>
-      </li>
-      <li>
-        <span class="label">Status</span>
-        <span class="value">{{ zaak.status }}</span>
-      </li>
-      <li>
-        <span class="label">Behandelaar</span>
-        <span class="value">{{ zaak.behandelaar }}</span>
-      </li>
-      <li>
-        <span class="label">Zaaknummer</span>
-        <span class="value">{{ zaak.identificatie }}</span>
-      </li>
-      <li>
-        <span class="label">Toelichting</span>
-        <span class="value">{{ zaak.toelichting }}</span>
-      </li>
-    </ul>
-
-    <ul>
-      <li>
-        <span class="label">Titel</span>
-        <span class="value">{{ zaak.omschrijving }}</span>
-      </li>
-      <li>
-        <span class="label">Indiendatum</span>
+  <div>
+    <dl>
+      <dt>Titel</dt>
+      <dd>{{ zaak.omschrijving }}</dd>
+      <dt>Zaaktype</dt>
+      <dd>{{ zaak.zaaktypeOmschrijving }}</dd>
+      <dt>Zaaknummer</dt>
+      <dd>{{ zaak.identificatie }}</dd>
+      <dt>Indiendatum</dt>
+      <dd>
         <time-or-onbekend class="value" :date="zaak.startdatum" />
-      </li>
-      <li>
-        <span class="label">Registratiedatum</span>
+      </dd>
+    </dl>
+    <dl>
+      <dt>Aanvrager</dt>
+      <dd>{{ zaak.aanvrager }}</dd>
+      <dt>Status</dt>
+      <dd>{{ zaak.status }}</dd>
+      <dt>Behandelaar</dt>
+      <dd>{{ zaak.behandelaar }}</dd>
+      <!-- <dt>Registratiedatum</dt>
+      <dd>
         <time-or-onbekend class="value" :date="zaak.registratieDatum" />
-      </li>
-      <li>
-        <span class="label">Startdatum</span>
+      </dd>
+      <dt>Startdatum</dt>
+      <dd>
         <time-or-onbekend class="value" :date="zaak.startdatum" />
-      </li>
-      <li>
-        <span class="label">Streefdatum</span>
+      </dd>
+      <dt>Streefdatum</dt>
+      <dd>
         <time-or-onbekend class="value" :date="zaak.streefDatum" />
-      </li>
-      <li>
-        <span class="label">Fatale datum</span>
+      </dd>
+      <dt>Fatale datum</dt>
+      <dd>
         <time-or-onbekend class="value" :date="zaak.fataleDatum" />
-      </li>
-    </ul>
+      </dd> -->
+      <dt>Toelichting</dt>
+      <dd>{{ zaak.toelichting }}</dd>
+    </dl>
   </div>
 </template>
 
@@ -69,42 +53,18 @@ defineProps<{
 </script>
 
 <style scoped lang="scss">
-section {
-  & > *:not(:last-child) {
-    margin-block-end: var(--spacing-large);
-  }
+div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8rem;
+  margin-block-start: var(--spacing-default);
 }
 
-.content {
-  display: flex;
-
-  > * {
-    flex: 1;
-  }
-
-  > *:not(:last-child) {
-    margin-inline-end: var(--spacing-large);
-  }
-}
-
-ul > li:not(:last-child) {
-  margin-block-end: var(--spacing-default);
-}
-
-li {
-  display: flex;
-
-  & > .label {
-    flex: 1;
-    max-width: 175px;
-  }
-
-  & > .value {
-    flex: 1;
-  }
-}
-
-.label {
-  font-weight: 600;
+dl {
+  block-size: max-content;
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: var(--spacing-large);
+  row-gap: var(--spacing-small);
 }
 </style>

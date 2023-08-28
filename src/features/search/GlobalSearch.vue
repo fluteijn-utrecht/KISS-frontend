@@ -16,7 +16,7 @@
       <search-combobox
         :list-items="listItems"
         v-model="state.searchInput"
-        placeholder="Zoeken"
+        placeholder="Zoeken..."
         @search.prevent="applySearch"
         id="global-search-input"
       />

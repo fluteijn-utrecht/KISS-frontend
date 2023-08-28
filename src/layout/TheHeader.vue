@@ -2,37 +2,48 @@
   <login-overlay>
     <template #default="{ onLogout }">
       <header
-        :class="{ contactmomentLoopt: contactmomentStore.contactmomentLoopt }"
+        :class="{
+          contactmomentLoopt: contactmomentStore.contactmomentLoopt,
+          'hide-sidebar': $route.meta.hideSidebar,
+        }"
       >
         <global-search class="search-bar" v-if="route.meta.showSearch" />
 
-        <nav v-if="route.meta.showNav">
+        <nav>
           <ul>
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'contacten' }"
                 ><span>Contacten</span></router-link
               >
             </li>
 
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'personen' }"
                 ><span>Personen</span></router-link
               >
             </li>
 
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'bedrijven' }"
                 ><span>Bedrijven</span></router-link
               >
             </li>
 
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'zaken' }"
                 ><span>Zaken</span></router-link
               >
             </li>
 
-            <li>
+            <li v-if="route.meta.showNav">
               <router-link :to="{ name: 'home' }">
                 <span>Nieuws en werkinstructies</span>
 
@@ -50,12 +61,18 @@
                 >
               </router-link>
             </li>
-            <li>
+            <li v-if="route.meta.showNav">
               <router-link :to="{ name: 'links' }"
                 ><span>Links</span></router-link
               >
             </li>
-            <li v-if="isRedacteur && !contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="
+                isRedacteur &&
+                !contactmomentStore.contactmomentLoopt &&
+                route.meta.showNav
+              "
+            >
               <router-link :to="{ name: 'Beheer' }">
                 <span>Beheer</span>
               </router-link>
@@ -105,8 +122,11 @@ header {
 
   .log-out {
     margin-inline-start: auto;
-    margin-inline-end: 0;
   }
+}
+
+nav {
+  grid-area: nav;
 }
 
 nav ul {

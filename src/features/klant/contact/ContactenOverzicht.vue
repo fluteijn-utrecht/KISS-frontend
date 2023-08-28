@@ -26,3 +26,10 @@
 import type { Klant } from "../types";
 defineProps<{ records: Klant[] }>();
 </script>
+
+<style lang="scss" scoped>
+.overview {
+  inline-size: 30rem;
+  min-inline-size: max-content;
+}
+</style>

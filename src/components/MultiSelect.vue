@@ -103,11 +103,10 @@ fieldset {
   display: grid;
   position: absolute;
   inline-size: 100%;
-  margin-block-start: 1px;
   gap: var(--spacing-extrasmall);
   background-color: var(--color-white);
   box-shadow: var(--box-shadow);
-  padding-block: var(--spacing-default);
+  padding-block: var(--spacing-small);
   padding-inline-end: var(--padding-inline);
   padding-inline-start: calc(1rem + var(--border-width));
   border-radius: var(--radius-default);

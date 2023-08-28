@@ -29,13 +29,13 @@
               </option>
             </select>
           </label>
-          <label for="searchInput"
+          <label for="search-input"
             ><span>Zoek een werkinstructie of nieuwsbericht</span>
             <input
               type="search"
               name="search"
-              id="searchInput"
-              placeholder="Zoek een werkinstructie of nieuwsbericht"
+              id="search-input"
+              placeholder="Zoek een werkinstructie of nieuwsbericht..."
               @search="handleSearch"
               v-model="state.searchField"
           /></label>
@@ -150,8 +150,8 @@ const selectedSkills = computed(() => {
     .filter((x) => userStore.preferences.skills.includes(x.id));
 });
 
-const selectedSkillIds = computed(() =>
-  selectedSkills.value?.map(({ id }) => id)
+const selectedSkillIds = computed(
+  () => selectedSkills.value?.map(({ id }) => id),
 );
 
 function handleSubmit(e: Event) {
@@ -225,12 +225,16 @@ header {
   justify-content: space-between;
 }
 
-label[for="searchInput"] {
+label[for="search-input"] {
   flex: 1;
 }
 
 .search-bar {
   width: 100%;
+}
+
+#search-input {
+  min-inline-size: 21rem;
 }
 
 .forms > :first-child {
