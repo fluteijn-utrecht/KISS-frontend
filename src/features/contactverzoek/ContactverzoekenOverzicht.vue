@@ -57,7 +57,7 @@
             <dt>
               {{
                 capitalizeFirstLetter(
-                  adres.omschrijving || adres.soortDigitaalAdres || "contact",
+                  adres.omschrijving || adres.soortDigitaalAdres || "contact"
                 )
               }}
             </dt>
@@ -100,6 +100,6 @@ watch(
     for (let index = 0; index < diff; index++) {
       activeContactverzoeken.value.push(false);
     }
-  },
+  }
 );
 </script>

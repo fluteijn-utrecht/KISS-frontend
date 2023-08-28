@@ -52,7 +52,7 @@ const getSearchUrl = (query: string, sources: Source[]) => {
 function mapSuggestions(json: any): string[] {
   if (!Array.isArray(json?.suggest?.suggestions)) return [];
   const result = [...json.suggest.suggestions].flatMap(({ options }: any) =>
-    options.map(({ text }: any) => (text as string).toLocaleLowerCase()),
+    options.map(({ text }: any) => (text as string).toLocaleLowerCase())
   ) as string[];
   return [...new Set(result)];
 }
@@ -62,18 +62,18 @@ export function useGlobalSearch(
     search?: string;
     page?: number;
     filters: Source[];
-  }>,
+  }>
 ) {
   const templateResult = useQueryTemplate();
   const template = computed(
-    () => templateResult.success && templateResult.data.template,
+    () => templateResult.success && templateResult.data.template
   );
 
   const getUrl = () => {
     if (!template.value) return "";
     return getSearchUrl(
       parameters.value.search || "",
-      parameters.value.filters,
+      parameters.value.filters
     );
   };
 
@@ -84,7 +84,7 @@ export function useGlobalSearch(
 
     const replaced = template.value.replace(
       /\{\{query\}\}/g,
-      parameters.value.search,
+      parameters.value.search
     );
 
     const query = JSON.parse(replaced);
@@ -95,7 +95,7 @@ export function useGlobalSearch(
   };
 
   async function fetcher(
-    url: string,
+    url: string
   ): Promise<Paginated<SearchResult> & { suggestions: string[] }> {
     const r = await fetchLoggedIn(url, {
       method: "POST",
@@ -215,7 +215,7 @@ export function useSources() {
     () =>
       templateResult.success &&
       !!templateResult.data.indices.length &&
-      templateResult.data.indices,
+      templateResult.data.indices
   );
 
   const getUrl = () =>
@@ -242,7 +242,7 @@ export function useSources() {
         buckets.map((x: any) => ({
           index: x.key,
           name: key,
-        })),
+        }))
     );
 
     return sources;

@@ -10,6 +10,16 @@ import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
 import type { Ref } from "vue";
 import { fullName } from "@/helpers/string";
+import type { ContactVerzoekVragenSet, VraagAntwoord } from "./types";
+
+const contactMomentVragenSets = "/api/contactverzoekvragensets";
+
+type ServerContactVerzoekVragenSet = {
+  id: string;
+  naam: string;
+  jsonVragen: string;
+  afdelingId: string;
+};
 
 type NewContactverzoek = {
   record: {
@@ -85,6 +95,21 @@ export function saveContactverzoek({
     });
   }
 
+  function formatVraagAntwoordForToelichting(
+    vraagAntwoord: VraagAntwoord[]
+  ): string {
+    return vraagAntwoord.map((va) => `${va.vraag} - ${va.antwoord}`).join("\n");
+  }
+
+  const vragenToelichting =
+    data.contactVerzoekVragenSet &&
+    data.contactVerzoekVragenSet.vraagAntwoord &&
+    data.contactVerzoekVragenSet.vraagAntwoord.length
+      ? formatVraagAntwoordForToelichting(
+          data.contactVerzoekVragenSet.vraagAntwoord
+        )
+      : "";
+
   const organisatorischeEenheid = data.groep
     ? {
         identificatie: data.groep.identificatie,
@@ -113,7 +138,9 @@ export function saveContactverzoek({
         status: "te verwerken",
         contactmoment: contactmomentUrl,
         registratiedatum,
-        toelichting: data.interneToelichting,
+        toelichting:
+          data.interneToelichting +
+          (vragenToelichting ? "\n\n" + vragenToelichting : ""),
         actor,
         betrokkene: {
           rol: "klant",
@@ -144,7 +171,7 @@ export function saveContactverzoek({
 
 export function useContactverzoekenByKlantId(
   id: Ref<string>,
-  page: Ref<number>,
+  page: Ref<number>
 ) {
   function getUrl() {
     if (!id.value) return "";
@@ -192,7 +219,7 @@ export function useAfdelingen(search: () => string | undefined) {
     ({
       ...x.record.data,
       id: x.uuid,
-    }) as Afdeling;
+    } as Afdeling);
 
   const fetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
     fetchLoggedIn(url)
@@ -205,7 +232,7 @@ export function useAfdelingen(search: () => string | undefined) {
 
 export function useGroepen(
   getAfdelingId: () => string | undefined,
-  search?: () => string | undefined,
+  search?: () => string | undefined
 ) {
   const getUrl = () => {
     const afdelingId = getAfdelingId();
@@ -231,4 +258,45 @@ export function useGroepen(
       .then((json) => parsePagination(json, mapOrganisatie));
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
+}
+
+export function useVragenSets() {
+  return ServiceResult.fromFetcher(
+    () => contactMomentVragenSets,
+    fetchVragenSets
+  );
+}
+
+export function fetchVragenSets(url: string) {
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then((response) => response.json())
+    .then((data) => {
+      return mapToClientContactVerzoekVragenSets(data);
+    });
+}
+
+function safeJSONParse<T>(jsonString: string, defaultValue: T): T {
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+function mapToClientContactVerzoekVragenSets(
+  serverDataArray: ServerContactVerzoekVragenSet[]
+): ContactVerzoekVragenSet[] {
+  return serverDataArray.map((serverData) => {
+    const parsedQuestions = safeJSONParse<string[]>(serverData.jsonVragen, []);
+    return {
+      id: serverData.id,
+      naam: serverData.naam,
+      vraagAntwoord: parsedQuestions.map((vraag) => ({
+        vraag: vraag,
+        antwoord: "",
+      })),
+      afdelingId: serverData.afdelingId,
+    };
+  });
 }
