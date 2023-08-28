@@ -57,13 +57,10 @@
             v-model="userStore.preferences.skills"
           />
           <menu class="delete-skills-menu">
-            <li
-              v-for="{ id, name, className } in selectedSkills"
-              :key="'skills_cb_' + id"
-            >
+            <li v-for="{ id, name } in selectedSkills" :key="'skills_cb_' + id">
               <button
                 type="button"
-                :class="`remove-filter icon-after circle-xmark ${className}`"
+                :class="`remove-filter icon-after circle-xmark`"
                 @click="
                   userStore.preferences.skills =
                     userStore.preferences.skills.filter((x) => x !== id)
@@ -145,7 +142,6 @@ const selectedSkills = computed(() => {
     .map(([id, name]) => ({
       id,
       name,
-      className: `category-${name.split(" ").join("-")}`,
     }))
     .filter((x) => userStore.preferences.skills.includes(x.id));
 });
@@ -243,7 +239,6 @@ label[for="search-input"] {
 
 .forms > :last-child {
   width: min(100%, 20rem);
-  margin-inline-start: auto;
 }
 
 form {
@@ -270,9 +265,7 @@ form {
 
 .skills-form {
   display: grid;
-  gap: var(--spacing-default);
-  align-items: flex-end;
-  justify-items: flex-end;
+  gap: var(--spacing-small);
   width: 100%;
 }
 
