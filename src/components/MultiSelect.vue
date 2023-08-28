@@ -57,8 +57,6 @@ details > summary.utrecht-button.utrecht-button--secondary-action {
   display: flex;
   justify-content: space-between;
   border-radius: var(--radius-default);
-
-  // margin-inline-start: auto;
   font-weight: 500;
   padding-block: var(--spacing-small);
   padding-inline: var(--padding-inline);
