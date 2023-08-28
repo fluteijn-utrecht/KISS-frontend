@@ -47,8 +47,11 @@ watchEffect(() => {
 [role="tablist"] {
   display: flex;
   font-size: var(--tab-size, 1rem);
-  font-weight: bold;
   color: var(--tab-color, var(--utrecht-heading-color));
   gap: var(--tab-gap, 0.5em);
+}
+
+[role="tablist"] > :deep([aria-selected="true"]) {
+  font-weight: bold;
 }
 </style>

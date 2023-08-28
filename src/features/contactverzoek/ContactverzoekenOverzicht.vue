@@ -1,38 +1,24 @@
 <template>
-  <section v-if="contactverzoeken.length">
-    <div class="header">
-      <span>Datum</span>
-      <span>Status</span>
-      <span>Behandelaar</span>
-      <span>Afgerond op</span>
-      <span class="chevron"></span>
-    </div>
+  <section>
+    <expandable-table-list :items="contactverzoeken" item-key="url">
+      <template #header>
+        <span id="datum-header">Datum</span>
+        <span id="medewerker-header">Status</span>
+        <span id="kanaal-header">Behandelaar</span>
+        <span id="gespreksresultaat-header">Afgerond op</span>
+      </template>
 
-    <div
-      v-for="(contactverzoek, idx) in contactverzoeken"
-      :key="idx"
-      class="verzoek-item"
-    >
-      <button
-        @click="toggleItemContent(idx)"
-        class="verzoek-item-header"
-        :class="{ 'is-active': activeContactverzoeken[idx] }"
-      >
-        <dutch-date
-          v-if="contactverzoek.record.data.registratiedatum"
-          :date="new Date(contactverzoek.record.data.registratiedatum)"
-        />
-        <span v-else />
-        <span>{{ contactverzoek.record.data.status }}</span>
-        <span>{{ contactverzoek.record.data.actor.naam }}</span>
-        <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
-        <span class="chevron icon-after chevron-down"></span>
-      </button>
-
-      <div
-        class="verzoek-item-content"
-        :class="{ 'is-active': activeContactverzoeken[idx] }"
-      >
+      <template v-slot:item="{ item: contactverzoek }">
+        <summary>
+          <dutch-date
+            v-if="contactverzoek.record.data.registratiedatum"
+            :date="new Date(contactverzoek.record.data.registratiedatum)"
+          />
+          <span v-else />
+          <span>{{ contactverzoek.record.data.status }}</span>
+          <span>{{ contactverzoek.record.data.actor.naam }}</span>
+          <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
+        </summary>
         <dl>
           <dt>Starttijd</dt>
           <dd>
@@ -85,11 +71,9 @@
             :url="contactverzoek.record.data.contactmoment"
           ></slot>
         </dl>
-      </div>
-    </div>
+      </template>
+    </expandable-table-list>
   </section>
-
-  <div v-else>Geen contactverzoeken gevonden.</div>
 </template>
 
 <script lang="ts" setup>
@@ -99,6 +83,7 @@ import { watch } from "vue";
 import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
+import ExpandableTableList from "@/components/ExpandableTableList.vue";
 
 const props = defineProps<{
   contactverzoeken: Contactverzoek[];
@@ -117,81 +102,4 @@ watch(
     }
   },
 );
-
-const toggleItemContent = (idx: number) => {
-  activeContactverzoeken.value[idx] = !activeContactverzoeken.value[idx];
-};
 </script>
-
-<style lang="scss" scoped>
-dl {
-  --column-width: 25ch;
-  --gap: var(--spacing-default);
-
-  padding-inline-start: var(--spacing-default);
-  display: grid;
-  column-gap: var(--gap);
-  row-gap: var(--spacing-default);
-  grid-template-columns: var(--column-width) 1fr;
-  padding-block: var(--spacing-large);
-}
-
-.header {
-  display: flex;
-  background-color: var(--color-tertiary);
-  color: var(--color-white);
-}
-
-.header > *,
-.verzoek-item-header > * {
-  flex: 1;
-  max-width: 250px;
-  padding: var(--spacing-default);
-}
-
-.verzoek-item-header {
-  all: unset;
-  width: 100%;
-  display: flex;
-  border-bottom: 1px solid var(--color-tertiary);
-
-  &:focus-visible {
-    outline: auto currentcolor;
-  }
-
-  &.is-active {
-    background-color: var(--color-secondary);
-
-    .chevron::after {
-      transform: rotate(180deg);
-    }
-  }
-
-  &:hover {
-    background-color: var(--color-secondary);
-  }
-}
-
-.verzoek-item-content {
-  background-color: var(--color-secondary);
-
-  :deep(dt) dl > dt {
-    max-width: 150px;
-  }
-
-  &:not(.is-active) {
-    display: none;
-  }
-}
-
-.chevron {
-  display: flex;
-  max-width: 50px;
-  align-items: center;
-  margin-inline-start: auto;
-
-  &::after {
-    transition: transform 250ms;
-  }
-}
-</style>

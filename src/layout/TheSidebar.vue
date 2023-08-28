@@ -15,18 +15,18 @@
         class="within-moment"
         v-if="contactmomentStore.huidigContactmoment"
       >
-        <current-contactmoment-info />
-        <h2>Vragen</h2>
-        <contactmoment-vragen-menu />
+        <div class="contactmoment-header">
+          <current-contactmoment-info />
+          <utrecht-heading :level="3">Vragen</utrecht-heading>
+          <contactmoment-vragen-menu />
+        </div>
         <div class="notitie-tabs">
           <tab-list v-model="state.currentNotitieTab">
-            <tab-list-item :label="NotitieTabs.Regulier">
+            <tab-list-item :label="NotitieTabs.Regulier" class="notitie-tab">
               <template #tab="{ label }">
-                <span :title="label" class="icon-after note" />
+                <span :title="label">Notitieblok</span>
               </template>
-              <utrecht-heading id="notitieblok" :level="2"
-                >Notitieblok</utrecht-heading
-              >
+
               <textarea
                 aria-labelledby="notitieblok"
                 id="cm-notitieblok"
@@ -34,11 +34,15 @@
                 v-model="
                   contactmomentStore.huidigContactmoment.huidigeVraag.notitie
                 "
+                placeholder="Schrijf een notitie…"
               />
             </tab-list-item>
-            <tab-list-item :label="NotitieTabs.Contactverzoek">
+            <tab-list-item
+              :label="NotitieTabs.Contactverzoek"
+              class="contactverzoek-tab"
+            >
               <template #tab="{ label }">
-                <span :title="label" class="icon-after phone-flip" />
+                <span :title="label">Contactverzoek</span>
               </template>
               <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
               <form @submit.prevent>
@@ -52,6 +56,12 @@
             </tab-list-item>
           </tab-list>
         </div>
+
+        <menu class="finisher">
+          <li>
+            <contactmoment-finisher />
+          </li>
+        </menu>
       </section>
     </template>
   </aside>
@@ -67,6 +77,7 @@ import { watch } from "vue";
 import { useRoute } from "vue-router";
 import {
   ContactmomentStarter,
+  ContactmomentFinisher,
   CurrentContactmomentInfo,
   ContactmomentSwitcher,
 } from "@/features/contactmoment";
@@ -115,10 +126,14 @@ aside {
   [role="tablist"] {
     height: 3rem;
   }
+
+  #cm-notitieblok {
+    height: 100%;
+  }
 }
 
 .notitie-tabs {
-  margin-block-start: var(--spacing-small);
+  overflow: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -132,32 +147,40 @@ aside {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     color: inherit;
+    background-color: var(--color-primary);
+  }
+
+  :deep(.contactverzoek-tab[role="tabpanel"]) {
+    overflow-y: auto;
   }
 
   :deep([role="tabpanel"]) {
-    padding: var(--spacing-default);
     display: flex;
     flex-direction: column;
     flex: 1;
     color: var(--utrecht-form-label-color);
+    padding: var(--spacing-default);
+    min-height: 90%;
+
+    textarea::placeholder {
+      font-style: italic;
+    }
   }
 
   :deep([role="tab"]) {
-    margin: 0;
-    padding: var(--spacing-default);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
     &[aria-selected="true"] {
       color: var(--color-headings);
     }
   }
 }
 
-.starter {
-  color: var(--color-white);
+menu {
   align-self: center;
+
+  --utrecht-button-min-inline-size: 17rem;
+}
+
+menu.starter {
   margin-block-start: 4rem;
   margin-block-end: var(--spacing-default);
   display: flex;
@@ -169,25 +192,39 @@ aside {
     flex-direction: column;
     align-items: stretch;
   }
+}
 
-  --utrecht-button-min-inline-size: 17rem;
+menu.finisher {
+  margin-block: var(--spacing-large);
 }
 
 .within-moment {
+  overflow: auto;
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--sidebar-color-2);
-  border-start-start-radius: var(--radius-large);
-  border-start-end-radius: var(--radius-large);
+  background-color: var(--color-white);
   color: var(--color-white);
   margin-block-start: var(--spacing-default);
-  padding-block-start: var(--spacing-default);
 
   > h2 {
     margin-block-start: var(--spacing-small);
     margin-inline: var(--spacing-default);
     color: inherit;
+  }
+
+  > .contactmoment-header {
+    background-color: var(--color-primary);
+    padding-block-start: var(--spacing-default);
+    padding-block-end: var(--spacing-default);
+    padding-inline: var(--spacing-small);
+
+    --utrecht-heading-color: var(--color-white);
+
+    > h3 {
+      margin-block-start: var(--spacing-large);
+      margin-block-end: var(--spacing-small);
+    }
   }
 }
 </style>

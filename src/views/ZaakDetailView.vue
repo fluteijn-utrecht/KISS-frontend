@@ -45,10 +45,6 @@
           </template>
         </tab-list-data-item>
       </tab-list>
-
-      <div class="toelichting">
-        <zaak-toelichting :zaak="zaak.data" @success="onNotitieUpdate" />
-      </div>
     </section>
   </article>
 </template>
@@ -59,7 +55,6 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { computed, ref, watch } from "vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import ZaakToelichting from "@/features/zaaksysteem/components/ZaakToelichting.vue";
 import ZaakDocumenten from "@/features/zaaksysteem/components/ZaakDocumenten.vue";
 import ZaakAlgemeen from "@/features/zaaksysteem/components/ZaakAlgemeen.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
@@ -74,7 +69,7 @@ const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
 const zaakUrl = computed(() =>
-  zaak.success && zaak.data.self ? zaak.data.self : ""
+  zaak.success && zaak.data.self ? zaak.data.self : "",
 );
 
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
@@ -87,10 +82,10 @@ watch(
     if (!z || !contactmomentStore.huidigContactmoment) return;
     contactmomentStore.upsertZaak(
       z,
-      contactmomentStore.huidigContactmoment.huidigeVraag
+      contactmomentStore.huidigContactmoment.huidigeVraag,
     );
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onNotitieUpdate = () => zaak.refresh();

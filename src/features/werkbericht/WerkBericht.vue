@@ -111,12 +111,12 @@ const berichtSelectedInContactmoment = computed(() => {
 
   const foundInNieuwsberichten =
     huidigContactmoment.huidigeVraag.nieuwsberichten.findIndex(
-      (n) => n.nieuwsbericht.url === props.bericht.url
+      (n) => n.nieuwsbericht.url === props.bericht.url,
     ) !== -1;
 
   const foundInWerkinstructies =
     huidigContactmoment.huidigeVraag.werkinstructies.findIndex(
-      (w) => w.werkinstructie.url === props.bericht.url
+      (w) => w.werkinstructie.url === props.bericht.url,
     ) !== -1;
 
   return foundInNieuwsberichten || foundInWerkinstructies;
@@ -129,7 +129,7 @@ watch(
     if (!toggleReadIsLoading.value) {
       read.value = b.read;
     }
-  }
+  },
 );
 
 const toggleReadIsLoading = ref<boolean>(false);
@@ -180,7 +180,7 @@ const handleToggleBerichtInContactmoment = (): void => {
 
 <style lang="scss" scoped>
 article {
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-default);
   background-color: var(--color-secondary);
   padding: 0.75rem var(--text-margin);
   width: 100%;

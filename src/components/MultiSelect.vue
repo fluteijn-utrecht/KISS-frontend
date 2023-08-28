@@ -42,7 +42,7 @@ watch(
   () => props.modelValue,
   (v) => {
     currentValue.value = v;
-  }
+  },
 );
 
 onClickOutside(detailsEl, () => {
@@ -98,7 +98,7 @@ fieldset {
   padding-block: var(--spacing-default);
   padding-inline-end: var(--padding-inline);
   padding-inline-start: calc(1rem + var(--border-width));
-  border-radius: var(--radius-medium);
+  border-radius: var(--radius-default);
 
   label {
     display: flex;

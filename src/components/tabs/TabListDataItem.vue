@@ -32,24 +32,21 @@ const props = defineProps<{
 }>();
 
 const disabled = computed(
-  () => props.data.success && !!props.disabled?.(props.data.data)
+  () => props.data.success && !!props.disabled?.(props.data.data),
 );
 </script>
 
 <style lang="scss" scoped>
 .data-tab {
   position: relative;
-
-  > span {
-    display: flex;
-    gap: 1ch;
-  }
+  display: flex;
+  gap: var(--spacing-default);
 }
 
 .small-spinner {
   --spinner-size: 1em;
 
-  position: absolute;
+  margin: 0;
   inset: 0;
   translate: 0 50%;
 }

@@ -14,21 +14,35 @@ body {
 .app-layout {
   position: relative;
   min-height: 100vh;
+  overflow-y: hidden;
   display: grid;
   grid-template: "aside header" auto "nothing main" 1fr / 21.25rem 1fr;
   border-top: 4px solid var(--color-primary);
 
   &.contactmoment-loopt {
     border-top-color: var(--color-accent);
-    grid-template-areas:
-      "aside  header"
-      "aside   main";
+    grid-template-areas: "aside  header" "aside   main";
+
+    > aside {
+      height: 100vh;
+    }
+
+    overflow: hidden;
+    max-height: 100vh;
+
+    &.hide-sidebar {
+      main {
+        overflow: visible;
+      }
+    }
+
+    main {
+      overflow: auto;
+    }
   }
 
   &.hide-sidebar {
-    grid-template-areas:
-      "header  header"
-      "nothing   main";
+    grid-template-areas: "header  header" "nothing   main";
   }
 }
 

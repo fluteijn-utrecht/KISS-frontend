@@ -23,7 +23,7 @@
 
 .icon-after::after,
 .icon-before::before {
-  display: block;
+  display: inline-block;
   content: "";
   background-color: currentcolor;
   mask-repeat: no-repeat;

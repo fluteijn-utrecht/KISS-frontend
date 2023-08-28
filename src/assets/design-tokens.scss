@@ -39,8 +39,7 @@
   --line-height-default: 1.5;
 
   // other
-  --radius-default: 0.5rem;
-  --radius-medium: 1rem;
+  --radius-default: 0.4rem;
   --radius-large: 1.5rem;
   --height-body: 100vh;
   --shadow-default: 0 0 4.5714px 0 rgb(0 0 0 / 20%);
@@ -84,7 +83,7 @@
   --utrecht-button-focus-border-color: transparent;
   --utrecht-button-disabled-border-color: transparent;
   --utrecht-button-hover-border-color: transparent;
-  --utrecht-button-border-radius: var(--radius-large);
+  --utrecht-button-border-radius: var(--radius-default);
   --utrecht-button-min-inline-size: 16ch;
   --utrecht-button-icon-gap: 0.75rem;
   --utrecht-button-padding-inline-start: var(--spacing-default);
