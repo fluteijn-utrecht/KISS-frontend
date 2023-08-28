@@ -103,7 +103,7 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  }
+  },
 );
 </script>
 

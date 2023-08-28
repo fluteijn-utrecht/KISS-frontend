@@ -109,12 +109,12 @@ const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage
+  contactverzoekenPage,
 );
 
 // const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl
+  klantUrl,
   // contactmomentenPage
 );
 
@@ -138,7 +138,7 @@ watch(
       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 

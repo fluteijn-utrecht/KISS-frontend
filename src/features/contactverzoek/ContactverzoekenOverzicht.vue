@@ -8,76 +8,72 @@
         <span id="gespreksresultaat-header">Afgerond op</span>
       </template>
 
-      <template v-slot:item="{ item :  contactverzoek }">
+      <template v-slot:item="{ item: contactverzoek }">
         <summary>
-            <dutch-date
+          <dutch-date
+            v-if="contactverzoek.record.data.registratiedatum"
+            :date="new Date(contactverzoek.record.data.registratiedatum)"
+          />
+          <span v-else />
+          <span>{{ contactverzoek.record.data.status }}</span>
+          <span>{{ contactverzoek.record.data.actor.naam }}</span>
+          <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
+        </summary>
+        <dl>
+          <dt>Starttijd</dt>
+          <dd>
+            <dutch-time
               v-if="contactverzoek.record.data.registratiedatum"
               :date="new Date(contactverzoek.record.data.registratiedatum)"
             />
-            <span v-else />
-            <span>{{ contactverzoek.record.data.status }}</span>
-            <span>{{ contactverzoek.record.data.actor.naam }}</span>
-            <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
-          </summary>
-          <dl>
-            <dt>Starttijd</dt>
+          </dd>
+
+          <dt>Toelichting voor de collega</dt>
+          <dd>
+            {{ contactverzoek.record.data.toelichting }}
+          </dd>
+
+          <template
+            v-if="
+              contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam
+            "
+          >
+            <dt>Naam betrokkene</dt>
             <dd>
-              <dutch-time
-                v-if="contactverzoek.record.data.registratiedatum"
-                :date="new Date(contactverzoek.record.data.registratiedatum)"
-              />
+              {{ fullName(contactverzoek.record.data.betrokkene.persoonsnaam) }}
             </dd>
+          </template>
 
-            <dt>Toelichting voor de collega</dt>
+          <template v-if="contactverzoek.record.data.betrokkene.organisatie">
+            <dt>Organisatie</dt>
+            <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
+          </template>
+
+          <template
+            v-for="(adres, idx) in contactverzoek.record.data.betrokkene
+              .digitaleAdressen"
+            :key="idx"
+          >
+            <dt>
+              {{
+                capitalizeFirstLetter(
+                  adres.omschrijving || adres.soortDigitaalAdres || "contact",
+                )
+              }}
+            </dt>
             <dd>
-              {{ contactverzoek.record.data.toelichting }}
+              {{ adres.adres }}
             </dd>
+          </template>
 
-            <template
-              v-if="
-                contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam
-              "
-            >
-              <dt>Naam betrokkene</dt>
-              <dd>
-                {{
-                  fullName(contactverzoek.record.data.betrokkene.persoonsnaam)
-                }}
-              </dd>
-            </template>
-
-            <template v-if="contactverzoek.record.data.betrokkene.organisatie">
-              <dt>Organisatie</dt>
-              <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
-            </template>
-
-            <template
-              v-for="(adres, idx) in contactverzoek.record.data.betrokkene
-                .digitaleAdressen"
-              :key="idx"
-            >
-              <dt>
-                {{
-                  capitalizeFirstLetter(
-                    adres.omschrijving || adres.soortDigitaalAdres || "contact"
-                  )
-                }}
-              </dt>
-              <dd>
-                {{ adres.adres }}
-              </dd>
-            </template>
-
-            <slot
-              name="contactmoment"
-              :url="contactverzoek.record.data.contactmoment"
-            ></slot>
-          </dl>
-      </template> 
-    </expandable-table-list>   
+          <slot
+            name="contactmoment"
+            :url="contactverzoek.record.data.contactmoment"
+          ></slot>
+        </dl>
+      </template>
+    </expandable-table-list>
   </section>
-
- 
 </template>
 
 <script lang="ts" setup>
@@ -88,7 +84,6 @@ import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
-
 
 const props = defineProps<{
   contactverzoeken: Contactverzoek[];
@@ -105,9 +100,6 @@ watch(
     for (let index = 0; index < diff; index++) {
       activeContactverzoeken.value.push(false);
     }
-  }
+  },
 );
- 
 </script>
-
- 

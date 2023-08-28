@@ -1,74 +1,78 @@
 <template>
   <section>
-  <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
-  <nav>
-    <ul>
-      <li>
-        <router-link :to="{ name: 'bedrijven' }">{{
-          "< Bedrijven zoeken"
-        }}</router-link>
-      </li>
-    </ul>
-  </nav>
-  <tab-list v-model="currentTab">
-    <tab-list-data-item
-      label="Contactgegevens"
-      :data="klant"
-      :disabled="(k) => !k"
-    >
-      <template #success="{ data }">
-        <klant-details :klant="data" />
-      </template>
-    </tab-list-data-item>
-    <tab-list-data-item
-      label="KvK-gegevens"
-      :data="bedrijf"
-      :disabled="(b) => !b"
-    >
-      <template #success="{ data }">
-        <handelsregister-gegevens v-if="data" :bedrijf="data" />
-      </template>
-    </tab-list-data-item>
-    <tab-list-data-item
-      label="Contactmomenten"
-      :data="contactmomenten"
-      :disabled="(c) => !c.count"
-    >
-      <template #success="{ data }">
-        <contactmomenten-overzicht :contactmomenten="data.page">
-          <template #object="{ object }">
-            <zaak-preview :zaakurl="object.object" />
-          </template>
-        </contactmomenten-overzicht>
-      </template>
-    </tab-list-data-item>
-    <tab-list-data-item label="Zaken" :data="zaken" :disabled="(z) => !z.count">
-      <template #success="{ data }">
-        <zaken-overzicht
-          :zaken="data.page"
-          :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-        />
-      </template>
-    </tab-list-data-item>
-    <tab-list-data-item
-      label="Contactverzoeken"
-      :data="contactverzoeken"
-      :disabled="(c) => !c.page.length"
-    >
-      <template #success="{ data }">
-        <contactverzoeken-overzicht :contactverzoeken="data.page">
-          <template #contactmoment="{ url }">
-            <contactmoment-preview :url="url">
-              <template #object="{ object }">
-                <zaak-preview v-if="object.object" :zaakurl="object.object" />
-              </template>
-            </contactmoment-preview>
-          </template>
-        </contactverzoeken-overzicht>
-      </template>
-    </tab-list-data-item>
-  </tab-list>
-</section>
+    <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
+    <nav>
+      <ul>
+        <li>
+          <router-link :to="{ name: 'bedrijven' }">{{
+            "< Bedrijven zoeken"
+          }}</router-link>
+        </li>
+      </ul>
+    </nav>
+    <tab-list v-model="currentTab">
+      <tab-list-data-item
+        label="Contactgegevens"
+        :data="klant"
+        :disabled="(k) => !k"
+      >
+        <template #success="{ data }">
+          <klant-details :klant="data" />
+        </template>
+      </tab-list-data-item>
+      <tab-list-data-item
+        label="KvK-gegevens"
+        :data="bedrijf"
+        :disabled="(b) => !b"
+      >
+        <template #success="{ data }">
+          <handelsregister-gegevens v-if="data" :bedrijf="data" />
+        </template>
+      </tab-list-data-item>
+      <tab-list-data-item
+        label="Contactmomenten"
+        :data="contactmomenten"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <contactmomenten-overzicht :contactmomenten="data.page">
+            <template #object="{ object }">
+              <zaak-preview :zaakurl="object.object" />
+            </template>
+          </contactmomenten-overzicht>
+        </template>
+      </tab-list-data-item>
+      <tab-list-data-item
+        label="Zaken"
+        :data="zaken"
+        :disabled="(z) => !z.count"
+      >
+        <template #success="{ data }">
+          <zaken-overzicht
+            :zaken="data.page"
+            :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+          />
+        </template>
+      </tab-list-data-item>
+      <tab-list-data-item
+        label="Contactverzoeken"
+        :data="contactverzoeken"
+        :disabled="(c) => !c.page.length"
+      >
+        <template #success="{ data }">
+          <contactverzoeken-overzicht :contactverzoeken="data.page">
+            <template #contactmoment="{ url }">
+              <contactmoment-preview :url="url">
+                <template #object="{ object }">
+                  <zaak-preview v-if="object.object" :zaakurl="object.object" />
+                </template>
+              </contactmoment-preview>
+            </template>
+          </contactverzoeken-overzicht>
+        </template>
+      </tab-list-data-item>
+    </tab-list>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -110,18 +114,18 @@ watch(
       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage
+  contactverzoekenPage,
 );
 
 const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
-  klantUrl
+  klantUrl,
   // contactmomentenPage
 );
 
@@ -140,13 +144,8 @@ const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
 </script>
 
-
 <style scoped lang="scss">
- 
-
 section > * {
   margin-block-end: var(--spacing-large);
 }
-
- 
 </style>

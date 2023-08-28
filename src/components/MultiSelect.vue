@@ -42,7 +42,7 @@ watch(
   () => props.modelValue,
   (v) => {
     currentValue.value = v;
-  }
+  },
 );
 
 onClickOutside(detailsEl, () => {

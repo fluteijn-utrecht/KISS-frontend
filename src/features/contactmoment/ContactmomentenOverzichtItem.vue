@@ -57,7 +57,7 @@ const props = defineProps<{ contactmoment: ContactmomentViewModel }>();
 const registratieDatum = computed(
   () =>
     props.contactmoment.registratiedatum &&
-    new Date(props.contactmoment.registratiedatum)
+    new Date(props.contactmoment.registratiedatum),
 );
 
 const cmDetails = useContactmomentDetails(() => props.contactmoment.url);

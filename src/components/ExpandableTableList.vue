@@ -11,7 +11,7 @@
         </details>
       </li>
     </ul>
-  </section> 
+  </section>
 </template>
 
 <script lang="ts" setup>

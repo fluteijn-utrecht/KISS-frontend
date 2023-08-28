@@ -15,7 +15,6 @@
           </template>
         </ContactmomentenOverzichtItem>
       </template>
- 
     </expandable-table-list>
   </section>
 </template>

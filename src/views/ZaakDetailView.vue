@@ -45,8 +45,6 @@
           </template>
         </tab-list-data-item>
       </tab-list>
-
-   
     </section>
   </article>
 </template>
@@ -71,7 +69,7 @@ const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
 const zaakUrl = computed(() =>
-  zaak.success && zaak.data.self ? zaak.data.self : ""
+  zaak.success && zaak.data.self ? zaak.data.self : "",
 );
 
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
@@ -84,10 +82,10 @@ watch(
     if (!z || !contactmomentStore.huidigContactmoment) return;
     contactmomentStore.upsertZaak(
       z,
-      contactmomentStore.huidigContactmoment.huidigeVraag
+      contactmomentStore.huidigContactmoment.huidigeVraag,
     );
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onNotitieUpdate = () => zaak.refresh();

@@ -8,7 +8,6 @@
       <h2>{{ klantInfo?.name || "onbekend" }}</h2>
       <p v-if="klantInfo?.contact">{{ klantInfo.contact }}</p>
     </header>
-
   </article>
 </template>
 
@@ -21,19 +20,18 @@ import { getKlantInfo } from "./helpers";
 
 const beforeStopDialog = useConfirmDialog();
 
-
 const contactmomentStore = useContactmomentStore();
 
 const klantInfo = computed(() =>
   contactmomentStore.huidigContactmoment
     ? getKlantInfo(contactmomentStore.huidigContactmoment)
-    : undefined
+    : undefined,
 );
 </script>
 
 <style lang="scss" scoped>
 article {
- // padding-inline: var(--spacing-default);
+  // padding-inline: var(--spacing-default);
   display: flex;
   flex-wrap: wrap;
   align-items: center;

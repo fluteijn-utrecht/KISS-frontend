@@ -3,7 +3,7 @@
     :dialog="dialog"
     message="Let op, je hebt het contactverzoek niet afgerond. Als je deze vraag verlaat, wordt het contactverzoek niet verstuurd."
   />
-  <menu class="vragen-menu" v-if="vragen">   
+  <menu class="vragen-menu" v-if="vragen">
     <li v-for="(vraag, idx) in vragen" :key="idx">
       <utrecht-button
         appearance="subtle-button"
@@ -37,15 +37,17 @@ import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 const contactmomentStore = useContactmomentStore();
 const dialog = useConfirmDialog();
 
-const vragen = computed(() =>
-  contactmomentStore.huidigContactmoment?.vragen.map((vraag) => {
-    return {
-      isCurrent: contactmomentStore.huidigContactmoment?.huidigeVraag === vraag,
-      async switchVraag() {
-        contactmomentStore.switchVraag(vraag);
-      },
-    };
-  })
+const vragen = computed(
+  () =>
+    contactmomentStore.huidigContactmoment?.vragen.map((vraag) => {
+      return {
+        isCurrent:
+          contactmomentStore.huidigContactmoment?.huidigeVraag === vraag,
+        async switchVraag() {
+          contactmomentStore.switchVraag(vraag);
+        },
+      };
+    }),
 );
 
 async function startNieuweVraag() {

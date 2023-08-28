@@ -18,7 +18,6 @@
         </template>
       </tab-list-data-item>
 
-      
       <tab-list-data-item
         label="Contactmomenten"
         :data="contactmomenten"
@@ -38,27 +37,25 @@
       </tab-list-data-item>
     </tab-list>
 
-
     <tab-list-data-item
-        label="Contactverzoeken"
-        :data="contactverzoeken"
-        :disabled="(c) => !c.count"
-      >
-        <template #success="{ data }">
-          <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+      label="Contactverzoeken"
+      :data="contactverzoeken"
+      :disabled="(c) => !c.count"
+    >
+      <template #success="{ data }">
+        <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
-          <contactverzoeken-overzicht :contactverzoeken="data.page">
-            <template #contactmoment="{ url }">
-              <contactmoment-preview :url="url">
-                <template #object="{ object }">
-                  <zaak-preview :zaakurl="object.object" />
-                </template>
-              </contactmoment-preview>
-            </template>
-          </contactverzoeken-overzicht>
-        </template>
-      </tab-list-data-item>
-
+        <contactverzoeken-overzicht :contactverzoeken="data.page">
+          <template #contactmoment="{ url }">
+            <contactmoment-preview :url="url">
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object" />
+              </template>
+            </contactmoment-preview>
+          </template>
+        </contactverzoeken-overzicht>
+      </template>
+    </tab-list-data-item>
   </section>
 </template>
 
@@ -93,26 +90,20 @@ watch(
       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage
+  contactverzoekenPage,
 );
 
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl
-);
-
+const contactmomenten = useContactmomentenByKlantId(klantUrl);
 </script>
 
 <style scoped lang="scss">
- 
-
 section > * {
   margin-block-end: var(--spacing-large);
 }
-
 </style>
