@@ -103,6 +103,7 @@ h2 {
   > :last-child {
     border-radius: 0 var(--radius-default) var(--radius-default) 0;
     border-inline-end: var(--border-style);
+    display: flex;
   }
 
   button {
@@ -250,9 +251,9 @@ ul.overview {
     padding-inline: var(--column-padding);
   }
 
-  li:nth-child(odd) summary,
-  li:nth-child(odd) details,
-  tbody > tr:nth-child(odd) {
+  li:nth-of-type(odd) summary,
+  li:nth-of-type(odd) details,
+  tbody > tr:nth-of-type(even) {
     background-color: var(--color-secondary);
   }
 
