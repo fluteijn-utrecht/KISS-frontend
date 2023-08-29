@@ -252,7 +252,7 @@ watch(
   (v) => {
     form.value = v;
   },
-  { immediate: true }
+  { immediate: true },
 );
 const setActive = () => {
   form.value.isActive = true;
@@ -266,7 +266,7 @@ watch(
     if (!vragenSets.success) return;
     const vragenSet = vragenSets.data.find((s) => s.id == vragenSetId);
     form.value.contactVerzoekVragenSet = vragenSet;
-  }
+  },
 );
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
@@ -298,16 +298,16 @@ watch(
   ([el, hasContact]) => {
     if (!el) return;
     el.setCustomValidity(
-      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in"
+      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in",
     );
-  }
+  },
 );
 
 watch(
   () => form.value.afdeling,
   () => {
     form.value.groep = undefined;
-  }
+  },
 );
 </script>
 

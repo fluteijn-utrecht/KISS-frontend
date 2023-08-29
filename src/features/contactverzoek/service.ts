@@ -96,7 +96,7 @@ export function saveContactverzoek({
   }
 
   function formatVraagAntwoordForToelichting(
-    vraagAntwoord: VraagAntwoord[]
+    vraagAntwoord: VraagAntwoord[],
   ): string {
     return vraagAntwoord.map((va) => `${va.vraag}: ${va.antwoord}`).join("\n");
   }
@@ -106,7 +106,7 @@ export function saveContactverzoek({
     data.contactVerzoekVragenSet.vraagAntwoord &&
     data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-          data.contactVerzoekVragenSet.vraagAntwoord
+          data.contactVerzoekVragenSet.vraagAntwoord,
         )
       : "";
 
@@ -171,7 +171,7 @@ export function saveContactverzoek({
 
 export function useContactverzoekenByKlantId(
   id: Ref<string>,
-  page: Ref<number>
+  page: Ref<number>,
 ) {
   function getUrl() {
     if (!id.value) return "";
@@ -219,7 +219,7 @@ export function useAfdelingen(search: () => string | undefined) {
     ({
       ...x.record.data,
       id: x.uuid,
-    } as Afdeling);
+    }) as Afdeling;
 
   const fetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
     fetchLoggedIn(url)
@@ -232,7 +232,7 @@ export function useAfdelingen(search: () => string | undefined) {
 
 export function useGroepen(
   getAfdelingId: () => string | undefined,
-  search?: () => string | undefined
+  search?: () => string | undefined,
 ) {
   const getUrl = () => {
     const afdelingId = getAfdelingId();
@@ -263,7 +263,7 @@ export function useGroepen(
 export function useVragenSets() {
   return ServiceResult.fromFetcher(
     () => contactMomentVragenSets,
-    fetchVragenSets
+    fetchVragenSets,
   );
 }
 
@@ -285,7 +285,7 @@ function safeJSONParse<T>(jsonString: string, defaultValue: T): T {
 }
 
 function mapToClientContactVerzoekVragenSets(
-  serverDataArray: ServerContactVerzoekVragenSet[]
+  serverDataArray: ServerContactVerzoekVragenSet[],
 ): ContactVerzoekVragenSet[] {
   return serverDataArray.map((serverData) => {
     const parsedQuestions = safeJSONParse<string[]>(serverData.jsonVragen, []);
