@@ -109,7 +109,6 @@ watch(
 
 <style lang="scss" scoped>
 aside {
-  min-height: 44rem;
   background-color: var(--sidebar-color-1);
   padding-inline: 2px;
   display: flex;
