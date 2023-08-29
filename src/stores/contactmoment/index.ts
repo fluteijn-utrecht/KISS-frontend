@@ -17,12 +17,10 @@ export type ContactmomentContactVerzoek = {
   isMedewerker?: true;
   medewerker?: {
     user: string;
-    contact?: {
-      identificatie?: string;
-      voornaam?: string;
-      voorvoegselAchternaam?: string;
-      achternaam?: string;
-    };
+    identificatie?: string;
+    voornaam?: string;
+    voorvoegselAchternaam?: string;
+    achternaam?: string;
   };
   afdeling?: {
     id: string;
@@ -308,9 +306,9 @@ export const useContactmomentStore = defineStore("contactmoment", {
         huidigeVraag.medewerkers.push({
           medewerker: {
             id: medewerker.id,
-            voornaam: medewerker.contact.voornaam,
-            voorvoegselAchternaam: medewerker.contact.voorvoegselAchternaam,
-            achternaam: medewerker.contact.achternaam,
+            voornaam: medewerker.voornaam,
+            voorvoegselAchternaam: medewerker.voorvoegselAchternaam,
+            achternaam: medewerker.achternaam,
             emailadres: medewerker.contact.emails
               ? medewerker.contact.emails[0].email
               : "",
