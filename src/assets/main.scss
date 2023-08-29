@@ -1,48 +1,35 @@
 @import "./icons/icons";
 
 html,
-body,
-.app-layout {
+body {
   height: 100%;
   line-height: var(--line-height-default);
-}
-
-body {
   font-family: var(--utrecht-paragraph-font-family);
 }
 
 .app-layout {
   position: relative;
-  min-height: 100vh;
-  overflow-y: hidden;
   display: grid;
   grid-template: "aside header" auto "nothing main" 1fr / 21.25rem 1fr;
-  border-top: 4px solid var(--color-primary);
+  height: 100vh;
+  overflow: auto;
 
   &.contactmoment-loopt {
-    border-top-color: var(--color-accent);
     grid-template-areas: "aside  header" "aside   main";
 
     > aside {
       height: 100vh;
-    }
 
-    overflow: hidden;
-    max-height: 100vh;
-
-    &.hide-sidebar {
-      main {
-        overflow: visible;
-      }
-    }
-
-    main {
-      overflow: auto;
+      // min-height: 20rem;
     }
   }
 
   &.hide-sidebar {
     grid-template-areas: "header  header" "nothing   main";
+
+    > aside {
+      display: none;
+    }
   }
 }
 
@@ -52,6 +39,9 @@ body {
 
 .app-layout > aside {
   grid-area: aside;
+  position: sticky;
+  inset-block-end: 0;
+  inset-block-start: 0;
 }
 
 .app-layout > main {

@@ -103,7 +103,7 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  },
+  }
 );
 </script>
 
@@ -115,7 +115,6 @@ aside {
   flex-direction: column;
 
   textarea.utrecht-textarea {
-    margin-block-start: var(--spacing-default);
     padding: 0;
     border: none;
     outline: none;
@@ -133,7 +132,7 @@ aside {
 }
 
 .notitie-tabs {
-  overflow: auto;
+  overflow: hidden;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -150,11 +149,8 @@ aside {
     background-color: var(--color-primary);
   }
 
-  :deep(.contactverzoek-tab[role="tabpanel"]) {
-    overflow-y: auto;
-  }
-
   :deep([role="tabpanel"]) {
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     flex: 1;
