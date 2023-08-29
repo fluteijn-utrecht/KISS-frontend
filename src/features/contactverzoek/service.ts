@@ -99,8 +99,8 @@ export function saveContactverzoek({
 
   const actor = data.isMedewerker
     ? {
-        identificatie: data.medewerker?.contact?.identificatie || "",
-        naam: fullName(data.medewerker?.contact),
+        identificatie: data.medewerker?.identificatie || "",
+        naam: fullName(data.medewerker),
         soortActor: "medewerker",
       }
     : organisatorischeEenheid;
