@@ -63,16 +63,15 @@
                   <span v-if="source === 'Smoelenboek'">
                     {{
                       [
-                        title +
-                          (jsonObject?.functie
-                            ? " " + jsonObject?.functie
-                            : ""),
-                        jsonObject?.afdelingen?.map((a) => a.afdelingnaam)
-                          ?.length
-                          ? `(${jsonObject?.afdelingen
+                        title,
+                        jsonObject?.functie && jsonObject?.afdelingen?.length
+                          ? jsonObject?.functie +
+                            " (" +
+                            jsonObject?.afdelingen
                               .map((a) => a.afdelingnaam)
-                              .join(", ")})`
-                          : null,
+                              .join(", ") +
+                            ")"
+                          : jsonObject?.functie,
                       ]
                         .filter(Boolean)
                         .join(", ")
