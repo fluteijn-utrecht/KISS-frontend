@@ -96,7 +96,46 @@
         @input="setActive"
       />
     </label>
-
+    <form-fieldset>
+      <service-data-wrapper :data="vragenSets" class="container">
+        <template #success="{ data }">
+          <label class="utrecht-form-label">
+            <span> Onderwerp </span>
+            <select
+              class="utrecht-select utrecht-select--html-select"
+              name="VragenSets"
+              v-model="form.vragenSetId"
+              @input="setActive"
+            >
+              <option
+                v-for="item in data || []"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.naam }}
+              </option>
+            </select>
+          </label>
+          <template v-if="form.contactVerzoekVragenSet">
+            <template
+              v-for="(item, index) in form.contactVerzoekVragenSet
+                .vraagAntwoord"
+              :key="index"
+            >
+              <label class="utrecht-form-label">
+                <span> {{ item.vraag }} </span>
+                <input
+                  class="utrecht-textbox utrecht-textbox--html-input"
+                  type="text"
+                  v-model="item.antwoord"
+                  @input="setActive"
+                />
+              </label>
+            </template>
+          </template>
+        </template>
+      </service-data-wrapper>
+    </form-fieldset>
     <form-fieldset>
       <form-fieldset-legend>Contact opnemen met</form-fieldset-legend>
       <label class="utrecht-form-label">
@@ -199,11 +238,11 @@ import {
   FormFieldset,
 } from "@utrecht/component-library-vue";
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import { useAfdelingen, useGroepen } from ".";
 import ServiceDataSearch from "./ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
-import { computed } from "vue";
+import { useAfdelingen, useVragenSets, useGroepen } from "./service";
+
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -220,6 +259,15 @@ const setActive = () => {
 };
 
 const telEl = ref<HTMLInputElement>();
+const vragenSets = useVragenSets();
+watch(
+  () => form.value.vragenSetId,
+  (vragenSetId) => {
+    if (!vragenSets.success) return;
+    const vragenSet = vragenSets.data.find((s) => s.id == vragenSetId);
+    form.value.contactVerzoekVragenSet = vragenSet;
+  },
+);
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
 

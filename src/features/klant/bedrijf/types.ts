@@ -38,7 +38,7 @@ export type SearchCategories = keyof SearchCategoryTypes;
 
 export type BedrijfQueryDictionary = {
   [K in SearchCategories]: (
-    search: SearchCategoryTypes[K]
+    search: SearchCategoryTypes[K],
   ) => readonly [string, string][];
 };
 
