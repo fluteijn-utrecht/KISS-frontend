@@ -90,7 +90,7 @@ details {
   z-index: 1;
   display: flex;
   gap: var(--spacing-default);
-  color: black;
+  color: var(--color-black);
 }
 
 legend {
@@ -121,7 +121,7 @@ fieldset {
   }
 
   input {
-    accent-color: black;
+    accent-color: var(--color-black);
     transform: scale(1.25) translateY(10%);
   }
 }

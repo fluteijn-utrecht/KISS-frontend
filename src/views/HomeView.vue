@@ -60,7 +60,7 @@
             <li v-for="{ id, name } in selectedSkills" :key="'skills_cb_' + id">
               <button
                 type="button"
-                :class="`remove-filter icon-after circle-xmark`"
+                :class="`remove-filter icon-after xmark`"
                 @click="
                   userStore.preferences.skills =
                     userStore.preferences.skills.filter((x) => x !== id)
@@ -277,5 +277,9 @@ menu {
   display: flex;
   flex-flow: row wrap;
   gap: var(--spacing-small);
+}
+
+.remove-filter:not(:hover, :focus)::after {
+  display: none;
 }
 </style>

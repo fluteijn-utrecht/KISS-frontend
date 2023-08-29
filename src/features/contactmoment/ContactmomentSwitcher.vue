@@ -108,7 +108,7 @@ menu {
   justify-content: flex-start;
 
   li {
-    border-block-end: 1px solid black;
+    border-block-end: 1px solid var(--color-black);
     padding-block: var(--spacing-default);
   }
 

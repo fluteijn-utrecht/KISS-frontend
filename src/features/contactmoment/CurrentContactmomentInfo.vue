@@ -40,7 +40,7 @@ article {
 
   --utrecht-button-background-color: var(--color-error);
   --utrecht-button-hover-background-color: var(--color-error-hover);
-  --utrecht-button-hover-color: black;
+  --utrecht-button-hover-color: var(--color-black);
   --utrecht-button-min-inline-size: auto;
 
   h2 {
