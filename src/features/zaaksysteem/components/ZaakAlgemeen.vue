@@ -65,6 +65,6 @@ dl {
   display: grid;
   grid-template-columns: auto auto;
   column-gap: var(--spacing-large);
-  row-gap: var(--spacing-small);
+  row-gap: var(--line-height-default);
 }
 </style>
