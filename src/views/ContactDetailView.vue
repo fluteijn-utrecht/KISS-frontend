@@ -2,7 +2,6 @@
   <back-link />
 
   <utrecht-heading :level="1">Contactinformatie</utrecht-heading>
-
   <tab-list v-model="activeTab">
     <tab-list-data-item label="Contactgegevens" :data="klant">
       <template #success="{ data }">
@@ -20,34 +19,34 @@
         <contactmomenten-overzicht :contactmomenten="data.page">
         </contactmomenten-overzicht>
         <!-- 
-        <pagination
-          class="pagination"
-          :pagination="contactmomenten.data"
-          @navigate="onContactmomentenNavigate"
-        /> -->
+          <pagination
+            class="pagination"
+            :pagination="contactmomenten.data"
+            @navigate="onContactmomentenNavigate"
+          /> -->
+      </template>
+    </tab-list-data-item>
+
+    <tab-list-data-item
+      label="Contactverzoeken"
+      :data="contactverzoeken"
+      :disabled="(c) => !c.count"
+    >
+      <template #success="{ data }">
+        <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+
+        <contactverzoeken-overzicht :contactverzoeken="data.page">
+          <template #contactmoment="{ url }">
+            <contactmoment-preview :url="url">
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object" />
+              </template>
+            </contactmoment-preview>
+          </template>
+        </contactverzoeken-overzicht>
       </template>
     </tab-list-data-item>
   </tab-list>
-
-  <tab-list-data-item
-    label="Contactverzoeken"
-    :data="contactverzoeken"
-    :disabled="(c) => !c.count"
-  >
-    <template #success="{ data }">
-      <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
-
-      <contactverzoeken-overzicht :contactverzoeken="data.page">
-        <template #contactmoment="{ url }">
-          <contactmoment-preview :url="url">
-            <template #object="{ object }">
-              <zaak-preview :zaakurl="object.object" />
-            </template>
-          </contactmoment-preview>
-        </template>
-      </contactverzoeken-overzicht>
-    </template>
-  </tab-list-data-item>
 </template>
 
 <script setup lang="ts">
