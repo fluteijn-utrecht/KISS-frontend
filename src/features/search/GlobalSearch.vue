@@ -54,7 +54,7 @@
                       source,
                       jsonObject,
                       title,
-                      documentUrl
+                      documentUrl,
                     )
                   "
                   class="icon-after chevron-down"
@@ -68,7 +68,7 @@
                           ? jsonObject?.functie +
                             " (" +
                             jsonObject?.afdelingen
-                              .map((a) => a.afdelingnaam)
+                              .map((a: any) => a.afdelingnaam)
                               .join(", ") +
                             ")"
                           : jsonObject?.functie,
@@ -221,7 +221,7 @@ const emit = defineEmits<{
       jsonObject: any;
       source: string;
       documentUrl: URL;
-    }
+    },
   ): void;
 }>();
 
@@ -248,7 +248,7 @@ const sources = useSources();
 const sourceParameter = computed(() =>
   sources.success && !state.value.selectedSources.length
     ? sources.data
-    : state.value.selectedSources
+    : state.value.selectedSources,
 );
 
 const searchParameters = computed(() => ({
@@ -273,7 +273,7 @@ watch(
     automaticSearchTimeout && clearTimeout(automaticSearchTimeout);
 
     automaticSearchTimeout = setTimeout(applySearch, 300);
-  }
+  },
 );
 
 function handlePaginationNavigation(page: number) {
@@ -285,11 +285,11 @@ function handlePaginationNavigation(page: number) {
 }
 
 const buttonText = computed(() =>
-  state.value.isExpanded ? "Inklappen" : "Uitklappen"
+  state.value.isExpanded ? "Inklappen" : "Uitklappen",
 );
 
 const hasResults = computed(
-  () => searchResults.success && !!searchResults.data.page.length
+  () => searchResults.success && !!searchResults.data.page.length,
 );
 
 watch(hasResults, (x) => {
@@ -303,7 +303,7 @@ const selectSearchResult = (
   source: string,
   jsonObject: any,
   title: string,
-  documentUrl: URL
+  documentUrl: URL,
 ) => {
   state.value.currentId = id;
 
@@ -314,7 +314,7 @@ const selectSearchResult = (
           ...jsonObject,
           title,
         },
-        documentUrl.toString()
+        documentUrl.toString(),
       );
 
     if ((source || "").toUpperCase() === "VAC")
@@ -344,7 +344,7 @@ const backToResults = () => {
 
 const handleSmoelenboekSelected = (
   medewerker: Medewerker,
-  url: string
+  url: string,
 ): void => {
   contactmomentStore.addMedewerker(medewerker, url);
 };
@@ -363,7 +363,7 @@ const handleWebsiteSelected = (website: Website): void => {
 };
 
 const listItems = mapServiceData(searchResults, (result) =>
-  result.suggestions.map((value) => ({ value }))
+  result.suggestions.map((value) => ({ value })),
 );
 </script>
 
