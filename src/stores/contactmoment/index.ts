@@ -9,7 +9,7 @@ import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { defineStore } from "pinia";
 import { createSession, type Session } from "../switchable-store";
 export * from "./types";
-
+import type { ContactVerzoekVragenSet } from "@/features/contactverzoek/types";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
 export type ContactmomentContactVerzoek = {
@@ -40,6 +40,8 @@ export type ContactmomentContactVerzoek = {
   omschrijvingTelefoonnummer2?: string;
   emailadres?: string;
   interneToelichting?: string;
+  vragenSetId?: string;
+  contactVerzoekVragenSet?: ContactVerzoekVragenSet;
   isActive?: boolean;
 };
 
