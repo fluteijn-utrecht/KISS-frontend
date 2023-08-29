@@ -99,7 +99,6 @@ details {
 menu {
   position: absolute;
   z-index: 1;
-  margin-block-start: var(--spacing-small);
   padding-inline: var(--spacing-default);
   padding-block-end: var(--spacing-default);
   background: var(--color-white);
