@@ -60,7 +60,7 @@
             <li v-for="{ id, name } in selectedSkills" :key="'skills_cb_' + id">
               <button
                 type="button"
-                :class="`remove-filter icon-after xmark`"
+                class="remove-filter icon-after xmark"
                 @click="
                   userStore.preferences.skills =
                     userStore.preferences.skills.filter((x) => x !== id)
@@ -176,7 +176,6 @@ function handleSearch(e: Event) {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
-  align-content: flex-start;
   position: relative;
 
   > * {
@@ -217,28 +216,16 @@ header {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-default);
-  align-items: flex-start;
   justify-content: space-between;
 }
 
-label[for="search-input"] {
-  flex: 1;
-}
-
-.search-bar {
-  width: 100%;
-}
-
-#search-input {
-  min-inline-size: 21rem;
-}
-
 .forms > :first-child {
-  width: min(100%, var(--section-width));
+  // so placeholder fits
+  flex-basis: 32.5rem;
 }
 
 .forms > :last-child {
-  width: min(100%, 20rem);
+  flex-basis: 20rem;
 }
 
 form {
@@ -279,7 +266,11 @@ menu {
   gap: var(--spacing-small);
 }
 
-.remove-filter:not(:hover, :focus)::after {
-  display: none;
+.remove-filter::after {
+  transition: opacity 200ms;
+}
+
+.remove-filter:not(:hover, :focus, :focus-visible, :active)::after {
+  opacity: 0;
 }
 </style>
