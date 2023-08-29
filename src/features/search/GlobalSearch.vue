@@ -379,8 +379,7 @@ form {
 }
 
 .search-bar {
-  max-width: 40rem;
-  width: 100%;
+  max-width: min(40rem, 100%);
   position: relative;
 
   :deep([role="combobox"]) {

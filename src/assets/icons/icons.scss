@@ -1,19 +1,23 @@
 .icon-only {
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-
   --utrecht-button-inline-size: var(--spacing-large);
-
-  aspect-ratio: 1;
-
   --utrecht-button-padding-inline-start: 0;
   --utrecht-button-padding-inline-end: 0;
   --utrecht-button-padding-block-start: 0;
   --utrecht-button-padding-block-end: 0;
   --utrecht-button-min-inline-size: var(--spacing-default);
+  --utrecht-button-active-color: var(--color-black);
+  --utrecht-button-active-border-color: currentcolor;
+  --utrecht-button-hover-color: var(--color-black);
+  --utrecht-button-hover-border-color: currentcolor;
+  --utrecht-button-focus-color: var(--color-black);
+  --utrecht-button-focus-border-color: transparent;
+
+  aspect-ratio: 1;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .icon-before,
