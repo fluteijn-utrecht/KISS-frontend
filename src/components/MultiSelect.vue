@@ -95,6 +95,7 @@ details {
 
 legend {
   font-size: 0;
+  position: absolute;
 }
 
 fieldset {
