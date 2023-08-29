@@ -98,7 +98,7 @@ export function saveContactverzoek({
   function formatVraagAntwoordForToelichting(
     vraagAntwoord: VraagAntwoord[]
   ): string {
-    return vraagAntwoord.map((va) => `${va.vraag} - ${va.antwoord}`).join("\n");
+    return vraagAntwoord.map((va) => `${va.vraag}: ${va.antwoord}`).join("\n");
   }
 
   const vragenToelichting =

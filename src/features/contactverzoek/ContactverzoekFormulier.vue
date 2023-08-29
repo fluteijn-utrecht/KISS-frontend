@@ -100,7 +100,7 @@
       <service-data-wrapper :data="vragenSets" class="container">
         <template #success="{ data }">
           <label class="utrecht-form-label">
-            <span> VragenSets </span>
+            <span> Onderwerp </span>
             <select
               class="utrecht-select utrecht-select--html-select"
               name="VragenSets"
@@ -329,11 +329,5 @@ fieldset {
 
 .radio-group > legend {
   font-size: inherit;
-}
-</style>
-<style lang="scss" scoped>
-section {
-  max-height: 500px; /* Adjust as per your requirements */
-  overflow-y: auto;
 }
 </style>
