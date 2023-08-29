@@ -62,7 +62,17 @@
                   <span :class="`category-${source}`">{{ source }}</span>
                   <span v-if="source === 'Smoelenboek'">
                     {{
-                      [title, jsonObject?.function, jsonObject?.department]
+                      [
+                        title,
+                        jsonObject?.functie && jsonObject?.afdelingen?.length
+                          ? jsonObject?.functie +
+                            " (" +
+                            jsonObject?.afdelingen
+                              .map((a: any) => a.afdelingnaam)
+                              .join(", ") +
+                            ")"
+                          : jsonObject?.functie,
+                      ]
                         .filter(Boolean)
                         .join(", ")
                     }}
