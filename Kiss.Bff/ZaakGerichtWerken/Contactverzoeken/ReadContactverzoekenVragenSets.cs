@@ -15,7 +15,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         {
             _db = db;
         }
-
+        
         [HttpGet("/api/contactverzoekvragensets")]
         public async Task<IActionResult> Get(CancellationToken token)
         {
@@ -23,7 +23,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
 
             if (list == null || !list.Any())
             {
-                return NotFound();
+                return Ok(new List<ContactVerzoekVragenSet>());
             }
 
             return Ok(list);

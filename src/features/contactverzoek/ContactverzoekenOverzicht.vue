@@ -29,7 +29,7 @@
           </dd>
 
           <dt>Toelichting voor de collega</dt>
-          <dd>
+          <dd class="preserve-newline">
             {{ contactverzoek.record.data.toelichting }}
           </dd>
 
@@ -103,3 +103,9 @@ watch(
   },
 );
 </script>
+
+<style scoped>
+.preserve-newline {
+  white-space: pre-line;
+}
+</style>
