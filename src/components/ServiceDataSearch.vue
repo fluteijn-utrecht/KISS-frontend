@@ -20,7 +20,12 @@ import { computed, ref, watch } from "vue";
 import SearchCombobox, {
   type DatalistItem,
 } from "@/components/SearchCombobox.vue";
-import { type PaginatedResult, type ServiceData } from "@/services";
+import {
+  ServiceResult,
+  type Paginated,
+  type PaginatedResult,
+  type ServiceData,
+} from "@/services";
 
 defineOptions({
   inheritAttrs: false,
@@ -33,15 +38,17 @@ const props = defineProps<{
   disabled?: boolean;
   placeholder?: string;
   mapValue: (x: T) => string;
-  mapDescription: (x: T) => string;
-  getData: (x: () => string | undefined) => ServiceData<PaginatedResult<T>>;
+  mapDescription?: (x: T) => string | undefined;
+  getData: (
+    x: () => string | undefined,
+  ) => ServiceData<PaginatedResult<T> | Paginated<T> | T[]>;
 }>();
 
 function mapDatalistItem(x: T): DatalistItem & { obj: T } {
   return {
     obj: x,
     value: props.mapValue(x),
-    description: props.mapDescription(x),
+    description: props.mapDescription?.(x),
   };
 }
 
@@ -56,8 +63,8 @@ let isUpdating = false;
 
 function updateModelValue(v: string) {
   searchText.value = v;
-  if (data.success) {
-    const match = data.data.page.find((x) => props.mapValue(x) === v);
+  if (firstPage.value.success) {
+    const match = firstPage.value.data.find((x) => props.mapValue(x) === v);
     isUpdating = true;
     emit("update:modelValue", match);
   }
@@ -78,10 +85,17 @@ watch(
 // eslint-disable-next-line vue/no-setup-props-destructure
 const data = props.getData(() => debouncedSearchText.value);
 
-const datalistItems = computed(() => ({
-  ...data,
-  data: data.success ? data.data.page.map(mapDatalistItem) : [],
-}));
+const firstPage = computed(() => {
+  if (!data.success) return data;
+  if ("page" in data.data) return ServiceResult.success(data.data.page);
+  return ServiceResult.success(data.data);
+});
+
+const datalistItems = computed(() =>
+  !firstPage.value.success
+    ? firstPage.value
+    : ServiceResult.success(firstPage.value.data.map(mapDatalistItem)),
+);
 </script>
 
 <style lang="scss" scoped>

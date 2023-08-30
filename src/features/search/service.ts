@@ -4,6 +4,7 @@ import {
   ServiceResult,
   throwIfNotOk,
   type Paginated,
+  type PaginatedResult,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -264,22 +265,40 @@ function useAfdelingenFieldNames() {
   );
 }
 
-export function useArtikelAfdelingen() {
-  const fieldNames = useAfdelingenFieldNames();
-
+export function useArtikelAfdelingSearch(search: () => string | undefined) {
   const url = `${globalSearchBaseUri}/_search`;
+  const fieldNames = useAfdelingenFieldNames();
 
   const getPayload = () => {
     if (!fieldNames.success || !fieldNames.data.length) return "";
 
-    const fields = fieldNames.data.map((x) => `${x}.enum`);
+    const enumFields = fieldNames.data.map((x) => `${x}.enum`);
+    const searchFields = fieldNames.data.flatMap((x) => [
+      x + "^1.0",
+      x + ".delimiter^0.4",
+      x + ".joined^0.75",
+      x + ".prefix^0.1",
+      x + ".stem^0.95",
+    ]);
+
+    const searchStr = search();
+
+    const query = searchStr
+      ? {
+          query_string: {
+            query: searchStr + "~",
+            fields: searchFields,
+          },
+        }
+      : undefined;
 
     const aggs = Object.fromEntries(
-      fields.map((field, i) => [
+      enumFields.map((field, i) => [
         `agg${i}`,
         {
           terms: {
             field,
+            size: 100,
           },
         },
       ]),
@@ -287,6 +306,7 @@ export function useArtikelAfdelingen() {
 
     return JSON.stringify({
       aggs,
+      query,
       size: 0,
     });
   };
@@ -301,15 +321,22 @@ export function useArtikelAfdelingen() {
     })
       .then(throwIfNotOk)
       .then(parseJson)
-      .then((json) =>
-        [
-          ...new Set(
-            (Object.values(json.aggregations) as any[]).flatMap(({ buckets }) =>
-              (buckets as any[]).map(({ key }) => (key as string).trim()),
-            ),
-          ),
-        ].sort(),
-      );
+      .then((json) => {
+        const set = new Set<string>();
+        const result: string[] = [];
+        const aggregations: any[] = Object.values(json.aggregations);
+        aggregations.forEach(({ buckets }) => {
+          (buckets as any[]).forEach(({ key }) => {
+            const sanitized = key.trim().toLocaleLowerCase();
+            if (!set.has(sanitized)) {
+              set.add(sanitized);
+              result.push(key);
+            }
+          });
+        });
+        result.sort();
+        return result;
+      });
 
   return ServiceResult.fromFetcher(getPayload, fetcher);
 }

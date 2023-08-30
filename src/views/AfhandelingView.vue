@@ -15,9 +15,7 @@
 
   <back-link />
 
-  <simple-spinner
-    v-if="saving || gespreksresultaten.loading || afdelingen.loading"
-  />
+  <simple-spinner v-if="saving || gespreksresultaten.loading" />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
@@ -319,14 +317,14 @@
               >Afdeling</label
             >
             <div class="relative">
-              <search-combobox
+              <service-data-search
+                v-model="vraag.afdeling"
+                :get-data="(x) => useArtikelAfdelingSearch(x)"
+                :map-value="(x) => x"
                 :id="'afdeling' + idx"
                 class="utrecht-textbox utrecht-textbox--html-input"
-                v-model="vraag.afdeling"
-                :list-items="afdelingDataItems[idx]"
                 :required="true"
                 placeholder="Zoek een afdeling"
-                :exact-match="true"
               />
             </div>
 
@@ -447,16 +445,11 @@ import {
   ContactverzoekFormulier,
   saveContactverzoek,
 } from "@/features/contactverzoek";
-import {
-  writeContactmomentDetails,
-  type ContactmomentDetails,
-} from "@/features/contactmoment/write-contactmoment-details";
+import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
-import { useArtikelAfdelingen } from "@/features/search/service";
-import { ServiceResult } from "@/services";
-import SearchCombobox from "@/components/SearchCombobox.vue";
-import { computed } from "vue";
+import { useArtikelAfdelingSearch } from "@/features/search/service";
+import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -775,26 +768,6 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
-
-const afdelingen = useArtikelAfdelingen();
-const getFilteredAfdelingen = (v: string | undefined) => {
-  if (!afdelingen.success) return afdelingen;
-  let items = afdelingen.data;
-  if (v) {
-    const search = v.toLocaleLowerCase();
-    items = items.filter((x) => x.toLocaleLowerCase().includes(search));
-  }
-  if (items.length > 10) {
-    items.splice(10, items.length - 10);
-  }
-  return ServiceResult.success(items.map((value) => ({ value })));
-};
-const afdelingDataItems = computed(
-  () =>
-    contactmomentStore.huidigContactmoment?.vragen.map((x) =>
-      getFilteredAfdelingen(x.afdeling),
-    ) || [],
-);
 </script>
 
 <style scoped lang="scss">
