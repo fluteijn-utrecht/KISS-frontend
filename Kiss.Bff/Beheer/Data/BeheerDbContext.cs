@@ -44,6 +44,7 @@ namespace Kiss.Bff.Beheer.Data
             modelBuilder.Entity<ContactmomentDetails>(l =>
             {
                 l.HasIndex(x => x.Vraag);
+                l.HasIndex(x => x.VerantwoordelijkeAfdeling);
             });
 
             modelBuilder.Entity<ContactVerzoekVragenSet>()

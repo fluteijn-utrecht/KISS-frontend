@@ -14,5 +14,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         public string? Vraag { get; set; }
         public string? SpecifiekeVraag { get; set; }
         public string? EmailadresKcm { get; set; }
+        public string? VerantwoordelijkeAfdeling { get; set; }
     }
 }

@@ -81,6 +81,7 @@ export interface Vraag {
   vraag: Bron | undefined;
   specifiekevraag: string;
   vacs: { vac: Bron; shouldStore: boolean }[];
+  afdeling: string;
 }
 
 function initVraag(): Vraag {
@@ -112,6 +113,7 @@ function initVraag(): Vraag {
     vacs: [],
     vraag: undefined,
     specifiekevraag: "",
+    afdeling: "",
   };
 }
 

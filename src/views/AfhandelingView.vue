@@ -15,7 +15,9 @@
 
   <back-link />
 
-  <simple-spinner v-if="saving || gespreksresultaten.loading" />
+  <simple-spinner
+    v-if="saving || gespreksresultaten.loading || afdelingen.loading"
+  />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
@@ -313,6 +315,21 @@
               </option>
             </select>
 
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
+            <div class="relative">
+              <search-combobox
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                v-model="vraag.afdeling"
+                :list-items="afdelingDataItems[idx]"
+                :required="true"
+                placeholder="Zoek een afdeling"
+                :exact-match="true"
+              />
+            </div>
+
             <label
               :for="'hoofdvraag' + idx"
               class="utrecht-form-label required"
@@ -413,7 +430,6 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
 import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
-
 import {
   koppelKlant,
   saveContactmoment,
@@ -423,7 +439,6 @@ import {
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
 } from "@/features/contactmoment";
-
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
@@ -432,9 +447,16 @@ import {
   ContactverzoekFormulier,
   saveContactverzoek,
 } from "@/features/contactverzoek";
-import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
+import {
+  writeContactmomentDetails,
+  type ContactmomentDetails,
+} from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
+import { useArtikelAfdelingen } from "@/features/search/service";
+import { ServiceResult } from "@/services";
+import SearchCombobox from "@/components/SearchCombobox.vue";
+import { computed } from "vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -556,6 +578,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurstaal: "",
     medewerker: "",
     startdatum: vraag.startdatum,
+    verantwoordelijkeAfdeling: vraag.afdeling,
     einddatum: new Date().toISOString(),
   };
 
@@ -752,6 +775,26 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
+
+const afdelingen = useArtikelAfdelingen();
+const getFilteredAfdelingen = (v: string | undefined) => {
+  if (!afdelingen.success) return afdelingen;
+  let items = afdelingen.data;
+  if (v) {
+    const search = v.toLocaleLowerCase();
+    items = items.filter((x) => x.toLocaleLowerCase().includes(search));
+  }
+  if (items.length > 10) {
+    items.splice(10, items.length - 10);
+  }
+  return ServiceResult.success(items.map((value) => ({ value })));
+};
+const afdelingDataItems = computed(
+  () =>
+    contactmomentStore.huidigContactmoment?.vragen.map((x) =>
+      getFilteredAfdelingen(x.afdeling),
+    ) || [],
+);
 </script>
 
 <style scoped lang="scss">
@@ -865,5 +908,9 @@ select {
       margin-inline-start: calc(var(--label-width) + var(--label-gap));
     }
   }
+}
+
+.relative {
+  position: relative;
 }
 </style>

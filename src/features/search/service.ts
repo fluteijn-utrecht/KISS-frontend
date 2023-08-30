@@ -132,9 +132,10 @@ export function useGlobalSearch(
   });
 }
 
+const engineBaseUrl = "/api/enterprisesearch/api/as/v1/engines/kiss-engine";
+
 function useQueryTemplate() {
-  const url =
-    "/api/enterprisesearch/api/as/v1/engines/kiss-engine/search_explain";
+  const url = engineBaseUrl + "/search_explain";
 
   const body = JSON.stringify({
     query: "{{query}}",
@@ -171,7 +172,7 @@ function useQueryTemplate() {
         const indices = indicesStr.split(",");
         return {
           indices,
-          template: JSON.stringify(query_body),
+          template: JSON.stringify(query_body, null, 2),
         };
       });
   }
@@ -249,4 +250,66 @@ export function useSources() {
   }
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
+}
+
+function useAfdelingenFieldNames() {
+  const url = engineBaseUrl + "/schema";
+  return ServiceResult.fromFetcher(url, (u) =>
+    fetchLoggedIn(u)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((x) =>
+        Object.keys(x).filter((x) => x.endsWith("afdelingen.afdelingNaam")),
+      ),
+  );
+}
+
+export function useArtikelAfdelingen() {
+  const fieldNames = useAfdelingenFieldNames();
+
+  const url = `${globalSearchBaseUri}/_search`;
+
+  const getPayload = () => {
+    if (!fieldNames.success || !fieldNames.data.length) return "";
+
+    const fields = fieldNames.data.map((x) => `${x}.enum`);
+
+    const aggs = Object.fromEntries(
+      fields.map((field, i) => [
+        `agg${i}`,
+        {
+          terms: {
+            field,
+          },
+        },
+      ]),
+    );
+
+    return JSON.stringify({
+      aggs,
+      size: 0,
+    });
+  };
+
+  const fetcher = (body: string) =>
+    fetchLoggedIn(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body,
+    })
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((json) =>
+        [
+          ...new Set(
+            (Object.values(json.aggregations) as any[]).flatMap(({ buckets }) =>
+              (buckets as any[]).map(({ key }) => (key as string).trim()),
+            ),
+          ),
+        ].sort(),
+      );
+
+  return ServiceResult.fromFetcher(getPayload, fetcher);
 }
