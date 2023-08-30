@@ -21,7 +21,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         {
             var list = await _db.ContactVerzoekVragenSets.ToListAsync();
 
-            if (list == null || !list.Any())
+            if (list == null)
             {
                 return Ok(new List<ContactVerzoekVragenSet>());
             }

@@ -108,11 +108,7 @@
                 v-model="form.vragenSetId"
                 @input="setActive"
               >
-                <option
-                  v-for="item in data || []"
-                  :key="item.id"
-                  :value="item.id"
-                >
+                <option v-for="item in data" :key="item.id" :value="item.id">
                   {{ item.naam }}
                 </option>
               </select>
