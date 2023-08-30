@@ -99,38 +99,36 @@
     <form-fieldset>
       <service-data-wrapper :data="vragenSets" class="container">
         <template #success="{ data }">
-          <label class="utrecht-form-label">
-            <span> Onderwerp </span>
-            <select
-              class="utrecht-select utrecht-select--html-select"
-              name="VragenSets"
-              v-model="form.vragenSetId"
-              @input="setActive"
-            >
-              <option
-                v-for="item in data || []"
-                :key="item.id"
-                :value="item.id"
+          <template v-if="data && data.length > 0">
+            <label class="utrecht-form-label">
+              <span> Onderwerp </span>
+              <select
+                class="utrecht-select utrecht-select--html-select"
+                name="VragenSets"
+                v-model="form.vragenSetId"
+                @input="setActive"
               >
-                {{ item.naam }}
-              </option>
-            </select>
-          </label>
-          <template v-if="form.contactVerzoekVragenSet">
-            <template
-              v-for="(item, index) in form.contactVerzoekVragenSet
-                .vraagAntwoord"
-              :key="index"
-            >
-              <label class="utrecht-form-label">
-                <span> {{ item.vraag }} </span>
-                <input
-                  class="utrecht-textbox utrecht-textbox--html-input"
-                  type="text"
-                  v-model="item.antwoord"
-                  @input="setActive"
-                />
-              </label>
+                <option v-for="item in data" :key="item.id" :value="item.id">
+                  {{ item.naam }}
+                </option>
+              </select>
+            </label>
+            <template v-if="form.contactVerzoekVragenSet">
+              <template
+                v-for="(item, index) in form.contactVerzoekVragenSet
+                  .vraagAntwoord"
+                :key="index"
+              >
+                <label class="utrecht-form-label">
+                  <span> {{ item.vraag }} </span>
+                  <input
+                    class="utrecht-textbox utrecht-textbox--html-input"
+                    type="text"
+                    v-model="item.antwoord"
+                    @input="setActive"
+                  />
+                </label>
+              </template>
             </template>
           </template>
         </template>
