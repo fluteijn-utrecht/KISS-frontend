@@ -47,8 +47,9 @@ KISS uses Elastic search. Building a search query is composed of two steps:
 This is why both Enterprise Search and Elasticsearch need to be accessed by KISS.
 
 Follow these steps to connect your local development environment to an Elastic search instance hosted in Azure/kubernetes. 
+(Note: before you follow these steps make sure you have the role "Co-Administrator" with the corresponding subscription. if you dont, search in the azure subsription and add in the tab 'Access Control', your user with the role 'Co-Administator'. this can be found under the sub tab 'classic administrator'. otherwise redo the steps below)
 1. Install the azure cli
-1. `az login (once)`
+1. `az login` (once, and make sure that the account you're logging in with, has a the correct role with the corresponding subscription)
 1. `az account set --subscription [...your subscriptionid...]` (once)
 1. `az aks get-credentials --resource-group [for example: KISS_Kubernetes_Dev] --name [for example: KISS_Kubernetes_Dev]`
 1. `kubectl config set-context --current --namespace=[for example: kiss-namespace]`
