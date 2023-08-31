@@ -4,7 +4,6 @@ import {
   ServiceResult,
   throwIfNotOk,
   type Paginated,
-  type PaginatedResult,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -58,6 +57,9 @@ function mapSuggestions(json: any): string[] {
   return [...new Set(result)];
 }
 
+const queryRegex = /\{\{query\}\}/g;
+const queryToken = "{{query}}";
+
 export function useGlobalSearch(
   parameters: Ref<{
     search?: string;
@@ -84,7 +86,7 @@ export function useGlobalSearch(
     const from = (page - 1) * pageSize;
 
     const replaced = template.value.replace(
-      /\{\{query\}\}/g,
+      queryRegex,
       parameters.value.search,
     );
 
@@ -134,16 +136,15 @@ export function useGlobalSearch(
 }
 
 const engineBaseUrl = "/api/enterprisesearch/api/as/v1/engines/kiss-engine";
+const explainUrl = engineBaseUrl + "/search_explain";
 
 function useQueryTemplate() {
-  const url = engineBaseUrl + "/search_explain";
-
   const body = JSON.stringify({
-    query: "{{query}}",
+    query: queryToken,
   });
 
-  function fetcher(url: string) {
-    return fetchLoggedIn(url, {
+  function fetcher() {
+    return fetchLoggedIn(explainUrl, {
       method: "POST",
       body,
       headers: {
@@ -159,7 +160,7 @@ function useQueryTemplate() {
         query_body.indices_boost = [{ ".ent-search*": 1 }, { "*": 10 }];
         query_body.suggest = {
           suggestions: {
-            prefix: "{{query}}",
+            prefix: queryToken,
             completion: {
               field: "_completion",
               skip_duplicates: true,
@@ -178,7 +179,11 @@ function useQueryTemplate() {
       });
   }
 
-  return ServiceResult.fromFetcher(url, fetcher);
+  return ServiceResult.fromFetcher(explainUrl, fetcher, {
+    getUniqueId() {
+      return explainUrl + body;
+    },
+  });
 }
 
 const BRON_QUERY = JSON.stringify({
@@ -265,39 +270,58 @@ function useAfdelingenFieldNames() {
   );
 }
 
+function useArtikelAfdelingSearchTemplate() {
+  const fieldNames = useAfdelingenFieldNames();
+  const getBody = () => {
+    if (!fieldNames.success || !fieldNames.data.length) return "";
+    const search_fields = Object.fromEntries(
+      fieldNames.data.map((key) => [key, {}]),
+    );
+    return JSON.stringify({
+      query: queryToken,
+      search_fields,
+    });
+  };
+  const fetcher = (body: string) =>
+    fetchLoggedIn(explainUrl, {
+      method: "POST",
+      body,
+      headers: {
+        "content-type": "application/json",
+      },
+    })
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((r) => JSON.stringify(r.query_body.query));
+
+  return ServiceResult.fromFetcher(getBody, fetcher);
+}
+
 export function useArtikelAfdelingSearch(search: () => string | undefined) {
   const url = `${globalSearchBaseUri}/_search`;
   const fieldNames = useAfdelingenFieldNames();
+  const template = useArtikelAfdelingSearchTemplate();
 
   const getPayload = () => {
-    if (!fieldNames.success || !fieldNames.data.length) return "";
-
-    const enumFields = fieldNames.data.map((x) => `${x}.enum`);
-    const searchFields = fieldNames.data.flatMap((x) => [
-      x + "^1.0",
-      x + ".delimiter^0.4",
-      x + ".joined^0.75",
-      x + ".prefix^0.1",
-      x + ".stem^0.95",
-    ]);
+    if (
+      !fieldNames.success ||
+      !fieldNames.data.length ||
+      !template.success ||
+      !template.data
+    )
+      return "";
 
     const searchStr = search();
-
     const query = searchStr
-      ? {
-          query_string: {
-            query: searchStr + "~",
-            fields: searchFields,
-          },
-        }
+      ? JSON.parse(template.data.replace(queryRegex, searchStr))
       : undefined;
 
     const aggs = Object.fromEntries(
-      enumFields.map((field, i) => [
+      fieldNames.data.map((field, i) => [
         `agg${i}`,
         {
           terms: {
-            field,
+            field: field + ".enum",
             size: 100,
           },
         },
@@ -327,9 +351,8 @@ export function useArtikelAfdelingSearch(search: () => string | undefined) {
         const aggregations: any[] = Object.values(json.aggregations);
         aggregations.forEach(({ buckets }) => {
           (buckets as any[]).forEach(({ key }) => {
-            const sanitized = key.trim().toLocaleLowerCase();
-            if (!set.has(sanitized)) {
-              set.add(sanitized);
+            if (!set.has(key)) {
+              set.add(key);
               result.push(key);
             }
           });
