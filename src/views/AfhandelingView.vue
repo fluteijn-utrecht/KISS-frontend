@@ -313,21 +313,6 @@
               </option>
             </select>
 
-            <label :for="'afdeling' + idx" class="utrecht-form-label required"
-              >Afdeling</label
-            >
-            <div class="relative">
-              <service-data-search
-                v-model="vraag.afdeling"
-                :get-data="(x) => useArtikelAfdelingSearch(x)"
-                :map-value="(x) => x"
-                :id="'afdeling' + idx"
-                class="utrecht-textbox utrecht-textbox--html-input"
-                :required="true"
-                placeholder="Zoek een afdeling"
-              />
-            </div>
-
             <label
               :for="'hoofdvraag' + idx"
               class="utrecht-form-label required"
@@ -384,6 +369,21 @@
               :id="'notitie' + idx"
               v-model="vraag.notitie"
             ></textarea>
+
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
+            <div class="relative">
+              <service-data-search
+                v-model="vraag.afdeling"
+                :get-data="(x) => useArtikelAfdelingSearch(x)"
+                :map-value="(x) => x"
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                :required="true"
+                placeholder="Zoek een afdeling"
+              />
+            </div>
           </fieldset>
         </section>
 
