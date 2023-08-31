@@ -33,12 +33,14 @@ export type Kennisartikel = {
   url: string;
   title: string;
   sections: string[];
+  afdelingen?: Afdeling[];
 };
 
 export type Vac = {
   url: string;
   vraag: string;
   antwoord: string;
+  afdelingen?: Afdeling[];
 };
 
 export type Nieuwsbericht = {
@@ -50,3 +52,5 @@ export type Werkinstructie = {
   url: string;
   title: string;
 };
+
+export type Afdeling = { afdelingNaam: string };

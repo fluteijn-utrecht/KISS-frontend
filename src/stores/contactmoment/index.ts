@@ -81,7 +81,7 @@ export interface Vraag {
   vraag: Bron | undefined;
   specifiekevraag: string;
   vacs: { vac: Bron; shouldStore: boolean }[];
-  afdeling: string;
+  afdeling?: string;
 }
 
 function initVraag(): Vraag {
@@ -328,6 +328,9 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
+      huidigeVraag.afdeling =
+        kennisartikel.afdelingen?.[0]?.afdelingNaam?.trim();
+
       const record = huidigeVraag.kennisartikelen.find(
         (k) => k.kennisartikel.url === kennisartikel.url,
       );
@@ -362,10 +365,12 @@ export const useContactmomentStore = defineStore("contactmoment", {
       huidigeVraag.vraag = website;
     },
 
-    addVac(vraag: string, url: string) {
+    addVac(vraag: string, url: string, afdeling?: string) {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
+
+      huidigeVraag.afdeling = afdeling?.trim();
 
       const record = huidigeVraag.vacs.find((k) => k.vac.title === vraag);
 

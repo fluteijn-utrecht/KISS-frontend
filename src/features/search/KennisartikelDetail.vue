@@ -139,6 +139,7 @@ watch(
     emit(KENNISARTIKEL_SELECTED, {
       title: props.title,
       url: props.kennisartikelRaw.url,
+      afdelingen: props.kennisartikelRaw.afdelingen,
       sections,
     });
   },
