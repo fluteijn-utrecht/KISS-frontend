@@ -115,6 +115,7 @@ function initVraag(): Vraag {
     vraag: undefined,
     specifiekevraag: "",
     afdeling: "",
+    artikelAfdeling: "",
   };
 }
 
