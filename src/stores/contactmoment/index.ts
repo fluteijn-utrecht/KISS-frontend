@@ -81,6 +81,7 @@ export interface Vraag {
   vraag: Bron | undefined;
   specifiekevraag: string;
   vacs: { vac: Bron; shouldStore: boolean }[];
+  artikelAfdeling?: string;
   afdeling?: string;
 }
 
@@ -328,7 +329,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
-      huidigeVraag.afdeling =
+      huidigeVraag.artikelAfdeling =
         kennisartikel.afdelingen?.[0]?.afdelingNaam?.trim();
 
       const record = huidigeVraag.kennisartikelen.find(
@@ -370,7 +371,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
-      huidigeVraag.afdeling = afdeling?.trim();
+      huidigeVraag.artikelAfdeling = afdeling?.trim();
 
       const record = huidigeVraag.vacs.find((k) => k.vac.title === vraag);
 

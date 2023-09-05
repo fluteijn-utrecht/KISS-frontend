@@ -374,10 +374,9 @@
               >Afdeling</label
             >
             <div class="relative">
-              <service-data-search
+              <afdelingen-search
                 v-model="vraag.afdeling"
-                :get-data="(x) => useArtikelAfdelingSearch(x)"
-                :map-value="(x) => x"
+                :exact-match="true"
                 :id="'afdeling' + idx"
                 class="utrecht-textbox utrecht-textbox--html-input"
                 :required="true"
@@ -425,7 +424,6 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-
 import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
@@ -443,13 +441,14 @@ import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
 import {
   ContactverzoekFormulier,
+  fetchAfdeling,
   saveContactverzoek,
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
-import { useArtikelAfdelingSearch } from "@/features/search/service";
-import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
+import AfdelingenSearch from "@/features/contactverzoek/AfdelingenSearch.vue";
+
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -768,6 +767,19 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
+
+onMounted(() => {
+  if (!contactmomentStore.huidigContactmoment) return;
+  const promises = contactmomentStore.huidigContactmoment.vragen.map(
+    async (vraag) => {
+      if (vraag.artikelAfdeling && !vraag.afdeling) {
+        vraag.afdeling = (await fetchAfdeling(vraag.artikelAfdeling)).page[0]
+          ?.naam;
+      }
+    },
+  );
+  return Promise.all(promises);
+});
 </script>
 
 <style scoped lang="scss">
