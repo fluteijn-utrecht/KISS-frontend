@@ -236,7 +236,7 @@ import {
   FormFieldset,
 } from "@utrecht/component-library-vue";
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
+import ServiceDataSearch from "./ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
 import { useAfdelingen, useVragenSets, useGroepen } from "./service";
