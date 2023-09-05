@@ -57,9 +57,6 @@ function mapSuggestions(json: any): string[] {
   return [...new Set(result)];
 }
 
-const queryRegex = /\{\{query\}\}/g;
-const queryToken = "{{query}}";
-
 export function useGlobalSearch(
   parameters: Ref<{
     search?: string;
@@ -86,7 +83,7 @@ export function useGlobalSearch(
     const from = (page - 1) * pageSize;
 
     const replaced = template.value.replace(
-      queryRegex,
+      /\{\{query\}\}/g,
       parameters.value.search,
     );
 
@@ -135,16 +132,16 @@ export function useGlobalSearch(
   });
 }
 
-const engineBaseUrl = "/api/enterprisesearch/api/as/v1/engines/kiss-engine";
-const explainUrl = engineBaseUrl + "/search_explain";
-
 function useQueryTemplate() {
+  const url =
+    "/api/enterprisesearch/api/as/v1/engines/kiss-engine/search_explain";
+
   const body = JSON.stringify({
-    query: queryToken,
+    query: "{{query}}",
   });
 
-  function fetcher() {
-    return fetchLoggedIn(explainUrl, {
+  function fetcher(url: string) {
+    return fetchLoggedIn(url, {
       method: "POST",
       body,
       headers: {
@@ -160,7 +157,7 @@ function useQueryTemplate() {
         query_body.indices_boost = [{ ".ent-search*": 1 }, { "*": 10 }];
         query_body.suggest = {
           suggestions: {
-            prefix: queryToken,
+            prefix: "{{query}}",
             completion: {
               field: "_completion",
               skip_duplicates: true,
@@ -174,16 +171,12 @@ function useQueryTemplate() {
         const indices = indicesStr.split(",");
         return {
           indices,
-          template: JSON.stringify(query_body, null, 2),
+          template: JSON.stringify(query_body),
         };
       });
   }
 
-  return ServiceResult.fromFetcher(explainUrl, fetcher, {
-    getUniqueId() {
-      return explainUrl + body;
-    },
-  });
+  return ServiceResult.fromFetcher(url, fetcher);
 }
 
 const BRON_QUERY = JSON.stringify({
