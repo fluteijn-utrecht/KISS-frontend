@@ -16,7 +16,7 @@
       <search-combobox
         :list-items="listItems"
         v-model="state.searchInput"
-        placeholder="Zoeken"
+        placeholder="Zoeken..."
         @search.prevent="applySearch"
         id="global-search-input"
       />
@@ -127,7 +127,9 @@
                   :heading-level="2"
                 />
                 <kennisartikel-detail
-                  v-else-if="source === 'Kennisartikel'"
+                  v-else-if="
+                    source === 'Kennisartikel' || source === 'Kennisbank'
+                  "
                   :kennisartikel-raw="jsonObject"
                   :title="title"
                   :heading-level="2"
@@ -377,8 +379,7 @@ form {
 }
 
 .search-bar {
-  max-width: 40rem;
-  width: 100%;
+  max-width: min(40rem, 100%);
   position: relative;
 
   :deep([role="combobox"]) {

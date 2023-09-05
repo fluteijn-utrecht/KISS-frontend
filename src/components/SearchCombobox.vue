@@ -255,7 +255,7 @@ function scrollIntoView() {
 <style lang="scss" scoped>
 .spinner.small {
   font-size: 0.875rem;
-  color: black;
+  color: var(--color-black);
   position: absolute;
   inset-inline-end: 50%;
   transform: translateX(100%);

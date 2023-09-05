@@ -1,81 +1,68 @@
 <template>
-  <section>
-    <utrecht-heading :level="1">Persoonsinformatie</utrecht-heading>
-    <nav>
-      <ul>
-        <li>
-          <router-link :to="{ name: 'personen' }">{{
-            "< Personen zoeken"
-          }}</router-link>
-        </li>
-      </ul>
-    </nav>
+  <back-link />
 
-    <tab-list v-model="activeTab">
-      <tab-list-data-item label="Contactgegevens" :data="klant">
-        <template #success="{ data }">
-          <klant-details :klant="data" />
-        </template>
-      </tab-list-data-item>
+  <utrecht-heading :level="1">Persoonsinformatie</utrecht-heading>
 
-      <tab-list-data-item label="BRP gegevens" :data="persoon">
-        <template #success="{ data }">
-          <brp-gegevens v-if="data" :persoon="data" />
-        </template>
-      </tab-list-data-item>
+  <tab-list v-model="activeTab">
+    <tab-list-data-item label="Contactgegevens" :data="klant">
+      <template #success="{ data }">
+        <klant-details :klant="data" />
+      </template>
+    </tab-list-data-item>
 
-      <tab-list-data-item
-        label="Contactmomenten"
-        :data="contactmomenten"
-        :disabled="(c) => !c.count"
-      >
-        <template #success="{ data }">
-          <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+    <tab-list-data-item label="BRP gegevens" :data="persoon">
+      <template #success="{ data }">
+        <brp-gegevens v-if="data" :persoon="data" />
+      </template>
+    </tab-list-data-item>
 
-          <contactmomenten-overzicht :contactmomenten="data.page">
-            <template v-slot:object="{ object }">
-              <zaak-preview :zaakurl="object.object"></zaak-preview>
-            </template>
-          </contactmomenten-overzicht>
-        </template>
-      </tab-list-data-item>
+    <tab-list-data-item
+      label="Contactmomenten"
+      :data="contactmomenten"
+      :disabled="(c) => !c.count"
+    >
+      <template #success="{ data }">
+        <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-      <tab-list-data-item
-        label="Zaken"
-        :data="zaken"
-        :disabled="(c) => !c.count"
-      >
-        <template #success="{ data }">
-          <utrecht-heading :level="2"> Zaken </utrecht-heading>
+        <contactmomenten-overzicht :contactmomenten="data.page">
+          <template v-slot:object="{ object }">
+            <zaak-preview :zaakurl="object.object"></zaak-preview>
+          </template>
+        </contactmomenten-overzicht>
+      </template>
+    </tab-list-data-item>
 
-          <zaken-overzicht
-            :zaken="data.page"
-            :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
-          />
-        </template>
-      </tab-list-data-item>
+    <tab-list-data-item label="Zaken" :data="zaken" :disabled="(c) => !c.count">
+      <template #success="{ data }">
+        <utrecht-heading :level="2"> Zaken </utrecht-heading>
 
-      <tab-list-data-item
-        label="Contactverzoeken"
-        :data="contactverzoeken"
-        :disabled="(c) => !c.count"
-      >
-        <template #success="{ data }">
-          <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+        <zaken-overzicht
+          :zaken="data.page"
+          :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
+        />
+      </template>
+    </tab-list-data-item>
 
-          <contactverzoeken-overzicht :contactverzoeken="data.page">
-            <template #contactmoment="{ url }">
-              <contactmoment-preview :url="url">
-                <template #object="{ object }">
-                  <zaak-preview :zaakurl="object.object" />
-                </template>
-              </contactmoment-preview>
-            </template>
-          </contactverzoeken-overzicht>
-        </template>
-      </tab-list-data-item>
-    </tab-list>
-  </section>
+    <tab-list-data-item
+      label="Contactverzoeken"
+      :data="contactverzoeken"
+      :disabled="(c) => !c.count"
+    >
+      <template #success="{ data }">
+        <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
+
+        <contactverzoeken-overzicht :contactverzoeken="data.page">
+          <template #contactmoment="{ url }">
+            <contactmoment-preview :url="url">
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object" />
+              </template>
+            </contactmoment-preview>
+          </template>
+        </contactverzoeken-overzicht>
+      </template>
+    </tab-list-data-item>
+  </tab-list>
 </template>
 
 <script setup lang="ts">
@@ -97,6 +84,7 @@ import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
+import BackLink from "@/components/BackLink.vue";
 
 const activeTab = ref("");
 
@@ -141,9 +129,3 @@ watch(
   { immediate: true },
 );
 </script>
-
-<style scoped lang="scss">
-section > * {
-  margin-block-end: var(--spacing-large);
-}
-</style>

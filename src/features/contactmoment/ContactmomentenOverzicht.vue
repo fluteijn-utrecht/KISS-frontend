@@ -2,7 +2,7 @@
   <section>
     <expandable-table-list :items="contactmomenten" item-key="url">
       <template #header>
-        <span id="datum-header">Datum</span>
+        <span id="datum-header" class="icon-after sort-descending">Datum</span>
         <span id="medewerker-header">Medewerker</span>
         <span id="kanaal-header">Kanaal</span>
         <span id="gespreksresultaat-header">Gespreksresultaat</span>

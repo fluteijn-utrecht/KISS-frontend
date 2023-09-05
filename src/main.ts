@@ -31,4 +31,20 @@ app.directive("focus", {
   },
 });
 
+if (import.meta.env.PROD) {
+  addEventListener(
+    "beforeunload",
+    (e) => {
+      e.preventDefault();
+      return (e.returnValue = "");
+    },
+    { capture: true },
+  );
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "F5") {
+      e.preventDefault();
+    }
+  });
+}
+
 app.mount("#app");

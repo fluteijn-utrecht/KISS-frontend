@@ -91,8 +91,8 @@ h2 {
   label:first-child > select,
   > label:first-child + input,
   label:first-child + select {
-    border-start-start-radius: var(--radius-large);
-    border-end-start-radius: var(--radius-large);
+    border-start-start-radius: var(--radius-default);
+    border-end-start-radius: var(--radius-default);
     border-inline-start: var(--border-style);
   }
 
@@ -101,8 +101,9 @@ h2 {
   }
 
   > :last-child {
-    border-radius: 0 var(--radius-large) var(--radius-large) 0;
+    border-radius: 0 var(--radius-default) var(--radius-default) 0;
     border-inline-end: var(--border-style);
+    display: flex;
   }
 
   button {
@@ -116,7 +117,9 @@ h2 {
 
   input,
   select {
-    padding: var(--spacing-small);
+    padding: var(--utrecht-form-input-padding-block-start);
+    font-size: var(--utrecht-form-input-font-size);
+    line-height: var(--utrecht-button-line-height);
   }
 
   label {
@@ -138,7 +141,8 @@ h2 {
     padding-inline-start: var(--spacing-default);
 
     &::placeholder {
-      color: black;
+      color: var(--color-primary);
+      font-style: italic;
     }
   }
 }
@@ -210,26 +214,53 @@ details {
   &[open] > summary::after {
     transform: rotate(180deg);
   }
+
+  summary + * {
+    margin-block-start: 1px;
+  }
 }
 
 /*
 TABLES 
 */
-table.overview {
+table.overview,
+ul.overview {
+  --column-padding: var(--spacing-default);
+
   width: 100%;
 
-  thead {
-    color: var(--color-white);
-    background-color: var(--color-tertiary);
+  thead,
+  .header-row {
+    color: var(--color-accent-text);
+    background: var(--color-accent);
+    font-weight: 600;
+  }
+
+  > tbody > tr,
+  > li:not(:first-child) {
+    border-bottom: 1px solid var(--color-accent);
+  }
+
+  th,
+  td,
+  dt,
+  dd,
+  summary > *,
+  .header-row > * {
+    padding-block: var(--spacing-small);
+    padding-inline: var(--column-padding);
+  }
+
+  li:nth-of-type(odd) summary,
+  li:nth-of-type(odd) details,
+  tbody > tr:nth-of-type(even) {
+    background-color: var(--color-secondary);
   }
 
   tr {
-    border: 1px solid var(--color-tertiary);
-
     th,
     td {
       text-align: left;
-      padding-inline: var(--spacing-default);
 
       &:not(.wrap) {
         white-space: nowrap;
@@ -237,12 +268,10 @@ table.overview {
     }
 
     td {
-      padding-block: var(--spacing-default);
       font-weight: normal;
     }
 
     th {
-      padding-block: var(--spacing-small);
       font-weight: 600;
     }
 
@@ -260,8 +289,18 @@ table.overview {
 
   a,
   button {
-    color: var(--color-tertiary);
+    color: inherit;
   }
+}
+
+th[aria-sort="descending"] {
+  @extend .icon-after;
+  @extend .sort-descending;
+}
+
+th[aria-sort="ascending"] {
+  @extend .icon-after;
+  @extend .sort-ascending;
 }
 
 tr.row-link {
@@ -410,4 +449,9 @@ dt {
   p + p {
     margin-block-start: var(--spacing-small);
   }
+}
+
+// TABS ON DETAIL PAGE
+main > h1 + [role="tablist"] {
+  margin-block-start: var(--spacing-small);
 }

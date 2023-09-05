@@ -2,43 +2,48 @@
   <login-overlay>
     <template #default="{ onLogout }">
       <header
-        :class="{ contactmomentLoopt: contactmomentStore.contactmomentLoopt }"
+        :class="{
+          contactmomentLoopt: contactmomentStore.contactmomentLoopt,
+          'hide-sidebar': $route.meta.hideSidebar,
+        }"
       >
         <global-search class="search-bar" v-if="route.meta.showSearch" />
-        <a
-          :href="logoutUrl"
-          @click="onLogout"
-          @keydown.enter="onLogout"
-          class="log-out"
-          >Uitloggen</a
-        >
-        <nav v-if="route.meta.showNav">
+
+        <nav>
           <ul>
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'contacten' }"
                 ><span>Contacten</span></router-link
               >
             </li>
 
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'personen' }"
                 ><span>Personen</span></router-link
               >
             </li>
 
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'bedrijven' }"
                 ><span>Bedrijven</span></router-link
               >
             </li>
 
-            <li v-if="contactmomentStore.contactmomentLoopt">
+            <li
+              v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
+            >
               <router-link :to="{ name: 'zaken' }"
                 ><span>Zaken</span></router-link
               >
             </li>
 
-            <li>
+            <li v-if="route.meta.showNav">
               <router-link :to="{ name: 'home' }">
                 <span>Nieuws en werkinstructies</span>
 
@@ -56,15 +61,30 @@
                 >
               </router-link>
             </li>
-            <li>
+            <li v-if="route.meta.showNav">
               <router-link :to="{ name: 'links' }"
                 ><span>Links</span></router-link
               >
             </li>
-            <li v-if="isRedacteur">
+            <li
+              v-if="
+                isRedacteur &&
+                !contactmomentStore.contactmomentLoopt &&
+                route.meta.showNav
+              "
+            >
               <router-link :to="{ name: 'Beheer' }">
                 <span>Beheer</span>
               </router-link>
+            </li>
+            <li class="log-out">
+              <a
+                :href="logoutUrl"
+                @click="onLogout"
+                @keydown.enter="onLogout"
+                class="icon-before exit"
+                >Uitloggen</a
+              >
             </li>
           </ul>
         </nav>
@@ -88,7 +108,7 @@ const contactmomentStore = useContactmomentStore();
 const featuredWerkberichtenCount = useFeaturedWerkberichtenCount();
 
 const isRedacteur = computed(
-  () => user.success && user.data.isLoggedIn && user.data.isRedacteur
+  () => user.success && user.data.isLoggedIn && user.data.isRedacteur,
 );
 </script>
 
@@ -97,7 +117,7 @@ header {
   background-color: var(--color-primary);
   display: grid;
   grid-template-areas:
-    "bar logout"
+    "bar bar"
     "results results"
     "expand expand"
     "nav nav";
@@ -105,18 +125,19 @@ header {
   align-items: center;
 
   .log-out {
-    grid-area: logout;
-    color: var(--color-white);
-    padding: var(--spacing-small);
-    margin-left: auto;
-    margin-right: var(--container-padding);
+    margin-inline-start: auto;
   }
+}
+
+nav {
+  grid-area: nav;
 }
 
 nav ul {
   width: 100%;
   background-color: var(--color-primary);
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-default);
   padding-block: var(--spacing-small);
   list-style: none;

@@ -5,17 +5,19 @@
   --color-secondary: #eceff1;
   --color-tertiary: #778da9;
   --color-headings: #1b263b;
-  --color-accent: #258839;
-  --color-accent-hover: #89cf5e;
+  --color-accent: #acc8e5;
+  --color-accent-text: var(--color-headings);
+  --color-accent-hover: #cfe4f7;
   --color-accent-hover-text: var(--color-headings);
-  --color-error: #c82d2d;
-  --color-error-hover: #f47171;
+  --color-error: #ff8585;
+  --color-error-hover: #ffb8b8;
   --color-error-hover-text: var(--color-headings);
   --color-warning: orange;
   --color-category-default: hsl(184deg 54% 70%);
   --color-category-website: hsl(285deg 56% 83%);
   --color-white: #fff;
   --color-white-hover: #e4e8ee;
+  --color-black: var(--color-headings);
   --sidebar-color-1: var(--color-headings);
   --sidebar-color-2: var(--color-primary);
   --color-grey: #999;
@@ -36,7 +38,7 @@
   --spacing-extralarge: 6rem;
   --header-height: 6rem;
   --text-margin: 1.5rem;
-  --line-height-default: 1.5;
+  --line-height-default: 1.5rem;
 
   // other
   --radius-default: 0.4rem;
@@ -52,11 +54,11 @@
 .kiss-theme {
   --font-family: "Open Sans", sans-serif;
   --utrecht-paragraph-font-family: var(--font-family);
-  --utrecht-paragraph-color: black;
+  --utrecht-paragraph-color: var(--color-black);
   --utrecht-heading-font-family: var(--font-family);
   --utrecht-document-font-family: var(--font-family);
   --utrecht-document-font-size: 1rem;
-  --utrecht-document-color: black;
+  --utrecht-document-color: var(--color-black);
   --utrecht-heading-color: var(--color-headings);
   --utrecht-paragraph-font-size: 1rem;
   --utrecht-heading-font-weight: 600;
@@ -122,8 +124,8 @@
   --utrecht-form-input-border-color: var(--color-primary);
   --utrecht-form-input-border-radius: var(--radius-default);
   --utrecht-form-input-border-width: 1px;
-  --utrecht-form-input-color: black;
-  --utrecht-form-input-font-size: 1.125rem;
+  --utrecht-form-input-color: var(--color-black);
+  --utrecht-form-input-font-size: 1rem;
   --utrecht-form-input-padding-block-end: var(--spacing-small);
   --utrecht-form-input-padding-block-start: var(--spacing-small);
   --utrecht-form-input-padding-inline-end: var(--spacing-small);
@@ -151,10 +153,6 @@
   .utrecht-button:focus:not(:focus-visible) {
     --utrecht-focus-outline-style: none;
     --utrecht-primary-action-focus-outline-style: none;
-  }
-
-  .utrecht-button:not(.utrecht-button--subtle) {
-    box-shadow: var(--shadow-default);
   }
 
   .utrecht-button:active:not(:disabled) {
