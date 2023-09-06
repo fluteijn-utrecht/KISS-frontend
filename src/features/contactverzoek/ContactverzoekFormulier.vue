@@ -39,16 +39,13 @@
     <template v-else>
       <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
-        <service-data-search
+        <afdelingen-search
+          v-model="form.afdeling"
           class="utrecht-textbox utrecht-textbox--html-input"
           :required="true"
-          v-model="form.afdeling"
           placeholder="Zoek een afdeling"
           @update:model-value="setActive"
-          :get-data="useAfdelingen"
-          :map-value="(x) => x?.naam"
           @keydown.enter="setEnterPressed"
-          :map-description="(x) => x?.identificatie"
         />
       </label>
 
@@ -236,11 +233,11 @@ import {
   FormFieldset,
 } from "@utrecht/component-library-vue";
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import ServiceDataSearch from "./ServiceDataSearch.vue";
+import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
-import { useAfdelingen, useVragenSets, useGroepen } from "./service";
-
+import { useVragenSets, useGroepen } from "./service";
+import AfdelingenSearch from "@/components/AfdelingenSearch.vue";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();

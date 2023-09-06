@@ -13,6 +13,12 @@ export * from "./types";
 import type { ContactVerzoekVragenSet } from "@/features/contactverzoek/types";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
+interface Afdeling {
+  id: string;
+  identificatie: string;
+  naam: string;
+}
+
 export type ContactmomentContactVerzoek = {
   url?: string;
   isMedewerker?: true;
@@ -23,11 +29,7 @@ export type ContactmomentContactVerzoek = {
     voorvoegselAchternaam?: string;
     achternaam?: string;
   };
-  afdeling?: {
-    id: string;
-    identificatie: string;
-    naam: string;
-  };
+  afdeling?: Afdeling;
   groep?: {
     identificatie: string;
     naam: string;
@@ -84,7 +86,7 @@ export interface Vraag {
   vraag: Bron | undefined;
   specifiekevraag: string;
   vacs: { vac: Bron; shouldStore: boolean }[];
-  afdeling?: string;
+  afdeling?: Afdeling;
 }
 
 function initVraag(): Vraag {
@@ -116,7 +118,7 @@ function initVraag(): Vraag {
     vacs: [],
     vraag: undefined,
     specifiekevraag: "",
-    afdeling: "",
+    afdeling: undefined,
   };
 }
 

@@ -442,13 +442,14 @@ import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
 import {
   ContactverzoekFormulier,
-  fetchAfdelingen,
   saveContactverzoek,
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
-import AfdelingenSearch from "@/features/contactverzoek/AfdelingenSearch.vue";
+import AfdelingenSearch, {
+  fetchAfdelingen,
+} from "@/components/AfdelingenSearch.vue";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -571,7 +572,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurstaal: "",
     medewerker: "",
     startdatum: vraag.startdatum,
-    verantwoordelijkeAfdeling: vraag.afdeling,
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
     einddatum: new Date().toISOString(),
   };
 
@@ -775,7 +776,7 @@ const updateAfdeling = async (vraag: Vraag) => {
     return;
   }
   const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
-  vraag.afdeling = artikelAfdelingen.page[0]?.naam;
+  vraag.afdeling = artikelAfdelingen.page[0];
 };
 
 onMounted(() => {
