@@ -60,7 +60,7 @@ export type ContactmomentKlant = {
 export type Bron = {
   title: string;
   url: string;
-  sectionIndex: number;
+  sectionIndex?: number;
 };
 
 export interface Vraag {

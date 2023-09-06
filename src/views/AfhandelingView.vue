@@ -398,7 +398,7 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
+import { useContactmomentStore, type Bron, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 
 import {
@@ -426,7 +426,7 @@ const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
-const vraagOptions = ref<{title: string, url: string, sectionIndex: number }[]>([]);
+const vraagOptions = ref<Bron[]>([]);
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.
@@ -465,7 +465,9 @@ onMounted(() => {
       ...vraag.vacs.map((item) => item.vac),
     ]).value;
 
-    vraag.vraag = vraagOptions.value[sectionIndex];
+    if(sectionIndex){
+      vraag.vraag = vraagOptions.value[sectionIndex];
+    }
   }
 });
 
