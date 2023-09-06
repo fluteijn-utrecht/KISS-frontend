@@ -464,9 +464,10 @@ onMounted(() => {
       ...vraag.werkinstructies.map((item) => item.werkinstructie),
       ...vraag.vacs.map((item) => item.vac),
     ]).value;
-
+    
     if(sectionIndex){
-      vraag.vraag = vraagOptions.value[sectionIndex];
+      const vraagIndex = vraagOptions.value.indexOf(vraag.vraag);
+      vraag.vraag = vraagOptions.value[sectionIndex + vraagIndex];
     }
   }
 });
