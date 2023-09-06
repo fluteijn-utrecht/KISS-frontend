@@ -38,6 +38,7 @@ ul {
     calc(1rem + var(--column-padding) * 2); // column for chevron
 
   --spinner-size: 1em;
+  --utrecht-focus-outline-offset: 0;
 
   display: grid;
   list-style: none;
