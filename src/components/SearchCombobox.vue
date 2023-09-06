@@ -262,6 +262,10 @@ function scrollIntoView() {
   z-index: 2;
 }
 
+[role="combobox"] {
+  --utrecht-focus-outline-offset: 0;
+}
+
 ul {
   position: absolute;
   border-radius: var(--radius-default);
