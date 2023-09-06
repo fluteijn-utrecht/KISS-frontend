@@ -326,19 +326,7 @@
               required
             >
               <option
-                v-for="(item, itemIdx) in [
-                  ...vraag.websites.map((item) => item.website),
-                  ...vraag.kennisartikelen.flatMap((item) => [
-                    item.kennisartikel,
-                    ...item.kennisartikel.sections.map((section) => ({
-                      ...item.kennisartikel,
-                      title: [item.kennisartikel.title, section].join(' - '),
-                    })),
-                  ]),
-                  ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
-                  ...vraag.werkinstructies.map((item) => item.werkinstructie),
-                  ...vraag.vacs.map((item) => item.vac),
-                ]"
+                v-for="(item, itemIdx) in vraagOptions"
                 :key="itemIdx + '|' + idx"
                 :value="item"
               >
@@ -346,7 +334,7 @@
               </option>
               <option :value="undefined">Anders</option>
             </select>
-
+              
             <label
               :class="['utrecht-form-label', { required: !vraag.vraag }]"
               :for="'specifiekevraag' + idx"
@@ -402,7 +390,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -439,6 +427,7 @@ const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
+const vraagOptions = ref<{title: string, url: string, sectionIndex: number }[]>([]);
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.
@@ -456,6 +445,28 @@ onMounted(() => {
     if (!vraag.kanaal) {
       vraag.kanaal = userStore.preferences.kanaal;
     }
+
+    if (!vraag.vraag) {
+      vraagOptions.value = [];
+      continue;
+    }
+    const sectionIndex = vraag.vraag.sectionIndex;
+
+     vraagOptions.value = computed(() => [
+      ...vraag.websites.map((item) => item.website),
+      ...vraag.kennisartikelen.flatMap((item) => [
+        item.kennisartikel,
+        ...item.kennisartikel.sections.map((section) => ({
+          ...item.kennisartikel,
+          title: [item.kennisartikel.title, section].join(' - '),
+        })),
+      ]),
+      ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
+      ...vraag.werkinstructies.map((item) => item.werkinstructie),
+      ...vraag.vacs.map((item) => item.vac),
+    ]).value;
+
+    vraag.vraag = vraagOptions.value[sectionIndex];
   }
 });
 

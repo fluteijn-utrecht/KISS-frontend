@@ -33,6 +33,7 @@ export type Kennisartikel = {
   url: string;
   title: string;
   sections: string[];
+  sectionIndex: number;
 };
 
 export type Vac = {

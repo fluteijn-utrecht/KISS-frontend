@@ -129,8 +129,8 @@ const emit = defineEmits<{
 }>();
 
 watch(
-  processedSections,
-  (s) => {
+  [processedSections, currentSectionIndex ],
+  ([s, sectionIndex]) => {
     if (!s.length) return;
     const sections = s
       .map(({ label }) => label)
@@ -140,6 +140,7 @@ watch(
       title: props.title,
       url: props.kennisartikelRaw.url,
       sections,
+      sectionIndex
     });
   },
   { immediate: true },
