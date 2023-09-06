@@ -324,13 +324,14 @@
               :id="'hoofdvraag' + idx"
               class="utrecht-select utrecht-select--html-select"
               required
+              @change="updateAfdeling(vraag)"
             >
               <option
                 v-for="(item, itemIdx) in [
                   ...vraag.websites.map((item) => item.website),
                   ...vraag.kennisartikelen.flatMap((item) => [
                     item.kennisartikel,
-                    ...item.kennisartikel.sections.map((section) => ({
+                    ...(item.kennisartikel.sections ?? []).map((section) => ({
                       ...item.kennisartikel,
                       title: [item.kennisartikel.title, section].join(' - '),
                     })),
@@ -441,7 +442,7 @@ import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
 import {
   ContactverzoekFormulier,
-  fetchAfdeling,
+  fetchAfdelingen,
   saveContactverzoek,
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
@@ -768,16 +769,19 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
   });
 };
 
+const updateAfdeling = async (vraag: Vraag) => {
+  if (!vraag.vraag?.afdeling) {
+    vraag.afdeling = undefined;
+    return;
+  }
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
+  vraag.afdeling = artikelAfdelingen.page[0]?.naam;
+};
+
 onMounted(() => {
   if (!contactmomentStore.huidigContactmoment) return;
-  const promises = contactmomentStore.huidigContactmoment.vragen.map(
-    async (vraag) => {
-      if (vraag.artikelAfdeling && !vraag.afdeling) {
-        vraag.afdeling = (await fetchAfdeling(vraag.artikelAfdeling)).page[0]
-          ?.naam;
-      }
-    },
-  );
+  const promises =
+    contactmomentStore.huidigContactmoment.vragen.map(updateAfdeling);
   return Promise.all(promises);
 });
 </script>

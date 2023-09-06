@@ -352,11 +352,7 @@ const handleSmoelenboekSelected = (
 };
 
 const handleVacSelected = (vac: Vac, url: string): void => {
-  contactmomentStore.addVac(
-    vac.vraag,
-    url,
-    vac.afdelingen?.[0]?.afdelingNaam?.trim(),
-  );
+  contactmomentStore.addVac(vac, url);
 };
 
 const handleKennisartikelSelected = (kennisartikel: Kennisartikel): void => {

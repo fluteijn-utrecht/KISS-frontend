@@ -225,7 +225,7 @@ const afdelingenFetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
     .then(parseJson)
     .then((json) => parsePagination(json, mapOrganisatie));
 
-export const fetchAfdeling = (search: string) =>
+export const fetchAfdelingen = (search: string) =>
   afdelingenFetcher(getAfdelingenSearchUrl(search));
 
 export function useAfdelingen(search: () => string | undefined) {
