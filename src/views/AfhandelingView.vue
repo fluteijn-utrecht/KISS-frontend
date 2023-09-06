@@ -375,6 +375,8 @@
               >Afdeling</label
             >
             <div class="relative">
+              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
+                extraheren naar eigen componenten in @/features/contactmoment-details -->
               <afdelingen-search
                 v-model="vraag.afdeling"
                 :exact-match="true"
@@ -447,9 +449,8 @@ import {
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
-import AfdelingenSearch, {
-  fetchAfdelingen,
-} from "@/components/AfdelingenSearch.vue";
+import AfdelingenSearch from "@/features/contactmoment-details/AfdelingenSearch.vue";
+import { fetchAfdelingen } from "@/features/shared/afdelingen";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();

@@ -1,15 +1,3 @@
-<template>
-  <service-data-search
-    :get-data="useAfdelingen"
-    :map-value="(x) => x.naam"
-    :map-description="(x) => x.identificatie"
-    :model-value="modelValue"
-    @update:modelValue="$emit('update:modelValue', $event)"
-    v-bind="$attrs"
-  />
-</template>
-
-<script lang="ts">
 import {
   ServiceResult,
   fetchLoggedIn,
@@ -19,7 +7,7 @@ import {
   type PaginatedResult,
 } from "@/services";
 
-interface Afdeling {
+export interface Afdeling {
   id: string;
   identificatie: string;
   naam: string;
@@ -48,14 +36,7 @@ const afdelingenFetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
 export const fetchAfdelingen = (search: string) =>
   afdelingenFetcher(getAfdelingenSearchUrl(search));
 
-function useAfdelingen(search: () => string | undefined) {
+export function useAfdelingen(search: () => string | undefined) {
   const getUrl = () => getAfdelingenSearchUrl(search());
   return ServiceResult.fromFetcher(getUrl, afdelingenFetcher);
 }
-</script>
-
-<script setup lang="ts">
-import ServiceDataSearch from "./ServiceDataSearch.vue";
-defineProps<{ modelValue: Afdeling | undefined }>();
-defineEmits<{ "update:modelValue": [Afdeling | undefined] }>();
-</script>
