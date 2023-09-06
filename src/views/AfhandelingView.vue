@@ -334,7 +334,6 @@
               </option>
               <option :value="undefined">Anders</option>
             </select>
-              
             <label
               :class="['utrecht-form-label', { required: !vraag.vraag }]"
               :for="'specifiekevraag' + idx"

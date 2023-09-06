@@ -341,7 +341,6 @@ export const useContactmomentStore = defineStore("contactmoment", {
       }
 
       huidigeVraag.vraag = kennisartikel;
-      console.log(huidigeVraag.vraag.sectionIndex)
     },
 
     addWebsite(website: Website) {
