@@ -49,7 +49,6 @@
           :map-value="(x) => x?.naam"
           @keydown.enter="setEnterPressed"
           :map-description="(x) => x?.identificatie"
-          v-bind="$attrs"
         />
       </label>
 

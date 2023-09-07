@@ -207,12 +207,14 @@ export function useGroepen(
     if (!afdelingId) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("ordering", "record__data__naam");
-    searchParams.set("data_attrs", `afdelingId__exact__${afdelingId}`);
+    const data_attrs = [`afdelingId__exact__${afdelingId}`];
 
     const searchStr = search?.();
     if (searchStr) {
-      searchParams.set("data_attrs", `naam__icontains__${searchStr}`);
+      data_attrs.push(`naam__icontains__${searchStr}`);
     }
+
+    searchParams.set("data_attrs", data_attrs.join(","));
 
     return "/api/groepen/api/v2/objects?" + searchParams;
   };
