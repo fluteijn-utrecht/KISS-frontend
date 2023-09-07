@@ -40,14 +40,14 @@
       <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
         <service-data-search
-          v-model="form.afdeling"
           class="utrecht-textbox utrecht-textbox--html-input"
           :required="true"
+          v-model="form.afdeling"
           placeholder="Zoek een afdeling"
           @update:model-value="setActive"
-          @keydown.enter="setEnterPressed"
           :get-data="useAfdelingen"
           :map-value="(x) => x.naam"
+          @keydown.enter="setEnterPressed"
           :map-description="(x) => x.identificatie"
           v-bind="$attrs"
         />
