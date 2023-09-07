@@ -262,15 +262,19 @@ function scrollIntoView() {
   z-index: 2;
 }
 
+[role="combobox"] {
+  --utrecht-focus-outline-offset: 0;
+}
+
 ul {
   position: absolute;
-  border-radius: 0;
+  border-radius: var(--radius-default);
   display: grid;
   gap: var(--spacing-default);
   align-self: flex-end;
   transform: translateY(100%);
   z-index: 1;
-  inset-block-end: 0;
+  inset-block-end: -1px;
 }
 
 li {

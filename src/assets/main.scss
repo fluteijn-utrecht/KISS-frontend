@@ -1,5 +1,17 @@
 @import "./icons/icons";
 
+* {
+  outline-offset: -2px;
+  outline-color: var(--utrecht-focus-outline-color);
+  transition: outline-offset 200ms;
+  outline-width: 0;
+
+  &:focus-visible {
+    outline-offset: var(--utrecht-focus-outline-offset);
+    outline-width: var(--utrecht-focus-outline-width);
+  }
+}
+
 html,
 body {
   height: 100%;
@@ -209,6 +221,10 @@ details {
 
     gap: var(--utrecht-button-icon-gap);
     cursor: default;
+
+    &:focus-visible {
+      outline-style: auto;
+    }
   }
 
   &[open] > summary::after {
@@ -239,6 +255,10 @@ ul.overview {
   > tbody > tr,
   > li:not(:first-child) {
     border-bottom: 1px solid var(--color-accent);
+  }
+
+  thead > tr > th {
+    vertical-align: middle;
   }
 
   th,
