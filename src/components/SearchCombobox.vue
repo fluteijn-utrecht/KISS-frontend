@@ -56,7 +56,7 @@ export default {
 
 <script lang="ts" setup>
 import { computed } from "vue";
-import { useFocus, whenever } from "@vueuse/core";
+import { useFocus } from "@vueuse/core";
 import { ref, watch, type PropType } from "vue";
 import { nanoid } from "nanoid";
 import { focusNextFormItem } from "@/helpers/html";
@@ -148,10 +148,7 @@ function selectItem(focusNext = false) {
   }
 }
 
-const emit = defineEmits<{
-  "update:modelValue": [string];
-  change: [DatalistItem];
-}>();
+const emit = defineEmits<{ "update:modelValue": [string] }>();
 
 const inputRef = ref<HTMLInputElement>();
 const ulref = ref();
@@ -183,7 +180,9 @@ watch(workingList.value, (r) => {
 });
 
 const matchingResult = computed(() => {
-  return workingList.value.find((x) => x.value === props.modelValue);
+  if (workingList.value.some((x) => x.value === props.modelValue))
+    return props.modelValue;
+  return "";
 });
 
 const validity = computed(() => {
@@ -214,8 +213,6 @@ watch(
   },
   { immediate: true, deep: true },
 );
-
-whenever(matchingResult, (v) => emit("change", v));
 
 function isInViewport(el: HTMLElement) {
   const rect = el.getBoundingClientRect();
