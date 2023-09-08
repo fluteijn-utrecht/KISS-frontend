@@ -1,52 +1,47 @@
 <template>
-  <article>
-    <simple-spinner v-if="zaak.loading" />
+  <simple-spinner v-if="zaak.loading" />
 
-    <application-message
-      v-if="zaak.error"
-      messageType="error"
-      message="Er kon geen zaak gevonden worden"
-    ></application-message>
+  <application-message
+    v-if="zaak.error"
+    messageType="error"
+    message="Er kon geen zaak gevonden worden"
+  ></application-message>
 
-    <section v-if="zaak.success">
-      <div class="header">
-        <utrecht-heading :level="1"
-          >Zaak {{ zaak.data.identificatie }}
-        </utrecht-heading>
-        <router-link :to="{ name: 'zaken' }">{{
-          "< Zaken zoeken"
-        }}</router-link>
-      </div>
+  <template v-if="zaak.success">
+    <back-link />
 
-      <tab-list v-model="activeTab">
-        <tab-list-item label="Algemeen">
-          <zaak-algemeen :zaak="zaak.data" />
-        </tab-list-item>
-        <tab-list-item
-          label="Documenten"
-          :disabled="!zaak.data.documenten?.length"
-        >
-          <zaak-documenten :zaak="zaak.data" />
-        </tab-list-item>
-        <tab-list-data-item
-          label="Contactmomenten"
-          :data="contactmomenten"
-          :disabled="(c) => !c.count"
-        >
-          <template #success="{ data }">
-            <div class="contactmomenten">
-              <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-              <contactmomenten-overzicht :contactmomenten="data.page">
-                <template #object="{ object }">
-                  <zaak-preview :zaakurl="object.object"></zaak-preview>
-                </template>
-              </contactmomenten-overzicht>
-            </div>
-          </template>
-        </tab-list-data-item>
-      </tab-list>
-    </section>
-  </article>
+    <utrecht-heading :level="1"
+      >Zaak {{ zaak.data.identificatie }}</utrecht-heading
+    >
+
+    <tab-list v-model="activeTab">
+      <tab-list-item label="Algemeen">
+        <zaak-algemeen :zaak="zaak.data" />
+      </tab-list-item>
+      <tab-list-item
+        label="Documenten"
+        :disabled="!zaak.data.documenten?.length"
+      >
+        <zaak-documenten :zaak="zaak.data" />
+      </tab-list-item>
+      <tab-list-data-item
+        label="Contactmomenten"
+        :data="contactmomenten"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <div class="contactmomenten">
+            <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+            <contactmomenten-overzicht :contactmomenten="data.page">
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object"></zaak-preview>
+              </template>
+            </contactmomenten-overzicht>
+          </div>
+        </template>
+      </tab-list-data-item>
+    </tab-list>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -64,6 +59,7 @@ import {
 } from "@/features/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
+import BackLink from "@/components/BackLink.vue";
 
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
@@ -87,14 +83,4 @@ watch(
   },
   { immediate: true },
 );
-
-const onNotitieUpdate = () => zaak.refresh();
 </script>
-
-<style lang="scss" scoped>
-.contactmomenten {
-  > :first-child {
-    margin-block-end: var(--spacing-large);
-  }
-}
-</style>

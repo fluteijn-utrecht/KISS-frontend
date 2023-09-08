@@ -4,6 +4,18 @@ import router from "./router";
 import { createPinia } from "pinia";
 import { useIntersectionObserver } from "@vueuse/core";
 
+// warning if closing tab or refreshing
+if (import.meta.env.PROD) {
+  addEventListener(
+    "beforeunload",
+    (e) => {
+      e.preventDefault();
+      return (e.returnValue = "");
+    },
+    { capture: true },
+  );
+}
+
 const app = createApp(App);
 
 app.use(createPinia());

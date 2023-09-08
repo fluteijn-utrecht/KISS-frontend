@@ -122,17 +122,17 @@ const berichtSelectedInContactmoment = computed(() => {
   return foundInNieuwsberichten || foundInWerkinstructies;
 });
 
-const read = ref<boolean>(props.bericht.read);
+const read = ref<boolean>(false);
+const toggleReadIsLoading = ref<boolean>(false);
 watch(
   () => props.bericht,
   (b) => {
     if (!toggleReadIsLoading.value) {
-      read.value = b.read;
+      read.value = b?.read ?? false;
     }
   },
+  { immediate: true },
 );
-
-const toggleReadIsLoading = ref<boolean>(false);
 
 const toggleRead = (): Promise<void> => {
   toggleReadIsLoading.value = true;
@@ -242,7 +242,7 @@ article {
 
         .save-bericht-to-contactmoment-checkbox {
           accent-color: var(--color-primary);
-          transform: scale(1.25) translateY(-1px);
+          transform: scale(1.25) translateY(10%);
           margin: 0;
         }
 
@@ -276,7 +276,7 @@ article {
     line-height: var(--line-height-default);
   }
 
-  :deep(p) {
+  .correct-header :deep(p) {
     &:not(:first-child) {
       margin-top: 1em;
     }

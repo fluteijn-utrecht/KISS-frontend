@@ -13,7 +13,13 @@
       <the-header />
       <the-sidebar />
       <main>
-        <router-view />
+        <router-view>
+          <template #default="{ Component }">
+            <back-link-provider>
+              <component :is="Component" />
+            </back-link-provider>
+          </template>
+        </router-view>
       </main>
     </div>
   </switchable-store-provider>
@@ -26,7 +32,7 @@ import TheToastSection from "@/components/TheToastSection.vue";
 import TheSidebar from "./layout/TheSidebar.vue";
 import TheHeader from "./layout/TheHeader.vue";
 import { SwitchableStoreProvider } from "./stores/switchable-store";
-
+import BackLinkProvider from "./components/BackLinkProvider.vue";
 const contactmomentStore = useContactmomentStore();
 const route = useRoute();
 </script>
