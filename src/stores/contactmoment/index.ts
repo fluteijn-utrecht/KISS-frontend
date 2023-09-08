@@ -331,6 +331,17 @@ export const useContactmomentStore = defineStore("contactmoment", {
         (k) => k.kennisartikel.url === kennisartikel.url,
       );
 
+      //hier controleren of het een oud record is. zo ja, de index daarvan vasthouden en op de huidige vraag zetten
+      //De search wordt opnieuw uitgevoerd als je bijvoorbeeld van het afhandelscherm teruggaat naar het contactmomentscherm
+      //hij vindt dan weer hetzelfde kennisartikel met dezelfde sections, maar de index wordt weer teruggezet naar 0
+      //daarom controleren we of het kennisartikel al eerder gevonden was en er al eerder een sectie geselecteerd was. zo ja, dan zetten we de geselecteerde index terug   
+      if (record?.kennisartikel.sectionIndex !== 0) {
+        if (kennisartikel.sectionIndex === 0) {
+          kennisartikel.sectionIndex = record?.kennisartikel
+            .sectionIndex as number;
+        }
+      }
+
       if (!record) {
         huidigeVraag.kennisartikelen.push({
           kennisartikel,

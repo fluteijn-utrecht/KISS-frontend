@@ -319,21 +319,7 @@
             >
               Vraag
             </label>
-            <select
-              v-model="vraag.vraag"
-              :id="'hoofdvraag' + idx"
-              class="utrecht-select utrecht-select--html-select"
-              required
-            >
-              <option
-                v-for="(item, itemIdx) in vraagOptions"
-                :key="itemIdx + '|' + idx"
-                :value="item"
-              >
-                {{ item.title }}
-              </option>
-              <option :value="undefined">Anders</option>
-            </select>
+            <contactmoment-vraag :idx="idx" :vraag="vraag" />
             <label
               :class="['utrecht-form-label', { required: !vraag.vraag }]"
               :for="'specifiekevraag' + idx"
@@ -421,12 +407,12 @@ import {
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
+import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
-const vraagOptions = ref<Bron[]>([]);
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.
@@ -443,31 +429,6 @@ onMounted(() => {
     }
     if (!vraag.kanaal) {
       vraag.kanaal = userStore.preferences.kanaal;
-    }
-
-    if (!vraag.vraag) {
-      vraagOptions.value = [];
-      continue;
-    }
-    const sectionIndex = vraag.vraag.sectionIndex;
-
-     vraagOptions.value = computed(() => [
-      ...vraag.websites.map((item) => item.website),
-      ...vraag.kennisartikelen.flatMap((item) => [
-        item.kennisartikel,
-        ...item.kennisartikel.sections.map((section) => ({
-          ...item.kennisartikel,
-          title: [item.kennisartikel.title, section].join(' - '),
-        })),
-      ]),
-      ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
-      ...vraag.werkinstructies.map((item) => item.werkinstructie),
-      ...vraag.vacs.map((item) => item.vac),
-    ]).value;
-    
-    if(sectionIndex){
-      const vraagIndex = vraagOptions.value.indexOf(vraag.vraag);
-      vraag.vraag = vraagOptions.value[sectionIndex + vraagIndex];
     }
   }
 });

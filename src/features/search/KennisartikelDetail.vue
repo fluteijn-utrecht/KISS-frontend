@@ -129,7 +129,7 @@ const emit = defineEmits<{
 }>();
 
 watch(
-  [processedSections, currentSectionIndex ],
+  [processedSections, currentSectionIndex],
   ([s, sectionIndex]) => {
     if (!s.length) return;
     const sections = s
