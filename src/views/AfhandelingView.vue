@@ -905,4 +905,3 @@ select {
   position: relative;
 }
 </style>
-@/composables/afdelingen
