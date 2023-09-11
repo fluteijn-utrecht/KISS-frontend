@@ -449,8 +449,8 @@ import {
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
-import AfdelingenSearch from "@/features/contactmoment-details/AfdelingenSearch.vue";
-import { fetchAfdelingen } from "@/features/shared/afdelingen";
+import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSearch.vue";
+import { fetchAfdelingen } from "@/composables/afdelingen";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
