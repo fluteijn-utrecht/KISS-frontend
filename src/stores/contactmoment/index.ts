@@ -11,9 +11,10 @@ import { defineStore } from "pinia";
 import { createSession, type Session } from "../switchable-store";
 export * from "./types";
 import type { ContactVerzoekVragenSet } from "@/features/contactverzoek/types";
+import type { Afdeling } from "@/composables/afdelingen";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
-interface Afdeling {
+export interface ContactverzoekAfdeling {
   id: string;
   identificatie: string;
   naam: string;
@@ -29,7 +30,7 @@ export type ContactmomentContactVerzoek = {
     voorvoegselAchternaam?: string;
     achternaam?: string;
   };
-  afdeling?: Afdeling;
+  afdeling?: ContactverzoekAfdeling;
   groep?: {
     identificatie: string;
     naam: string;

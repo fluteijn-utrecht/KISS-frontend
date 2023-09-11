@@ -376,7 +376,7 @@
             >
             <div class="relative">
               <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
-                extraheren naar eigen componenten in @/features/contactmoment-details -->
+                extraheren naar eigen componenten -->
               <afdelingen-search
                 v-model="vraag.afdeling"
                 :exact-match="true"
