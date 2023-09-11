@@ -17,7 +17,27 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         [HttpPut("/api/contactmomentdetails")]
         public async Task<IActionResult> Post(ContactmomentDetails model, CancellationToken cancellationToken)
         {
-            model.EmailadresKcm = User.GetEmail();
+            //denaamvandeclaim moet uit de env.local komen
+            //var userIdClaim = User.Claims[""denaamvandeclaim"]
+            //model.ietsanders = useridclaim;
+            var userIdClaimName = Environment.GetEnvironmentVariable("MEDEWERKER_INDENTIFICATIE_CLAIM");
+            var userIdClaimValue = User.Claims.FirstOrDefault(c => c.Type == userIdClaimName)?.Value;
+
+            //foreach (var claim in User.Claims)
+            //{
+            //    Console.WriteLine($"{claim.Type}: {claim.Value}");
+            //}
+
+            if (userIdClaimValue != null && userIdClaimValue.Length <= 24)
+            {
+                model.UserClaimIndentifier = userIdClaimValue;
+            }
+            else
+            {
+                model.EmailadresKcm = User.GetEmail();
+            }
+            
+            
             await _db.AddAsync(model, cancellationToken);
             try
             {
