@@ -163,7 +163,7 @@ nav ul {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-white);
+    color: var(--color-black);
     block-size: 100%;
     inline-size: 1.8rem;
     background-color: var(--color-error);

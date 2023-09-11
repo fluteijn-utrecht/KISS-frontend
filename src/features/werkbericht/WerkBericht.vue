@@ -195,7 +195,7 @@ article {
     width: fit-content;
     align-items: center;
     gap: var(--spacing-small);
-    color: var(--color-white);
+    color: var(--color-black);
     background: var(--color-error);
     border-top-right-radius: var(--radius-large);
     border-bottom-right-radius: var(--radius-large);
