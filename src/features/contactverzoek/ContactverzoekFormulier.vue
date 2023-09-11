@@ -46,9 +46,9 @@
           placeholder="Zoek een afdeling"
           @update:model-value="setActive"
           :get-data="useAfdelingen"
-          :map-value="(x) => x?.naam"
+          :map-value="(x) => x.naam"
           @keydown.enter="setEnterPressed"
-          :map-description="(x) => x?.identificatie"
+          :map-description="(x) => x.identificatie"
         />
       </label>
 
@@ -74,9 +74,9 @@
                 !data.count ? 'Geen groepen gevonden' : 'Zoek een groep'
               "
               @update:model-value="setActive"
-              :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
-              :map-value="(x) => x?.naam"
-              :map-description="(x) => x?.identificatie"
+              :get-data="(x: Groep) => useGroepen(() => form.afdeling?.id, x)"
+              :map-value="(x: Groep) => x?.naam"
+              :map-description="(x: Groep) => x?.identificatie"
               ref="groepSearchRef"
               :disabled="!data.count"
             />
@@ -240,7 +240,10 @@ import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
 import { useVragenSets, useGroepen } from "./service";
-import { useAfdelingen } from "@/features/shared/afdelingen";
+import { useAfdelingen } from "@/composables/afdelingen";
+import type { Afdeling } from "../search/types";
+import type { Groep } from "@/stores/contactmoment";
+
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
