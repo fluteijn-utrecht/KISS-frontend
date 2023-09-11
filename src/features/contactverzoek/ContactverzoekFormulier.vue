@@ -74,9 +74,9 @@
                 !data.count ? 'Geen groepen gevonden' : 'Zoek een groep'
               "
               @update:model-value="setActive"
-              :get-data="(x: Groep) => useGroepen(() => form.afdeling?.id, x)"
-              :map-value="(x: Groep) => x?.naam"
-              :map-description="(x: Groep) => x?.identificatie"
+              :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
+              :map-value="(x) => x?.naam"
+              :map-description="(x) => x?.identificatie"
               ref="groepSearchRef"
               :disabled="!data.count"
             />
@@ -240,10 +240,7 @@ import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
 import { useVragenSets, useGroepen } from "./service";
-import { useAfdelingen } from "@/composables/afdelingen";
-import type { Afdeling } from "../search/types";
-import type { Groep } from "@/stores/contactmoment";
-
+import { useAfdelingen } from "@/features/shared/afdelingen";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
