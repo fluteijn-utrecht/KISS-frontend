@@ -163,6 +163,8 @@ aside {
   }
 
   :deep([role="tab"]) {
+    --utrecht-focus-outline-offset: -4px;
+
     &[aria-selected="true"] {
       color: var(--color-headings);
     }
