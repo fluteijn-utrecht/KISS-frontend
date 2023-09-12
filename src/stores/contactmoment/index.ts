@@ -4,13 +4,21 @@ import type {
   Kennisartikel,
   Nieuwsbericht,
   Werkinstructie,
+  Vac,
 } from "@/features/search/types";
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { defineStore } from "pinia";
 import { createSession, type Session } from "../switchable-store";
 export * from "./types";
 import type { ContactVerzoekVragenSet } from "@/features/contactverzoek/types";
+import type { Afdeling } from "@/composables/afdelingen";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
+
+export interface ContactverzoekAfdeling {
+  id: string;
+  identificatie: string;
+  naam: string;
+}
 
 export type ContactmomentContactVerzoek = {
   url?: string;
@@ -22,11 +30,7 @@ export type ContactmomentContactVerzoek = {
     voorvoegselAchternaam?: string;
     achternaam?: string;
   };
-  afdeling?: {
-    id: string;
-    identificatie: string;
-    naam: string;
-  };
+  afdeling?: ContactverzoekAfdeling;
   groep?: {
     identificatie: string;
     naam: string;
@@ -60,6 +64,7 @@ export type ContactmomentKlant = {
 export type Bron = {
   title: string;
   url: string;
+  afdeling?: string;
   sectionIndex?: number;
 };
 
@@ -82,6 +87,7 @@ export interface Vraag {
   vraag: Bron | undefined;
   specifiekevraag: string;
   vacs: { vac: Bron; shouldStore: boolean }[];
+  afdeling?: Afdeling;
 }
 
 function initVraag(): Vraag {
@@ -113,6 +119,7 @@ function initVraag(): Vraag {
     vacs: [],
     vraag: undefined,
     specifiekevraag: "",
+    afdeling: undefined,
   };
 }
 
@@ -327,7 +334,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
-      const record = huidigeVraag.kennisartikelen.find(
+      let record = huidigeVraag.kennisartikelen.find(
         (k) => k.kennisartikel.url === kennisartikel.url,
       );
 
@@ -343,15 +350,19 @@ export const useContactmomentStore = defineStore("contactmoment", {
       }
 
       if (!record) {
-        huidigeVraag.kennisartikelen.push({
-          kennisartikel,
+        record = {
+          kennisartikel: {
+            ...kennisartikel,
+            afdeling: kennisartikel.afdelingen?.[0]?.afdelingNaam?.trim(),
+          },
           shouldStore: true,
-        });
+        };
+        huidigeVraag.kennisartikelen.push(record);
       } else {
         record.kennisartikel = kennisartikel;
       }
 
-      huidigeVraag.vraag = kennisartikel;
+      huidigeVraag.vraag = record.kennisartikel;
     },
 
     addWebsite(website: Website) {
@@ -372,15 +383,19 @@ export const useContactmomentStore = defineStore("contactmoment", {
       huidigeVraag.vraag = website;
     },
 
-    addVac(vraag: string, url: string) {
+    addVac(vraag: Vac, url: string) {
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
       const { huidigeVraag } = huidigContactmoment;
 
-      const record = huidigeVraag.vacs.find((k) => k.vac.title === vraag);
+      const record = huidigeVraag.vacs.find((k) => k.vac.title === vraag.vraag);
 
       if (!record) {
-        const vacVraag = { title: vraag, url: url };
+        const vacVraag: Bron = {
+          title: vraag.vraag,
+          url,
+          afdeling: vraag.afdelingen?.[0]?.afdelingNaam?.trim(),
+        };
         huidigeVraag.vacs.push({
           vac: vacVraag,
           shouldStore: true,

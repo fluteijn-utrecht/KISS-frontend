@@ -6,6 +6,7 @@
         <span id="medewerker-header">Medewerker</span>
         <span id="kanaal-header">Kanaal</span>
         <span id="gespreksresultaat-header">Gespreksresultaat</span>
+        <span id="afdeling-header">Afdeling</span>
       </template>
 
       <template v-slot:item="{ item }">

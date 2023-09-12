@@ -342,6 +342,22 @@
               :id="'notitie' + idx"
               v-model="vraag.notitie"
             ></textarea>
+
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
+            <div class="relative">
+              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
+                extraheren naar eigen componenten -->
+              <afdelingen-search
+                v-model="vraag.afdeling"
+                :exact-match="true"
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                :required="true"
+                placeholder="Zoek een afdeling"
+              />
+            </div>
           </fieldset>
         </section>
 
@@ -386,7 +402,6 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
 import { useContactmomentStore, type Bron, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
-
 import {
   koppelKlant,
   saveContactmoment,
@@ -396,7 +411,6 @@ import {
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
 } from "@/features/contactmoment";
-
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
@@ -408,6 +422,9 @@ import {
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
+import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSearch.vue";
+import { fetchAfdelingen } from "@/composables/afdelingen";
+
 import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -530,6 +547,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurstaal: "",
     medewerker: "",
     startdatum: vraag.startdatum,
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
     einddatum: new Date().toISOString(),
   };
 
@@ -726,6 +744,22 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
+
+const updateAfdeling = async (vraag: Vraag) => {
+  if (!vraag.vraag?.afdeling) {
+    vraag.afdeling = undefined;
+    return;
+  }
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
+  vraag.afdeling = artikelAfdelingen.page[0];
+};
+
+onMounted(() => {
+  if (!contactmomentStore.huidigContactmoment) return;
+  const promises =
+    contactmomentStore.huidigContactmoment.vragen.map(updateAfdeling);
+  return Promise.all(promises);
+});
 </script>
 
 <style scoped lang="scss">
@@ -839,5 +873,9 @@ select {
       margin-inline-start: calc(var(--label-width) + var(--label-gap));
     }
   }
+}
+
+.relative {
+  position: relative;
 }
 </style>

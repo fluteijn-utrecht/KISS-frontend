@@ -7,13 +7,16 @@
       fullName(contactmoment.medewerkerIdentificatie)
     }}</span>
     <span aria-describedby="kanaal-header">{{ contactmoment.kanaal }}</span>
-    <span aria-describedby="gespreksresultaat-header">
-      <ServiceDataWrapper :data="cmDetails">
-        <template #success="{ data }">
+    <ServiceDataWrapper :data="cmDetails">
+      <template #success="{ data }">
+        <span aria-describedby="gespreksresultaat-header">
           {{ data?.gespreksresultaat }}
-        </template>
-      </ServiceDataWrapper>
-    </span>
+        </span>
+        <span aria-describedby="afdeling-header">
+          {{ data?.verantwoordelijkeAfdeling }}
+        </span>
+      </template>
+    </ServiceDataWrapper>
   </summary>
   <dl>
     <dt>Starttijd</dt>
