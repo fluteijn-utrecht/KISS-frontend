@@ -354,6 +354,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!record) {
         record = {
           kennisartikel: {
+            //search type kennisartikel
             ...kennisartikel,
             afdeling: kennisartikel.afdelingen?.[0]?.afdelingNaam?.trim(),
           },

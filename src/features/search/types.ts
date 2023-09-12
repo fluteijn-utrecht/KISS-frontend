@@ -34,6 +34,7 @@ export type Kennisartikel = {
   title: string;
   sections: string[];
   afdelingen?: Afdeling[];
+  afdeling?: string;
   sectionIndex: number;
 };
 
