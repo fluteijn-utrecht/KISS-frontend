@@ -26,6 +26,7 @@ export interface Contactmoment {
   startdatum: string;
   einddatum: string;
   gespreksId?: string;
+  verantwoordelijkeAfdeling?: string;
 }
 
 export interface ContactmomentDetails {
@@ -36,6 +37,7 @@ export interface ContactmomentDetails {
   vraag?: string;
   specifiekeVraag?: string;
   emailadresKcm?: string;
+  verantwoordelijkeAfdeling?: string;
 }
 
 export interface Gespreksresultaat {

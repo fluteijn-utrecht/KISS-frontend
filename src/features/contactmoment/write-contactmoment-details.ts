@@ -8,13 +8,14 @@ export type ContactmomentDetails = Pick<
   | "einddatum"
   | "vraag"
   | "specifiekevraag"
+  | "verantwoordelijkeAfdeling"
 >;
 
 export const writeContactmomentDetails = (
   contactmoment: ContactmomentDetails,
-  id: string
+  id: string,
 ): Promise<unknown> =>
-    fetchLoggedIn("/api/contactmomentdetails", {
+  fetchLoggedIn("/api/contactmomentdetails", {
     method: "PUT",
     body: JSON.stringify({
       ...contactmoment,
