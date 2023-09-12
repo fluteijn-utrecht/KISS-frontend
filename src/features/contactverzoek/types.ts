@@ -1,11 +1,29 @@
+export interface Vraag {
+  label: string;
+  type: string;
+}
+
+export interface InputVraag extends Vraag {
+  input: string;
+}
+
+export interface TextareaVraag extends Vraag {
+  textarea?: string;
+}
+
+export interface DropdownVraag extends Vraag {
+  options: string[];
+  selectedDropdown: string;
+}
+
+export interface CheckboxVraag extends Vraag {
+  options: string[];
+  selectedCheckbox: string["", ""];
+}
+
 export interface ContactVerzoekVragenSet {
   id: string;
   naam: string;
-  vraagAntwoord: VraagAntwoord[];
+  vraagAntwoord: Vraag[];
   afdelingId: string;
-}
-
-export interface VraagAntwoord {
-  vraag: string;
-  antwoord: string;
 }

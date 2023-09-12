@@ -10,7 +10,14 @@ import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
 import type { Ref } from "vue";
 import { fullName } from "@/helpers/string";
-import type { ContactVerzoekVragenSet, VraagAntwoord } from "./types";
+import type {
+  ContactVerzoekVragenSet,
+  Vraag,
+  InputVraag,
+  TextareaVraag,
+  DropdownVraag,
+  CheckboxVraag,
+} from "./types";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
@@ -95,10 +102,25 @@ export function saveContactverzoek({
     });
   }
 
-  function formatVraagAntwoordForToelichting(
-    vraagAntwoord: VraagAntwoord[],
-  ): string {
-    return vraagAntwoord.map((va) => `${va.vraag}: ${va.antwoord}`).join("\n");
+  function formatVraagAntwoordForToelichting(vraagAntwoord: Vraag[]): string {
+    return vraagAntwoord
+      .map((va) => {
+        if (isInputVraag(va)) {
+          return `${va.label}: ${va.input}`;
+        } else if (isTextareaVraag(va)) {
+          return `${va.label}: ${va.textarea}`;
+        } else if (isDropdownVraag(va)) {
+          return `${va.label}: ${va.selectedDropdown}`;
+        } else if (isCheckboxVraag(va)) {
+          const selectedOptions = va.options
+            .filter((_, index) => va.selectedCheckbox[index])
+            .join(", ");
+          return `${va.label}: ${selectedOptions}`;
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .join("\n");
   }
 
   const vragenToelichting =
@@ -276,6 +298,28 @@ export function fetchVragenSets(url: string) {
     });
 }
 
+function mapToClientContactVerzoekVragenSets(
+  serverDataArray: ServerContactVerzoekVragenSet[],
+): ContactVerzoekVragenSet[] {
+  return serverDataArray.map((serverData) => {
+    const parsedQuestions = safeJSONParse<Vraag[]>(serverData.jsonVragen, []);
+
+    // Initialize selectedCheckbox array for CheckboxVraag type questions
+    parsedQuestions.forEach((question) => {
+      if (isCheckboxVraag(question)) {
+        question.selectedCheckbox = Array(question.options.length).fill(false);
+      }
+    });
+
+    return {
+      id: serverData.id,
+      naam: serverData.naam,
+      vraagAntwoord: parsedQuestions,
+      afdelingId: serverData.afdelingId,
+    };
+  });
+}
+
 function safeJSONParse<T>(jsonString: string, defaultValue: T): T {
   try {
     return JSON.parse(jsonString);
@@ -284,19 +328,42 @@ function safeJSONParse<T>(jsonString: string, defaultValue: T): T {
   }
 }
 
-function mapToClientContactVerzoekVragenSets(
-  serverDataArray: ServerContactVerzoekVragenSet[],
-): ContactVerzoekVragenSet[] {
-  return serverDataArray.map((serverData) => {
-    const parsedQuestions = safeJSONParse<string[]>(serverData.jsonVragen, []);
-    return {
-      id: serverData.id,
-      naam: serverData.naam,
-      vraagAntwoord: parsedQuestions.map((vraag) => ({
-        vraag: vraag,
-        antwoord: "",
-      })),
-      afdelingId: serverData.afdelingId,
-    };
-  });
+export function isInputVraag(question: Vraag): question is InputVraag {
+  return (
+    "label" in question &&
+    question.label.trim() !== "" &&
+    question.type === "input"
+  );
+}
+
+export function isTextareaVraag(question: Vraag): question is TextareaVraag {
+  return (
+    "label" in question &&
+    question.label.trim() !== "" &&
+    question.type === "textarea"
+  );
+}
+
+export function isDropdownVraag(question: Vraag): question is DropdownVraag {
+  return (
+    question.type === "dropdown" &&
+    "label" in question &&
+    question.label.trim() !== "" &&
+    "options" in question &&
+    Array.isArray(question.options) &&
+    question.options.length > 0 &&
+    !question.options.includes("")
+  );
+}
+
+export function isCheckboxVraag(question: Vraag): question is CheckboxVraag {
+  return (
+    question.type === "checkbox" &&
+    "label" in question &&
+    question.label.trim() !== "" &&
+    "options" in question &&
+    Array.isArray(question.options) &&
+    question.options.length > 0 &&
+    !question.options.includes("")
+  );
 }
