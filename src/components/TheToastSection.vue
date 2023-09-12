@@ -34,11 +34,11 @@ output {
   padding: var(--spacing-default);
   border-radius: var(--radius-default);
   font-size: 1rem;
-  color: var(--color-white);
+  color: var(--color-black);
 }
 
 .confirm {
-  background-color: var(--color-accent);
+  background-color: var(--color-success);
 }
 
 .error {

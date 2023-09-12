@@ -13,6 +13,7 @@
   --color-error-hover: #ffb8b8;
   --color-error-hover-text: var(--color-headings);
   --color-warning: orange;
+  --color-success: #89cf5e;
   --color-category-default: hsl(184deg 54% 70%);
   --color-category-website: hsl(285deg 56% 83%);
   --color-white: #fff;
@@ -45,10 +46,10 @@
   --radius-large: 1.5rem;
   --height-body: 100vh;
   --shadow-default: 0 0 4.5714px 0 rgb(0 0 0 / 20%);
-  --outline-color: rgb(16 16 16);
+  --outline-color: var(--color-black);
   --outline-width: 1px;
   --outline-style: auto;
-  --outline-offset: 1px;
+  --outline-offset: 3px;
 }
 
 .kiss-theme {
