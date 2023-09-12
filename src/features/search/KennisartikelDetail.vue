@@ -141,7 +141,7 @@ watch(
       url: props.kennisartikelRaw.url,
       afdelingen: props.kennisartikelRaw.afdelingen,
       sections,
-      sectionIndex
+      sectionIndex,
     });
   },
   { immediate: true },

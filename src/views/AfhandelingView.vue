@@ -400,7 +400,11 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
-import { useContactmomentStore, type Bron, type Vraag } from "@/stores/contactmoment";
+import {
+  useContactmomentStore,
+  type Bron,
+  type Vraag,
+} from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,

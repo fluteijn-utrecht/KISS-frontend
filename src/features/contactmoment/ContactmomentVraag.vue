@@ -20,13 +20,13 @@
 import { type Bron, type Vraag } from "@/stores/contactmoment";
 import { onMounted, ref, computed } from "vue";
 const vraagOptions = ref<Bron[]>([]);
-const props = defineProps({
-  idx: Number, // Define the 'idx' prop as a number
-  vraag: Object // Define the 'vraag' prop as an object
-});
+const props = defineProps<{
+  idx: number; // Define the 'idx' prop as a number
+  vraag: Vraag; // Define the 'vraag' prop as an object
+}>();
 
 // Use a local data property to store the selected value
-const selectedVraag = ref(props.vraag?.vraag);
+const selectedVraag = ref({});
 
 onMounted(() => {
   if (!props.vraag) return;
@@ -40,7 +40,7 @@ onMounted(() => {
       item.kennisartikel,
       ...item.kennisartikel.sections.map((section) => ({
         ...item.kennisartikel,
-        title: [item.kennisartikel.title, section].join(' - '),
+        title: [item.kennisartikel.title, section].join(" - "),
       })),
     ]),
     ...vraag.value.nieuwsberichten.map((item) => item.nieuwsbericht),
@@ -48,12 +48,17 @@ onMounted(() => {
     ...vraag.value.vacs.map((item) => item.vac),
   ]).value;
 
+  selectedVraag.value = vraag;
+
   if (sectionIndex !== undefined) {
-    const vraagIndex = vraagOptions.value.indexOf(vraag.value.vraag as {
-      title: string;
-      url: string;
-      sectionIndex?: number | undefined;
-    });
+    const vraagIndex = vraagOptions.value.indexOf(
+      vraag.value.vraag as {
+        title: string;
+        url: string;
+        sectionIndex?: number | undefined;
+      },
+    );
+
     if (vraagIndex !== -1) {
       const newVraag = vraagOptions.value[sectionIndex + vraagIndex];
       if (newVraag !== undefined) {
