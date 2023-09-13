@@ -56,11 +56,11 @@
     </label>
 
     <!-- Loop through vragen and render label and input field -->
-    <div v-for="(vraag, index) in vragen" :key="index">
+    <template v-for="(vraag, index) in vragen" :key="index">
       <div class="question-container">
         <div class="question-container-label utrecht-form-label">
           <span
-            >Vraag {{ index + 1 }} - {{ setVraagTypeLabel(vraag.type) }} *</span
+            >Vraag {{ index + 1 }} - {{ setVraagTypeLabel(vraag.type) }}</span
           >
         </div>
         <div class="question-container-button">
@@ -72,97 +72,125 @@
             @click="removeVraag(vraag.id)"
           />
         </div>
-      </div>
 
-      <!-- Conditional part for Input -->
-      <div
-        v-if="
-          isInputVraag(vraag) ||
-          isTextareaVraag(vraag) ||
-          isCheckboxVraag(vraag) ||
-          isDropdownVraag(vraag)
-        "
-      >
-        <input
-          class="utrecht-textbox utrecht-textbox--html-input"
-          required
-          type="text"
-          v-model="vraag.label"
-          placeholder="Vul hier een label voor de vraag in"
-        />
-      </div>
-
-      <!-- Conditional part for Dropdown -->
-      <div v-if="isDropdownVraag(vraag)">
-        <label class="utrecht-form-label">
-          <span>Answer Options:</span>
-        </label>
+        <!-- Conditional part for Input -->
         <div
-          v-for="(option, optionIndex) in vraag.options"
-          :key="optionIndex"
-          class="option-container"
+          style="width: 100%"
+          v-if="
+            isInputVraag(vraag) ||
+            isTextareaVraag(vraag) ||
+            isCheckboxVraag(vraag) ||
+            isDropdownVraag(vraag)
+          "
         >
           <input
             class="utrecht-textbox utrecht-textbox--html-input"
             required
             type="text"
-            v-model="vraag.options[optionIndex]"
-            :placeholder="`Voeg hier optie ${optionIndex + 1} toe`"
-          />
-          <utrecht-button
-            appearance="secondary-action-button"
-            class="icon icon-after trash icon-only"
-            :title="`Verwijder optie ${optionIndex + 1}`"
-            type="button"
-            @click="removeOption(vraag.id, optionIndex)"
+            v-model="vraag.label"
+            placeholder="Vul hier een label voor de vraag in"
           />
         </div>
-        <utrecht-button
-          appearance="secondary-action-button"
-          class="icon icon-after plus"
-          title="Antwoordoptie Toevoegen"
-          type="button"
-          @click="addOption(vraag.id)"
+      </div>
+      <!-- Conditional part for Dropdown -->
+      <div v-if="isDropdownVraag(vraag)">
+        <label>
+          <span>Antwoorden opties:</span>
+        </label>
+        <template
+          v-for="(option, optionIndex) in vraag.options"
+          :key="optionIndex"
         >
-          Antwoordoptie Toevoegen
-        </utrecht-button>
+          <div
+            class="options-button-wrapper"
+            v-on:mouseenter="showTrashButton(vraag.id, optionIndex)"
+            v-on:mouseleave="hideTrashButton(vraag.id, optionIndex)"
+          >
+            <div class="options-wrapper">
+              <input
+                class="utrecht-textbox utrecht-textbox--html-input"
+                required
+                type="text"
+                v-model="vraag.options[optionIndex]"
+                :placeholder="`Voeg hier optie ${optionIndex + 1} toe`"
+              />
+            </div>
+            <div
+              v-if="hoverId === vraag.id && hoverIndex === optionIndex"
+              class="button-wrapper"
+            >
+              <utrecht-button
+                appearance="secondary-action-button"
+                class="icon icon-after trash icon-only"
+                :title="`Verwijder optie ${optionIndex + 1}`"
+                type="button"
+                @click="removeOption(vraag.id, optionIndex)"
+              />
+            </div>
+          </div>
+        </template>
+        <div class="option-button-wrapper">
+          <utrecht-button
+            appearance="secondary-action-button"
+            class="icon icon-after plus"
+            title="Antwoordoptie Toevoegen"
+            type="button"
+            @click="addOption(vraag.id)"
+          >
+            Antwoordoptie Toevoegen
+          </utrecht-button>
+        </div>
       </div>
       <!-- Conditional part for checkbox -->
       <div v-if="isCheckboxVraag(vraag)">
-        <label class="utrecht-form-label">
+        <label>
           <span>Answer Options:</span>
         </label>
-        <div
+        <template
           v-for="(option, optionIndex) in vraag.options"
           :key="optionIndex"
-          class="option-container"
         >
-          <input
-            class="utrecht-textbox utrecht-textbox--html-input"
-            required
-            type="text"
-            v-model="vraag.options[optionIndex]"
-            :placeholder="`Voeg hier optie ${optionIndex + 1} toe`"
-          />
+          <div
+            class="options-button-wrapper"
+            v-on:mouseenter="showTrashButton(vraag.id, optionIndex)"
+            v-on:mouseleave="hideTrashButton(vraag.id, optionIndex)"
+          >
+            <div class="options-wrapper">
+              <input
+                class="utrecht-textbox utrecht-textbox--html-input"
+                required
+                type="text"
+                v-model="vraag.options[optionIndex]"
+                :placeholder="`Voeg hier optie ${optionIndex + 1} toe`"
+              />
+            </div>
+            <div
+              v-if="hoverId === vraag.id && hoverIndex === optionIndex"
+              class="button-wrapper"
+            >
+              <utrecht-button
+                appearance="secondary-action-button"
+                class="icon icon-after trash icon-only"
+                :title="`Verwijder optie ${optionIndex + 1}`"
+                type="button"
+                @click="removeOption(vraag.id, optionIndex)"
+              />
+            </div>
+          </div>
+        </template>
+        <div class="option-button-wrapper">
           <utrecht-button
             appearance="secondary-action-button"
-            class="icon icon-after trash icon-only"
-            :title="`Verwijder optie ${optionIndex + 1}`"
+            class="icon icon-after plus"
+            title="Label Toevoegen"
             type="button"
-            @click="removeOption(vraag.id, optionIndex)"
-          />
+            @click="addOption(vraag.id)"
+          >
+            Antwoordoptie Toevoegen
+          </utrecht-button>
         </div>
-        <utrecht-button
-          appearance="secondary-action-button"
-          class="icon icon-after plus"
-          title="Label Toevoegen"
-          type="button"
-          @click="addOption(vraag.id)"
-        >
-          Antwoordoptie Toevoegen
-        </utrecht-button>
       </div>
-    </div>
+    </template>
     <!-- Dropdown for vraag -->
     <label class="utrecht-form-label">
       <span>Vraag toevoegen</span>
@@ -243,6 +271,20 @@ type DropdownVraag = Vraag & {
 
 type CheckboxVraag = Vraag & {
   options: string[];
+};
+
+const hoverIndex = ref(-1);
+const hoverId = ref(-1);
+const showTrashButton = (id: number, index: number) => {
+  hoverIndex.value = index;
+  hoverId.value = id;
+};
+
+const hideTrashButton = (id: number, index: number) => {
+  if (hoverIndex.value === index && hoverId.value === id) {
+    hoverIndex.value = -1;
+    hoverId.value = -1;
+  }
 };
 
 const vragen = ref<Vraag[]>([]);
@@ -436,15 +478,10 @@ label > span {
 }
 
 .question-container {
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.option-container {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
 }
 
 .container {
@@ -458,5 +495,35 @@ menu {
   display: flex;
   gap: var(--spacing-default);
   justify-content: flex-end;
+}
+
+.question-container-button {
+  width: 65%;
+}
+
+.options-button-wrapper {
+  width: 105%;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.options-wrapper {
+  width: 95%;
+  margin-bottom: 0.5rem;
+}
+
+.button-wrapper {
+  position: absolute;
+  right: 0;
+}
+
+.utrecht-button {
+  all: unset !important;
+}
+
+.option-button-wrapper {
+  text-align: right;
+  text-decoration: underline;
 }
 </style>

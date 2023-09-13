@@ -7,7 +7,6 @@
       <label>
         <input
           type="radio"
-          name="isMedewerker"
           value="false"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.isMedewerker"
@@ -17,7 +16,6 @@
       <label>
         <input
           type="radio"
-          name="isMedewerker"
           value="true"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.isMedewerker"
@@ -106,7 +104,7 @@
               class="utrecht-select utrecht-select--html-select"
               name="VragenSets"
               v-model="form.vragenSetId"
-              @input="setActive"
+              @change="setOnderwerp"
             >
               <option value="" selected>Geen</option>
               <option v-for="item in data" :key="item.id" :value="item.id">
@@ -303,14 +301,13 @@ const setActive = () => {
 
 const telEl = ref<HTMLInputElement>();
 const vragenSets = useVragenSets();
-watch(
-  () => form.value.vragenSetId,
-  (vragenSetId) => {
-    if (!vragenSets.success) return;
-    const vragenSet = vragenSets.data.find((s) => s.id == vragenSetId);
-    form.value.contactVerzoekVragenSet = vragenSet;
-  },
-);
+
+const setOnderwerp = () => {
+  setActive();
+  if (!vragenSets.success) return;
+  const vragenSet = vragenSets.data.find((s) => s.id == form.value.vragenSetId);
+  form.value.contactVerzoekVragenSet = vragenSet;
+};
 
 watch(
   () => form.value.isMedewerker,

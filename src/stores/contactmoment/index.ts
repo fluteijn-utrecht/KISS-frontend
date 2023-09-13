@@ -99,6 +99,7 @@ function initVraag(): Vraag {
       emailadres: "",
       interneToelichting: "",
       isActive: false,
+      contactVerzoekVragenSet: undefined,
     },
     startdatum: new Date().toISOString(),
     kanaal: "",
