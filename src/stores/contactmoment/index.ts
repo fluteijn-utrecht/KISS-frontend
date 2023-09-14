@@ -349,10 +349,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
           shouldStore: true,
         };
         huidigeVraag.kennisartikelen.push(record);
-      } else {
-        record.kennisartikel = kennisartikel;
       }
-
       huidigeVraag.vraag = record.kennisartikel;
     },
 
