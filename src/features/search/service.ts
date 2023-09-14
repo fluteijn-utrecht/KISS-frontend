@@ -120,7 +120,20 @@ export function useGlobalSearch(
     };
   }
 
-  function getUniqueId() {
+  //refactoring suggestion. alleen zoeken als de zoekparameter gewijzigd is
+  // //in get uniwueid:  if (x.value === false) return "";
+  // const x = ref<boolean>(false);
+  // watch(
+  //   () => parameters.value.search,
+  //   (newvalue, old) => {
+  //     console.log(old, newvalue);
+  //     if (old != newvalue) {
+  //       x.value = true;
+  //     }
+  //   },
+  // );
+
+  function getUniqueId() {  
     if (!parameters.value.search) return "";
     const payload = getPayload();
     const url = getUrl();

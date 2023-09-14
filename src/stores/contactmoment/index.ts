@@ -62,10 +62,11 @@ export type ContactmomentKlant = {
 };
 
 export type Bron = {
+  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; } | undefined;
   title: string;
   url: string;
   afdeling?: string;
-  sections?: string[];
+  sectionIndex?: number;
 };
 
 export interface Vraag {
@@ -79,7 +80,7 @@ export interface Vraag {
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
   websites: { website: Bron; shouldStore: boolean }[];
   kennisartikelen: {
-    kennisartikel: Bron;
+    kennisartikel: Kennisartikel;
     shouldStore: boolean;
   }[];
   nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
@@ -341,6 +342,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       if (!record) {
         record = {
           kennisartikel: {
+            //search type kennisartikel
             ...kennisartikel,
             afdeling: kennisartikel.afdelingen?.[0]?.afdelingNaam?.trim(),
           },

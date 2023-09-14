@@ -319,35 +319,7 @@
             >
               Vraag
             </label>
-            <select
-              v-model="vraag.vraag"
-              :id="'hoofdvraag' + idx"
-              class="utrecht-select utrecht-select--html-select"
-              required
-              @change="updateAfdeling(vraag)"
-            >
-              <option
-                v-for="(item, itemIdx) in [
-                  ...vraag.websites.map((item) => item.website),
-                  ...vraag.kennisartikelen.flatMap((item) => [
-                    item.kennisartikel,
-                    ...(item.kennisartikel.sections ?? []).map((section) => ({
-                      ...item.kennisartikel,
-                      title: [item.kennisartikel.title, section].join(' - '),
-                    })),
-                  ]),
-                  ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
-                  ...vraag.werkinstructies.map((item) => item.werkinstructie),
-                  ...vraag.vacs.map((item) => item.vac),
-                ]"
-                :key="itemIdx + '|' + idx"
-                :value="item"
-              >
-                {{ item.title }}
-              </option>
-              <option :value="undefined">Anders</option>
-            </select>
-
+            <contactmoment-vraag :idx="idx" :vraag="vraag" />
             <label
               :class="['utrecht-form-label', { required: !vraag.vraag }]"
               :for="'specifiekevraag' + idx"
@@ -419,7 +391,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -427,7 +399,12 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
+
+import {
+  useContactmomentStore,
+  type Bron,
+  type Vraag,
+} from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
@@ -452,6 +429,7 @@ import BackLink from "@/components/BackLink.vue";
 import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSearch.vue";
 import { fetchAfdelingen } from "@/composables/afdelingen";
 
+import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
