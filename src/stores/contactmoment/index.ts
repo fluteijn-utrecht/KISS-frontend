@@ -80,7 +80,7 @@ export interface Vraag {
   medewerkers: { medewerker: Medewerker; shouldStore: boolean }[];
   websites: { website: Bron; shouldStore: boolean }[];
   kennisartikelen: {
-    kennisartikel: Kennisartikel;
+    kennisartikel: Bron;
     shouldStore: boolean;
   }[];
   nieuwsberichten: { nieuwsbericht: Bron; shouldStore: boolean }[];
@@ -350,6 +350,10 @@ export const useContactmomentStore = defineStore("contactmoment", {
         };
         huidigeVraag.kennisartikelen.push(record);
       }
+
+      //altijd geselecteerde tab updaten
+      record.kennisartikel.sectionIndex = kennisartikel.sectionIndex;
+
       huidigeVraag.vraag = record.kennisartikel;
     },
 

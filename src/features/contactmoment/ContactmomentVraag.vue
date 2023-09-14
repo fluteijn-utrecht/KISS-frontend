@@ -19,6 +19,7 @@
 <script lang="ts" setup>
 import { type Bron, type Vraag } from "@/stores/contactmoment";
 import { onMounted, ref, computed } from "vue";
+import type { Kennisartikel } from "../search/types";
 const vraagOptions = ref<Bron[]>([]);
 const props = defineProps<{
   idx: number; // Define the 'idx' prop as a number
@@ -38,7 +39,7 @@ onMounted(() => {
     ...vraag.value.websites.map((item) => item.website),
     ...vraag.value.kennisartikelen.flatMap((item) => [
       item.kennisartikel,
-      ...item.kennisartikel.sections.map((section) => ({
+      ...(item.kennisartikel as Kennisartikel).sections.map((section) => ({
         ...item.kennisartikel,
         title: [item.kennisartikel.title, section].join(" - "),
       })),
