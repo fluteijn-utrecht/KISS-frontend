@@ -16,7 +16,7 @@ const getAfdelingenSearchUrl = (search: string | undefined) => {
   const searchParams = new URLSearchParams();
   searchParams.set("ordering", "record__data__naam");
   if (search) {
-    searchParams.set("data_attrs", `naam__icontains__${search}`);
+    searchParams.set("data_attrs", `naam__exact__${search.trim()}`);
   }
   return "/api/afdelingen/api/v2/objects?" + searchParams;
 };
