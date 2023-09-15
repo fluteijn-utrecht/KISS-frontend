@@ -31,7 +31,6 @@
       <template v-if="searchResults.success">
         <p v-if="!hasResults" class="no-results">Geen resultaten gevonden</p>
         <template v-else>
-          <p v-if="!state.isExpanded">{{ collapsedSearchText }}</p>
           <nav v-show="!state.currentId">
             <ul>
               <li
@@ -287,12 +286,6 @@ function handlePaginationNavigation(page: number) {
   }
 }
 
-const collapsedSearchText = computed(() =>
-  state.value.isExpanded
-    ? "Zoekresultaten"
-    : "Naam van het zoek resultaat",
-);
-
 const buttonText = computed(() =>
   state.value.isExpanded ? "Inklappen" : "Uitklappen",
 );
@@ -464,7 +457,7 @@ fieldset {
     overflow: hidden;
 
     > * {
-      // opacity: 0.5;
+      opacity: 0.5;
     }
   }
 }
@@ -478,17 +471,16 @@ fieldset {
 }
 
 .expand-button {
-  // grid-area: expand;
-  // padding-inline-end: var(--container-padding);
-  // padding-inline-start: var(--spacing-large);
+  grid-area: expand;
+  padding-inline-end: var(--container-padding);
+  padding-inline-start: var(--spacing-large);
   inline-size: 100%;
   block-size: 1rem;
   padding-block: var(--spacing-extrasmall);
   white-space: nowrap;
-  // display: flex;
-  // justify-content: center;
+  display: flex;
+  justify-content: center;
   background: var(--color-secondary);
-  grid-column: inherit;
 
   &:not(.isExpanded) {
     margin-block-start: -1rem;
