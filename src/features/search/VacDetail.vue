@@ -16,11 +16,19 @@
       <div v-html="toelichtingSection.html" class="htmlcontent"></div>
     </section>
   </article>
+  <content-feedback
+    v-if="antwoordSection"
+    :name="antwoordSection.label"
+    :url="antwoordSection"
+    :current-section="idThing"
+  />
 </template>
 <script setup lang="ts">
 import { unescapedSanatizedWithIncreadesHeadingsHtml } from "@/helpers/html";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
+import { ContentFeedback } from "../feedback/index";
 import { computed } from "vue";
+import type { CurrentFeedbackSection } from "../feedback/types";
 
 const knownSections = {
   toelichting: "toelichting",
@@ -32,6 +40,12 @@ const props = defineProps<{
   title: string;
   headingLevel: 2 | 3 | 4;
 }>();
+
+const idThing: CurrentFeedbackSection = {
+  label: props.title,
+  id: props.headingLevel.toString(),
+}
+
 
 const getSection = (
   sectionName: string,
