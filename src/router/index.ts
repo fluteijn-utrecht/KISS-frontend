@@ -14,8 +14,8 @@ import { redirectRoute } from "@/features/login";
 import BedrijvenView from "@/views/BedrijvenView.vue";
 import BedrijfDetailView from "@/views/BedrijfDetailView.vue";
 import LinksView from "@/views/LinksView.vue";
-import ContactenView from "@/views/ContactenView.vue";
-import ContactDetailView from "@/views/ContactDetailView.vue";
+import ContactenverzoekenView from "@/views/ContactenverzoekenView.vue";
+//import ContactverzoekenDetailView from "@/views/ContactverzoekenDetailView.vue";
 
 const NieuwsEnWerkinstructiesBeheer = () =>
   import(
@@ -66,20 +66,20 @@ const router = createRouter({
       },
     },
     {
-      path: "/contacten",
-      name: "contacten",
-      component: ContactenView,
+      path: "/contactverzoeken",
+      name: "contactverzoeken",
+      component: ContactenverzoekenView,
       beforeEnter: guardContactMoment,
       meta: { showNav: true, showNotitie: true, showSearch: true },
     },
-    {
-      path: "/contacten/:contactId",
-      name: "contactDetail",
-      props: true,
-      component: ContactDetailView,
-      beforeEnter: guardContactMoment,
-      meta: { showNav: true, showNotitie: true, showSearch: true },
-    },
+    // {
+    //   path: "/contactverzoeken/:contactId",
+    //   name: "contactverzoekDetail",
+    //   props: true,
+    //   component: ContactverzoekenDetailView,
+    //   beforeEnter: guardContactMoment,
+    //   meta: { showNav: true, showNotitie: true, showSearch: true },
+    // },
     {
       path: "/personen",
       name: "personen",
