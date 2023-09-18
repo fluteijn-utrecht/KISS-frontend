@@ -49,8 +49,10 @@ onMounted(() => {
     ...vraag.value.vacs.map((item) => item.vac),
   ]).value;
 
-  selectedVraag.value = vraag;
-
+  if(vraag.value.vraag){
+    selectedVraag.value = vraag.value.vraag;
+  }
+  
   if (sectionIndex !== undefined) {
     const vraagIndex = vraagOptions.value.indexOf(
       vraag.value.vraag as {
