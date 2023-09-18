@@ -83,8 +83,7 @@
       </service-data-wrapper>
     </template>
 
-    <label class="utrecht-form-label notitieveld"
-      >x
+    <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
       <textarea
         v-model="form.interneToelichting"
@@ -309,18 +308,6 @@ const setOnderwerp = () => {
   const vragenSet = vragenSets.data.find((s) => s.id == form.value.vragenSetId);
   form.value.contactVerzoekVragenSet = vragenSet;
 };
-
-watch(
-  () => form.value.isMedewerker,
-  (newIsMedewerkerValue, oldIsMedewerkerValue) => {
-    console.log(
-      "isMedewerker changed from",
-      oldIsMedewerkerValue,
-      "to",
-      newIsMedewerkerValue,
-    );
-  },
-);
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
 
