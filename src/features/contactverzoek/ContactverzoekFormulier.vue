@@ -7,7 +7,7 @@
       <label>
         <input
           type="radio"
-          value="false"
+          :value="undefined"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.isMedewerker"
         />
@@ -16,7 +16,7 @@
       <label>
         <input
           type="radio"
-          value="true"
+          :value="true"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.isMedewerker"
         />
@@ -107,7 +107,11 @@
               @change="setOnderwerp"
             >
               <option value="" selected>Geen</option>
-              <option v-for="item in data" :key="item.id" :value="item.id">
+              <option
+                v-for="item in [...data].sort((a, b) => b.id - a.id)"
+                :key="item.id"
+                :value="item.id"
+              >
                 {{ item.titel }}
               </option>
             </select>
@@ -147,10 +151,12 @@
                 </select>
                 <div v-if="isCheckboxVraag(item)">
                   <label
+                    class="utrecht-checkbox-button"
                     v-for="(option, optionIndex) in item.options"
                     :key="option"
                   >
                     <input
+                      class="utrecht-checkbox-button"
                       type="checkbox"
                       :value="option"
                       v-model="item.selectedCheckbox[optionIndex]"
@@ -369,5 +375,9 @@ fieldset {
 
 .radio-group > legend {
   font-size: inherit;
+}
+
+.utrecht-checkbox-button {
+  display: flex !important;
 }
 </style>

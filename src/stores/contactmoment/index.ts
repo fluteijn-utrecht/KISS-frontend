@@ -44,7 +44,7 @@ export type ContactmomentContactVerzoek = {
   omschrijvingTelefoonnummer2?: string;
   emailadres?: string;
   interneToelichting?: string;
-  vragenSetId?: string;
+  vragenSetId?: number;
   contactVerzoekVragenSet?: ContactVerzoekVragenSet;
   isActive?: boolean;
 };

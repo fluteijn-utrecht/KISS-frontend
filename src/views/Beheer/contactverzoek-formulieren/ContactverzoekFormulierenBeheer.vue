@@ -14,8 +14,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="vragenset in vragenSets" :key="vragenSets.id">
-          <td class="wrap">{{ vragenset.naam }}</td>
+        <tr v-for="vragenset in vragenSets" :key="vragenset.id">
+          <td class="wrap">{{ vragenset.titel }}</td>
           <td>{{ vragenset.afdelingId }}</td>
           <td class="actions">
             <ul>
@@ -23,7 +23,7 @@
                 <utrecht-button
                   appearance="secondary-action-button"
                   class="icon icon-after trash icon-only"
-                  :title="`Verwijder ${vragenset.titel}`"
+                  :title="`Verwijder ${vragenset.Titel}`"
                   type="button"
                   @click="confirmVerwijder(vragenset.id)"
                 />
@@ -55,7 +55,7 @@ import { fetchLoggedIn } from "@/services";
 
 type VragenSets = {
   Id: number;
-  Naam: string;
+  Titel: string;
   JsonVragen?: string;
   AfdelingId?: string;
 };
@@ -81,11 +81,12 @@ async function load() {
     vragenSets.value = jsonData
       .map((x) => ({
         ...x,
+        Id: Number(x.id),
         dateCreated: new Date(x.dateCreated),
         dateUpdated: x.dateUpdated && new Date(x.dateUpdated),
         publicatiedatum: new Date(x.publicatiedatum),
       }))
-      .sort((a, b) => a.Id - b.Id);
+      .sort((a, b) => b.Id - a.Id);
   } catch {
     showError();
   } finally {

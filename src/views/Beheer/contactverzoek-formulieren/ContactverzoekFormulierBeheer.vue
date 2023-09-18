@@ -299,7 +299,7 @@ const submit = async () => {
 
   try {
     const payload = {
-      Naam: title.value,
+      Titel: title.value,
       AfdelingId: selectedAfdeling.value,
       JsonVragen: JSON.stringify(generatedSchema, null, 2),
     };

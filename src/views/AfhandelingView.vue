@@ -271,6 +271,50 @@
         <section class="details">
           <utrecht-heading :level="3"> Details </utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
+            <label
+              :for="'hoofdvraag' + idx"
+              class="utrecht-form-label required"
+            >
+              Vraag
+            </label>
+            <contactmoment-vraag :idx="idx" :vraag="vraag" />
+            <label
+              :class="['utrecht-form-label', { required: !vraag.vraag }]"
+              :for="'specifiekevraag' + idx"
+            >
+              Specifieke vraag
+            </label>
+            <input
+              :required="!vraag.vraag"
+              type="text"
+              class="utrecht-textbox utrecht-textbox--html-input"
+              :id="'specifiekevraag' + idx"
+              v-model="vraag.specifiekevraag"
+            />
+
+            <label class="utrecht-form-label" :for="'notitie' + idx"
+              >Notitie</label
+            >
+            <textarea
+              class="utrecht-textarea"
+              :id="'notitie' + idx"
+              v-model="vraag.notitie"
+            ></textarea>
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
+            <div class="relative">
+              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
+                extraheren naar eigen componenten -->
+              <afdelingen-search
+                v-model="vraag.afdeling"
+                :exact-match="true"
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                :required="true"
+                placeholder="Zoek een afdeling"
+              />
+            </div>
             <label :for="'kanaal' + idx" class="utrecht-form-label required"
               >Kanaal</label
             >
@@ -312,52 +356,6 @@
                 {{ gespreksresultaat.definitie }}
               </option>
             </select>
-
-            <label
-              :for="'hoofdvraag' + idx"
-              class="utrecht-form-label required"
-            >
-              Vraag
-            </label>
-            <contactmoment-vraag :idx="idx" :vraag="vraag" />
-            <label
-              :class="['utrecht-form-label', { required: !vraag.vraag }]"
-              :for="'specifiekevraag' + idx"
-            >
-              Specifieke vraag
-            </label>
-            <input
-              :required="!vraag.vraag"
-              type="text"
-              class="utrecht-textbox utrecht-textbox--html-input"
-              :id="'specifiekevraag' + idx"
-              v-model="vraag.specifiekevraag"
-            />
-
-            <label class="utrecht-form-label" :for="'notitie' + idx"
-              >Notitie</label
-            >
-            <textarea
-              class="utrecht-textarea"
-              :id="'notitie' + idx"
-              v-model="vraag.notitie"
-            ></textarea>
-
-            <label :for="'afdeling' + idx" class="utrecht-form-label required"
-              >Afdeling</label
-            >
-            <div class="relative">
-              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
-                extraheren naar eigen componenten -->
-              <afdelingen-search
-                v-model="vraag.afdeling"
-                :exact-match="true"
-                :id="'afdeling' + idx"
-                class="utrecht-textbox utrecht-textbox--html-input"
-                :required="true"
-                placeholder="Zoek een afdeling"
-              />
-            </div>
           </fieldset>
         </section>
 
