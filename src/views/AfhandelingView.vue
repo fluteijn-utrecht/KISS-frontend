@@ -277,7 +277,12 @@
             >
               Vraag
             </label>
-            <contactmoment-vraag :idx="idx" :vraag="vraag" />
+
+            <contactmoment-vraag
+              :idx="idx"
+              :vraag="vraag"
+              v-model="vraag.vraag"
+            />
             <label
               :class="['utrecht-form-label', { required: !vraag.vraag }]"
               :for="'specifiekevraag' + idx"
@@ -428,6 +433,7 @@ import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSea
 import { fetchAfdelingen } from "@/composables/afdelingen";
 
 import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
+import type { Kennisartikel } from "@/features/search/types";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -538,7 +544,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     tekst: vraag.notitie,
     onderwerpLinks: [],
     initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    vraag: vraag.vraag?.title,
+    vraag: vraag?.vraag?.title,
     specifiekevraag: vraag.specifiekevraag || undefined,
     gespreksresultaat: vraag.gespreksresultaat,
 
@@ -752,7 +758,7 @@ const updateAfdeling = async (vraag: Vraag) => {
     vraag.afdeling = undefined;
     return;
   }
-  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling, false);
   vraag.afdeling = artikelAfdelingen.page[0];
 };
 
