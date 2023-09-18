@@ -106,16 +106,16 @@ export function saveContactverzoek({
     return vraagAntwoord
       .map((va) => {
         if (isInputVraag(va)) {
-          return `${va.label}: ${va.input}`;
+          return `${va.description}: ${va.input}`;
         } else if (isTextareaVraag(va)) {
-          return `${va.label}: ${va.textarea}`;
+          return `${va.description}: ${va.textarea}`;
         } else if (isDropdownVraag(va)) {
-          return `${va.label}: ${va.selectedDropdown}`;
+          return `${va.description}: ${va.selectedDropdown}`;
         } else if (isCheckboxVraag(va)) {
           const selectedOptions = va.options
             .filter((_, index) => va.selectedCheckbox[index])
             .join(", ");
-          return `${va.label}: ${selectedOptions}`;
+          return `${va.description}: ${selectedOptions}`;
         }
         return null;
       })
@@ -214,42 +214,10 @@ export function useContactverzoekenByKlantId(
   return ServiceResult.fromFetcher(getUrl, fetchContactverzoeken);
 }
 
-interface Afdeling {
-  id: string;
-  identificatie: string;
-  naam: string;
-}
-
 interface Groep {
   identificatie: string;
   naam: string;
   afdelingId: string;
-}
-
-export function useAfdelingen(search: () => string | undefined) {
-  const getUrl = () => {
-    const searchParams = new URLSearchParams();
-    searchParams.set("ordering", "record__data__naam");
-    const searchStr = search();
-    if (searchStr) {
-      searchParams.set("data_attrs", `naam__icontains__${searchStr}`);
-    }
-    return "/api/afdelingen/api/v2/objects?" + searchParams;
-  };
-
-  const mapOrganisatie = (x: any) =>
-    ({
-      ...x.record.data,
-      id: x.uuid,
-    }) as Afdeling;
-
-  const fetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((json) => parsePagination(json, mapOrganisatie));
-
-  return ServiceResult.fromFetcher(getUrl, fetcher);
 }
 
 export function useGroepen(
@@ -261,12 +229,14 @@ export function useGroepen(
     if (!afdelingId) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("ordering", "record__data__naam");
-    searchParams.set("data_attrs", `afdelingId__exact__${afdelingId}`);
+    const data_attrs = [`afdelingId__exact__${afdelingId}`];
 
     const searchStr = search?.();
     if (searchStr) {
-      searchParams.set("data_attrs", `naam__icontains__${searchStr}`);
+      data_attrs.push(`naam__icontains__${searchStr}`);
     }
+
+    searchParams.set("data_attrs", data_attrs.join(","));
 
     return "/api/groepen/api/v2/objects?" + searchParams;
   };
@@ -302,15 +272,9 @@ function mapToClientContactVerzoekVragenSets(
   serverDataArray: ServerContactVerzoekVragenSet[],
 ): ContactVerzoekVragenSet[] {
   return serverDataArray.map((serverData) => {
-    const parsedQuestions = safeJSONParse<Vraag[]>(serverData.jsonVragen, []);
-
-    // Initialize selectedCheckbox array for CheckboxVraag type questions
-    parsedQuestions.forEach((question) => {
-      if (isCheckboxVraag(question)) {
-        question.selectedCheckbox = Array(question.options.length).fill(false);
-      }
-    });
-
+    const parsedQuestions = mapSchemaToVragen(
+      safeJSONParse(serverData.jsonVragen, {}),
+    );
     return {
       id: serverData.id,
       naam: serverData.naam,
@@ -330,25 +294,26 @@ function safeJSONParse<T>(jsonString: string, defaultValue: T): T {
 
 export function isInputVraag(question: Vraag): question is InputVraag {
   return (
-    "label" in question &&
-    question.label.trim() !== "" &&
-    question.type === "input"
+    "description" in question &&
+    "input" in question &&
+    question.description.trim() !== "" &&
+    question.questiontype === "input"
   );
 }
 
 export function isTextareaVraag(question: Vraag): question is TextareaVraag {
   return (
-    "label" in question &&
-    question.label.trim() !== "" &&
-    question.type === "textarea"
+    question.description.trim() !== "" &&
+    question.questiontype === "textarea" &&
+    "textarea" in question
   );
 }
 
 export function isDropdownVraag(question: Vraag): question is DropdownVraag {
   return (
-    question.type === "dropdown" &&
-    "label" in question &&
-    question.label.trim() !== "" &&
+    question.questiontype === "dropdown" &&
+    "description" in question &&
+    question.description.trim() !== "" &&
     "options" in question &&
     Array.isArray(question.options) &&
     question.options.length > 0 &&
@@ -358,12 +323,55 @@ export function isDropdownVraag(question: Vraag): question is DropdownVraag {
 
 export function isCheckboxVraag(question: Vraag): question is CheckboxVraag {
   return (
-    question.type === "checkbox" &&
-    "label" in question &&
-    question.label.trim() !== "" &&
+    question.questiontype === "checkbox" &&
+    "description" in question &&
+    question.description.trim() !== "" &&
     "options" in question &&
     Array.isArray(question.options) &&
     question.options.length > 0 &&
     !question.options.includes("")
   );
+}
+
+function mapSchemaToVragen(schema: any): Vraag[] {
+  if (!schema || !schema.properties) {
+    return [];
+  }
+
+  return Object.keys(schema.properties).map((key) => {
+    const property = schema.properties[key];
+    const questionType = property.questiontype;
+
+    const baseVraag: Vraag = {
+      description: property.description,
+      questiontype: questionType,
+    };
+
+    switch (questionType) {
+      case "dropdown":
+        return {
+          ...baseVraag,
+          options: property.items?.options || [],
+          selectedDropdown: "",
+        } as DropdownVraag;
+
+      case "checkbox":
+        return {
+          ...baseVraag,
+          options: property.items?.options || [],
+          selectedCheckbox: Array(property.items?.options?.length || 0).fill(
+            "",
+          ),
+        } as CheckboxVraag;
+
+      case "input":
+        return { ...baseVraag, input: "" } as InputVraag;
+
+      case "textarea":
+        return { ...baseVraag, textarea: "" } as TextareaVraag;
+
+      default:
+        return baseVraag;
+    }
+  });
 }

@@ -13,12 +13,12 @@
     confirm-message="Ja"
   />
 
+  <back-link />
+
   <simple-spinner v-if="saving || gespreksresultaten.loading" />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
-
-    <a @click="$router.back()" href="#">{{ "< Terug" }}</a>
 
     <application-message
       v-if="errorMessage != ''"
@@ -319,34 +319,7 @@
             >
               Vraag
             </label>
-            <select
-              v-model="vraag.vraag"
-              :id="'hoofdvraag' + idx"
-              class="utrecht-select utrecht-select--html-select"
-              required
-            >
-              <option
-                v-for="(item, itemIdx) in [
-                  ...vraag.websites.map((item) => item.website),
-                  ...vraag.kennisartikelen.flatMap((item) => [
-                    item.kennisartikel,
-                    ...item.kennisartikel.sections.map((section) => ({
-                      ...item.kennisartikel,
-                      title: [item.kennisartikel.title, section].join(' - '),
-                    })),
-                  ]),
-                  ...vraag.nieuwsberichten.map((item) => item.nieuwsbericht),
-                  ...vraag.werkinstructies.map((item) => item.werkinstructie),
-                  ...vraag.vacs.map((item) => item.vac),
-                ]"
-                :key="itemIdx + '|' + idx"
-                :value="item"
-              >
-                {{ item.title }}
-              </option>
-              <option :value="undefined">Anders</option>
-            </select>
-
+            <contactmoment-vraag :idx="idx" :vraag="vraag" />
             <label
               :class="['utrecht-form-label', { required: !vraag.vraag }]"
               :for="'specifiekevraag' + idx"
@@ -369,6 +342,22 @@
               :id="'notitie' + idx"
               v-model="vraag.notitie"
             ></textarea>
+
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
+            <div class="relative">
+              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
+                extraheren naar eigen componenten -->
+              <afdelingen-search
+                v-model="vraag.afdeling"
+                :exact-match="true"
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                :required="true"
+                placeholder="Zoek een afdeling"
+              />
+            </div>
           </fieldset>
         </section>
 
@@ -402,7 +391,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -411,9 +400,12 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
+import {
+  useContactmomentStore,
+  type Bron,
+  type Vraag,
+} from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
-
 import {
   koppelKlant,
   saveContactmoment,
@@ -423,7 +415,6 @@ import {
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
 } from "@/features/contactmoment";
-
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
@@ -434,6 +425,11 @@ import {
 } from "@/features/contactverzoek";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
+import BackLink from "@/components/BackLink.vue";
+import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSearch.vue";
+import { fetchAfdelingen } from "@/composables/afdelingen";
+
+import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -555,6 +551,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurstaal: "",
     medewerker: "",
     startdatum: vraag.startdatum,
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
     einddatum: new Date().toISOString(),
   };
 
@@ -751,6 +748,22 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
     contactmomentStore.removeVraag(vraagId);
   });
 };
+
+const updateAfdeling = async (vraag: Vraag) => {
+  if (!vraag.vraag?.afdeling) {
+    vraag.afdeling = undefined;
+    return;
+  }
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
+  vraag.afdeling = artikelAfdelingen.page[0];
+};
+
+onMounted(() => {
+  if (!contactmomentStore.huidigContactmoment) return;
+  const promises =
+    contactmomentStore.huidigContactmoment.vragen.map(updateAfdeling);
+  return Promise.all(promises);
+});
 </script>
 
 <style scoped lang="scss">
@@ -864,5 +877,9 @@ select {
       margin-inline-start: calc(var(--label-width) + var(--label-gap));
     }
   }
+}
+
+.relative {
+  position: relative;
 }
 </style>

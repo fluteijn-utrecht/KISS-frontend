@@ -29,13 +29,13 @@
               </option>
             </select>
           </label>
-          <label for="searchInput"
+          <label for="search-input"
             ><span>Zoek een werkinstructie of nieuwsbericht</span>
             <input
               type="search"
               name="search"
-              id="searchInput"
-              placeholder="Zoek een werkinstructie of nieuwsbericht"
+              id="search-input"
+              placeholder="Zoek een werkinstructie of nieuwsbericht..."
               @search="handleSearch"
               v-model="state.searchField"
           /></label>
@@ -57,13 +57,10 @@
             v-model="userStore.preferences.skills"
           />
           <menu class="delete-skills-menu">
-            <li
-              v-for="{ id, name, className } in selectedSkills"
-              :key="'skills_cb_' + id"
-            >
+            <li v-for="{ id, name } in selectedSkills" :key="'skills_cb_' + id">
               <button
                 type="button"
-                :class="`remove-filter icon-after circle-xmark ${className}`"
+                class="remove-filter icon-after xmark"
                 @click="
                   userStore.preferences.skills =
                     userStore.preferences.skills.filter((x) => x !== id)
@@ -145,13 +142,12 @@ const selectedSkills = computed(() => {
     .map(([id, name]) => ({
       id,
       name,
-      className: `category-${name.split(" ").join("-")}`,
     }))
     .filter((x) => userStore.preferences.skills.includes(x.id));
 });
 
-const selectedSkillIds = computed(() =>
-  selectedSkills.value?.map(({ id }) => id)
+const selectedSkillIds = computed(
+  () => selectedSkills.value?.map(({ id }) => id),
 );
 
 function handleSubmit(e: Event) {
@@ -180,7 +176,6 @@ function handleSearch(e: Event) {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
-  align-content: flex-start;
   position: relative;
 
   > * {
@@ -221,25 +216,16 @@ header {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-default);
-  align-items: flex-start;
   justify-content: space-between;
 }
 
-label[for="searchInput"] {
-  flex: 1;
-}
-
-.search-bar {
-  width: 100%;
-}
-
 .forms > :first-child {
-  width: min(100%, var(--section-width));
+  // so placeholder fits
+  flex-basis: 32.5rem;
 }
 
 .forms > :last-child {
-  width: min(100%, 20rem);
-  margin-inline-start: auto;
+  flex-basis: 20rem;
 }
 
 form {
@@ -266,9 +252,7 @@ form {
 
 .skills-form {
   display: grid;
-  gap: var(--spacing-default);
-  align-items: flex-end;
-  justify-items: flex-end;
+  gap: var(--spacing-small);
   width: 100%;
 }
 
@@ -280,5 +264,13 @@ menu {
   display: flex;
   flex-flow: row wrap;
   gap: var(--spacing-small);
+}
+
+.remove-filter::after {
+  transition: opacity 200ms;
+}
+
+.remove-filter:not(:hover, :focus, :focus-visible, :active)::after {
+  opacity: 0;
 }
 </style>

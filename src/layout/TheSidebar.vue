@@ -103,7 +103,7 @@ watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
   () => {
     state.reset();
-  }
+  },
 );
 </script>
 
@@ -156,7 +156,6 @@ aside {
     flex: 1;
     color: var(--utrecht-form-label-color);
     padding: var(--spacing-default);
-    min-height: 90%;
 
     textarea::placeholder {
       font-style: italic;
@@ -164,6 +163,8 @@ aside {
   }
 
   :deep([role="tab"]) {
+    --utrecht-focus-outline-offset: -4px;
+
     &[aria-selected="true"] {
       color: var(--color-headings);
     }

@@ -1,20 +1,20 @@
 <template>
-  <section v-if="items.length">
-    <ul>
-      <li class="header-row">
-        <slot name="header"></slot>
-        <span class="chevron"></span>
-      </li>
-      <li v-for="item in items" :key="item[itemKey]">
-        <details @click="toggleDetails">
-          <slot name="item" :item="item"></slot>
-        </details>
-      </li>
-    </ul>
-  </section>
+  <ul v-if="items.length" class="overview" :data-column-count="columnCount">
+    <li class="header-row" ref="headerRef">
+      <slot name="header"></slot>
+    </li>
+    <li v-for="item in items" :key="item[itemKey]">
+      <details @click="toggleDetails">
+        <slot name="item" :item="item"></slot>
+      </details>
+    </li>
+  </ul>
 </template>
 
 <script lang="ts" setup>
+import { computed } from "vue";
+import { ref } from "vue";
+
 defineProps<{
   items: any[];
   itemKey: string;
@@ -26,56 +26,50 @@ const toggleDetails = (e: Event) => {
     e.currentTarget.open = !e.currentTarget.open;
   }
 };
+
+const headerRef = ref<HTMLElement>();
+const columnCount = computed(() => headerRef.value?.childElementCount || 0);
 </script>
 
 <style lang="scss" scoped>
 ul {
-  --column-width: 25ch;
-  --gap: var(--spacing-default);
-  --columns: 1fr 1fr 1fr 1fr 1rem;
+  --column-count: 4;
+  --columns: repeat(var(--column-count), 1fr) /* regular columns */
+    calc(1rem + var(--column-padding) * 2); // column for chevron
+
   --spinner-size: 1em;
+  --utrecht-focus-outline-offset: 0;
 
   display: grid;
   list-style: none;
   padding: 0;
-}
 
-li:not(:first-child, :last-child) {
-  border-bottom: 2px solid var(--color-tertiary);
+  @for $i from 1 through 10 {
+    &[data-column-count="#{$i}"] {
+      --column-count: #{$i};
+    }
+  }
 }
 
 .header-row {
   display: grid;
   grid-template-columns: var(--columns);
-  gap: var(--gap);
-  padding-inline: var(--gap);
-  padding-block: var(--spacing-default);
-  background: var(--color-tertiary);
-  color: var(--color-white);
 }
 
 :deep(summary) {
+  gap: 0;
   list-style: none;
   display: grid;
   grid-template-columns: var(--columns);
-  gap: var(--gap);
-  padding-block-start: var(--spacing-default);
-  padding-block-end: var(--spacing-default);
+
+  &::after {
+    justify-self: center;
+  }
 }
 
 :deep(details) {
   display: grid;
-  gap: var(--spacing-default);
   background: var(--color-white);
-
-  &[open],
-  &:hover {
-    background-color: var(--color-secondary);
-  }
-
-  > * {
-    padding-inline: var(--gap);
-  }
 }
 
 :deep(dt) {
@@ -83,12 +77,17 @@ li:not(:first-child, :last-child) {
 }
 
 :deep(dl) {
-  padding-inline-start: var(--spacing-default);
   display: grid;
-  column-gap: var(--gap);
-  row-gap: var(--spacing-default);
-  grid-template-columns: var(--column-width) 1fr;
-  padding-block: var(--spacing-large);
+  grid-template-columns: var(--columns);
+
+  dt {
+    grid-column: 1 / 1;
+  }
+
+  dd {
+    // fill the rest of the columns except the chevron column
+    grid-column: 2 / -2;
+  }
 }
 
 :deep(.tekst) {

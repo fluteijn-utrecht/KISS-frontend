@@ -10,10 +10,6 @@
   <template v-if="zaak.success && zaak.data">
     <dt>Zaaknummer</dt>
     <dd>{{ zaak.data.identificatie }}</dd>
-    <dt>Zaaktype</dt>
-    <dd>{{ zaak.data.zaaktypeLabel }}</dd>
-    <dt>Zaakstatus</dt>
-    <dd>{{ zaak.data.status }}</dd>
   </template>
 </template>
 

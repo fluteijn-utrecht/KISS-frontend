@@ -255,22 +255,26 @@ function scrollIntoView() {
 <style lang="scss" scoped>
 .spinner.small {
   font-size: 0.875rem;
-  color: black;
+  color: var(--color-black);
   position: absolute;
   inset-inline-end: 50%;
   transform: translateX(100%);
   z-index: 2;
 }
 
+[role="combobox"] {
+  --utrecht-focus-outline-offset: 0;
+}
+
 ul {
   position: absolute;
-  border-radius: 0;
+  border-radius: var(--radius-default);
   display: grid;
   gap: var(--spacing-default);
   align-self: flex-end;
   transform: translateY(100%);
   z-index: 1;
-  inset-block-end: 0;
+  inset-block-end: -1px;
 }
 
 li {

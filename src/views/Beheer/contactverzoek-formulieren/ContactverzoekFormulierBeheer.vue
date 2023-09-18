@@ -60,7 +60,8 @@
       <div class="question-container">
         <div class="question-container-label utrecht-form-label">
           <span
-            >Vraag {{ index + 1 }} - {{ setVraagTypeLabel(vraag.type) }}</span
+            >Vraag {{ index + 1 }} -
+            {{ setVraagTypeDescription(vraag.questiontype) }}</span
           >
         </div>
         <div class="question-container-button">
@@ -87,7 +88,7 @@
             class="utrecht-textbox utrecht-textbox--html-input"
             required
             type="text"
-            v-model="vraag.label"
+            v-model="vraag.description"
             placeholder="Vul hier een label voor de vraag in"
           />
         </div>
@@ -257,8 +258,8 @@ const afdelingen = ref([
 
 type Vraag = {
   id: number;
-  type: string;
-  label: string;
+  questiontype: string;
+  description: string;
 };
 
 type InputVraag = Vraag;
@@ -293,11 +294,14 @@ const selectedVraag = ref("Vraag toevoegen");
 const submit = async () => {
   loading.value = true;
 
+  const generatedSchema = createJsonSchema(vragen.value);
+  console.log(JSON.stringify(generatedSchema, null, 2));
+
   try {
     const payload = {
       Naam: title.value,
       AfdelingId: selectedAfdeling.value,
-      JsonVragen: JSON.stringify(vragen.value),
+      JsonVragen: JSON.stringify(generatedSchema, null, 2),
     };
 
     let result;
@@ -337,14 +341,52 @@ onMounted(() => {
   load();
 });
 
+function toSchemaFromVraag(
+  vraag: InputVraag | TextareaVraag | DropdownVraag | CheckboxVraag,
+): Record<string, any> {
+  const baseSchema = {
+    description: vraag.description,
+    questiontype: vraag.questiontype,
+    additionalProperties: false,
+    type: "string",
+  };
+
+  if (vraag.questiontype === "dropdown" || vraag.questiontype === "checkbox") {
+    const optionsVraag = vraag as DropdownVraag | CheckboxVraag;
+    return {
+      ...baseSchema,
+      items: { type: "array", options: optionsVraag.options },
+    };
+  } else {
+    return baseSchema;
+  }
+}
+
+function createJsonSchema(vragen: Vraag[]): Record<string, any> {
+  const schema = {
+    $schema: "https://json-schema.org/draft-04/schema",
+    title: "ContactVerzoekVragenSets",
+    references: {},
+    type: "object",
+    additionalProperties: false,
+    properties: {},
+  };
+
+  vragen.forEach((vraag) => {
+    const descriptionWithoutSpaces = vraag.description.replace(/\s/g, "");
+    schema.properties[descriptionWithoutSpaces] = toSchemaFromVraag(vraag);
+  });
+  return schema;
+}
+
 let vraagCounter = 0;
 const handleVraagChange = () => {
   vraagCounter++;
 
   const nieuweVraag: Vraag = {
     id: vraagCounter,
-    type: selectedVraag.value,
-    label: "",
+    questiontype: selectedVraag.value,
+    description: "",
     ...(selectedVraag.value === "dropdown" || selectedVraag.value === "checkbox"
       ? { options: ["", ""] }
       : {}),
@@ -367,16 +409,16 @@ const removeVraag = (id: number) => {
 };
 
 const isInputVraag = (question: Vraag): question is InputVraag =>
-  question.type === "input";
+  question.questiontype === "input";
 
 const isTextareaVraag = (question: Vraag): question is TextareaVraag =>
-  question.type === "textarea";
+  question.questiontype === "textarea";
 
 const isCheckboxVraag = (question: Vraag): question is CheckboxVraag =>
-  question.type === "checkbox" && "options" in question;
+  question.questiontype === "checkbox" && "options" in question;
 
 const isDropdownVraag = (question: Vraag): question is DropdownVraag =>
-  question.type === "dropdown" && "options" in question;
+  question.questiontype === "dropdown" && "options" in question;
 
 const removeOption = (vraagId: number, optionIndex: number) => {
   const vraag = vragen.value.find((v) => v.id === vraagId);
@@ -411,14 +453,56 @@ async function load() {
 
       title.value = data.naam;
       selectedAfdeling.value = data.afdelingId;
-      vragen.value = JSON.parse(data.jsonVragen);
-      vraagCounter = vragen.value.length;
+      vragen.value = ToSchemaFromVragen(JSON.parse(data.jsonVragen));
     }
   } catch {
     handleError();
   } finally {
     loading.value = false;
   }
+}
+
+function ToSchemaFromVragen(schema: any): Vraag[] {
+  const results = [];
+
+  if (schema && schema.properties) {
+    let idCounter = 1;
+
+    for (const key in schema.properties) {
+      const property = schema.properties[key];
+      const questionType = property.questiontype;
+
+      switch (questionType) {
+        case "dropdown":
+          results.push({
+            id: idCounter,
+            questiontype: questionType,
+            description: property.description,
+            options: (property.items && property.items.options) || [],
+          } as DropdownVraag);
+          break;
+
+        case "checkbox":
+          results.push({
+            id: idCounter,
+            questiontype: questionType,
+            description: property.description,
+            options: (property.items && property.items.options) || [],
+          } as CheckboxVraag);
+          break;
+
+        default:
+          results.push({
+            id: idCounter,
+            questiontype: questionType,
+            description: property.description,
+          } as Vraag);
+      }
+      idCounter++;
+    }
+  }
+
+  return results;
 }
 
 const handleError = () => {
@@ -435,7 +519,7 @@ const handleSuccess = () => {
   router.push("/Beheer/Contactverzoekformulieren/");
 };
 
-const setVraagTypeLabel = (type: string) => {
+const setVraagTypeDescription = (type: string) => {
   switch (type) {
     case "input":
       return "Open vraag kort";
@@ -499,6 +583,7 @@ menu {
 
 .question-container-button {
   width: 65%;
+  margin-top: 0.5rem;
 }
 
 .options-button-wrapper {

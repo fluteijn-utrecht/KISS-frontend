@@ -1,6 +1,6 @@
 export interface Vraag {
-  label: string;
-  type: string;
+  description: string;
+  questiontype: string;
 }
 
 export interface InputVraag extends Vraag {
@@ -18,7 +18,7 @@ export interface DropdownVraag extends Vraag {
 
 export interface CheckboxVraag extends Vraag {
   options: string[];
-  selectedCheckbox: string["", ""];
+  selectedCheckbox: string[];
 }
 
 export interface ContactVerzoekVragenSet {

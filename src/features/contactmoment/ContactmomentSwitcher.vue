@@ -73,7 +73,7 @@ const moments = computed(() =>
         closeDetails();
       },
     };
-  })
+  }),
 );
 
 const detailsEl = ref();
@@ -99,16 +99,16 @@ details {
 menu {
   position: absolute;
   z-index: 1;
-  margin-block-start: var(--spacing-small);
   padding-inline: var(--spacing-default);
   padding-block-end: var(--spacing-default);
   background: var(--color-white);
   inline-size: 100%;
   border-radius: var(--radius-default);
   box-shadow: var(--shadow-default);
+  justify-content: flex-start;
 
   li {
-    border-block-end: 1px solid black;
+    border-block-end: 1px solid var(--color-black);
     padding-block: var(--spacing-default);
   }
 
@@ -133,12 +133,11 @@ menu {
   }
 
   .current-moment {
-    color: var(--color-accent);
     font-style: italic;
   }
 
   .name {
-    font-weight: bold;
+    font-weight: 400;
   }
 
   .contact,

@@ -83,7 +83,8 @@
       </service-data-wrapper>
     </template>
 
-    <label class="utrecht-form-label notitieveld">
+    <label class="utrecht-form-label notitieveld"
+      >x
       <span class="required">Interne toelichting voor medewerker</span>
       <textarea
         v-model="form.interneToelichting"
@@ -121,7 +122,7 @@
               :key="index"
             >
               <label class="utrecht-form-label">
-                <span>{{ item.label }}</span>
+                <span>{{ item.description }}</span>
                 <input
                   v-if="isInputVraag(item)"
                   class="utrecht-textbox utrecht-textbox--html-input"
@@ -268,11 +269,10 @@ import {
 } from "@utrecht/component-library-vue";
 
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import ServiceDataSearch from "./ServiceDataSearch.vue";
+import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
 import {
-  useAfdelingen,
   useVragenSets,
   useGroepen,
   isInputVraag,
@@ -281,6 +281,7 @@ import {
   isCheckboxVraag,
 } from "./service";
 
+import { useAfdelingen } from "@/composables/afdelingen";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
