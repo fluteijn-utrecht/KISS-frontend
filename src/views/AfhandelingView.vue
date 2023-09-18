@@ -754,7 +754,7 @@ const updateAfdeling = async (vraag: Vraag) => {
     vraag.afdeling = undefined;
     return;
   }
-  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling, false);
   vraag.afdeling = artikelAfdelingen.page[0];
 };
 
