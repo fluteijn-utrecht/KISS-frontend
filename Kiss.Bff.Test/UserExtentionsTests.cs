@@ -1,6 +1,4 @@
 ﻿using IdentityModel;
-using Kiss; // Make sure to include the correct namespace for your project
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Security.Claims;
 
 namespace Kiss.Bff.Test

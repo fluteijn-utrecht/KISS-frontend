@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Kiss.Bff.Beheer.Data;
+﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Links.Controllers;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kiss.Bff.Test
 {
