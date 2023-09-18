@@ -430,6 +430,7 @@ import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSea
 import { fetchAfdelingen } from "@/composables/afdelingen";
 
 import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
+import type { Kennisartikel } from "@/features/search/types";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -533,6 +534,24 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
+  const getVraag = (vraag: Bron | undefined) => {
+    if (vraag) {
+      const kennisArtikel = vraag as Kennisartikel;
+
+      if (
+        vraag.sectionIndex &&
+        kennisArtikel &&
+        kennisArtikel.sections &&
+        kennisArtikel.sections.length >= vraag.sectionIndex - 1
+      ) {
+        return `${vraag.title?.trim()} - ${
+          kennisArtikel.sections[vraag.sectionIndex - 1]
+        }`;
+      }
+    }
+    return vraag?.title?.trim();
+  };
+
   const contactmoment: Contactmoment = {
     bronorganisatie: organisatieIds.value[0] || "",
     registratiedatum: new Date().toISOString(), // "2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), // todo check of dit nog het juiste format is. lijkt iso te moeten zijn
@@ -540,7 +559,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     tekst: vraag.notitie,
     onderwerpLinks: [],
     initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    vraag: vraag.vraag?.title,
+    vraag: getVraag(vraag.vraag),
     specifiekevraag: vraag.specifiekevraag || undefined,
     gespreksresultaat: vraag.gespreksresultaat,
 
