@@ -109,7 +109,7 @@
             >
               <option value="" selected>Geen</option>
               <option v-for="item in data" :key="item.id" :value="item.id">
-                {{ item.naam }}
+                {{ item.titel }}
               </option>
             </select>
           </label>

@@ -23,7 +23,7 @@ export interface CheckboxVraag extends Vraag {
 
 export interface ContactVerzoekVragenSet {
   id: string;
-  naam: string;
+  titel: string;
   vraagAntwoord: Vraag[];
   afdelingId: string;
 }

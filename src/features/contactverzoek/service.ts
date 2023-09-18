@@ -23,7 +23,7 @@ const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
 type ServerContactVerzoekVragenSet = {
   id: string;
-  naam: string;
+  titel: string;
   jsonVragen: string;
   afdelingId: string;
 };
@@ -277,7 +277,7 @@ function mapToClientContactVerzoekVragenSets(
     );
     return {
       id: serverData.id,
-      naam: serverData.naam,
+      titel: serverData.titel,
       vraagAntwoord: parsedQuestions,
       afdelingId: serverData.afdelingId,
     };

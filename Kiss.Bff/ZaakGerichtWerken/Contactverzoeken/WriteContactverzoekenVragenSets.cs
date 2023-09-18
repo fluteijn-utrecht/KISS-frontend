@@ -44,7 +44,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
                 return NotFound();
             }
 
-            contactVerzoekVragenSet.Naam = model.Naam;
+            contactVerzoekVragenSet.Titel = model.Titel;
             contactVerzoekVragenSet.JsonVragen = model.JsonVragen;
             contactVerzoekVragenSet.AfdelingId = model.AfdelingId;
 

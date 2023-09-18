@@ -451,7 +451,7 @@ async function load() {
       );
       const data = await response.json();
 
-      title.value = data.naam;
+      title.value = data.titel;
       selectedAfdeling.value = data.afdelingId;
       vragen.value = ToSchemaFromVragen(JSON.parse(data.jsonVragen));
     }
