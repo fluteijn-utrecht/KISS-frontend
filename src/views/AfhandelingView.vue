@@ -755,19 +755,20 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
   });
 };
 
-const updateAfdeling = async (vraag: Vraag) => {
+const trySetOfficieleAfdeling = async (vraag: Vraag) => {
   if (!vraag.vraag?.afdeling) {
     vraag.afdeling = undefined;
     return;
   }
-  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling, false);
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling, true);
   vraag.afdeling = artikelAfdelingen.page[0];
 };
 
 onMounted(() => {
   if (!contactmomentStore.huidigContactmoment) return;
-  const promises =
-    contactmomentStore.huidigContactmoment.vragen.map(updateAfdeling);
+  const promises = contactmomentStore.huidigContactmoment.vragen.map(
+    trySetOfficieleAfdeling,
+  );
   return Promise.all(promises);
 });
 </script>
