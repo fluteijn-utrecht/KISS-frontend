@@ -86,7 +86,7 @@ async function load() {
         dateUpdated: x.dateUpdated && new Date(x.dateUpdated),
         publicatiedatum: new Date(x.publicatiedatum),
       }))
-      .sort((a, b) => b.id - a.id);
+      .sort((a, b) => a.titel.localeCompare(b.titel));
   } catch {
     showError();
   } finally {

@@ -108,7 +108,9 @@
             >
               <option value="" selected>Geen</option>
               <option
-                v-for="item in [...data].sort((a, b) => b.id - a.id)"
+                v-for="item in [...data].sort((a, b) =>
+                  a.titel.localeCompare(b.titel),
+                )"
                 :key="item.id"
                 :value="item.id"
               >
