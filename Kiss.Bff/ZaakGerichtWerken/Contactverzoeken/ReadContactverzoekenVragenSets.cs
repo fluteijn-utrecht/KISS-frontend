@@ -20,15 +20,15 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         {
             var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets.ToListAsync(cancellationToken);
 
-            if (contactVerzoekVragenSets == null)
+            if (!contactVerzoekVragenSets.Any())
             {
-                return Ok(new List<ContactVerzoekVragenSet>());
+                return NotFound();
             }
 
             return Ok(contactVerzoekVragenSets);
         }
 
-        [HttpGet("/api/contactverzoekvragenset/{id:int}")]
+        [HttpGet("/api/contactverzoekvragensets/{id:int}")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var contactVerzoekVragenSet = await _db.ContactVerzoekVragenSets.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);

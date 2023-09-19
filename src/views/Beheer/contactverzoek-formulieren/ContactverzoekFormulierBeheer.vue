@@ -66,7 +66,7 @@
         </div>
         <!-- Conditional part for Input -->
         <div
-          style="width: 100%"
+          class="questions"
           v-if="
             isInputVraag(vraag) ||
             isTextareaVraag(vraag) ||
@@ -447,7 +447,7 @@ async function load() {
     const id = props.id;
     if (id) {
       const response = await fetchLoggedIn(
-        `/api/contactverzoekvragenset/${id}`,
+        `/api/contactverzoekvragensets/${id}`,
       );
       const data = await response.json();
 
@@ -618,12 +618,8 @@ menu {
 }
 
 .options-wrapper {
-  width: 95%;
+  width: 94%;
   margin-bottom: 0.5rem;
-}
-
-.utrecht-button {
-  all: unset !important;
 }
 
 .option-add-wrapper {
@@ -632,20 +628,18 @@ menu {
 }
 
 .option-add-button {
-  display: inline-block;
-  text-decoration: underline;
-  cursor: pointer;
+  text-align: right;
 }
 
 .question-wrapper {
-  width: 105%;
+  width: 106%;
   display: flex;
   align-items: center;
   position: relative;
 }
 
 .question-inputfield-wrapper {
-  width: 95%;
+  width: 94%;
   margin-bottom: 0.5rem;
 }
 
@@ -655,7 +649,7 @@ menu {
   cursor: pointer;
 }
 
-.utrecht-form-actions {
-  cursor: pointer;
+.questions {
+  width: 100%;
 }
 </style>

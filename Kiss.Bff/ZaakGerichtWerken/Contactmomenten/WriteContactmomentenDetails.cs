@@ -19,15 +19,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         {
             model.EmailadresKcm = User.GetEmail();
             await _db.AddAsync(model, cancellationToken);
-            try
-            {
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException)
-            {
-                _db.Entry(model).State = EntityState.Modified;
-                await _db.SaveChangesAsync(cancellationToken);
-            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+
             return Ok();
         }
     }

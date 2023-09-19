@@ -338,8 +338,7 @@ function mapSchemaToVragen(schema: any): Vraag[] {
     return [];
   }
 
-  return Object.keys(schema.properties).map((key) => {
-    const property = schema.properties[key];
+  return Object.values(schema.properties).map((property: any) => {
     const questionType = property.questiontype;
 
     const baseVraag: Vraag = {
@@ -359,9 +358,7 @@ function mapSchemaToVragen(schema: any): Vraag[] {
         return {
           ...baseVraag,
           options: property.items?.options || [],
-          selectedCheckbox: Array(property.items?.options?.length || 0).fill(
-            "",
-          ),
+          selectedCheckbox: [],
         } as CheckboxVraag;
 
       case "input":

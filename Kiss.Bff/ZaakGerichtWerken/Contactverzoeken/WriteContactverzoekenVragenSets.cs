@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
 {
     [ApiController]
+    [Authorize(Policy = Policies.RedactiePolicy)]
     public class WriteContactverzoekenVragenSets : ControllerBase
     {
         private readonly BeheerDbContext _db;
@@ -21,16 +22,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         [HttpPost("/api/contactverzoekvragensets")]
         public async Task<IActionResult> Post(ContactVerzoekVragenSet model, CancellationToken cancellationToken)
         {
-                await _db.AddAsync(model, cancellationToken);
-            try
-            {
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException)
-            {
-                _db.Entry(model).State = EntityState.Modified;
-                await _db.SaveChangesAsync(cancellationToken);
-            }
+            await _db.AddAsync(model, cancellationToken);
+            await _db.SaveChangesAsync(cancellationToken);
+
             return Ok();
         }
 
@@ -48,14 +42,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
             contactVerzoekVragenSet.JsonVragen = model.JsonVragen;
             contactVerzoekVragenSet.AfdelingId = model.AfdelingId;
 
-            try
-            {
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "An error occurred while updating the record.");
-            }
+            await _db.SaveChangesAsync(cancellationToken);
 
             return Ok();
         }
@@ -71,15 +58,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
             }
 
             _db.ContactVerzoekVragenSets.Remove(contactVerzoekVragenSet);
-
-            try
-            {
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException)
-            {
-                return StatusCode(500, "An error occurred while deleting the record.");
-            }
+            await _db.SaveChangesAsync(cancellationToken);
 
             return Ok();
         }
