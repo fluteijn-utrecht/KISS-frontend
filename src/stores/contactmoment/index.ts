@@ -62,6 +62,7 @@ export type ContactmomentKlant = {
 };
 
 export type Bron = {
+  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; };
   //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; } | undefined;
   title: string;
   url: string;
