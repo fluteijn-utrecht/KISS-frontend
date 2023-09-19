@@ -22,7 +22,7 @@ import type {
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
 type ServerContactVerzoekVragenSet = {
-  id: string;
+  id: number;
   titel: string;
   jsonVragen: string;
   afdelingId: string;

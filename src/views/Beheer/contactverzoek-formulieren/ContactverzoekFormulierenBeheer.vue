@@ -23,7 +23,7 @@
                 <utrecht-button
                   appearance="secondary-action-button"
                   class="icon icon-after trash icon-only"
-                  :title="`Verwijder ${vragenset.Titel}`"
+                  :title="`Verwijder ${vragenset.titel}`"
                   type="button"
                   @click="confirmVerwijder(vragenset.id)"
                 />
@@ -54,10 +54,10 @@ import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 
 type VragenSets = {
-  Id: number;
-  Titel: string;
-  JsonVragen?: string;
-  AfdelingId?: string;
+  id: number;
+  titel: string;
+  jsonVragen?: string;
+  afdelingId?: string;
 };
 const loading = ref<boolean>(true);
 const vragenSets = ref<Array<VragenSets>>([]);
@@ -81,12 +81,12 @@ async function load() {
     vragenSets.value = jsonData
       .map((x) => ({
         ...x,
-        Id: Number(x.id),
+        id: Number(x.id),
         dateCreated: new Date(x.dateCreated),
         dateUpdated: x.dateUpdated && new Date(x.dateUpdated),
         publicatiedatum: new Date(x.publicatiedatum),
       }))
-      .sort((a, b) => b.Id - a.Id);
+      .sort((a, b) => b.id - a.id);
   } catch {
     showError();
   } finally {

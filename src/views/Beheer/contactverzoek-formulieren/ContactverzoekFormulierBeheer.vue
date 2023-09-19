@@ -64,16 +64,6 @@
             {{ setVraagTypeDescription(vraag.questiontype) }}</span
           >
         </div>
-        <div class="question-container-button">
-          <!-- delete button -->
-          <utrecht-button
-            appearance="secondary-action-button"
-            class="icon icon-after trash icon-only"
-            type="button"
-            @click="removeVraag(vraag.id)"
-          />
-        </div>
-
         <!-- Conditional part for Input -->
         <div
           style="width: 100%"
@@ -84,13 +74,33 @@
             isDropdownVraag(vraag)
           "
         >
-          <input
-            class="utrecht-textbox utrecht-textbox--html-input"
-            required
-            type="text"
-            v-model="vraag.description"
-            placeholder="Vul hier een label voor de vraag in"
-          />
+          <div
+            class="question-wrapper"
+            v-on:mouseenter="showQuestionTrashButton(vraag.id, index)"
+            v-on:mouseleave="hideQuestionTrashButton(vraag.id, index)"
+          >
+            <div class="question-inputfield-wrapper">
+              <input
+                class="utrecht-textbox utrecht-textbox--html-input"
+                required
+                type="text"
+                v-model="vraag.description"
+                placeholder="Vul hier een beschrijving voor de vraag in"
+              />
+            </div>
+            <div
+              class="question-delete-button"
+              v-if="hoverId === vraag.id && hoverIndex === index"
+            >
+              <!-- delete button -->
+              <utrecht-button
+                appearance="secondary-action-button"
+                class="icon icon-after trash icon-only"
+                type="button"
+                @click="removeVraag(vraag.id)"
+              />
+            </div>
+          </div>
         </div>
       </div>
       <!-- Conditional part for Dropdown -->
@@ -103,11 +113,11 @@
           :key="optionIndex"
         >
           <div
-            class="options-button-wrapper"
-            v-on:mouseenter="showTrashButton(vraag.id, optionIndex)"
-            v-on:mouseleave="hideTrashButton(vraag.id, optionIndex)"
+            class="question-wrapper"
+            v-on:mouseenter="showOptionTrashButton(vraag.id, optionIndex)"
+            v-on:mouseleave="hideOptionTrashButton(vraag.id, optionIndex)"
           >
-            <div class="options-wrapper">
+            <div class="question-inputfield-wrapper">
               <input
                 class="utrecht-textbox utrecht-textbox--html-input"
                 required
@@ -117,8 +127,10 @@
               />
             </div>
             <div
-              v-if="hoverId === vraag.id && hoverIndex === optionIndex"
-              class="button-wrapper"
+              v-if="
+                optionHoverId === vraag.id && optionHoverIndex === optionIndex
+              "
+              class="question-delete-button"
             >
               <utrecht-button
                 appearance="secondary-action-button"
@@ -130,16 +142,18 @@
             </div>
           </div>
         </template>
-        <div class="option-button-wrapper">
-          <utrecht-button
-            appearance="secondary-action-button"
-            class="icon icon-after plus"
-            title="Antwoordoptie Toevoegen"
-            type="button"
-            @click="addOption(vraag.id)"
-          >
-            Antwoordoptie Toevoegen
-          </utrecht-button>
+        <div class="option-add-wrapper">
+          <div class="option-add-button">
+            <utrecht-button
+              appearance="secondary-action-button"
+              class="icon icon-after plus"
+              title="Antwoordoptie Toevoegen"
+              type="button"
+              @click="addOption(vraag.id)"
+            >
+              Antwoordoptie Toevoegen
+            </utrecht-button>
+          </div>
         </div>
       </div>
       <!-- Conditional part for checkbox -->
@@ -152,9 +166,9 @@
           :key="optionIndex"
         >
           <div
-            class="options-button-wrapper"
-            v-on:mouseenter="showTrashButton(vraag.id, optionIndex)"
-            v-on:mouseleave="hideTrashButton(vraag.id, optionIndex)"
+            class="question-wrapper"
+            v-on:mouseenter="showOptionTrashButton(vraag.id, optionIndex)"
+            v-on:mouseleave="hideOptionTrashButton(vraag.id, optionIndex)"
           >
             <div class="options-wrapper">
               <input
@@ -166,8 +180,10 @@
               />
             </div>
             <div
-              v-if="hoverId === vraag.id && hoverIndex === optionIndex"
-              class="button-wrapper"
+              v-if="
+                optionHoverId === vraag.id && optionHoverIndex === optionIndex
+              "
+              class="question-delete-button"
             >
               <utrecht-button
                 appearance="secondary-action-button"
@@ -179,7 +195,7 @@
             </div>
           </div>
         </template>
-        <div class="option-button-wrapper">
+        <div class="option-add-button">
           <utrecht-button
             appearance="secondary-action-button"
             class="icon icon-after plus"
@@ -209,7 +225,7 @@
     </label>
 
     <menu>
-      <li>
+      <li class="utrecht-form-actions">
         <utrecht-button
           modelValue
           type="button"
@@ -220,7 +236,7 @@
         </utrecht-button>
       </li>
 
-      <li>
+      <li class="utrecht-form-actions">
         <utrecht-button appearance="primary-action-button" type="submit">
           Opslaan
         </utrecht-button>
@@ -274,20 +290,6 @@ type CheckboxVraag = Vraag & {
   options: string[];
 };
 
-const hoverIndex = ref(-1);
-const hoverId = ref(-1);
-const showTrashButton = (id: number, index: number) => {
-  hoverIndex.value = index;
-  hoverId.value = id;
-};
-
-const hideTrashButton = (id: number, index: number) => {
-  if (hoverIndex.value === index && hoverId.value === id) {
-    hoverIndex.value = -1;
-    hoverId.value = -1;
-  }
-};
-
 const vragen = ref<Vraag[]>([]);
 const selectedVraag = ref("Vraag toevoegen");
 
@@ -295,8 +297,6 @@ const submit = async () => {
   loading.value = true;
 
   const generatedSchema = createJsonSchema(vragen.value);
-  console.log(JSON.stringify(generatedSchema, null, 2));
-
   try {
     const payload = {
       Titel: title.value,
@@ -369,7 +369,7 @@ function createJsonSchema(vragen: Vraag[]): Record<string, any> {
     references: {},
     type: "object",
     additionalProperties: false,
-    properties: {},
+    properties: {} as Record<string, any>,
   };
 
   vragen.forEach((vraag) => {
@@ -454,6 +454,7 @@ async function load() {
       title.value = data.titel;
       selectedAfdeling.value = data.afdelingId;
       vragen.value = ToSchemaFromVragen(JSON.parse(data.jsonVragen));
+      vraagCounter = vragen.value.length;
     }
   } catch {
     handleError();
@@ -550,6 +551,36 @@ const cancelDialog = useConfirmDialog();
 cancelDialog.onConfirm(() => {
   navigateToContactverzoekformulieren();
 });
+
+const optionHoverId = ref(-1);
+const optionHoverIndex = ref(-1);
+
+const showOptionTrashButton = (id: number, index: number) => {
+  optionHoverId.value = id;
+  optionHoverIndex.value = index;
+};
+
+const hideOptionTrashButton = (id: number, index: number) => {
+  if (optionHoverIndex.value === index && optionHoverId.value === id) {
+    optionHoverId.value = -1;
+    optionHoverIndex.value = -1;
+  }
+};
+
+const hoverId = ref(-1);
+const hoverIndex = ref(-1);
+
+const showQuestionTrashButton = (id: number, index: number) => {
+  hoverId.value = id;
+  hoverIndex.value = index;
+};
+
+const hideQuestionTrashButton = (id: number, index: number) => {
+  if (hoverIndex.value === index && hoverId.value === id) {
+    hoverId.value = -1;
+    hoverIndex.value = -1;
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -586,29 +617,45 @@ menu {
   margin-top: 0.5rem;
 }
 
-.options-button-wrapper {
-  width: 105%;
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
 .options-wrapper {
   width: 95%;
   margin-bottom: 0.5rem;
-}
-
-.button-wrapper {
-  position: absolute;
-  right: 0;
 }
 
 .utrecht-button {
   all: unset !important;
 }
 
-.option-button-wrapper {
+.option-add-wrapper {
+  width: 100%;
   text-align: right;
+}
+
+.option-add-button {
+  display: inline-block;
   text-decoration: underline;
+  cursor: pointer;
+}
+
+.question-wrapper {
+  width: 105%;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.question-inputfield-wrapper {
+  width: 95%;
+  margin-bottom: 0.5rem;
+}
+
+.question-delete-button {
+  position: absolute;
+  right: 0;
+  cursor: pointer;
+}
+
+.utrecht-form-actions {
+  cursor: pointer;
 }
 </style>
