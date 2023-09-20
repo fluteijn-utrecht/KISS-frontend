@@ -118,7 +118,7 @@ header {
   display: grid;
   grid-template-areas:
     "bar bar"
-    "results results"
+    "results scroll"
     "expand expand"
     "nav nav";
   grid-template-columns: auto auto;

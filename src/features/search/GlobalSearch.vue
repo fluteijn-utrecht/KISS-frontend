@@ -1,4 +1,18 @@
 <template>
+  <button
+    type="button"
+    :class="[
+      'icon-after',
+      'chevron-down',
+      'expand-button',
+      { isExpanded: state.isExpanded },
+    ]"
+    @click="state.isExpanded = !state.isExpanded"
+    v-if="searchResults.success && searchResults.data.page.length"
+  >
+    {{ buttonText }}
+  </button>
+
   <form
     method="get"
     enctype="application/x-www-form-urlencoded"
@@ -170,19 +184,6 @@
         v-if="searchResults.state === 'loading'"
       />
     </section>
-    <button
-      type="button"
-      :class="[
-        'icon-after',
-        'chevron-down',
-        'expand-button',
-        { isExpanded: state.isExpanded },
-      ]"
-      @click="state.isExpanded = !state.isExpanded"
-      v-if="searchResults.success && searchResults.data.page.length"
-    >
-      {{ buttonText }}
-    </button>
   </template>
 </template>
 
@@ -434,6 +435,7 @@ fieldset {
 }
 
 .search-results {
+  overflow: hidden;
   grid-area: results;
   display: grid;
   justify-items: stretch;
@@ -470,15 +472,25 @@ fieldset {
   font-size: 2rem;
 }
 
+nav {
+  grid-column: 1 / 1;
+}
+
 .expand-button {
-  grid-area: expand;
+  position: sticky;
+  grid-area: scroll;
+  top: 0;
+  align-self: start;
+
+  // grid-area: expand;
   padding-inline-end: var(--container-padding);
   padding-inline-start: var(--spacing-large);
   inline-size: 100%;
   block-size: 1rem;
   padding-block: var(--spacing-extrasmall);
   white-space: nowrap;
-  display: flex;
+
+  // display: flex;
   justify-content: center;
   background: var(--color-secondary);
 
