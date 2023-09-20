@@ -19,11 +19,17 @@
     @submit.prevent="applySearch"
     ref="searchBarRef"
   >
-    <fieldset class="bronnen" v-if="sources.success">
-      <label v-for="bron in sources.data" :key="bron.name + bron.index">
-        <input type="checkbox" v-model="state.selectedSources" :value="bron" />
-        {{ bron.name.replace(/(^\w+:|^)\/\//, "").replace("www.", "") }}
-      </label>
+    <fieldset class="bronnen">
+      <template v-if="sources.success">
+        <label v-for="bron in sources.data" :key="bron.name + bron.index">
+          <input
+            type="checkbox"
+            v-model="state.selectedSources"
+            :value="bron"
+          />
+          {{ bron.name.replace(/(^\w+:|^)\/\//, "").replace("www.", "") }}
+        </label>
+      </template>
     </fieldset>
     <div class="search-bar">
       <label for="global-search-input"> Zoekterm</label>
@@ -39,8 +45,8 @@
   </form>
   <template v-if="state.currentSearch">
     <section
+      v-if="state.isExpanded"
       :class="['search-results', { isExpanded: state.isExpanded }]"
-      :inert="!state.isExpanded"
     >
       <template v-if="searchResults.success">
         <p v-if="!hasResults" class="no-results">Geen resultaten gevonden</p>
@@ -184,6 +190,7 @@
         v-if="searchResults.state === 'loading'"
       />
     </section>
+    <div v-else class="search-results">Zoekresultaten</div>
   </template>
 </template>
 
@@ -373,10 +380,12 @@ const listItems = mapServiceData(searchResults, (result) =>
 <style lang="scss" scoped>
 form {
   grid-area: bar;
+  padding-inline-start: var(--spacing-large);
   padding-block-start: var(--spacing-small);
   padding-block-end: var(--spacing-default);
   display: grid;
   gap: var(--spacing-small);
+  background-color: var(--color-primary);
 }
 
 .search-bar {
@@ -430,8 +439,8 @@ fieldset {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-default);
-  margin-inline-start: var(--spacing-large);
   color: var(--color-white);
+  min-height: 24px;
 }
 
 .search-results {
@@ -441,7 +450,6 @@ fieldset {
   justify-items: stretch;
   padding-inline-start: var(--spacing-large);
   padding-inline-end: var(--container-padding);
-  padding-block-end: var(--spacing-default);
   background-color: var(--color-secondary);
   gap: var(--spacing-default);
   position: relative;
@@ -450,6 +458,10 @@ fieldset {
     padding-block: var(--spacing-large);
     display: grid;
     gap: var(--spacing-default);
+  }
+
+  &.isExpanded {
+    padding-block-end: var(--spacing-default);
   }
 
   &:not(.isExpanded) {
@@ -466,6 +478,7 @@ fieldset {
 
 .no-results {
   justify-self: center;
+  padding-block-start: var(--spacing-default);
 }
 
 .spinner {
@@ -479,23 +492,25 @@ nav {
 .expand-button {
   position: sticky;
   grid-area: scroll;
-  top: 0;
+  top: var(--spacing-large);
   align-self: start;
+  transform-origin: center;
+  margin-block-start: var(--spacing-default);
+
+  // margin: var(--spacing-large);
 
   // grid-area: expand;
-  padding-inline-end: var(--container-padding);
-  padding-inline-start: var(--spacing-large);
-  inline-size: 100%;
-  block-size: 1rem;
-  padding-block: var(--spacing-extrasmall);
-  white-space: nowrap;
+  // padding-inline-end: var(--container-padding);
+  // padding-inline-start: var(--spacing-large);
+  // inline-size: 100%;
+  // block-size: 1rem;
+  // padding-block: var(--spacing-extrasmall);
+  // white-space: nowrap;
 
   // display: flex;
   justify-content: center;
-  background: var(--color-secondary);
 
   &:not(.isExpanded) {
-    margin-block-start: -1rem;
     background: none;
   }
 

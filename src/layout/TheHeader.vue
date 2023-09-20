@@ -114,14 +114,14 @@ const isRedacteur = computed(
 
 <style lang="scss" scoped>
 header {
-  background-color: var(--color-primary);
+  background-color: var(--color-secondary);
   display: grid;
   grid-template-areas:
     "bar bar"
     "results scroll"
     "expand expand"
     "nav nav";
-  grid-template-columns: auto auto;
+  grid-template-columns: auto 6rem;
   align-items: center;
 
   .log-out {
@@ -171,7 +171,7 @@ nav ul {
   }
 }
 
-:deep(.search-bar) {
-  margin-inline-start: var(--spacing-large);
-}
+// :deep(.search-bar) {
+//   margin-inline-start: var(--spacing-large);
+// }
 </style>
