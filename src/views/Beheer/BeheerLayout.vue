@@ -9,6 +9,9 @@
     <router-link to="/Beheer/gespreksresultaten"
       >Gespreksresultaten</router-link
     >
+    <router-link to="/Beheer/Contactverzoekformulieren"
+      >Contactverzoek formulieren</router-link
+    >
   </nav>
   <main>
     <router-view />
