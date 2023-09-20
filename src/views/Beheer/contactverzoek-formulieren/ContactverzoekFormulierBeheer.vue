@@ -12,7 +12,7 @@
   <template v-if="loading"> <simple-spinner /></template>
   <div>
     <pre>
-      <div style="white-space: pre-line">
+ 
       Hier kan je een template maken voor een contactverzoek. Houd er rekening mee dat
       dit template een aanvulling is op de standaard vragen.
       Deze hoef je hier dus niet toe te voegen. De standaardvragen zijn: 
@@ -22,7 +22,7 @@
       - Omschrijving telefoonnummer 2 
       - E-mailadres 
       - Interne toelichting voor medewerker
-      </div>
+   
     </pre>
   </div>
   <form class="container" @submit.prevent="submit">
@@ -651,5 +651,9 @@ menu {
 
 .questions {
   width: 100%;
+}
+
+pre {
+    white-space: pre-line
 }
 </style>
