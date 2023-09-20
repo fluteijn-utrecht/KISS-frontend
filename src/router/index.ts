@@ -34,6 +34,14 @@ const GespreksresultaatBeheer = () =>
 const GespreksresultatenBeheer = () =>
   import("@/views/Beheer/gespreksresultaten/GespreksresultatenBeheer.vue");
 const BeheerLayout = () => import("@/views/Beheer/BeheerLayout.vue");
+const ContactverzoekFormulierBeheer = () =>
+  import(
+    "@/views/Beheer/contactverzoek-formulieren/ContactverzoekFormulierBeheer.vue"
+  );
+const ContactverzoekFormulierenBeheer = () =>
+  import(
+    "@/views/Beheer/contactverzoek-formulieren/ContactverzoekFormulierenBeheer.vue"
+  );
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
@@ -188,6 +196,19 @@ const router = createRouter({
           path: "gespreksresultaat/:id?",
           name: "GespreksresultaatBeheer",
           component: GespreksresultaatBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "Contactverzoekformulieren",
+          name: "ContactverzoekformulierenBeheer",
+          component: ContactverzoekFormulierenBeheer,
+          meta: {},
+        },
+        {
+          path: "Contactverzoekformulier/:id?",
+          name: "Contactverzoekformulier",
+          component: ContactverzoekFormulierBeheer,
           props: true,
           meta: {},
         },

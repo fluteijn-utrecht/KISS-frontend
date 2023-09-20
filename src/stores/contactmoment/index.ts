@@ -44,7 +44,7 @@ export type ContactmomentContactVerzoek = {
   omschrijvingTelefoonnummer2?: string;
   emailadres?: string;
   interneToelichting?: string;
-  vragenSetId?: string;
+  vragenSetId?: number;
   contactVerzoekVragenSet?: ContactVerzoekVragenSet;
   isActive?: boolean;
 };
@@ -108,6 +108,7 @@ function initVraag(): Vraag {
       emailadres: "",
       interneToelichting: "",
       isActive: false,
+      contactVerzoekVragenSet: undefined,
     },
     startdatum: new Date().toISOString(),
     kanaal: "",
