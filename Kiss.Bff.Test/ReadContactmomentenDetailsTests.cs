@@ -1,5 +1,7 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Security.Claims;
+using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,11 +11,22 @@ namespace Kiss.Bff.Test
     [TestClass]
     public class ReadContactmomentenDetailsTests : TestHelper
     {
+        private IServiceProvider? _serviceProvider;
+
         [TestInitialize]
         public void Initialize()
         {
             InitializeDatabase();
             SeedTestData();
+
+            var services = new ServiceCollection();
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+             {
+                new Claim(ClaimTypes.NameIdentifier, "testuser"),
+                new Claim(ClaimTypes.Role, Policies.RedactiePolicy)
+            }));
+            services.AddSingleton<IHttpContextAccessor>(_ => new HttpContextAccessor { HttpContext = new DefaultHttpContext { User = user } });
+            _serviceProvider = services.BuildServiceProvider();
         }
 
         [TestCleanup]
@@ -86,11 +99,29 @@ namespace Kiss.Bff.Test
         }
 
         [TestMethod]
-        public void Get_All_ReturnsOkWithContactmomenten()
+        public void Get_All_ReturnsOkWithContactmomenten_Authorized()
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
+
             // Arrange
-            var controller = new ReadContactmomentenDetails(dbContext);
+            var httpContext = new DefaultHttpContext();
+
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+               new Claim(ClaimTypes.NameIdentifier, "testuser"),
+               new Claim(ClaimTypes.Role, Policies.RedactiePolicy),
+            }));
+
+            var controllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            var controller = new ReadContactmomentenDetails(dbContext)
+            {
+                ControllerContext = controllerContext
+            };
+
 
             // Act
             var result = controller.Get() as OkObjectResult;
@@ -105,6 +136,37 @@ namespace Kiss.Bff.Test
             var contactmomentList = contactmomenten.ToList();
             Assert.IsNotNull(contactmomentList);
             Assert.AreEqual(2, contactmomentList.Count());
+        }
+
+        [TestMethod]
+        public void Get_AllContactmomenten_Unauthorized()
+        {
+            // Arrange
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            var controller = new ReadContactmomentenDetails(dbContext);
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, "testuser"),
+                new Claim(ClaimTypes.Role, "none"),
+            };
+
+            var identity = new ClaimsIdentity(claims, "test");
+            var claimsPrincipal = new ClaimsPrincipal(identity);
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+
+            // Act
+            //var authorizedUser = IsUserAuthorized("none", claimsPrincipal);
+            var result = controller.Get();
+            var contactmomenten = result as UnauthorizedResult;
+
+            // Assert
+            //Assert.IsFalse(authorizedUser);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(401, contactmomenten?.StatusCode);
         }
     }
 }
