@@ -12,11 +12,16 @@ export interface Afdeling {
   identificatie: string;
   naam: string;
 }
-const getAfdelingenSearchUrl = (search: string | undefined) => {
+const getAfdelingenSearchUrl = (
+  search: string | undefined,
+  exactMatch: boolean,
+) => {
   const searchParams = new URLSearchParams();
   searchParams.set("ordering", "record__data__naam");
+
+  const matchType = exactMatch ? "exact" : "icontains";
   if (search) {
-    searchParams.set("data_attrs", `naam__exact__${search.trim()}`);
+    searchParams.set("data_attrs", `naam__${matchType}__${search.trim()}`);
   }
   return "/api/afdelingen/api/v2/objects?" + searchParams;
 };
@@ -33,10 +38,10 @@ const afdelingenFetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
     .then(parseJson)
     .then((json) => parsePagination(json, mapOrganisatie));
 
-export const fetchAfdelingen = (search: string) =>
-  afdelingenFetcher(getAfdelingenSearchUrl(search));
+export const fetchAfdelingen = (search: string, exactMatch: boolean) =>
+  afdelingenFetcher(getAfdelingenSearchUrl(search, exactMatch));
 
 export function useAfdelingen(search: () => string | undefined) {
-  const getUrl = () => getAfdelingenSearchUrl(search());
+  const getUrl = () => getAfdelingenSearchUrl(search(), false);
   return ServiceResult.fromFetcher(getUrl, afdelingenFetcher);
 }

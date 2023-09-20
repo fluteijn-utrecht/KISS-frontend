@@ -4,6 +4,7 @@
     :id="'hoofdvraag' + idx"
     class="utrecht-select utrecht-select--html-select"
     required
+    @update:model-value="updateModelValue"
   >
     <option
       v-for="(item, itemIdx) in vraagOptions"
@@ -22,12 +23,21 @@ import { onMounted, ref, computed } from "vue";
 import type { Kennisartikel } from "../search/types";
 const vraagOptions = ref<Bron[]>([]);
 const props = defineProps<{
+  modelValue: Bron | undefined;
   idx: number; // Define the 'idx' prop as a number
   vraag: Vraag; // Define the 'vraag' prop as an object
 }>();
 
 // Use a local data property to store the selected value
-const selectedVraag = ref({});
+const selectedVraag = ref<Bron>();
+
+const emit = defineEmits<{
+  "update:modelValue": [Bron];
+}>();
+
+function updateModelValue(v: Bron) {
+  emit("update:modelValue", v);
+}
 
 onMounted(() => {
   if (!props.vraag) return;
@@ -49,7 +59,9 @@ onMounted(() => {
     ...vraag.value.vacs.map((item) => item.vac),
   ]).value;
 
-  selectedVraag.value = vraag;
+  if (vraag.value.vraag) {
+    selectedVraag.value = vraag.value.vraag;
+  }
 
   if (sectionIndex !== undefined) {
     const vraagIndex = vraagOptions.value.indexOf(
@@ -64,6 +76,8 @@ onMounted(() => {
       const newVraag = vraagOptions.value[sectionIndex + vraagIndex];
       if (newVraag !== undefined) {
         selectedVraag.value = newVraag;
+
+        vraag.value.vraag = selectedVraag.value as Bron;
       }
     }
   }
