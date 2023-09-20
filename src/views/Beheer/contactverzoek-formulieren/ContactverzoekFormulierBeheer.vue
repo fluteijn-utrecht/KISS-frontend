@@ -1,11 +1,12 @@
 <template>
-  <prompt-modal
-    :dialog="cancelDialog"
-    message="Weet je zeker dat je het proces wil annuleren? Niet opgeslagen gegevens zullen verloren gaan."
-    cancel-message="Nee"
-    confirm-message="Ja"
-  />
-
+  <div class="asdf">
+    <prompt-modal
+      :dialog="cancelDialog"
+      message="Weet je zeker dat je het proces wil annuleren? Niet opgeslagen gegevens zullen verloren gaan."
+      cancel-message="Nee"
+      confirm-message="Ja"
+    />
+  </div>
   <utrecht-heading :level="1">{{
     props.id ? "Formulier bewerken" : "Formulier aanmaken"
   }}</utrecht-heading>
@@ -27,7 +28,7 @@
   </div>
   <form class="container" @submit.prevent="submit">
     <label class="utrecht-form-label" for="titel"
-      ><span>Titel *</span>
+      ><span>Titel <span class=".required-label">*</span></span>
       <input
         class="utrecht-textbox utrecht-textbox--html-input"
         required
@@ -38,7 +39,7 @@
     </label>
     <!-- dropdown for afdelingen -->
     <label class="utrecht-form-label">
-      <span>Afdeling *</span>
+      <span>Afdeling <span class="required-label">*</span></span>
       <select
         class="utrecht-select utrecht-select--html-select"
         v-model="selectedAfdeling"
@@ -106,7 +107,7 @@
       <!-- Conditional part for Dropdown -->
       <div v-if="isDropdownVraag(vraag)">
         <label>
-          <span>Antwoorden opties:</span>
+          <span>Antwoordopties:</span>
         </label>
         <template
           v-for="(option, optionIndex) in vraag.options"
@@ -159,7 +160,7 @@
       <!-- Conditional part for checkbox -->
       <div v-if="isCheckboxVraag(vraag)">
         <label>
-          <span>Answer Options:</span>
+          <span>Antwoordopties:</span>
         </label>
         <template
           v-for="(option, optionIndex) in vraag.options"
@@ -654,6 +655,10 @@ menu {
 }
 
 pre {
-    white-space: pre-line
+  white-space: pre-line;
+}
+
+.required-label {
+  color: red;
 }
 </style>
