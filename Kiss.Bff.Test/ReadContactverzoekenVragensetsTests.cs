@@ -2,42 +2,34 @@
 using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiss.Bff.Test
 {
     [TestClass]
-    public class ReadContactverzoekenVragenSetsTests
+    public class ReadContactverzoekenVragenSetsTests : TestHelper
     {
-        private BeheerDbContext _dbContext;
-
         [TestInitialize]
         public void Initialize()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddEntityFrameworkInMemoryDatabase()
-                .BuildServiceProvider();
-
-            var options = new DbContextOptionsBuilder<BeheerDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .UseInternalServiceProvider(serviceProvider)
-                .Options;
-
-            _dbContext = new BeheerDbContext(options);
+           InitializeDatabase();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Dispose();
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            dbContext.Database.EnsureDeleted();
+            dbContext.Dispose();
         }
 
         [TestMethod]
         public async Task Get_ContactVerzoekVragenSetsExist_ReturnsOkWithList()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactverzoekenVragenSets(_dbContext);
+            var controller = new ReadContactverzoekenVragenSets(dbContext);
 
             var vragenSets = new List<ContactVerzoekVragenSet>
             {
@@ -57,8 +49,8 @@ namespace Kiss.Bff.Test
                 }
             };
 
-            await _dbContext.ContactVerzoekVragenSets.AddRangeAsync(vragenSets);
-            await _dbContext.SaveChangesAsync();
+            await dbContext.ContactVerzoekVragenSets.AddRangeAsync(vragenSets);
+            await dbContext.SaveChangesAsync();
 
             // Act
             var result = await controller.Get(CancellationToken.None) as OkObjectResult;
@@ -75,8 +67,9 @@ namespace Kiss.Bff.Test
         [TestMethod]
         public async Task Get_NoContactVerzoekVragenSets_ReturnsOkWithEmptyList()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactverzoekenVragenSets(_dbContext);
+            var controller = new ReadContactverzoekenVragenSets(dbContext);
 
             // Act
             var result = await controller.Get(CancellationToken.None) as OkObjectResult;

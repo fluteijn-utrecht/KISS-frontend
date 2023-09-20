@@ -7,35 +7,26 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Kiss.Bff.Test
 {
     [TestClass]
-    public class ReadContactmomentenDetailsTests
+    public class ReadContactmomentenDetailsTests : TestHelper
     {
-        private BeheerDbContext _dbContext;
-
         [TestInitialize]
         public void Initialize()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddEntityFrameworkInMemoryDatabase()
-                .BuildServiceProvider();
-
-            var options = new DbContextOptionsBuilder<BeheerDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .UseInternalServiceProvider(serviceProvider)
-                .Options;
-
-            _dbContext = new BeheerDbContext(options);
+            InitializeDatabase();
             SeedTestData();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Dispose();
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            dbContext.Database.EnsureDeleted();
+            dbContext.Dispose();
         }
 
         private void SeedTestData()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             var contactmoment1 = new ContactmomentDetails
             {
                 Id = "1",
@@ -54,15 +45,16 @@ namespace Kiss.Bff.Test
                 Vraag = "Question 2"
             };
 
-            _dbContext.ContactMomentDetails.AddRange(contactmoment1, contactmoment2);
-            _dbContext.SaveChanges();
+            dbContext.ContactMomentDetails.AddRange(contactmoment1, contactmoment2);
+            dbContext.SaveChanges();
         }
 
         [TestMethod]
         public async Task Get_ValidId_ReturnsOk()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactmomentenDetails(_dbContext);
+            var controller = new ReadContactmomentenDetails(dbContext);
             var validId = "1";
 
             // Act
@@ -80,8 +72,9 @@ namespace Kiss.Bff.Test
         [TestMethod]
         public async Task Get_InvalidId_ReturnsNotFound()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactmomentenDetails(_dbContext);
+            var controller = new ReadContactmomentenDetails(dbContext);
             var invalidId = "nonexistent";
 
             // Act
@@ -95,8 +88,9 @@ namespace Kiss.Bff.Test
         [TestMethod]
         public void Get_All_ReturnsOkWithContactmomenten()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactmomentenDetails(_dbContext);
+            var controller = new ReadContactmomentenDetails(dbContext);
 
             // Act
             var result = controller.Get() as OkObjectResult;

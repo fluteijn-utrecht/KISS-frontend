@@ -7,38 +7,28 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Kiss.Bff.Test
 {
     [TestClass]
-    public class WriteContactmomentDetailsTests
+    public class WriteContactmomentDetailsTests : TestHelper
     {
-        private BeheerDbContext _dbContext;
-        private DbContextOptions<BeheerDbContext> _dbContextOptions;
-
         [TestInitialize]
         public void Initialize()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddEntityFrameworkInMemoryDatabase()
-                .BuildServiceProvider();
-
-            _dbContextOptions = new DbContextOptionsBuilder<BeheerDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .UseInternalServiceProvider(serviceProvider)
-                .Options;
-
-            _dbContext = new BeheerDbContext(_dbContextOptions);
+          InitializeDatabase();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Dispose();
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            dbContext.Database.EnsureDeleted();
+            dbContext.Dispose();
         }
 
         [TestMethod]
         public async Task Post_ValidModel_ReturnsOk()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new WriteContactmomentenDetails(_dbContext);
+            var controller = new WriteContactmomentenDetails(dbContext);
             var validModel = new ContactmomentDetails
             {
                 Id = "1",
@@ -57,27 +47,18 @@ namespace Kiss.Bff.Test
             //Assert.AreEqual(200, result.StatusCode);
 
             // Check if the model is added to the database
-            var addedModel = await _dbContext.ContactMomentDetails.FirstOrDefaultAsync();
+            var addedModel = await dbContext.ContactMomentDetails.FirstOrDefaultAsync();
             Assert.IsNotNull(addedModel);
             Assert.AreEqual(validModel.Id, addedModel.Id);
         }
 
 
-
-        // Unable to test with a In-Memory database. a In-Memory one doesnt behave as a "reallife" database.
-        // throws an unexpected error when trying to save an entity with a duplicate key. therefore we are unable to test if the it updates correctly or not.
-
         [TestMethod]
-        public async Task Post_ModelWithDuplicateId_ReturnsOk()
+        public async Task Post_ModelWithExistingId_UpdatesExistingEntity()
         {
-            Assert.Inconclusive("Test Inconclusive: Unable to test with a In-Memory database.");
-
-            using var dbContext = new BeheerDbContext(_dbContextOptions);
-
             // Arrange
-            var controller = new WriteContactmomentenDetails(dbContext);
-
-            var model1 = new ContactmomentDetails
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            var existingEntity = new ContactmomentDetails
             {
                 Id = "1",
                 Startdatum = DateTime.Now,
@@ -86,10 +67,13 @@ namespace Kiss.Bff.Test
                 Vraag = "Question 1",
                 EmailadresKcm = "test@example.com"
             };
+            dbContext.ContactMomentDetails.Add(existingEntity);
+            dbContext.SaveChanges();
 
-            var model2 = new ContactmomentDetails
+            var controller = new WriteContactmomentenDetails(dbContext);
+            var model = new ContactmomentDetails
             {
-                Id = "1", // Duplicate ID
+                Id = "1",
                 Startdatum = DateTime.Now,
                 Einddatum = DateTime.Now.AddHours(1),
                 Gespreksresultaat = "Result 2",
@@ -98,18 +82,16 @@ namespace Kiss.Bff.Test
             };
 
             // Act
-            await controller.Post(model1, CancellationToken.None);
-            dbContext.Entry(model1).State = EntityState.Detached;
-
-            var result = await controller.Post(model2, CancellationToken.None) as OkResult;
+            var result = await controller.Post(model, CancellationToken.None) as OkResult;
 
             // Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
 
-            var updatedModel = await dbContext.ContactMomentDetails.FirstOrDefaultAsync();
-            Assert.IsNotNull(updatedModel);
-            Assert.AreEqual(model2.Gespreksresultaat, updatedModel.Gespreksresultaat);
+            // Check if the entity was updated in the database
+            var updatedEntity = await dbContext.ContactMomentDetails.FindAsync(model.Id);
+            Assert.IsNotNull(updatedEntity);
+            Assert.AreEqual(model.Gespreksresultaat, updatedEntity.Gespreksresultaat);
         }
     }
 }

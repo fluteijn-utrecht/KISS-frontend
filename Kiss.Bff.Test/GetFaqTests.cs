@@ -8,37 +8,28 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Kiss.Bff.Test
 {
     [TestClass]
-    public class GetFaqTests
+    public class GetFaqTests : TestHelper
     {
-        private BeheerDbContext _dbContext;
-
         [TestInitialize]
         public void Initialize()
         {
-            var serviceProvider = new ServiceCollection()
-                .AddEntityFrameworkInMemoryDatabase()
-                .BuildServiceProvider();
-
-            var options = new DbContextOptionsBuilder<BeheerDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .UseInternalServiceProvider(serviceProvider)
-                .Options;
-
-            _dbContext = new BeheerDbContext(options);
+           InitializeDatabase();
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Dispose();
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            dbContext.Database.EnsureDeleted();
+            dbContext.Dispose();
         }
 
         [TestMethod]
         public void Get_ReturnsTopQuestions()
         {
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new GetFaq(_dbContext);
+            var controller = new GetFaq(dbContext);
 
             var testData = new List<ContactmomentDetails>
             {
@@ -62,8 +53,8 @@ namespace Kiss.Bff.Test
                 },
             };
 
-            _dbContext.ContactMomentDetails.AddRange(testData);
-            _dbContext.SaveChanges();
+            dbContext.ContactMomentDetails.AddRange(testData);
+            dbContext.SaveChanges();
 
             // Act
             var result = controller.Get() as OkObjectResult;
