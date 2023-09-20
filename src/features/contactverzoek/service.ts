@@ -304,6 +304,7 @@ export function isInputVraag(question: Vraag): question is InputVraag {
 export function isTextareaVraag(question: Vraag): question is TextareaVraag {
   return (
     question.description.trim() !== "" &&
+    "description" in question &&
     question.questiontype === "textarea" &&
     "textarea" in question
   );

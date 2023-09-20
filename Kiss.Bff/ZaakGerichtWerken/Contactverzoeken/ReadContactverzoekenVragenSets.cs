@@ -20,11 +20,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         {
             var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets.ToListAsync(cancellationToken);
 
-            if (!contactVerzoekVragenSets.Any())
-            {
-                return NotFound();
-            }
-
             return Ok(contactVerzoekVragenSets);
         }
 
