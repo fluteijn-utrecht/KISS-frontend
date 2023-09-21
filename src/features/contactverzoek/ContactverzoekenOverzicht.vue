@@ -3,9 +3,9 @@
     <expandable-table-list :items="contactverzoeken" item-key="url">
       <template #header>
         <span id="datum-header" class="icon-after sort-descending">Datum</span>
+        <span id="onderwerp-header">Onderwerp</span>
         <span id="medewerker-header">Status</span>
         <span id="kanaal-header">Behandelaar</span>
-        <span id="gespreksresultaat-header">Afgerond op</span>
       </template>
 
       <template v-slot:item="{ item: contactverzoek }">
@@ -15,9 +15,9 @@
             :date="new Date(contactverzoek.record.data.registratiedatum)"
           />
           <span v-else />
+          <span>...onderwerp...</span>
           <span>{{ contactverzoek.record.data.status }}</span>
           <span>{{ contactverzoek.record.data.actor.naam }}</span>
-          <span>{{ contactverzoek.record.data.datumVerwerkt }}</span>
         </summary>
         <dl>
           <dt>Starttijd</dt>
