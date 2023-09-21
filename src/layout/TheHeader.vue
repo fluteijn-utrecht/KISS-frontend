@@ -170,8 +170,4 @@ nav ul {
     border-radius: calc(var(--spacing-large) / 2);
   }
 }
-
-// :deep(.search-bar) {
-//   margin-inline-start: var(--spacing-large);
-// }
 </style>

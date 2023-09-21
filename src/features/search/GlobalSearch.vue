@@ -5,6 +5,7 @@
       'icon-after',
       'chevron-down',
       'expand-button',
+      'icon-large',
       { isExpanded: state.isExpanded },
     ]"
     @click="state.isExpanded = !state.isExpanded"
@@ -77,7 +78,6 @@
                       documentUrl,
                     )
                   "
-                  class="icon-after chevron-down"
                 >
                   <span :class="`category-${source}`">{{ source }}</span>
                   <span v-if="source === 'Smoelenboek'">
@@ -449,7 +449,6 @@ fieldset {
   display: grid;
   justify-items: stretch;
   padding-inline-start: var(--spacing-large);
-  padding-inline-end: var(--container-padding);
   background-color: var(--color-secondary);
   gap: var(--spacing-default);
   position: relative;
@@ -458,10 +457,7 @@ fieldset {
     padding-block: var(--spacing-large);
     display: grid;
     gap: var(--spacing-default);
-  }
-
-  &.isExpanded {
-    padding-block-end: var(--spacing-default);
+    padding-inline-end: var(--container-padding);
   }
 
   &:not(.isExpanded) {
@@ -478,7 +474,7 @@ fieldset {
 
 .no-results {
   justify-self: center;
-  padding-block-start: var(--spacing-default);
+  padding-block: var(--spacing-default);
 }
 
 .spinner {
@@ -494,20 +490,7 @@ nav {
   grid-area: scroll;
   top: var(--spacing-large);
   align-self: start;
-  transform-origin: center;
   margin-block-start: var(--spacing-default);
-
-  // margin: var(--spacing-large);
-
-  // grid-area: expand;
-  // padding-inline-end: var(--container-padding);
-  // padding-inline-start: var(--spacing-large);
-  // inline-size: 100%;
-  // block-size: 1rem;
-  // padding-block: var(--spacing-extrasmall);
-  // white-space: nowrap;
-
-  // display: flex;
   justify-content: center;
 
   &:not(.isExpanded) {
@@ -517,6 +500,10 @@ nav {
   &.isExpanded::after {
     transform: rotate(180deg);
   }
+}
+
+.expand-button::after {
+  position: absolute;
 }
 
 nav ul {
@@ -530,11 +517,7 @@ nav ul {
     gap: var(--spacing-default);
     justify-items: start;
     padding-inline-end: var(--spacing-default);
-
-    &::after {
-      transform: rotate(-90deg);
-      margin-inline-start: auto;
-    }
+    align-items: center;
   }
 
   li {
@@ -550,5 +533,6 @@ nav ul {
 
 .pagination {
   margin-inline: auto;
+  margin-block-end: var(--spacing-default);
 }
 </style>
