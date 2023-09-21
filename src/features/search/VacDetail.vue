@@ -19,8 +19,8 @@
   <content-feedback
     v-if="antwoordSection"
     :name="antwoordSection.label"
-    :url="antwoordSection"
-    :current-section="idThing"
+    :url="unknownURL"
+    :current-section="CurrentAntwoordFeedbackSection"
   />
 </template>
 <script setup lang="ts">
@@ -41,11 +41,12 @@ const props = defineProps<{
   headingLevel: 2 | 3 | 4;
 }>();
 
-const idThing: CurrentFeedbackSection = {
+const CurrentAntwoordFeedbackSection: CurrentFeedbackSection = {
   label: props.title,
   id: props.headingLevel.toString(),
 }
 
+const unknownURL = "onbekend";
 
 const getSection = (
   sectionName: string,
