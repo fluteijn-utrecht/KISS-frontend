@@ -25,33 +25,25 @@ namespace Kiss.Bff.Test
         }
 
         [TestMethod]
-        public void Get_ReturnsTopQuestions()
+        public async Task Get_ReturnsTopQuestions()
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
             var controller = new GetFaq(dbContext);
 
-            var testData = new List<ContactmomentDetails>
+            var testData = new List<ContactmomentDetails>();
+            var topQuestionsCount = 10;
+
+            // Add 500 questions
+            for (int i = 1; i <= 500; i++)
             {
-                new ContactmomentDetails
+                testData.Add(new ContactmomentDetails
                 {
-                    Id = "1",
-                    Vraag = "Question 1",
+                    Id = i.ToString(),
+                    Vraag = $"Question {i}",
                     Einddatum = DateTime.UtcNow
-                },
-                new ContactmomentDetails
-                {
-                    Id = "2",
-                    Vraag = "Question 2",
-                    Einddatum = DateTime.UtcNow
-                },
-                new ContactmomentDetails
-                {
-                    Id = "3",
-                    Vraag = "Question 1",
-                    Einddatum = DateTime.UtcNow
-                },
-            };
+                });
+            }
 
             dbContext.ContactMomentDetails.AddRange(testData);
             dbContext.SaveChanges();
@@ -67,8 +59,16 @@ namespace Kiss.Bff.Test
             Assert.IsNotNull(resultList);
 
             // Ensure that the result contains the top questions
-            var expectedQuestions = new List<string> { "Question 1", "Question 2" };
-            CollectionAssert.AreEqual(expectedQuestions, resultList.ToList());
+            var expectedQuestions = testData
+                .OrderByDescending(x => x.Einddatum)
+                .Where(x => !string.IsNullOrWhiteSpace(x.Vraag))
+                .GroupBy(x => x.Vraag)
+                .OrderByDescending(x => x.Count())
+                .Take(topQuestionsCount)
+                .Select(x => x.Key);
+
+            CollectionAssert.AreEqual(expectedQuestions.ToList(), resultList.ToList());
         }
+
     }
 }
