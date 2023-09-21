@@ -10,7 +10,7 @@
       >Gespreksresultaten</router-link
     >
     <router-link to="/Beheer/Contactverzoekformulieren"
-      >Contactverzoek formulieren</router-link
+      >Formulieren contactverzoek</router-link
     >
   </nav>
   <main>

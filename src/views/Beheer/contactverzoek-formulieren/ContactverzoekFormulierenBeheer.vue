@@ -1,6 +1,6 @@
 <template>
   <div class="header-wrapper">
-    <UtrechtHeading :level="1">Contactverzoek formulieren</UtrechtHeading>
+    <UtrechtHeading :level="1">Formulieren contactverzoek</UtrechtHeading>
     <router-link to="/Beheer/Contactverzoekformulier/"> Toevoegen </router-link>
   </div>
   <div v-if="loading"><SimpleSpinner /></div>
@@ -10,7 +10,7 @@
         <tr>
           <th>Titel</th>
           <th>Afdeling</th>
-          <th>edit/delete</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
