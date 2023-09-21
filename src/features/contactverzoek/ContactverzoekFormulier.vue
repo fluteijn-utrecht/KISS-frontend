@@ -7,7 +7,6 @@
       <label>
         <input
           type="radio"
-          name="isMedewerker"
           :value="undefined"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.isMedewerker"
@@ -17,7 +16,6 @@
       <label>
         <input
           type="radio"
-          name="isMedewerker"
           :value="true"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.isMedewerker"
@@ -99,41 +97,82 @@
     <form-fieldset>
       <service-data-wrapper :data="vragenSets" class="container">
         <template #success="{ data }">
-          <template v-if="data && data.length > 0">
-            <label class="utrecht-form-label">
-              <span> Onderwerp </span>
-              <select
-                class="utrecht-select utrecht-select--html-select"
-                name="VragenSets"
-                v-model="form.vragenSetId"
-                @input="setActive"
+          <!-- Dropdown for selecting Onderwerp -->
+          <label class="utrecht-form-label">
+            <span>Onderwerp</span>
+            <select
+              class="utrecht-select utrecht-select--html-select"
+              name="VragenSets"
+              v-model="form.vragenSetId"
+              @change="setOnderwerp"
+            >
+              <option value="" selected>Geen</option>
+              <option
+                v-for="item in [...data].sort((a, b) =>
+                  a.titel.localeCompare(b.titel),
+                )"
+                :key="item.id"
+                :value="item.id"
               >
-                <option v-for="item in data" :key="item.id" :value="item.id">
-                  {{ item.naam }}
-                </option>
-              </select>
-            </label>
-            <template v-if="form.contactVerzoekVragenSet">
-              <template
-                v-for="(item, index) in form.contactVerzoekVragenSet
-                  .vraagAntwoord"
-                :key="index"
-              >
-                <label class="utrecht-form-label">
-                  <span> {{ item.vraag }} </span>
-                  <input
-                    class="utrecht-textbox utrecht-textbox--html-input"
-                    type="text"
-                    v-model="item.antwoord"
-                    @input="setActive"
-                  />
-                </label>
-              </template>
+                {{ item.titel }}
+              </option>
+            </select>
+          </label>
+
+          <!-- Dynamic fields based on selected Onderwerp -->
+          <template v-if="form.contactVerzoekVragenSet">
+            <template
+              v-for="(item, index) in form.contactVerzoekVragenSet
+                .vraagAntwoord"
+              :key="index"
+            >
+              <label class="utrecht-form-label">
+                <span>{{ item.description }}</span>
+                <input
+                  v-if="isInputVraag(item)"
+                  class="utrecht-textbox utrecht-textbox--html-input"
+                  type="text"
+                  v-model="item.input"
+                  @input="setActive"
+                />
+                <textarea
+                  v-if="isTextareaVraag(item)"
+                  class="utrecht-textarea"
+                  v-model="item.textarea"
+                  @input="setActive"
+                ></textarea>
+                <select
+                  v-if="isDropdownVraag(item)"
+                  class="utrecht-select"
+                  v-model="item.selectedDropdown"
+                  @input="setActive"
+                >
+                  <option v-for="option in item.options" :key="option">
+                    {{ option }}
+                  </option>
+                </select>
+                <div v-if="isCheckboxVraag(item)">
+                  <label
+                    class="utrecht-checkbox-button"
+                    v-for="(option, optionIndex) in item.options"
+                    :key="option"
+                  >
+                    <input
+                      class="utrecht-checkbox-button"
+                      type="checkbox"
+                      :value="option"
+                      v-model="item.selectedCheckbox[optionIndex]"
+                    />
+                    {{ option }}
+                  </label>
+                </div>
+              </label>
             </template>
           </template>
         </template>
       </service-data-wrapper>
     </form-fieldset>
+
     <form-fieldset>
       <form-fieldset-legend>Contact opnemen met</form-fieldset-legend>
       <label class="utrecht-form-label">
@@ -235,16 +274,27 @@ import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
+
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
-import { useVragenSets, useGroepen } from "./service";
+import {
+  useVragenSets,
+  useGroepen,
+  isInputVraag,
+  isTextareaVraag,
+  isDropdownVraag,
+  isCheckboxVraag,
+} from "./service";
+
 import { useAfdelingen } from "@/composables/afdelingen";
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
+
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
+
 watch(
   () => props.modelValue,
   (v) => {
@@ -252,20 +302,20 @@ watch(
   },
   { immediate: true },
 );
+
 const setActive = () => {
   form.value.isActive = true;
 };
 
 const telEl = ref<HTMLInputElement>();
 const vragenSets = useVragenSets();
-watch(
-  () => form.value.vragenSetId,
-  (vragenSetId) => {
-    if (!vragenSets.success) return;
-    const vragenSet = vragenSets.data.find((s) => s.id == vragenSetId);
-    form.value.contactVerzoekVragenSet = vragenSet;
-  },
-);
+
+const setOnderwerp = () => {
+  setActive();
+  if (!vragenSets.success) return;
+  const vragenSet = vragenSets.data.find((s) => s.id == form.value.vragenSetId);
+  form.value.contactVerzoekVragenSet = vragenSet;
+};
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
 
@@ -327,5 +377,9 @@ fieldset {
 
 .radio-group > legend {
   font-size: inherit;
+}
+
+.utrecht-checkbox-button {
+  display: flex !important;
 }
 </style>

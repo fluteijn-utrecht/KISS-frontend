@@ -5,14 +5,15 @@
         <utrecht-heading :level="level">
           <span class="heading">
             Contactgegevens
-            <utrecht-button
+            <!-- in overleg met PO verborgen en niet verwijderd (story githubissue #617)
+              <utrecht-button 
               v-if="!editing"
               appearance="subtle-button"
               @click="toggleEditing"
               title="Bewerken"
               :class="'icon-after icon-only pen'"
               class="toggleEdit"
-            />
+            />-->
             <simple-spinner class="spinner" v-if="submitter.loading" />
             <application-message
               v-else-if="submitter.error"
@@ -120,7 +121,7 @@ watch(
       reset();
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 const editing = ref<boolean>(false);
