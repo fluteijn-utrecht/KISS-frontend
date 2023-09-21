@@ -1,12 +1,10 @@
 <template>
-  <div class="asdf">
-    <prompt-modal
-      :dialog="cancelDialog"
-      message="Weet je zeker dat je het proces wil annuleren? Niet opgeslagen gegevens zullen verloren gaan."
-      cancel-message="Nee"
-      confirm-message="Ja"
-    />
-  </div>
+  <prompt-modal
+    :dialog="cancelDialog"
+    message="Weet je zeker dat je het proces wil annuleren? Niet opgeslagen gegevens zullen verloren gaan."
+    cancel-message="Nee"
+    confirm-message="Ja"
+  />
   <utrecht-heading :level="1">{{
     props.id ? "Formulier bewerken" : "Formulier aanmaken"
   }}</utrecht-heading>
