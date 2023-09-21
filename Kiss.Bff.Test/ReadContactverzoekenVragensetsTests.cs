@@ -36,14 +36,14 @@ namespace Kiss.Bff.Test
                 new ContactVerzoekVragenSet
                 {
                     Id = 1,
-                    Naam = "VragenSet 1",
+                    Titel = "VragenSet 1",
                     JsonVragen = "{ \"Question1\": \"Answer1\" }",
                     AfdelingId = "Dept1"
                 },
                 new ContactVerzoekVragenSet
                 {
                     Id = 2,
-                    Naam = "VragenSet 2",
+                    Titel = "VragenSet 2",
                     JsonVragen = "{ \"Question2\": \"Answer2\" }",
                     AfdelingId = "Dept2"
                 }

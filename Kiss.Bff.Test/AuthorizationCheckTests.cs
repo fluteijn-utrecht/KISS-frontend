@@ -10,6 +10,9 @@ using Kiss.Bff.Beheer.Faq;
 using Kiss.Bff.Beheer.Data;
 using Microsoft.EntityFrameworkCore;
 using Kiss.Bff.Beheer.Gespreksresultaten.Controllers;
+using Kiss.Bff.Beheer.Links.Controllers;
+using static Kiss.Bff.Beheer.Links.Controllers.LinksController;
+using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
 
 namespace Kiss.Bff.Test
 {
@@ -40,7 +43,12 @@ namespace Kiss.Bff.Test
                 {
                     (typeof(ReadContactmomentenDetails), "Get", new Type[0]),
                     (typeof(GespreksresultatenController), "PutGespreksresultaat", new[] { typeof(Guid), typeof(GespreksresultaatModel), typeof(CancellationToken) }),
-                    (typeof(GespreksresultatenController), "PostGespreksresultaat", new[] {typeof(GespreksresultaatModel), typeof(CancellationToken)})
+                    (typeof(GespreksresultatenController), "PostGespreksresultaat", new[] { typeof(GespreksresultaatModel), typeof(CancellationToken)}),
+                    (typeof(GespreksresultatenController), "DeleteGespreksresultaat", new[] { typeof(Guid), typeof(CancellationToken)}),
+                    (typeof(LinksController), "PutLink", new[] { typeof(int), typeof(LinkPutModel),typeof(CancellationToken)}),
+                    (typeof(LinksController), "PostLink", new[] { typeof(LinkPutModel) }),
+                    (typeof(LinksController), "DeleteLink", new[] { typeof(int) }),
+                    (typeof(LinksController), "PutSkill", new[] { typeof(int), typeof(SkillPutModel), }),
                     // Add more controller, method, and parameter combinations as needed
                 };
 
