@@ -26,7 +26,7 @@
   </div>
   <form class="container" @submit.prevent="submit">
     <label class="utrecht-form-label" for="titel"
-      ><span>Titel <span class=".required-label">*</span></span>
+      ><span class="required">Titel </span>
       <input
         class="utrecht-textbox utrecht-textbox--html-input"
         required
@@ -37,7 +37,7 @@
     </label>
     <!-- dropdown for afdelingen -->
     <label class="utrecht-form-label">
-      <span>Afdeling <span class="required-label">*</span></span>
+      <span class="required">Afdeling </span>
       <select
         class="utrecht-select utrecht-select--html-select"
         v-model="selectedAfdeling"
@@ -654,9 +654,5 @@ menu {
 
 pre {
   white-space: pre-line;
-}
-
-.required-label {
-  color: red;
 }
 </style>
