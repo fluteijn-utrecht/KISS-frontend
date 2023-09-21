@@ -303,6 +303,13 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => form.value.afdeling,
+  () => {
+    setOnderwerp();
+  },
+);
+
 const setActive = () => {
   form.value.isActive = true;
 };
@@ -313,7 +320,11 @@ const vragenSets = useVragenSets();
 const setOnderwerp = () => {
   setActive();
   if (!vragenSets.success) return;
-  const vragenSet = vragenSets.data.find((s) => s.id == form.value.vragenSetId);
+  const selectedAfdelingId = form.value?.afdeling?.id;
+
+  const vragenSet = vragenSets.data.find(
+    (s) => s.afdelingId == selectedAfdelingId,
+  );
   form.value.contactVerzoekVragenSet = vragenSet;
 };
 
