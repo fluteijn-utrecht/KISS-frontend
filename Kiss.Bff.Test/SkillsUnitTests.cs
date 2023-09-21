@@ -1,27 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.AspNetCore.Mvc;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
-using Kiss.Bff.Test;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kiss.Bff.Test
 {
     [TestClass]
     public class SkillsControllerUnitTests : TestHelper
     {
-        private SkillsController _controller;
-
         [TestInitialize]
         public void Initialize()
         {
             InitializeDatabase();
-            var dbContext = new BeheerDbContext(_dbContextOptions);
-            _controller = new SkillsController(dbContext);
         }
 
         [TestMethod]
@@ -36,14 +27,17 @@ namespace Kiss.Bff.Test
             });
             dbContext.SaveChanges();
 
+            var controller = new SkillsController(dbContext);
+
             // Act
-            var actionResult = _controller.GetSkills();
+            var actionResult = controller.GetSkills();
             var okResult = actionResult?.Result as OkObjectResult;
             var resultSkills = okResult?.Value as IAsyncEnumerable<SkillViewModel>;
 
             // Assert
             var skillsList = new List<SkillViewModel>();
-            var enumerator = resultSkills.GetAsyncEnumerator();
+            var enumerator = resultSkills?.GetAsyncEnumerator();
+            if (enumerator != null)
             while (await enumerator.MoveNextAsync())
             {
                 skillsList.Add(enumerator.Current);
@@ -78,7 +72,9 @@ namespace Kiss.Bff.Test
         public async Task GetSkill_ReturnsNotFoundResult_WithInvalidId()
         {
             // Act
-            var actionResult = await _controller.GetSkill(1, CancellationToken.None);
+            using var dbContext = new BeheerDbContext(_dbContextOptions);
+            var controller = new SkillsController(dbContext);
+            var actionResult = await controller.GetSkill(1, CancellationToken.None);
             var notFoundResult = actionResult.Result as NotFoundResult;
 
             // Assert
@@ -111,9 +107,11 @@ namespace Kiss.Bff.Test
         {
             // Arrange
             var updatedSkill = new SkillPutModel { Naam = "Updated Skill" };
+            var dbContext = new BeheerDbContext(_dbContextOptions);
+            var controller = new SkillsController(dbContext);
 
             // Act
-            var actionResult = await _controller.PutSkill(1, updatedSkill, CancellationToken.None);
+            var actionResult = await controller.PutSkill(1, updatedSkill, CancellationToken.None);
             var notFoundResult = actionResult as NotFoundResult;
 
             // Assert
@@ -126,9 +124,10 @@ namespace Kiss.Bff.Test
             // Arrange
             var dbContext = new BeheerDbContext(_dbContextOptions);
             var newSkill = new SkillPostModel { Naam = "New Skill" };
+            var controller = new SkillsController(dbContext);
 
             // Act
-            var actionResult = await _controller.PostSkill(newSkill, CancellationToken.None);
+            var actionResult = await controller.PostSkill(newSkill, CancellationToken.None);
             var createdAtActionResult = actionResult.Result as CreatedAtActionResult;
             var resultSkill = createdAtActionResult?.Value as Skill;
 
@@ -165,7 +164,9 @@ namespace Kiss.Bff.Test
         public async Task DeleteSkill_ReturnsNotFoundResult_WithInvalidId()
         {
             // Act
-            var actionResult = await _controller.DeleteSkill(1, CancellationToken.None);
+            var dbContext = new BeheerDbContext(_dbContextOptions);
+            var controller = new SkillsController(dbContext);
+            var actionResult = await controller.DeleteSkill(1, CancellationToken.None);
             var notFoundResult = actionResult as NotFoundResult;
 
             // Assert
