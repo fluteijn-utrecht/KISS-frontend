@@ -37,8 +37,8 @@
 
 .icon-large::after,
 .icon-large::before {
-  min-inline-size: 1.5rem;
-  min-block-size: 1.5rem;
+  min-inline-size: 1.5rem !important;
+  min-block-size: 1.5rem !important;
 }
 
 .icon-before.chevron-down::before,

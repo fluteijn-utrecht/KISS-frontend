@@ -73,7 +73,7 @@
 
       <li>
         <utrecht-button appearance="primary-action-button" type="submit">
-          Opslaan
+          Verzenden
         </utrecht-button>
       </li>
     </menu>
