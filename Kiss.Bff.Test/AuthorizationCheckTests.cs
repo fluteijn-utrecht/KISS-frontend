@@ -13,6 +13,7 @@ using Kiss.Bff.Beheer.Gespreksresultaten.Controllers;
 using Kiss.Bff.Beheer.Links.Controllers;
 using static Kiss.Bff.Beheer.Links.Controllers.LinksController;
 using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
+using Kiss.Bff.Beheer.Verwerking;
 
 namespace Kiss.Bff.Test
 {
@@ -48,7 +49,9 @@ namespace Kiss.Bff.Test
                     (typeof(LinksController), "PutLink", new[] { typeof(int), typeof(LinkPutModel),typeof(CancellationToken)}),
                     (typeof(LinksController), "PostLink", new[] { typeof(LinkPutModel) }),
                     (typeof(LinksController), "DeleteLink", new[] { typeof(int) }),
-                    (typeof(LinksController), "PutSkill", new[] { typeof(int), typeof(SkillPutModel), }),
+                    (typeof(SkillsController), "PutSkill", new[] { typeof(int), typeof(SkillPutModel), typeof(CancellationToken) }),
+                    (typeof(SkillsController), "PostSkill", new[] { typeof(SkillPutModel), typeof(CancellationToken) }),
+                    (typeof(GetVerwerkingsLogs), "Get", new Type[0]),
                     // Add more controller, method, and parameter combinations as needed
                 };
 
