@@ -47,10 +47,10 @@ namespace Kiss.Bff.Test
                     (typeof(GespreksresultatenController), "PostGespreksresultaat", new[] { typeof(GespreksresultaatModel), typeof(CancellationToken)}),
                     (typeof(GespreksresultatenController), "DeleteGespreksresultaat", new[] { typeof(Guid), typeof(CancellationToken)}),
                     (typeof(LinksController), "PutLink", new[] { typeof(int), typeof(LinkPutModel),typeof(CancellationToken)}),
-                    (typeof(LinksController), "PostLink", new[] { typeof(LinkPutModel) }),
+                    (typeof(LinksController), "PostLink", new[] { typeof(LinkPostModel) }),
                     (typeof(LinksController), "DeleteLink", new[] { typeof(int) }),
                     (typeof(SkillsController), "PutSkill", new[] { typeof(int), typeof(SkillPutModel), typeof(CancellationToken) }),
-                    (typeof(SkillsController), "PostSkill", new[] { typeof(SkillPutModel), typeof(CancellationToken) }),
+                    (typeof(SkillsController), "PostSkill", new[] { typeof(SkillPostModel), typeof(CancellationToken) }),
                     (typeof(GetVerwerkingsLogs), "Get", new Type[0]),
                     // Add more controller, method, and parameter combinations as needed
                 };
