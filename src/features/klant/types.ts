@@ -19,3 +19,7 @@ export enum KlantType {
   Persoon = "natuurlijk_persoon",
   Bedrijf = "vestiging",
 }
+
+export interface Contactverzoek {
+  contactmoment: string;
+}

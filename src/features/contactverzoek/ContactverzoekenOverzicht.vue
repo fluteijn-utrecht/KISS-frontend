@@ -15,7 +15,11 @@
             :date="new Date(contactverzoek.record.data.registratiedatum)"
           />
           <span v-else />
-          <span>...onderwerp...</span>
+          <span>
+            <contactverzoek-onderwerp
+              :contactverzoek="contactverzoek.record.data"
+            ></contactverzoek-onderwerp>
+          </span>
           <span>{{ contactverzoek.record.data.status }}</span>
           <span>{{ contactverzoek.record.data.actor.naam }}</span>
         </summary>
@@ -84,6 +88,7 @@ import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
+import ContactverzoekOnderwerp from "./ContactverzoekOnderwerp.vue";
 
 const props = defineProps<{
   contactverzoeken: Contactverzoek[];
