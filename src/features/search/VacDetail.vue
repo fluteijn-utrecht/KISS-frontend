@@ -18,7 +18,7 @@
   </article>
   <content-feedback
     v-if="antwoordSection"
-    :name="antwoordSection.label"
+    :name="CurrentAntwoordFeedbackSection.label"
     :url="unknownURL"
     :current-section="CurrentAntwoordFeedbackSection"
   />
@@ -43,7 +43,6 @@ const props = defineProps<{
 
 const CurrentAntwoordFeedbackSection: CurrentFeedbackSection = {
   label: props.title,
-  id: props.headingLevel.toString(),
 }
 
 const unknownURL = "onbekend";
