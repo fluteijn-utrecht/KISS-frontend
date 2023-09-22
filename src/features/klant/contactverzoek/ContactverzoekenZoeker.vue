@@ -25,9 +25,9 @@
   <section class="search-section">
     <simple-spinner v-if="zoeker.loading" />
     <template v-if="zoeker.success">
-      <contactverzoeken-overzicht :records="zoeker.data">
+      <contactverzoeken-overzicht :records="filteredZoekerData">
         <template #caption>
-          <SearchResultsCaption :results="zoeker.data" />
+          <SearchResultsCaption :results="filteredZoekerData" />
         </template>
       </contactverzoeken-overzicht>
     </template>
@@ -77,6 +77,13 @@ const singleKlantId = computed(() => {
     }
   }
   return undefined;
+});
+
+const filteredZoekerData = computed(() => {
+  if (zoeker.success) {
+    return zoeker.data.filter((item) => !item.record.data.betrokkene.hasOwnProperty('klant'));
+  }
+  return [];
 });
 
 const router = useRouter();
