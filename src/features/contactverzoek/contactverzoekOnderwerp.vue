@@ -10,40 +10,45 @@ import { fetchLoggedIn } from "@/services";
 import { onMounted } from "vue";
 
 const props = defineProps<{
-  contactverzoek: Contactverzoek;
+  contactverzoek: any;
 }>();
 
 const onderwerp = ref("");
 
+const convertToApiUrl = (fullUrl: string) => {
+  try {
+    const url = new URL(fullUrl);
+    const id = encodeURIComponent(fullUrl);
+    return `/api/contactmomentdetails?id=${id}`;
+  } catch (error) {
+    console.error(`Error parsing URL: ${fullUrl}`);
+    return "";
+  }
+};
+
 onMounted(async () => {
   if (props.contactverzoek) {
-    //todo: juiste gegevens ophalen
-    //todo: loading etc regelen mbv servicedata
-
-    //function enrichContactverzoekMetVraag(contactverzoek: Contactverzoek) {
-    // let url = contactverzoek.contactmoment.replace(
-    //   "https://open-klant.dev.kiss-demo.nl/contactmomenten",
-    //   "",
-    // );
-
-    // url =
-    //   "/api/contactmomentdetails?id=" +
-    //   contactverzoek.contactmoment.split("/").pop();
-
-    //"https%3A%2F%2Fopen-klant.dev.kiss-demo.nl%2Fklanten%2Fapi%2Fv1%2Fklanten%2F71bab8a8-2d79-4cb2-9ef2-4056b1263631
-    //"https://open-klant.dev.kiss-demo.nl/contactmomenten/api/v1/contactmomenten/f4caefee-d545-4fb6-b3ea-46150160c029"
-    const url =
-      "/api/contactmomentdetails?id=https%3A%2F%2Fopen-klant.dev.kiss-demo.nl%2Fcontactmomenten%2Fapi%2Fv1%2Fcontactmomenten%2Ff4caefee-d545-4fb6-b3ea-46150160c029";
-    await fetchLoggedIn(url, {})
-      .then((r: any) => {
-        if (!r.ok) {
-          throw new Error();
-        }
-        return r.json();
-      })
-      .then((x: any) => {
-        onderwerp.value = x + "...test";
-      });
+    const contactmomentUrl = props.contactverzoek.contactmoment;
+    if (contactmomentUrl) {
+      const apiUrl = convertToApiUrl(contactmomentUrl);
+      await fetchLoggedIn(apiUrl, {})
+        .then((r: any) => {
+          if (!r.ok) {
+            throw new Error();
+          }
+          return r.json();
+        })
+        .then((contactmomentData: any) => {
+          if (contactmomentData.vraag) {
+            onderwerp.value = contactmomentData.vraag;
+          } else {
+            onderwerp.value = contactmomentData.specifiekeVraag;
+          }
+        })
+        .catch(() => {
+          onderwerp.value = "Error fetching onderwerp";
+        });
+    }
   }
 });
 </script>
