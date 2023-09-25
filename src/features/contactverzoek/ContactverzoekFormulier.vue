@@ -94,30 +94,16 @@
         @input="setActive"
       />
     </label>
+
     <form-fieldset>
       <service-data-wrapper :data="vragenSets" class="container">
         <template #success="{ data }">
           <!-- Dropdown for selecting Onderwerp -->
-          <label class="utrecht-form-label">
-            <span>Onderwerp</span>
-            <select
-              class="utrecht-select utrecht-select--html-select"
-              name="VragenSets"
-              v-model="form.vragenSetId"
-              @change="setOnderwerp"
-            >
-              <option value="" selected>Geen</option>
-              <option
-                v-for="item in [...data].sort((a, b) =>
-                  a.titel.localeCompare(b.titel),
-                )"
-                :key="item.id"
-                :value="item.id"
-              >
-                {{ item.titel }}
-              </option>
-            </select>
-          </label>
+
+          <contactverzoek-onderwerpen
+            :vragenSets="data"
+            :afdelingId="form?.afdeling?.id"
+          />
 
           <!-- Dynamic fields based on selected Onderwerp -->
           <template v-if="form.contactVerzoekVragenSet">
@@ -289,6 +275,10 @@ import {
 } from "./service";
 
 import { useAfdelingen } from "@/composables/afdelingen";
+import { computed } from "vue";
+import type { ContactVerzoekVragenSet } from "./types";
+import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
+
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -319,13 +309,6 @@ const vragenSets = useVragenSets();
 
 const setOnderwerp = () => {
   setActive();
-  if (!vragenSets.success) return;
-  const selectedAfdelingId = form.value?.afdeling?.id;
-
-  const vragenSet = vragenSets.data.find(
-    (s) => s.afdelingId == selectedAfdelingId,
-  );
-  form.value.contactVerzoekVragenSet = vragenSet;
 };
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
