@@ -4,6 +4,7 @@
     v-if="afdelingVragenSets && afdelingVragenSets.length > 0"
   >
     <span>Onderwerp</span>
+
     <select
       class="utrecht-select utrecht-select--html-select"
       name="VragenSets"
@@ -25,28 +26,39 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import type { ContactVerzoekVragenSet } from "./types";
+import { watchEffect } from "vue";
 
 const props = defineProps<{
-  afdelingId?: string;
-  vragenSets: ContactVerzoekVragenSet[];
+  afdelingId?: string; //de afdeling waarvan vragensets getoond mogen worden in de keuzelijst
+  vragenSets: ContactVerzoekVragenSet[]; //alle vragensets
+  modelValue?: ContactVerzoekVragenSet; //de (voor)geselecteerde vragenset
 }>();
-// const emit = defineEmits<{ (e: "update:modelValue", v?: string): void }>();
-// const modelValue = computed({
-//   get: () => props.modelValue,
-//   set: (val) => emit("update:modelValue", val),
-// });
 
-const vragenSetId = ref<string | undefined>();
+const emit = defineEmits<{
+  (e: "update:modelValue", v?: ContactVerzoekVragenSet): void;
+}>();
 
+//subset van vragensets horende bij de geselecteerde afdeling
 const afdelingVragenSets = computed(() => {
   const selectedAfdelingId = props.afdelingId;
-
   return props.vragenSets.filter(
     (s) => s.afdelingId == selectedAfdelingId && selectedAfdelingId,
   );
 });
 
+//tbv modelbinding van de (voor)gekozen vragenset
+const vragenSetId = ref<number | undefined>();
+
+watchEffect(() => {
+  //eerder gekozen waarde voorselecteren
+  vragenSetId.value = props.modelValue?.id;
+});
+
 const setOnderwerp = () => {
-  //doe iets
+  //wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken en emitten
+  const vragenset = props.vragenSets.find((x) => {
+    return x.id === vragenSetId?.value;
+  });
+  emit("update:modelValue", vragenset);
 };
 </script>

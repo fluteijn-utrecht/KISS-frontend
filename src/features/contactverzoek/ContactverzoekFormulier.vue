@@ -42,7 +42,7 @@
           :required="true"
           v-model="form.afdeling"
           placeholder="Zoek een afdeling"
-          @update:model-value="setActive"
+          @update:model-value="onUpdateAfdeling"
           :get-data="useAfdelingen"
           :map-value="(x) => x?.naam"
           @keydown.enter="setEnterPressed"
@@ -99,10 +99,10 @@
       <service-data-wrapper :data="vragenSets" class="container">
         <template #success="{ data }">
           <!-- Dropdown for selecting Onderwerp -->
-
           <contactverzoek-onderwerpen
             :vragenSets="data"
             :afdelingId="form?.afdeling?.id"
+            v-model:modelValue="form.contactVerzoekVragenSet"
           />
 
           <!-- Dynamic fields based on selected Onderwerp -->
@@ -302,6 +302,11 @@ watch(
 
 const setActive = () => {
   form.value.isActive = true;
+};
+
+const onUpdateAfdeling = () => {
+  form.value.contactVerzoekVragenSet = undefined;
+  setActive();
 };
 
 const telEl = ref<HTMLInputElement>();
