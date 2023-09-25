@@ -447,7 +447,7 @@ async function load() {
 
       title.value = data.titel;
       selectedAfdeling.value = {
-        id: data.id,
+        id: data.afdelingId,
         naam: data.afdelingNaam,
         identificatie: data.identificatie,
       };
