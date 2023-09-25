@@ -356,6 +356,26 @@ watch(
     form.value.groep = undefined;
   },
 );
+
+const afdelingId = computed(() => {
+  const afdelingen = props.modelValue.medewerker?.afdelingen;
+  if (Array.isArray(afdelingen) && afdelingen.length > 0) {
+    return afdelingen[0].afdelingId;
+  }
+  return null;
+});
+
+watch(
+  () => form.value.medewerker,
+  () => {
+    form.value.afdeling = {
+      id: afdelingId.value ?? "",
+      identificatie: "",
+      naam: "",
+    };
+    setOnderwerp();
+  },
+);
 </script>
 
 <style lang="scss" scoped>
