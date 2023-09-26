@@ -42,7 +42,7 @@
 <script lang="ts" setup>
 import { watch, computed, ref } from "vue";
 import { useSearch } from "./service";
-import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
+import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue"; 
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
 import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
