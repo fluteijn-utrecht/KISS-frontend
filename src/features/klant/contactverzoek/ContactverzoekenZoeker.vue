@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="handleSearch">
     <label class="utrecht-form-label">
-      Telefoonnummer of E-mailadres
+      Telefoonnummer of e-mailadres
       <input
         type="text"
         v-model="query"
