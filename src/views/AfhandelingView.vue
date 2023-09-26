@@ -574,26 +574,10 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   ];
 
   if (vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT) {
-    let klantUrl = vraag.klanten
+    const klantUrl = vraag.klanten
       .filter((x) => x.shouldStore)
       .map((x) => x.klant.url)
       .find(Boolean);
-
-    if (!klantUrl) {
-      const newKlant = await createKlant({
-        bronorganisatie: organisatieIds.value[0],
-        emailadres: vraag.contactverzoek.emailadres,
-        telefoonnummer: vraag.contactverzoek.telefoonnummer1,
-      });
-      vraag.klanten.push({
-        shouldStore: true,
-        klant: {
-          ...newKlant,
-          hasContactInformation: true,
-        },
-      });
-      klantUrl = newKlant.url;
-    }
 
     promises.push(
       saveContactverzoek({
