@@ -1,6 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Threading;
 using Kiss.Bff.Beheer.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,18 +14,27 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         {
             _db = db;
         }
-        
-        [HttpGet("/api/contactverzoekvragensets")]
-        public async Task<IActionResult> Get(CancellationToken token)
-        {
-            var list = await _db.ContactVerzoekVragenSets.ToListAsync();
 
-            if (list == null)
+        [HttpGet("/api/contactverzoekvragensets")]
+        public async Task<IActionResult> Get(CancellationToken cancellationToken)
+        {
+            var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets.ToListAsync(cancellationToken);
+
+            return Ok(contactVerzoekVragenSets);
+        }
+
+        [HttpGet("/api/contactverzoekvragensets/{id:int}")]
+        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+        {
+            var contactVerzoekVragenSet = await _db.ContactVerzoekVragenSets.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+            if (contactVerzoekVragenSet == null)
             {
-                return Ok(new List<ContactVerzoekVragenSet>());
+                return NotFound();
             }
 
-            return Ok(list);
+            return Ok(contactVerzoekVragenSet);
         }
+
     }
 }

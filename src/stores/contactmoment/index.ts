@@ -44,7 +44,7 @@ export type ContactmomentContactVerzoek = {
   omschrijvingTelefoonnummer2?: string;
   emailadres?: string;
   interneToelichting?: string;
-  vragenSetId?: string;
+  vragenSetId?: number;
   contactVerzoekVragenSet?: ContactVerzoekVragenSet;
   isActive?: boolean;
 };
@@ -62,6 +62,7 @@ export type ContactmomentKlant = {
 };
 
 export type Bron = {
+  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; };
   //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; } | undefined;
   title: string;
   url: string;
@@ -107,6 +108,7 @@ function initVraag(): Vraag {
       emailadres: "",
       interneToelichting: "",
       isActive: false,
+      contactVerzoekVragenSet: undefined,
     },
     startdatum: new Date().toISOString(),
     kanaal: "",
