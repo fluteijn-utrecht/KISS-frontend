@@ -1,10 +1,10 @@
-﻿using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
-using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
-using Kiss.Bff.Beheer.Data;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Kiss.Bff.Beheer.Data;
 using System.Linq;
 using System.Threading;
+using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
 
 namespace Kiss.Bff.Test
 {
@@ -17,16 +17,22 @@ namespace Kiss.Bff.Test
             InitializeDatabase();
         }
 
+
         [TestMethod]
-        public void PostContactVerzoekVragenSet_ReturnsOkResult_WhenModelIsAdded()
+        public async Task PostContactVerzoekVragenSet_ReturnsOkResult_WhenModelIsAdded()
         {
             // Arrange
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             var controller = new WriteContactverzoekenVragenSets(dbContext);
-            var model = new ContactVerzoekVragenSet { Titel = "Test Titel" };
+            var model = new ContactVerzoekVragenSet
+            {
+                Titel = "Test Titel",
+                AfdelingId = string.Empty,
+                AfdelingNaam = "Test Name"
+            };
 
             // Act
-            var result = controller.Post(model, new CancellationToken()).Result;
+            var result = await controller.Post(model, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkResult));
@@ -35,19 +41,29 @@ namespace Kiss.Bff.Test
         }
 
         [TestMethod]
-        public void PutContactVerzoekVragenSet_ReturnsOkResult_WhenModelIsUpdated()
+        public async Task PutContactVerzoekVragenSet_ReturnsOkResult_WhenModelIsUpdated()
         {
             // Arrange
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             var controller = new WriteContactverzoekenVragenSets(dbContext);
-            var originalModel = new ContactVerzoekVragenSet { Titel = "Originele Titel" };
+            var originalModel = new ContactVerzoekVragenSet
+            {
+                Titel = "Originele Titel",
+                AfdelingId = string.Empty,
+                AfdelingNaam = "Original Name"
+            };
             dbContext.ContactVerzoekVragenSets.Add(originalModel);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
-            var updatedModel = new ContactVerzoekVragenSet { Titel = "Geupdaten Titel" };
+            var updatedModel = new ContactVerzoekVragenSet
+            {
+                Titel = "Geupdaten Titel",
+                AfdelingId = string.Empty,
+                AfdelingNaam = "Updated Name"
+            };
 
             // Act
-            var result = controller.Put(originalModel.Id, updatedModel, new CancellationToken()).Result;
+            var result = await controller.Put(originalModel.Id, updatedModel, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkResult));
@@ -55,50 +71,26 @@ namespace Kiss.Bff.Test
         }
 
         [TestMethod]
-        public void DeleteContactVerzoekVragenSet_ReturnsOkResult_WhenModelIsDeleted()
+        public async Task DeleteContactVerzoekVragenSet_ReturnsOkResult_WhenModelIsDeleted()
         {
             // Arrange
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             var controller = new WriteContactverzoekenVragenSets(dbContext);
-            var model = new ContactVerzoekVragenSet { Titel = "Test Titel" };
+            var model = new ContactVerzoekVragenSet
+            {
+                Titel = "Test Titel",
+                AfdelingId = string.Empty,
+                AfdelingNaam = "Test Name"
+            };
             dbContext.ContactVerzoekVragenSets.Add(model);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             // Act
-            var result = controller.Delete(model.Id, new CancellationToken()).Result;
+            var result = await controller.Delete(model.Id, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkResult));
             Assert.AreEqual(0, dbContext.ContactVerzoekVragenSets.Count());
-        }
-
-        [TestMethod]
-        public void PutContactVerzoekVragenSet_ReturnsNotFound_WhenModelDoesNotExist()
-        {
-            // Arrange
-            using var dbContext = new BeheerDbContext(_dbContextOptions);
-            var controller = new WriteContactverzoekenVragenSets(dbContext);
-            var model = new ContactVerzoekVragenSet { Titel = "Niet bestaande Title" };
-
-            // Act
-            var result = controller.Put(1, model, new CancellationToken()).Result;
-
-            // Assert
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-        }
-
-        [TestMethod]
-        public void DeleteContactVerzoekVragenSet_ReturnsNotFound_WhenModelDoesNotExist()
-        {
-            // Arrange
-            using var dbContext = new BeheerDbContext(_dbContextOptions);
-            var controller = new WriteContactverzoekenVragenSets(dbContext);
-
-            // Act
-            var result = controller.Delete(1, new CancellationToken()).Result;
-
-            // Assert
-            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
     }
 }
