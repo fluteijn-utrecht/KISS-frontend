@@ -38,14 +38,17 @@ namespace Kiss.Bff.Test
                     Id = 1,
                     Titel = "VragenSet 1",
                     JsonVragen = "{ \"Question1\": \"Answer1\" }",
-                    AfdelingId = "Dept1"
+                    AfdelingId = "Dept1",
+                    AfdelingNaam = "Department 1" 
+
                 },
                 new ContactVerzoekVragenSet
                 {
                     Id = 2,
                     Titel = "VragenSet 2",
                     JsonVragen = "{ \"Question2\": \"Answer2\" }",
-                    AfdelingId = "Dept2"
+                    AfdelingId = "Dept2",
+                    AfdelingNaam = "Department 2" 
                 }
             };
 
