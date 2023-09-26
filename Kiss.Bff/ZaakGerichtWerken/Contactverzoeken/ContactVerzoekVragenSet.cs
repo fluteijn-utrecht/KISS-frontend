@@ -7,7 +7,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
         [Required]
         public int Id { get; set; } = default!;
         [Required]
-        public string Naam { get; set; } = default!;
+        public string Titel { get; set; } = default!;
         public string? JsonVragen { get; set; }
         public string? AfdelingId { get; set; }
     }

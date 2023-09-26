@@ -195,7 +195,8 @@ menu {
 // categories
 [class^="category-"],
 [class*=" category-"] {
-  border-radius: 1.5rem;
+  // border-radius: 1.5rem;
+  border: black 1px solid;
   padding-inline: 0.75rem;
   padding-block: 0.5em;
   background-color: var(--color-category-default);
@@ -203,7 +204,19 @@ menu {
 }
 
 .category-Website {
-  background-color: var(--color-category-website);
+  background-color: var(--new-color-category-website);
+}
+
+.category-VAC {
+  background-color: var(--new-color-category-vac);
+}
+
+.category-Smoelenboek {
+  background-color: var(--new-color-category-smoelenboek);
+}
+
+.category-Kennisartikel {
+  background-color: var(--new-color-category-kennisartikel);
 }
 
 // notities start

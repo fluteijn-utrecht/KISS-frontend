@@ -271,6 +271,55 @@
         <section class="details">
           <utrecht-heading :level="3"> Details </utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
+            <label
+              :for="'hoofdvraag' + idx"
+              class="utrecht-form-label required"
+            >
+              Vraag
+            </label>
+
+            <contactmoment-vraag
+              :idx="idx"
+              :vraag="vraag"
+              v-model="vraag.vraag"
+            />
+            <label
+              :class="['utrecht-form-label', { required: !vraag.vraag }]"
+              :for="'specifiekevraag' + idx"
+            >
+              Specifieke vraag
+            </label>
+            <input
+              :required="!vraag.vraag"
+              type="text"
+              class="utrecht-textbox utrecht-textbox--html-input"
+              :id="'specifiekevraag' + idx"
+              v-model="vraag.specifiekevraag"
+            />
+
+            <label class="utrecht-form-label" :for="'notitie' + idx"
+              >Notitie</label
+            >
+            <textarea
+              class="utrecht-textarea"
+              :id="'notitie' + idx"
+              v-model="vraag.notitie"
+            ></textarea>
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
+            <div class="relative">
+              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
+                extraheren naar eigen componenten -->
+              <afdelingen-search
+                v-model="vraag.afdeling"
+                :exact-match="true"
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                :required="true"
+                placeholder="Zoek een afdeling"
+              />
+            </div>
             <label :for="'kanaal' + idx" class="utrecht-form-label required"
               >Kanaal</label
             >
@@ -312,52 +361,6 @@
                 {{ gespreksresultaat.definitie }}
               </option>
             </select>
-
-            <label
-              :for="'hoofdvraag' + idx"
-              class="utrecht-form-label required"
-            >
-              Vraag
-            </label>
-            <contactmoment-vraag :idx="idx" :vraag="vraag" />
-            <label
-              :class="['utrecht-form-label', { required: !vraag.vraag }]"
-              :for="'specifiekevraag' + idx"
-            >
-              Specifieke vraag
-            </label>
-            <input
-              :required="!vraag.vraag"
-              type="text"
-              class="utrecht-textbox utrecht-textbox--html-input"
-              :id="'specifiekevraag' + idx"
-              v-model="vraag.specifiekevraag"
-            />
-
-            <label class="utrecht-form-label" :for="'notitie' + idx"
-              >Notitie</label
-            >
-            <textarea
-              class="utrecht-textarea"
-              :id="'notitie' + idx"
-              v-model="vraag.notitie"
-            ></textarea>
-
-            <label :for="'afdeling' + idx" class="utrecht-form-label required"
-              >Afdeling</label
-            >
-            <div class="relative">
-              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
-                extraheren naar eigen componenten -->
-              <afdelingen-search
-                v-model="vraag.afdeling"
-                :exact-match="true"
-                :id="'afdeling' + idx"
-                class="utrecht-textbox utrecht-textbox--html-input"
-                :required="true"
-                placeholder="Zoek een afdeling"
-              />
-            </div>
           </fieldset>
         </section>
 
@@ -430,6 +433,7 @@ import AfdelingenSearch from "@/features/contactmoment/afhandeling/AfdelingenSea
 import { fetchAfdelingen } from "@/composables/afdelingen";
 
 import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
+import type { Kennisartikel } from "@/features/search/types";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -540,7 +544,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     tekst: vraag.notitie,
     onderwerpLinks: [],
     initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    vraag: vraag.vraag?.title,
+    vraag: vraag?.vraag?.title,
     specifiekevraag: vraag.specifiekevraag || undefined,
     gespreksresultaat: vraag.gespreksresultaat,
 
@@ -733,19 +737,20 @@ const toggleRemoveVraagDialog = async (vraagId: number) => {
   });
 };
 
-const updateAfdeling = async (vraag: Vraag) => {
+const trySetOfficieleAfdeling = async (vraag: Vraag) => {
   if (!vraag.vraag?.afdeling) {
     vraag.afdeling = undefined;
     return;
   }
-  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling);
+  const artikelAfdelingen = await fetchAfdelingen(vraag.vraag.afdeling, true);
   vraag.afdeling = artikelAfdelingen.page[0];
 };
 
 onMounted(() => {
   if (!contactmomentStore.huidigContactmoment) return;
-  const promises =
-    contactmomentStore.huidigContactmoment.vragen.map(updateAfdeling);
+  const promises = contactmomentStore.huidigContactmoment.vragen.map(
+    trySetOfficieleAfdeling,
+  );
   return Promise.all(promises);
 });
 </script>
