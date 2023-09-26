@@ -84,7 +84,7 @@ const singleKlantId = computed(() => {
 
 const filteredZoekerData = computed(() => {
   if (zoeker.success) {
-    return zoeker.data.filter((item) => !item.record.data.betrokkene.hasOwnProperty('klant'));
+    return zoeker.data.filter((item) => !item.record.data.betrokkene.hasOwnProperty.call(item.record.data.betrokkene, 'klant'));
   }
   return [];
 });
