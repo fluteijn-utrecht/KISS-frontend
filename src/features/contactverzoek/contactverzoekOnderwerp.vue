@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineEmits } from "vue";
+import { ref } from "vue";
 import type { Contactverzoek } from "./service";
 
 import { fetchLoggedIn } from "@/services";
