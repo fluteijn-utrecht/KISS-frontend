@@ -32,10 +32,13 @@ export function useFeedbackService() {
 }
 
 function mapModel(feedbackModel: Feedback) {
+
+const sectionId = feedbackModel.currentSection.id? ` (${feedbackModel.currentSection.id})` : ""
+
   const sections: [string, string][] = [
     [
       "De sectie waar het om gaat",
-      `${feedbackModel.currentSection.label} (${feedbackModel.currentSection.id})`,
+      `${feedbackModel.currentSection.label}${sectionId}`,
     ],
     ["De tekst waar het om gaat", feedbackModel.content],
     ["Feedback", feedbackModel.opmerking],

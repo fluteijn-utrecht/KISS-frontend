@@ -10,5 +10,5 @@ export interface Feedback {
 
 export interface CurrentFeedbackSection {
   label: string;
-  id: string;
+  id?: string;
 }

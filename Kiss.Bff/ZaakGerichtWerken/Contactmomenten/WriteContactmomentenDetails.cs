@@ -18,16 +18,19 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         public async Task<IActionResult> Post(ContactmomentDetails model, CancellationToken cancellationToken)
         {
             model.EmailadresKcm = User.GetEmail();
-            await _db.AddAsync(model, cancellationToken);
-            try
+            var existingModel = await _db.ContactMomentDetails.FindAsync(model.Id);
+
+            if (existingModel == null)
             {
-                await _db.SaveChangesAsync(cancellationToken);
+                await _db.AddAsync(model, cancellationToken);
             }
-            catch (DbUpdateException)
+            else
             {
-                _db.Entry(model).State = EntityState.Modified;
-                await _db.SaveChangesAsync(cancellationToken);
+                _db.Entry(existingModel).CurrentValues.SetValues(model);
             }
+
+            await _db.SaveChangesAsync(cancellationToken);
+
             return Ok();
         }
     }
