@@ -50,6 +50,9 @@ import { useRouter } from "vue-router";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+
 const store = ensureState({
   stateId: "klant-zoeker",
   stateFactory() {

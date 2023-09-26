@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, defineEmits } from "vue";
 import type { Contactverzoek } from "./service";
 
 import { fetchLoggedIn } from "@/services";
@@ -12,6 +12,8 @@ import { onMounted } from "vue";
 const props = defineProps<{
   contactverzoek: any;
 }>();
+
+const emit = defineEmits(["update:onderwerp"]);
 
 const onderwerp = ref("");
 
@@ -41,8 +43,10 @@ onMounted(async () => {
         .then((contactmomentData: any) => {
           if (contactmomentData.vraag) {
             onderwerp.value = contactmomentData.vraag;
+            emit("update:onderwerp", onderwerp.value);
           } else {
             onderwerp.value = contactmomentData.specifiekeVraag;
+            emit("update:onderwerp", onderwerp.value);
           }
         })
         .catch(() => {

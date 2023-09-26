@@ -19,6 +19,8 @@ import type { Klant } from "../types";
 
 //todo: GEBRUIKT EEN COMPONETN UIT EEN ANDER FEATURE. MAG NIET. GENERIEK MAKEN OF DUPLICEREN
 import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 defineProps<{ records: any[] }>();
 </script>
 

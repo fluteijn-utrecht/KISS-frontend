@@ -1,6 +1,6 @@
 <template>
   <div class="klant-panel">
-    <utrecht-heading :level="1">Contactenverzoeken</utrecht-heading>
+    <utrecht-heading :level="1">Contactverzoeken</utrecht-heading>
     <contactverzoeken-zoeker />
   </div>
 </template>
