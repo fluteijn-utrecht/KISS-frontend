@@ -51,6 +51,10 @@
                     contactmomentStore.huidigContactmoment.huidigeVraag
                       .contactverzoek
                   "
+                  :interneToelichting="
+                    contactmomentStore.huidigContactmoment.huidigeVraag.notitie
+                  "
+                  @updateInterneToelichting="handleUpdateInterneToelichting"
                 />
               </form>
             </tab-list-item>
@@ -98,6 +102,12 @@ const state = ensureState({
     };
   },
 });
+
+const handleUpdateInterneToelichting = (v: string) => {
+  if (contactmomentStore.huidigContactmoment?.huidigeVraag) {
+    contactmomentStore.huidigContactmoment.huidigeVraag.notitie = v;
+  }
+};
 
 watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag,
