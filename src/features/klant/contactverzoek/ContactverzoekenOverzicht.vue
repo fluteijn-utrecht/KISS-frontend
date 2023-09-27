@@ -1,5 +1,5 @@
 <template>
-  <table class="overview">
+  <table class="overview zoekresultaten-view">
     <slot name="caption" />
 
     <contactverzoeken-overzicht :contactverzoeken="records">
@@ -29,4 +29,9 @@ defineProps<{ records: any[] }>();
   inline-size: 30rem;
   min-inline-size: max-content;
 }
+
+.zoekresultaten-view {
+  min-inline-size: fit-content;
+}
+
 </style>
