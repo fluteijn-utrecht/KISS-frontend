@@ -276,12 +276,10 @@ import {
 
 import { useAfdelingen } from "@/composables/afdelingen";
 import { computed } from "vue";
-import type { ContactVerzoekVragenSet } from "./types";
 import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
-  interneToelichting: string;
 }>();
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
@@ -299,14 +297,6 @@ watch(
   () => {
     setOnderwerp();
   },
-);
-
-watch(
-  () => props.interneToelichting,
-  (v) => {
-    form.value.interneToelichting = v;
-  },
-  { immediate: true },
 );
 
 const setActive = () => {
