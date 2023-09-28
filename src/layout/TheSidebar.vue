@@ -105,6 +105,16 @@ watch(
     state.reset();
   },
 );
+
+watch(
+  () => contactmomentStore.huidigContactmoment?.huidigeVraag?.notitie,
+  (v) => {
+    if (contactmomentStore.huidigContactmoment) {
+      contactmomentStore.huidigContactmoment.huidigeVraag.contactverzoek.interneToelichting =
+        v;
+    }
+  },
+);
 </script>
 
 <style lang="scss" scoped>

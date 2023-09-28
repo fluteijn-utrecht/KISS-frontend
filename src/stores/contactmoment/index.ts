@@ -20,6 +20,10 @@ export interface ContactverzoekAfdeling {
   naam: string;
 }
 
+export interface MedewerkerAfdelingen {
+  afdelingId: string;
+}
+
 export type ContactmomentContactVerzoek = {
   url?: string;
   isMedewerker?: true;
@@ -29,6 +33,7 @@ export type ContactmomentContactVerzoek = {
     voornaam?: string;
     voorvoegselAchternaam?: string;
     achternaam?: string;
+    afdelingen: MedewerkerAfdelingen[];
   };
   afdeling?: ContactverzoekAfdeling;
   groep?: {

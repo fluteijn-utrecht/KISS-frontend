@@ -41,6 +41,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
             contactVerzoekVragenSet.Titel = model.Titel;
             contactVerzoekVragenSet.JsonVragen = model.JsonVragen;
             contactVerzoekVragenSet.AfdelingId = model.AfdelingId;
+            contactVerzoekVragenSet.AfdelingNaam = model.AfdelingNaam;
 
             await _db.SaveChangesAsync(cancellationToken);
 

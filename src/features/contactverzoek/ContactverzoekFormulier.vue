@@ -42,7 +42,7 @@
           :required="true"
           v-model="form.afdeling"
           placeholder="Zoek een afdeling"
-          @update:model-value="setActive"
+          @update:model-value="onUpdateAfdeling"
           :get-data="useAfdelingen"
           :map-value="(x) => x?.naam"
           @keydown.enter="setEnterPressed"
@@ -94,30 +94,16 @@
         @input="setActive"
       />
     </label>
+
     <form-fieldset>
       <service-data-wrapper :data="vragenSets" class="container">
         <template #success="{ data }">
           <!-- Dropdown for selecting Onderwerp -->
-          <label class="utrecht-form-label">
-            <span>Onderwerp</span>
-            <select
-              class="utrecht-select utrecht-select--html-select"
-              name="VragenSets"
-              v-model="form.vragenSetId"
-              @change="setOnderwerp"
-            >
-              <option value="" selected>Geen</option>
-              <option
-                v-for="item in [...data].sort((a, b) =>
-                  a.titel.localeCompare(b.titel),
-                )"
-                :key="item.id"
-                :value="item.id"
-              >
-                {{ item.titel }}
-              </option>
-            </select>
-          </label>
+          <contactverzoek-onderwerpen
+            :vragenSets="data"
+            :afdelingId="form?.afdeling?.id"
+            v-model:modelValue="form.contactVerzoekVragenSet"
+          />
 
           <!-- Dynamic fields based on selected Onderwerp -->
           <template v-if="form.contactVerzoekVragenSet">
@@ -289,6 +275,9 @@ import {
 } from "./service";
 
 import { useAfdelingen } from "@/composables/afdelingen";
+import { computed } from "vue";
+import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
+
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
 }>();
@@ -303,8 +292,20 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => form.value.afdeling,
+  () => {
+    setOnderwerp();
+  },
+);
+
 const setActive = () => {
   form.value.isActive = true;
+};
+
+const onUpdateAfdeling = () => {
+  form.value.contactVerzoekVragenSet = undefined;
+  setActive();
 };
 
 const telEl = ref<HTMLInputElement>();
@@ -312,9 +313,6 @@ const vragenSets = useVragenSets();
 
 const setOnderwerp = () => {
   setActive();
-  if (!vragenSets.success) return;
-  const vragenSet = vragenSets.data.find((s) => s.id == form.value.vragenSetId);
-  form.value.contactVerzoekVragenSet = vragenSet;
 };
 
 const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
@@ -355,6 +353,26 @@ watch(
   () => form.value.afdeling,
   () => {
     form.value.groep = undefined;
+  },
+);
+
+const afdelingId = computed(() => {
+  const afdelingen = props.modelValue.medewerker?.afdelingen;
+  if (Array.isArray(afdelingen) && afdelingen.length > 0) {
+    return afdelingen[0].afdelingId;
+  }
+  return null;
+});
+
+watch(
+  () => form.value.medewerker,
+  () => {
+    form.value.afdeling = {
+      id: afdelingId.value ?? "",
+      identificatie: "",
+      naam: "",
+    };
+    setOnderwerp();
   },
 );
 </script>

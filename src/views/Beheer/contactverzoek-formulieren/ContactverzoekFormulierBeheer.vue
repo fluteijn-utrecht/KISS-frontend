@@ -37,21 +37,16 @@
     </label>
     <!-- dropdown for afdelingen -->
     <label class="utrecht-form-label">
-      <span class="required">Afdeling </span>
-      <select
-        class="utrecht-select utrecht-select--html-select"
+      <span class="required">Afdeling</span>
+      <service-data-search
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een afdeling"
+        :get-data="useAfdelingen"
         v-model="selectedAfdeling"
-        required
-      >
-        <option disabled value="">Kies een afdeling</option>
-        <option
-          v-for="afdeling in afdelingen"
-          :key="afdeling.id"
-          :value="afdeling.naam"
-        >
-          {{ afdeling.naam }}
-        </option>
-      </select>
+        :map-value="(x) => x?.naam"
+        :map-description="(x) => x?.identificatie"
+      />
     </label>
 
     <!-- Loop through vragen and render label and input field -->
@@ -256,20 +251,11 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { fetchLoggedIn } from "@/services";
 import { toast } from "@/stores/toast";
 import { useRouter } from "vue-router";
+import { useAfdelingen } from "@/composables/afdelingen";
+import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 
 const router = useRouter();
 const props = defineProps<{ id?: string }>();
-
-const selectedAfdeling = ref("");
-const title = ref("");
-
-const afdelingen = ref([
-  { id: 1, naam: "Afdeling 1" },
-  { id: 2, naam: "Afdeling 2" },
-  { id: 3, naam: "Afdeling 3" },
-  { id: 4, naam: "Afdeling 4" },
-  { id: 5, naam: "Afdeling 5" },
-]);
 
 type Vraag = {
   id: number;
@@ -289,17 +275,26 @@ type CheckboxVraag = Vraag & {
   options: string[];
 };
 
-const vragen = ref<Vraag[]>([]);
+type ContactverzoekAfdeling = {
+  id: string;
+  identificatie: string;
+  naam: string;
+};
+
+const selectedAfdeling = ref<ContactverzoekAfdeling>();
 const selectedVraag = ref("Vraag toevoegen");
+const title = ref("");
+const vragen = ref<Vraag[]>([]);
 
 const submit = async () => {
   loading.value = true;
-
+  console.log(selectedAfdeling.value);
   const generatedSchema = createJsonSchema(vragen.value);
   try {
     const payload = {
       Titel: title.value,
-      AfdelingId: selectedAfdeling.value,
+      AfdelingId: selectedAfdeling.value?.id,
+      AfdelingNaam: selectedAfdeling.value?.naam,
       JsonVragen: JSON.stringify(generatedSchema, null, 2),
     };
 
@@ -451,7 +446,11 @@ async function load() {
       const data = await response.json();
 
       title.value = data.titel;
-      selectedAfdeling.value = data.afdelingId;
+      selectedAfdeling.value = {
+        id: data.afdelingId,
+        naam: data.afdelingNaam,
+        identificatie: data.identificatie,
+      };
       vragen.value = ToSchemaFromVragen(JSON.parse(data.jsonVragen));
       vraagCounter = vragen.value.length;
     }

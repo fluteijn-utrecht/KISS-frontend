@@ -16,7 +16,7 @@
       <tbody>
         <tr v-for="vragenset in vragenSets" :key="vragenset.id">
           <td class="wrap">{{ vragenset.titel }}</td>
-          <td>{{ vragenset.afdelingId }}</td>
+          <td>{{ vragenset.afdelingNaam }}</td>
           <td class="actions">
             <ul>
               <li>
@@ -58,7 +58,9 @@ type VragenSets = {
   titel: string;
   jsonVragen?: string;
   afdelingId?: string;
+  afdelingNaam: string;
 };
+
 const loading = ref<boolean>(true);
 const vragenSets = ref<Array<VragenSets>>([]);
 
