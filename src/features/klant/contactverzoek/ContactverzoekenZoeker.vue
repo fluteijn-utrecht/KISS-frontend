@@ -1,37 +1,38 @@
 <template>
   <form @submit.prevent="handleSearch">
     <label class="utrecht-form-label">
-      Telefoonnummer
+      Telefoonnummer of e-mailadres
       <input
-        type="tel"
-        v-model="store.currentPhone"
+        type="text"
+        v-model="query"
         class="utrecht-textbox utrecht-textbox--html-input"
       />
     </label>
-    <label class="utrecht-form-label">
+    <!-- <label class="utrecht-form-label">
       E-mailadres
       <input
         type="email"
         v-model="store.currentEmail"
         class="utrecht-textbox utrecht-textbox--html-input"
       />
-    </label>
+    </label> -->
     <utrecht-button type="submit" appearance="primary-action-button">
       Zoeken
     </utrecht-button>
   </form>
 
-  <section class="search-section" v-if="store.klantEmail || store.klantPhone">
-    <simple-spinner v-if="klanten.loading" />
-    <template v-if="klanten.success">
-      <contacten-overzicht :records="klanten.data">
+  <!-- <section class="search-section" v-if="store.klantEmail || store.klantPhone"> -->
+  <section class="search-section">
+    <simple-spinner v-if="zoeker.loading" />
+    <template v-if="zoeker.success">
+      <contactverzoeken-overzicht :records="filteredZoekerData">
         <template #caption>
-          <SearchResultsCaption :results="klanten.data" />
+          <SearchResultsCaption :results="filteredZoekerData" />
         </template>
-      </contacten-overzicht>
+      </contactverzoeken-overzicht>
     </template>
     <application-message
-      v-if="klanten.error"
+      v-if="zoeker.error"
       messageType="error"
       message="Er is een fout opgetreden"
     />
@@ -39,9 +40,9 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, computed } from "vue";
-import { useSearchKlanten } from "./service";
-import ContactenOverzicht from "./ContactenOverzicht.vue";
+import { watch, computed, ref } from "vue";
+import { useSearch } from "./service";
+import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue"; 
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
 import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
@@ -49,33 +50,43 @@ import { useRouter } from "vue-router";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+
 const store = ensureState({
   stateId: "klant-zoeker",
   stateFactory() {
     return {
-      currentPhone: "",
-      currentEmail: "",
-      klantPhone: "",
-      klantEmail: "",
+      // currentPhone: "",
+      // currentEmail: "",
+      searchQuery: "",
+      // klantPhone: "",
+      // klantEmail: "",
     };
   },
 });
 
-const klanten = useSearchKlanten(
-  computed(() => ({
-    email: store.value.klantEmail,
-    phone: store.value.klantPhone,
-  }))
-);
+const query = ref<string>("");
+
+const q = computed(() => ({ query: store.value.searchQuery }));
+
+const zoeker = useSearch(q);
 
 const singleKlantId = computed(() => {
-  if (klanten.success && klanten.data.length === 1) {
-    const first = klanten.data[0];
+  if (zoeker.success && zoeker.data.length === 1) {
+    const first = zoeker.data[0];
     if (first?._typeOfKlant === "klant") {
       return first.id;
     }
   }
   return undefined;
+});
+
+const filteredZoekerData = computed(() => {
+  if (zoeker.success) {
+    return zoeker.data.filter((item) => !item.record.data.betrokkene.hasOwnProperty.call(item.record.data.betrokkene, 'klant'));
+  }
+  return [];
 });
 
 const router = useRouter();
@@ -87,8 +98,9 @@ watch(singleKlantId, (newId, oldId) => {
 });
 
 const handleSearch = () => {
-  store.value.klantEmail = store.value.currentEmail;
-  store.value.klantPhone = store.value.currentPhone;
+  store.value.searchQuery = query.value;
+  // store.value.klantEmail = store.value.currentEmail;
+  // store.value.klantPhone = store.value.currentPhone;
 };
 </script>
 

@@ -14,8 +14,8 @@
             <li
               v-if="contactmomentStore.contactmomentLoopt && route.meta.showNav"
             >
-              <router-link :to="{ name: 'contacten' }"
-                ><span>Contacten</span></router-link
+              <router-link :to="{ name: 'contactverzoeken' }"
+                ><span>Contactverzoeken</span></router-link
               >
             </li>
 

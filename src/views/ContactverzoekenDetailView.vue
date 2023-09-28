@@ -1,7 +1,7 @@
 <template>
   <back-link />
 
-  <utrecht-heading :level="1">Contactinformatie</utrecht-heading>
+  <!-- <utrecht-heading :level="1">Contactinformatie</utrecht-heading>
   <tab-list v-model="activeTab">
     <tab-list-data-item label="Contactgegevens" :data="klant">
       <template #success="{ data }">
@@ -17,14 +17,14 @@
       <template #success="{ data }">
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
         <contactmomenten-overzicht :contactmomenten="data.page">
-        </contactmomenten-overzicht>
-        <!-- 
+        </contactmomenten-overzicht> -->
+  <!-- 
           <pagination
             class="pagination"
             :pagination="contactmomenten.data"
             @navigate="onContactmomentenNavigate"
           /> -->
-      </template>
+  <!-- </template>
     </tab-list-data-item>
 
     <tab-list-data-item
@@ -46,7 +46,7 @@
         </contactverzoeken-overzicht>
       </template>
     </tab-list-data-item>
-  </tab-list>
+  </tab-list> -->
 </template>
 
 <script setup lang="ts">
@@ -67,28 +67,31 @@ import BackLink from "@/components/BackLink.vue";
 const activeTab = ref("");
 
 const props = defineProps<{ contactId: string }>();
-const klantId = computed(() => props.contactId);
-const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId);
-const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
-watch(
-  () => klant.success && klant.data,
-  (k) => {
-    if (!k) return;
-    contactmomentStore.setKlant({
-      ...k,
-      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
-    });
-  },
-  { immediate: true },
-);
+//todo: vervalt verwijderen
 
-const contactverzoekenPage = ref(1);
-const contactverzoeken = useContactverzoekenByKlantId(
-  klantUrl,
-  contactverzoekenPage,
-);
+// const klantId = computed(() => props.contactId);
+// const contactmomentStore = useContactmomentStore();
+// const klant = useKlantById(klantId);
+// const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
-const contactmomenten = useContactmomentenByKlantId(klantUrl);
+// watch(
+//   () => klant.success && klant.data,
+//   (k) => {
+//     if (!k) return;
+//     contactmomentStore.setKlant({
+//       ...k,
+//       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
+//     });
+//   },
+//   { immediate: true },
+// );
+
+// const contactverzoekenPage = ref(1);
+// const contactverzoeken = useContactverzoekenByKlantId(
+//   klantUrl,
+//   contactverzoekenPage,
+// );
+
+// const contactmomenten = useContactmomentenByKlantId(klantUrl);
 </script>
