@@ -57,7 +57,7 @@ watchEffect(() => {
 watch(
   afdelingVragenSets,
   (v) => {
-    if (v && v.length > 0) {
+    if (v && v.length > 0 && !vragenSetId.value) {
       vragenSetId.value = v[0].id;
       emit("update:modelValue", v[0]);
     }
