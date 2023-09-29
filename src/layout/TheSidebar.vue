@@ -109,7 +109,11 @@ watch(
 watch(
   () => contactmomentStore.huidigContactmoment?.huidigeVraag?.notitie,
   (v) => {
-    if (contactmomentStore.huidigContactmoment) {
+    if (
+      contactmomentStore.huidigContactmoment &&
+      !contactmomentStore.huidigContactmoment.huidigeVraag.contactverzoek
+        .isActive
+    ) {
       contactmomentStore.huidigContactmoment.huidigeVraag.contactverzoek.interneToelichting =
         v;
     }
