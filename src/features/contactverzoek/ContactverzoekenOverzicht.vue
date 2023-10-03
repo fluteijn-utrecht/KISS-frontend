@@ -60,7 +60,7 @@
           >
             <dt>
               {{
-                capitalizeFirstLetter(
+                camelCaseToWords(
                   adres.omschrijving || adres.soortDigitaalAdres || "contact",
                 )
               }}
@@ -86,7 +86,7 @@ import type { Contactverzoek } from "./service";
 import { watch } from "vue";
 import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
-import { capitalizeFirstLetter, fullName } from "@/helpers/string";
+import { camelCaseToWords, fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
 import ContactverzoekOnderwerp from "@/features/contactverzoek/contactverzoekOnderwerp.vue";
 

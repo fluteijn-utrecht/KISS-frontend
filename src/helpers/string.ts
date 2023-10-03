@@ -11,5 +11,8 @@ export function fullName(name: any) {
     .join(" ");
 }
 
-export const capitalizeFirstLetter = (val: string) =>
-  `${val?.[0]?.toLocaleUpperCase() || ""}${val?.substring(1) || ""}`;
+export function camelCaseToWords(s: string) {
+  if (!s) return s;
+  const result = s.replace(/([A-Z])/g, " $1");
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
