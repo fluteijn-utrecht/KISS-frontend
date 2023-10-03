@@ -55,6 +55,17 @@
           </notificaties-overzicht>
         </template>
       </tab-list-data-item>
+
+      <tab-list-data-item
+        label="Taken"
+        :data="taken"
+        :disabled="(c) => !c.count"
+      >
+        <template #success="{ data }">
+          <utrecht-heading :level="2"> Taken</utrecht-heading>
+          <klant-taken-overzicht :taken="data.page" />
+        </template>
+      </tab-list-data-item>
     </tab-list>
   </template>
 </template>
@@ -76,17 +87,20 @@ import {
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
+import { useKlantTakenByZaakUrl } from "@/features/klanttaak/service";
+import KlantTakenOverzicht from "@/features/klanttaak/KlantTakenOverzicht.vue";
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
 const zaakUrl = computed(() =>
   zaak.success && zaak.data.self ? zaak.data.self : "",
 );
-
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl, "klant");
 const notificaties = useContactmomentenByObjectUrl(zaakUrl, "gemeente");
 
 const activeTab = ref("");
+
+const taken = useKlantTakenByZaakUrl(() => zaakUrl.value);
 
 watch(
   () => zaak.success && zaak.data,

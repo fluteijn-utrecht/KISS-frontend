@@ -3,7 +3,7 @@
     <li class="header-row" ref="headerRef">
       <slot name="header"></slot>
     </li>
-    <li v-for="item in items" :key="item[itemKey]">
+    <li v-for="item in items" :key="(item as any)[itemKey]">
       <details @click="toggleDetails">
         <slot name="item" :item="item"></slot>
       </details>
@@ -11,13 +11,15 @@
   </ul>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup generic="T">
 import { computed } from "vue";
 import { ref } from "vue";
-
+type StringKeys = {
+  [K in keyof T]: T[K] extends string ? K : never;
+}[keyof T];
 defineProps<{
-  items: any[];
-  itemKey: string;
+  items: T[];
+  itemKey: StringKeys;
 }>();
 
 const toggleDetails = (e: Event) => {

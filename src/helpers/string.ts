@@ -10,3 +10,6 @@ export function fullName(name: any) {
     .filter(Boolean)
     .join(" ");
 }
+
+export const capitalizeFirstLetter = (val: string) =>
+  `${val?.[0]?.toLocaleUpperCase() || ""}${val?.substring(1) || ""}`;
