@@ -11,10 +11,12 @@
         <summary>
           <span>{{ taak.record.data.title }}</span>
           <span>{{ taak.record.data.status }}</span>
-          <dutch-date
+          <time
             v-if="taak.record.data.verloopdatum"
-            :date="new Date(taak.record.data.verloopdatum)"
-          />
+            :datetime="new Date(taak.record.data.verloopdatum).toISOString()"
+          >
+            {{ formatDateAndTime(taak.record.data.verloopdatum) }}
+          </time>
           <span v-else />
         </summary>
         <dl v-if="taak.record.data.data">
@@ -23,7 +25,7 @@
             :key="key"
           >
             <dt>
-              {{ capitalizeFirstLetter(key) }}
+              {{ camelCaseToWords(key) }}
             </dt>
             <dd>
               {{ value }}
@@ -38,8 +40,8 @@
 <script lang="ts" setup>
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
 import type { KlantTaak } from "./types";
-import DutchDate from "@/components/DutchDate.vue";
-import { capitalizeFirstLetter } from "@/helpers/string";
+import { camelCaseToWords } from "@/helpers/string";
+import { formatDateAndTime } from "@/helpers/date";
 defineProps<{
   taken: KlantTaak[];
 }>();

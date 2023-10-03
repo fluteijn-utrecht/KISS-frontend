@@ -78,6 +78,13 @@
         </notificaties-overzicht>
       </template>
     </tab-list-data-item>
+
+    <tab-list-data-item label="Taken" :data="taken" :disabled="(c) => !c.count">
+      <template #success="{ data }">
+        <utrecht-heading :level="2"> Taken</utrecht-heading>
+        <klant-taken-overzicht :taken="data.page" />
+      </template>
+    </tab-list-data-item>
   </tab-list>
 </template>
 
@@ -104,6 +111,8 @@ import ContactverzoekenOverzicht from "@/features/contactverzoek/Contactverzoeke
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
+import KlantTakenOverzicht from "@/features/klanttaak/KlantTakenOverzicht.vue";
+import { useKlantTakenByBsn } from "@/features/klanttaak/service";
 
 const activeTab = ref("");
 
@@ -128,6 +137,8 @@ const klantBsn = computed(getBsn);
 
 const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
+
+const taken = useKlantTakenByBsn(getBsn);
 
 watch(
   [() => klant.success && klant.data, () => persoon.success && persoon.data],

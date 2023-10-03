@@ -14,7 +14,7 @@ export function formatTimeOnly(date: string | Date) {
 }
 
 export function formatDateAndTime(date: string | Date) {
-  return date.toLocaleString("nl-NL", {
+  return new Date(date).toLocaleString("nl-NL", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
