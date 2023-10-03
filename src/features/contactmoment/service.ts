@@ -162,13 +162,19 @@ export const useContactmomentDetails = (url: () => string) =>
       }),
   );
 
-export function useContactmomentenByObjectUrl(url: Ref<string>) {
+export function useContactmomentenByObjectUrl(
+  url: Ref<string>,
+  initiatiefnemer?: Initiatiefnemer,
+) {
   const getUrl = () => {
     if (!url.value) return "";
     const params = new URLSearchParams();
     params.set("object", url.value);
     params.set("ordering", "-registratiedatum");
     params.set("expand", "objectcontactmomenten");
+    if (initiatiefnemer) {
+      params.set("initiatiefnemer", initiatiefnemer);
+    }
     return `${contactmomentenUrl}?${params}`;
   };
 

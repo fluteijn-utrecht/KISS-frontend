@@ -1,6 +1,6 @@
 export type UpdateContactgegevensParams = Pick<
   Klant,
-  "id" | "telefoonnummer" | "emailadres"
+  "id" | "telefoonnummer" | "emailadres" | "aanmaakkanaal"
 >;
 
 export interface Klant {
@@ -12,6 +12,7 @@ export interface Klant {
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
+  aanmaakkanaal?: string;
   url?: string;
 }
 

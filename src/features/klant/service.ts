@@ -28,7 +28,7 @@ type FieldParams = {
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
 export function createKlantQuery<K extends KlantSearchField>(
-  args: KlantSearch<K>
+  args: KlantSearch<K>,
 ): KlantSearch<K> {
   return args;
 }
@@ -67,7 +67,7 @@ klantRootUrl.pathname = klantenBaseUrl;
 function getKlantSearchUrl<K extends KlantSearchField>(
   search: KlantSearch<K> | undefined,
   subjectType: KlantType,
-  page: number | undefined
+  page: number | undefined,
 ) {
   if (!search?.query) return "";
 
@@ -147,7 +147,7 @@ function fetchKlantById(url: string) {
 export function useKlantById(id: Ref<string>) {
   return ServiceResult.fromFetcher(
     () => getKlantIdUrl(id.value),
-    fetchKlantById
+    fetchKlantById,
   );
 }
 
@@ -165,6 +165,7 @@ function updateContactgegevens({
   id,
   telefoonnummer,
   emailadres,
+  aanmaakkanaal,
 }: UpdateContactgegevensParams): Promise<UpdateContactgegevensParams> {
   const endpoint = klantRootUrl + "/" + id;
   return fetchLoggedIn(endpoint)
@@ -181,8 +182,9 @@ function updateContactgegevens({
           subjectIdentificatie: getValidIdentificatie(klant),
           telefoonnummer,
           emailadres,
+          aanmaakkanaal,
         }),
-      })
+      }),
     )
     .then(throwIfNotOk)
     .then(parseJson)
@@ -202,13 +204,13 @@ export function useSearchKlanten<K extends KlantSearchField>({
     getKlantSearchUrl(
       query.value,
       subjectType ?? KlantType.Persoon,
-      page.value
+      page.value,
     );
   return ServiceResult.fromFetcher(getUrl, searchKlanten);
 }
 
 export function useKlantByBsn(
-  getBsn: () => string | undefined
+  getBsn: () => string | undefined,
 ): ServiceData<Klant | null> {
   const getUrl = () => getKlantBsnUrl(getBsn());
 
@@ -227,7 +229,7 @@ export async function ensureKlantForBsn(
   }: {
     bsn: string;
   },
-  bronorganisatie: string
+  bronorganisatie: string,
 ) {
   const bsnUrl = getKlantBsnUrl(bsn);
   const singleBsnId = getSingleBsnSearchId(bsn);
@@ -276,7 +278,7 @@ const getKlantByVestigingsnummerUrl = (vestigingsnummer: string) => {
 };
 
 export const useKlantByVestigingsnummer = (
-  getVestigingsnummer: () => string | undefined
+  getVestigingsnummer: () => string | undefined,
 ) => {
   const getUrl = () =>
     getKlantByVestigingsnummerUrl(getVestigingsnummer() ?? "");
@@ -299,7 +301,7 @@ export async function ensureKlantForVestigingsnummer(
     vestigingsnummer: string;
     bedrijfsnaam: string;
   },
-  bronorganisatie: string
+  bronorganisatie: string,
 ) {
   const url = getKlantByVestigingsnummerUrl(vestigingsnummer);
   const uniqueId = url && url + "_single";
