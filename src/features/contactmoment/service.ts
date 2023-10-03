@@ -31,6 +31,8 @@ const zaaksysteemApiRoot = `/zaken/api/v1`;
 const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
 const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
+type Initiatiefnemer = "gemeente" | "klant";
+
 export const saveContactmoment = (
   data: Contactmoment,
 ): Promise<{ url: string; gespreksId: string }> =>
@@ -122,13 +124,21 @@ const fetchContactmomenten = (u: string) =>
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
 
-export function useContactmomentenByKlantId(id: Ref<string>) {
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  initiatiefnemer?: Initiatiefnemer,
+) {
   function getUrl() {
     if (!id.value) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("klant", id.value);
     searchParams.set("ordering", "-registratiedatum");
     searchParams.set("expand", "objectcontactmomenten");
+
+    if (initiatiefnemer) {
+      searchParams.set("initiatiefnemer", initiatiefnemer);
+    }
+
     return `${contactmomentenUrl}?${searchParams.toString()}`;
   }
 

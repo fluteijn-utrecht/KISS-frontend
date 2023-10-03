@@ -62,6 +62,22 @@
         </contactverzoeken-overzicht>
       </template>
     </tab-list-data-item>
+
+    <tab-list-data-item
+      label="Notificaties"
+      :data="notificaties"
+      :disabled="(c: PaginatedResult<ContactmomentViewModel>) => !c.count"
+    >
+      <template #success="{ data }">
+        <utrecht-heading :level="2"> Notificaties </utrecht-heading>
+
+        <contactmomenten-overzicht :contactmomenten="data.page">
+          <template v-slot:object="{ object }">
+            <zaak-preview :zaakurl="object.object"></zaak-preview>
+          </template>
+        </contactmomenten-overzicht>
+      </template>
+    </tab-list-data-item>
   </tab-list>
 </template>
 
@@ -85,6 +101,8 @@ import ContactverzoekenOverzicht from "@/features/contactverzoek/Contactverzoeke
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
+import type { ContactmomentViewModel } from "@/features/shared/types";
+import type { PaginatedResult } from "@/services";
 
 const activeTab = ref("");
 
@@ -101,10 +119,9 @@ const contactverzoeken = useContactverzoekenByKlantId(
 );
 
 // const contactmomentenPage = ref(1);
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  // contactmomentenPage
-);
+const contactmomenten = useContactmomentenByKlantId(klantUrl, "klant");
+
+const notificaties = useContactmomentenByKlantId(klantUrl, "gemeente");
 
 // const onContactmomentenNavigate = (page: number) => {
 //   contactmomentenPage.value = page;
