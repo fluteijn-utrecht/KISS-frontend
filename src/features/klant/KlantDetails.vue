@@ -5,15 +5,14 @@
         <utrecht-heading :level="level">
           <span class="heading">
             Contactgegevens
-            <!-- in overleg met PO verborgen en niet verwijderd (story githubissue #617)
-              <utrecht-button 
+            <utrecht-button
               v-if="!editing"
               appearance="subtle-button"
               @click="toggleEditing"
               title="Bewerken"
               :class="'icon-after icon-only pen'"
               class="toggleEdit"
-            />-->
+            />
             <simple-spinner class="spinner" v-if="submitter.loading" />
             <application-message
               v-else-if="submitter.error"
@@ -55,6 +54,18 @@
             />
           </fieldset>
           <template v-else>{{ telefoonnummer }}</template>
+        </dd>
+        <dt>Voorkeurskanaal</dt>
+        <dd>
+          <fieldset v-if="showForm">
+            <input
+              v-model="voorkeurskanaal"
+              name="voorkeurskanaal"
+              aria-label="Voorkeurskanaal"
+              class="utrecht-textbox utrecht-textbox--html-input"
+            />
+          </fieldset>
+          <template v-else>{{ voorkeurskanaal }}</template>
         </dd>
       </dl>
 
@@ -106,13 +117,17 @@ const props = defineProps({
   },
 });
 
-const email = ref(props.klant.emailadres);
-const telefoonnummer = ref(props.klant.telefoonnummer);
+const email = ref<string>();
+const telefoonnummer = ref<string>();
+const voorkeurskanaal = ref<string>();
 
 function populate() {
   email.value = props.klant.emailadres;
   telefoonnummer.value = props.klant.telefoonnummer;
+  voorkeurskanaal.value = props.klant.aanmaakkanaal;
 }
+
+populate();
 
 watch(
   () => props.klant,
@@ -144,6 +159,7 @@ const submit = () =>
       id: props.klant.id,
       telefoonnummer: telefoonnummer.value,
       emailadres: email.value,
+      aanmaakkanaal: voorkeurskanaal.value,
     })
     .then(() => {
       editing.value = false;
