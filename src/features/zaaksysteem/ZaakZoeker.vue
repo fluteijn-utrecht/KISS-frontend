@@ -32,12 +32,16 @@
         </zaken-overzicht>
       </section>
     </template>
+
+    <div>
+      <button @click="maakZaak">zaak aanmaken</button>
+    </div>
   </section>
 </template>
 
 <script lang="ts" setup>
 import { watch, computed } from "vue";
-import { useZakenByZaaknummer } from "./service";
+import { useZakenByZaaknummer, useMaakZaak } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import ZakenOverzicht from "./ZakenOverzicht.vue";
@@ -45,6 +49,7 @@ import { ensureState } from "@/stores/create-store"; //todo: niet in de stores m
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { useRouter } from "vue-router";
 import SearchResultsCaption from "../../components/SearchResultsCaption.vue";
+import { useOrganisatieIds } from "@/stores/user";
 
 const contactmomentStore = useContactmomentStore();
 
@@ -67,7 +72,7 @@ const zoekOpZaak = () => {
 const singleZaakId = computed(() =>
   zaken.success && zaken.data.page.length === 1
     ? zaken.data.page[0].id
-    : undefined
+    : undefined,
 );
 
 const router = useRouter();
@@ -77,6 +82,12 @@ watch(singleZaakId, (newId, oldId) => {
     router.push(`/zaken/${newId}`);
   }
 });
+
+const organisatieIds = useOrganisatieIds();
+
+const maakZaak = () => {
+  useMaakZaak(organisatieIds.value[0] || "");
+};
 </script>
 
 <style lang="scss" scoped>

@@ -21,8 +21,68 @@ import type {
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { toRelativeProxyUrl } from "@/helpers/url";
+import { formatIsoDate } from "@/helpers/date";
 
 const zakenProxyRoot = "/api/zaken";
+
+export const useMaakZaak = (bronorg: string) => {
+  const getUrl = () => {
+    const url = new URL(location.href);
+    url.pathname = zaaksysteemBaseUri;
+
+    return url.toString();
+  };
+
+  function createZaak(): Promise<object> {
+    const endpoint = getUrl();
+    return fetchLoggedIn(endpoint + "/zaken", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        identificatie: "123",
+        toelichting: "aanvraag witgoed tegemoedkoming",
+        startdatum: formatIsoDate(Date()),
+        bronorganisatie: bronorg,
+        verantwoordelijkeOrganisatie: bronorg,
+        zaaktype:
+          "https://openzaak.test.denhaag.opengem.nl/catalogi/api/v1/zaaktypen/cf57c196-982d-4e2b-a567-d47794642bd7",
+      }),
+    })
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((x: any) => {
+        return fetchLoggedIn(endpoint + "/rollen", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            zaak: x.url,
+            betrokkeneType: "natuurlijk_persoon",
+            roltype:
+              "https://openzaak.test.denhaag.opengem.nl/catalogi/api/v1/roltypen/0d177de1-122e-4873-8c42-50db20cc4cf5",
+            roltoelichting: "dit is de initiator",
+
+            betrokkeneIdentificatie: {
+              inpBsn: "999993653",
+
+              geslachtsnaam: "Moulin",
+
+              voornamen: "Suzanne",
+
+              geboortedatum: "01-12-1985",
+            },
+          }),
+        }).then(() => {
+          //maak status
+        });
+      });
+  }
+
+  return createZaak();
+};
 
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
@@ -31,7 +91,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
       "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
-      bsn.value
+      bsn.value,
     );
     return url.toString();
   };
@@ -85,7 +145,7 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
     url.pathname = zaaksysteemBaseUri + "/rollen";
     url.searchParams.set(
       "betrokkeneIdentificatie__vestiging__vestigingsNummer",
-      vestigingsnummer.value
+      vestigingsnummer.value,
     );
     return url.toString();
   };
@@ -99,7 +159,8 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
           const split = (x as RolType)?.zaak?.split("/");
           if (!Array.isArray(split) || !split.length) {
             throw new Error(
-              "kan url van zaak niet ophalen obv rol: " + x && JSON.stringify(x)
+              "kan url van zaak niet ophalen obv rol: " + x &&
+                JSON.stringify(x),
             );
           }
           const id = split[split.length - 1];
@@ -108,7 +169,7 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
           const result = await singleZaakFetcher(url);
           mutate(url, result);
           return result;
-        })
+        }),
       );
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
@@ -123,7 +184,7 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
 
   //we gaan er in de interface vanuit dat een rol maar 1 keer voorkomt bij een zaak
   const rol = rollen.find(
-    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam
+    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam,
   );
 
   if (!rol || !rol.betrokkeneIdentificatie) {
@@ -164,7 +225,7 @@ const getStatus = async (statusUrl: string) => {
   if (!statusId) return "";
 
   const statusType = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/statussen/${statusId}`
+    `${zaaksysteemBaseUri}/statussen/${statusId}`,
   )
     .then(throwIfNotOk)
     .then((x) => x.json())
@@ -185,10 +246,10 @@ const getStatus = async (statusUrl: string) => {
 };
 
 const getDocumenten = async (
-  zaakurl: string
+  zaakurl: string,
 ): Promise<Array<ZaakDocument | null>> => {
   const infoObjecten = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
+    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`,
   )
     .then(throwIfNotOk)
     .then((x) => x.json());
@@ -344,7 +405,7 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
 
 export async function updateToelichting(
   zaak: ZaakDetails,
-  toelichting: string
+  toelichting: string,
 ): Promise<void> {
   const url = getZaakUrl(zaak.id);
   const res = await fetchLoggedIn(url, {
