@@ -83,7 +83,7 @@ import {
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
-import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
 const props = defineProps<{ bedrijfId: string }>();

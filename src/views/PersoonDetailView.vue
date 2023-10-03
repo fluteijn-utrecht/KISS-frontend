@@ -81,7 +81,7 @@ import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
-import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";

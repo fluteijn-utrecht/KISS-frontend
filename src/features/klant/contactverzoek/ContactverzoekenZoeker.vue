@@ -8,14 +8,6 @@
         class="utrecht-textbox utrecht-textbox--html-input"
       />
     </label>
-    <!-- <label class="utrecht-form-label">
-      E-mailadres
-      <input
-        type="email"
-        v-model="store.currentEmail"
-        class="utrecht-textbox utrecht-textbox--html-input"
-      />
-    </label> -->
     <utrecht-button type="submit" appearance="primary-action-button">
       Zoeken
     </utrecht-button>
@@ -25,11 +17,19 @@
   <section class="search-section">
     <simple-spinner v-if="zoeker.loading" />
     <template v-if="zoeker.success">
-      <contactverzoeken-overzicht :records="filteredZoekerData">
-        <template #caption>
-          <SearchResultsCaption :results="filteredZoekerData" />
-        </template>
-      </contactverzoeken-overzicht>
+      <table class="overview zoekresultaten-view">
+        <SearchResultsCaption :results="filteredZoekerData" />
+
+        <contactverzoeken-overzicht :contactverzoeken="filteredZoekerData">
+          <template #contactmoment="{ url }">
+            <contactmoment-preview :url="url">
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object" />
+              </template>
+            </contactmoment-preview>
+          </template>
+        </contactverzoeken-overzicht>
+      </table>
     </template>
     <application-message
       v-if="zoeker.error"
@@ -42,7 +42,7 @@
 <script lang="ts" setup>
 import { watch, computed, ref } from "vue";
 import { useSearch } from "./service";
-import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue"; 
+//import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
 import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
@@ -52,6 +52,8 @@ import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+
+import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
 
 const store = ensureState({
   stateId: "klant-zoeker",
@@ -84,7 +86,13 @@ const singleKlantId = computed(() => {
 
 const filteredZoekerData = computed(() => {
   if (zoeker.success) {
-    return zoeker.data.filter((item) => !item.record.data.betrokkene.hasOwnProperty.call(item.record.data.betrokkene, 'klant'));
+    return zoeker.data.filter(
+      (item) =>
+        !item.record.data.betrokkene.hasOwnProperty.call(
+          item.record.data.betrokkene,
+          "klant",
+        ),
+    );
   }
   return [];
 });
@@ -121,5 +129,14 @@ form {
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
+}
+
+.overview {
+  inline-size: 30rem;
+  min-inline-size: max-content;
+}
+
+.zoekresultaten-view {
+  min-inline-size: fit-content;
 }
 </style>
