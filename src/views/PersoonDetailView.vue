@@ -71,11 +71,11 @@
       <template #success="{ data }">
         <utrecht-heading :level="2"> Notificaties </utrecht-heading>
 
-        <contactmomenten-overzicht :contactmomenten="data.page">
+        <notificaties-overzicht :notificaties="data.page">
           <template v-slot:object="{ object }">
             <zaak-preview :zaakurl="object.object"></zaak-preview>
           </template>
-        </contactmomenten-overzicht>
+        </notificaties-overzicht>
       </template>
     </tab-list-data-item>
   </tab-list>
@@ -85,7 +85,10 @@
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { ContactmomentenOverzicht } from "@/features/contactmoment";
+import {
+  ContactmomentenOverzicht,
+  NotificatiesOverzicht,
+} from "@/features/contactmoment";
 import {
   KlantDetails,
   useKlantById,
@@ -118,14 +121,9 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage,
 );
 
-// const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(klantUrl, "klant");
 
 const notificaties = useContactmomentenByKlantId(klantUrl, "gemeente");
-
-// const onContactmomentenNavigate = (page: number) => {
-//   contactmomentenPage.value = page;
-// };
 
 const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
 const klantBsn = computed(getBsn);
