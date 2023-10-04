@@ -48,9 +48,17 @@ export function useZaakStatustypen(getZaakTypeUrl: () => string) {
             y as {
               omschrijving: string;
               url: string;
+              volgnummer: number;
             },
         ),
-      ),
+      )
+      .then((p) => {
+        const page = p.page.sort((a, b) => a.volgnummer - b.volgnummer);
+        return {
+          ...p,
+          page,
+        };
+      }),
   );
 }
 
@@ -74,6 +82,36 @@ export function useZaakTypen() {
   );
 }
 
+export function useRoltypen(getZaakTypeUrl: () => string) {
+  function getUrl() {
+    const zaaktype = getZaakTypeUrl();
+    if (!zaaktype) return "";
+    return (
+      zakenProxyRoot +
+      "/catalogi/api/v1/roltypen?" +
+      new URLSearchParams({
+        zaaktype,
+      })
+    );
+  }
+  return ServiceResult.fromFetcher(getUrl, (url) =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((x) =>
+        parsePagination(
+          x,
+          (y) =>
+            y as {
+              url: string;
+              omschrijving: string;
+              omschrijvingGeneriek: string;
+            },
+        ),
+      ),
+  );
+}
+
 const addStatusToZaak = (payload: { statustype: string; zaak: string }) =>
   fetchLoggedIn(zaaksysteemBaseUri + "/statussen", {
     method: "POST",
@@ -94,12 +132,18 @@ const createZaak = ({
   zaaktype,
   identificatie,
   toelichting,
+  roltype,
+  status,
+  omschrijving,
   persoon: { bsn, geboortedatum, voornaam, voorvoegselAchternaam, achternaam },
 }: {
   bronorganisatie: string;
   zaaktype: string;
   identificatie: string;
   toelichting: string;
+  omschrijving: string;
+  roltype: string;
+  status?: string;
   persoon: {
     bsn: string;
     geboortedatum?: Date;
@@ -133,8 +177,7 @@ const createZaak = ({
         body: JSON.stringify({
           zaak: x.url,
           betrokkeneType: "natuurlijk_persoon",
-          roltype:
-            "https://openzaak.test.denhaag.opengem.nl/catalogi/api/v1/roltypen/0d177de1-122e-4873-8c42-50db20cc4cf5",
+          roltype,
           roltoelichting: "dit is de initiator",
 
           betrokkeneIdentificatie: {
@@ -145,7 +188,17 @@ const createZaak = ({
             voorvoegselGeslachtsnaam: voorvoegselAchternaam,
           },
         }),
-      });
+      })
+        .then(throwIfNotOk)
+        .then(() => {
+          if (!status) return Promise.resolve();
+          return addStatusToZaak({
+            statustype: status,
+            zaak: x.url,
+          }).then(() => {
+            // ignore
+          });
+        });
     });
 
 export const useCreateZaak = () => ServiceResult.fromSubmitter(createZaak);

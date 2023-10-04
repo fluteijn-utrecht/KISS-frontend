@@ -124,6 +124,11 @@
             zaak: zaak.data.self,
           })
           .then(() => taken.refresh())
+          .then(() =>
+            toast({
+              text: 'Gelukt!',
+            }),
+          )
           .catch(() =>
             toast({
               text: 'er ging iets mis',

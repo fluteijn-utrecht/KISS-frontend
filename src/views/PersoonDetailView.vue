@@ -57,8 +57,22 @@
                 identificatie, //
                 toelichting, //
                 persoon: persoon.data,
+                roltype,
+                status,
+                omschrijving,
               })
               .then(() => zaken.refresh())
+              .then(() =>
+                toast({
+                  text: 'Gelukt!',
+                }),
+              )
+              .catch(() =>
+                toast({
+                  type: 'error',
+                  text: 'er ging iets mis',
+                }),
+              )
           "
         >
           <label>
@@ -73,9 +87,37 @@
               </option>
             </select>
           </label>
+          <label v-if="rolTypen.success">
+            Roltype
+            <select v-model="roltype" required>
+              <option
+                v-for="{ url, omschrijvingGeneriek } in rolTypen.data.page"
+                :key="url"
+                :value="url"
+              >
+                {{ omschrijvingGeneriek }}
+              </option>
+            </select>
+          </label>
+          <label v-if="statussen.success">
+            Status
+            <select v-model="status" required>
+              <option
+                v-for="{ url, omschrijving } in statussen.data.page"
+                :key="url"
+                :value="url"
+              >
+                {{ omschrijving }}
+              </option>
+            </select>
+          </label>
           <label>
             Identificatie
             <input required v-model="identificatie" />
+          </label>
+          <label>
+            Omschrijving
+            <input required v-model="omschrijving" />
           </label>
           <label>
             Toelichting
@@ -152,6 +194,8 @@ import {
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import {
   useCreateZaak,
+  useRoltypen,
+  useZaakStatustypen,
   useZaakTypen,
   useZakenByBsn,
 } from "@/features/zaaksysteem";
@@ -166,6 +210,7 @@ import KlantTakenOverzicht from "@/features/klanttaak/KlantTakenOverzicht.vue";
 import { useKlantTakenByBsn } from "@/features/klanttaak/service";
 import { useOrganisatieIds } from "@/stores/user";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import { toast } from "@/stores/toast";
 const activeTab = ref("");
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
@@ -180,9 +225,11 @@ const contactverzoeken = useContactverzoekenByKlantId(
 );
 
 const zaaktype = ref("");
+const roltype = ref("");
 const identificatie = ref("");
 const toelichting = ref("");
-
+const status = ref("");
+const omschrijving = ref("");
 const contactmomenten = useContactmomentenByKlantId(klantUrl, "klant");
 
 const notificaties = useContactmomentenByKlantId(klantUrl, "gemeente");
@@ -200,6 +247,10 @@ const createZaak = useCreateZaak();
 const organisatieIds = useOrganisatieIds();
 
 const zaakTypen = useZaakTypen();
+
+const rolTypen = useRoltypen(() => zaaktype.value);
+
+const statussen = useZaakStatustypen(() => zaaktype.value);
 
 watch(
   [() => klant.success && klant.data, () => persoon.success && persoon.data],
