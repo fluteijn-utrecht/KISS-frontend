@@ -47,7 +47,6 @@
       >
         <template #success="{ data }">
           <utrecht-heading :level="2"> Notificaties </utrecht-heading>
-
           <notificaties-overzicht :notificaties="data.page">
             <template v-slot:object="{ object }">
               <zaak-preview :zaakurl="object.object"></zaak-preview>
@@ -55,7 +54,6 @@
           </notificaties-overzicht>
         </template>
       </tab-list-data-item>
-
       <tab-list-data-item
         label="Taken"
         :data="taken"
@@ -67,11 +65,41 @@
         </template>
       </tab-list-data-item>
     </tab-list>
+    <simple-spinner
+      v-if="addStatus.loading || statussen.loading || zaak.loading"
+    />
+    <form
+      class="hackathon"
+      v-else-if="statussen.success && zaak.success"
+      @submit.prevent="
+        addStatus
+          .submit({
+            zaak: zaak.data.url,
+            statustype,
+          })
+          .then(() => zaak.refresh())
+      "
+    >
+      <select v-model="statustype" required>
+        <option
+          v-for="{ url, omschrijving } in statussen.data.page"
+          :value="url"
+          :key="url"
+        >
+          {{ omschrijving }}
+        </option>
+      </select>
+      <button>Voeg status toe</button>
+    </form>
   </template>
 </template>
 
 <script setup lang="ts">
-import { useZaakById } from "@/features/zaaksysteem/service";
+import {
+  useAddStatusToZaak,
+  useZaakById,
+  useZaakStatustypen,
+} from "@/features/zaaksysteem/service";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { computed, ref, watch } from "vue";
@@ -101,7 +129,11 @@ const notificaties = useContactmomentenByObjectUrl(zaakUrl, "gemeente");
 const activeTab = ref("");
 
 const taken = useKlantTakenByZaakUrl(() => zaakUrl.value);
-
+const statussen = useZaakStatustypen(() =>
+  !zaak.success ? "" : zaak.data.zaaktypeUrl,
+);
+const addStatus = useAddStatusToZaak();
+const statustype = ref("");
 watch(
   () => zaak.success && zaak.data,
   (z) => {

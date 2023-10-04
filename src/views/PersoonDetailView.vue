@@ -86,6 +86,46 @@
       </template>
     </tab-list-data-item>
   </tab-list>
+  <simple-spinner v-if="createZaak.loading" />
+  <form
+    class="hackathon"
+    v-else-if="
+      zaakTypen.success && persoon.success && persoon.data && organisatieIds[0]
+    "
+    @submit.prevent="
+      createZaak
+        .submit({
+          bronorganisatie: organisatieIds[0],
+          zaaktype, // bijzondere bijstand
+          identificatie, //
+          toelichting, //
+          persoon: persoon.data,
+        })
+        .then(() => zaken.refresh())
+    "
+  >
+    <label>
+      Zaaktype
+      <select v-model="zaaktype" required>
+        <option
+          v-for="{ url, omschrijvingGeneriek } in zaakTypen.data.page"
+          :key="url"
+          :value="url"
+        >
+          {{ omschrijvingGeneriek }}
+        </option>
+      </select>
+    </label>
+    <label>
+      Identificatie
+      <input required v-model="identificatie" />
+    </label>
+    <label>
+      Toelichting
+      <input required v-model="toelichting" />
+    </label>
+    <button>Maak zaak aan</button>
+  </form>
 </template>
 
 <script setup lang="ts">
@@ -103,7 +143,11 @@ import {
   usePersoonByBsn,
 } from "@/features/klant";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
-import { useZakenByBsn } from "@/features/zaaksysteem";
+import {
+  useCreateZaak,
+  useZaakTypen,
+  useZakenByBsn,
+} from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
@@ -113,9 +157,9 @@ import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
 import KlantTakenOverzicht from "@/features/klanttaak/KlantTakenOverzicht.vue";
 import { useKlantTakenByBsn } from "@/features/klanttaak/service";
-
+import { useOrganisatieIds } from "@/stores/user";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
 const activeTab = ref("");
-
 const props = defineProps<{ persoonId: string }>();
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
@@ -128,6 +172,10 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage,
 );
 
+const zaaktype = ref("");
+const identificatie = ref("");
+const toelichting = ref("");
+
 const contactmomenten = useContactmomentenByKlantId(klantUrl, "klant");
 
 const notificaties = useContactmomentenByKlantId(klantUrl, "gemeente");
@@ -139,6 +187,12 @@ const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
 
 const taken = useKlantTakenByBsn(getBsn);
+
+const createZaak = useCreateZaak();
+
+const organisatieIds = useOrganisatieIds();
+
+const zaakTypen = useZaakTypen();
 
 watch(
   [() => klant.success && klant.data, () => persoon.success && persoon.data],

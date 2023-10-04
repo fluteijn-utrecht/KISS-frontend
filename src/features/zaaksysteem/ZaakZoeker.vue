@@ -32,16 +32,12 @@
         </zaken-overzicht>
       </section>
     </template>
-
-    <div>
-      <button @click="maakZaak">zaak aanmaken</button>
-    </div>
   </section>
 </template>
 
 <script lang="ts" setup>
 import { watch, computed } from "vue";
-import { useZakenByZaaknummer, useMaakZaak } from "./service";
+import { useZakenByZaaknummer } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import ZakenOverzicht from "./ZakenOverzicht.vue";
@@ -82,12 +78,6 @@ watch(singleZaakId, (newId, oldId) => {
     router.push(`/zaken/${newId}`);
   }
 });
-
-const organisatieIds = useOrganisatieIds();
-
-const maakZaak = () => {
-  useMaakZaak(organisatieIds.value[0] || "");
-};
 </script>
 
 <style lang="scss" scoped>

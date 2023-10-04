@@ -31,7 +31,7 @@ export type PersoonSearchField = keyof SearchPersoonFieldParams;
 
 type PersoonQueryParams = {
   [K in PersoonSearchField]: (
-    search: SearchPersoonFieldParams[K]
+    search: SearchPersoonFieldParams[K],
   ) => QueryParam;
 };
 
@@ -45,7 +45,7 @@ export type PersoonQuery<K extends PersoonSearchField> = {
 };
 
 export function persoonQuery<K extends PersoonSearchField>(
-  args: PersoonQuery<K>
+  args: PersoonQuery<K>,
 ): PersoonQuery<K> {
   return args;
 }
@@ -111,20 +111,20 @@ function sortBy<T>(
       if (!propB) return -1;
       if (!propA) return 1;
       return propA.localeCompare(propB);
-    })
+    }),
   );
 }
 
 const compareNaam = sortBy<Persoon>(
   (x) => x.achternaam,
   (x) => x.voorvoegselAchternaam,
-  (x) => x.voornaam
+  (x) => x.voornaam,
 );
 
 const compareAdres = sortBy<Persoon>(
   (x) => x.adresregel1,
   (x) => x.adresregel2,
-  (x) => x.adresregel3
+  (x) => x.adresregel3,
 );
 
 const compareAdresThenNaam = combineCompare(compareAdres, compareNaam);
@@ -177,7 +177,7 @@ const searchSinglePersoon = (bsn: string): Promise<Persoon | null> =>
   }).then((r) => r?.[0] || null);
 
 export const searchPersonen = <K extends PersoonSearchField>(
-  query: PersoonQuery<K>
+  query: PersoonQuery<K>,
 ) => {
   const entries = getQueryParams(query);
   const body = JSON.stringify(Object.fromEntries(entries));
@@ -217,15 +217,13 @@ export const searchPersonen = <K extends PersoonSearchField>(
     });
 };
 
-export function usePersoonByBsn(
-  getBsn: () => string | undefined
-): ServiceData<Persoon | null> {
+export function usePersoonByBsn(getBsn: () => string | undefined) {
   return ServiceResult.fromFetcher(
     zoekUrl,
     () => searchSinglePersoon(getBsn() || ""),
     {
       getUniqueId: () => getPersoonUniqueBsnId(getBsn()),
-    }
+    },
   );
 }
 
@@ -248,6 +246,6 @@ export function useSearchPersonen<K extends PersoonSearchField>({
       getUniqueId() {
         return query.value ? JSON.stringify(query.value) : "";
       },
-    }
+    },
   );
 }

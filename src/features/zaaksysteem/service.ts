@@ -21,68 +21,134 @@ import type {
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { toRelativeProxyUrl } from "@/helpers/url";
-import { formatIsoDate } from "@/helpers/date";
+import { formatDateOnly, formatIsoDate } from "@/helpers/date";
 
 const zakenProxyRoot = "/api/zaken";
 
-export const useMaakZaak = (bronorg: string) => {
+export function useZaakStatustypen(getZaakTypeUrl: () => string) {
   const getUrl = () => {
-    const url = new URL(location.href);
-    url.pathname = zaaksysteemBaseUri;
-
-    return url.toString();
+    const zaaktype = getZaakTypeUrl();
+    return (
+      zaaktype &&
+      zakenProxyRoot +
+        "/catalogi/api/v1/statustypen?" +
+        new URLSearchParams({
+          zaaktype,
+        })
+    );
   };
 
-  function createZaak(): Promise<object> {
-    const endpoint = getUrl();
-    return fetchLoggedIn(endpoint + "/zaken", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        identificatie: "123",
-        toelichting: "aanvraag witgoed tegemoedkoming",
-        startdatum: formatIsoDate(Date()),
-        bronorganisatie: bronorg,
-        verantwoordelijkeOrganisatie: bronorg,
-        zaaktype:
-          "https://openzaak.test.denhaag.opengem.nl/catalogi/api/v1/zaaktypen/cf57c196-982d-4e2b-a567-d47794642bd7",
-      }),
-    })
-      .then(throwIfNotOk)
+  return ServiceResult.fromFetcher(getUrl, (url) =>
+    fetchLoggedIn(url)
       .then(parseJson)
-      .then((x: any) => {
-        return fetchLoggedIn(endpoint + "/rollen", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            zaak: x.url,
-            betrokkeneType: "natuurlijk_persoon",
-            roltype:
-              "https://openzaak.test.denhaag.opengem.nl/catalogi/api/v1/roltypen/0d177de1-122e-4873-8c42-50db20cc4cf5",
-            roltoelichting: "dit is de initiator",
-
-            betrokkeneIdentificatie: {
-              inpBsn: "999993653",
-
-              geslachtsnaam: "Moulin",
-
-              voornamen: "Suzanne",
-
-              geboortedatum: "01-12-1985",
+      .then((x) =>
+        parsePagination(
+          x,
+          (y) =>
+            y as {
+              omschrijving: string;
+              url: string;
             },
-          }),
-        }).then(() => {
-          //maak status
-        });
-      });
-  }
+        ),
+      ),
+  );
+}
 
-  return createZaak();
-};
+export function useZaakTypen() {
+  return ServiceResult.fromFetcher(
+    zakenProxyRoot + "/catalogi/api/v1/zaaktypen",
+    (u) =>
+      fetchLoggedIn(u)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((x) =>
+          parsePagination(
+            x,
+            (y) =>
+              y as {
+                url: string;
+                omschrijvingGeneriek: string;
+              },
+          ),
+        ),
+  );
+}
+
+const addStatusToZaak = (payload: { statustype: string; zaak: string }) =>
+  fetchLoggedIn(zaaksysteemBaseUri + "/statussen", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      ...payload,
+      datumStatusGezet: new Date().toISOString(),
+    }),
+  }).then(throwIfNotOk);
+
+export const useAddStatusToZaak = () =>
+  ServiceResult.fromSubmitter(addStatusToZaak);
+
+const createZaak = ({
+  bronorganisatie,
+  zaaktype,
+  identificatie,
+  toelichting,
+  persoon: { bsn, geboortedatum, voornaam, voorvoegselAchternaam, achternaam },
+}: {
+  bronorganisatie: string;
+  zaaktype: string;
+  identificatie: string;
+  toelichting: string;
+  persoon: {
+    bsn: string;
+    geboortedatum?: Date;
+    voornaam: string;
+    voorvoegselAchternaam?: string;
+    achternaam: string;
+  };
+}) =>
+  fetchLoggedIn(zaaksysteemBaseUri + "/zaken", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      identificatie,
+      toelichting,
+      startdatum: formatIsoDate(Date()),
+      bronorganisatie,
+      verantwoordelijkeOrganisatie: bronorganisatie,
+      zaaktype,
+    }),
+  })
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((x: any) => {
+      return fetchLoggedIn(zaaksysteemBaseUri + "/rollen", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          zaak: x.url,
+          betrokkeneType: "natuurlijk_persoon",
+          roltype:
+            "https://openzaak.test.denhaag.opengem.nl/catalogi/api/v1/roltypen/0d177de1-122e-4873-8c42-50db20cc4cf5",
+          roltoelichting: "dit is de initiator",
+
+          betrokkeneIdentificatie: {
+            inpBsn: bsn,
+            geslachtsnaam: achternaam,
+            voornamen: voornaam,
+            geboortedatum: geboortedatum && formatDateOnly(geboortedatum),
+            voorvoegselGeslachtsnaam: voorvoegselAchternaam,
+          },
+        }),
+      });
+    });
+
+export const useCreateZaak = () => ServiceResult.fromSubmitter(createZaak);
 
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
@@ -361,6 +427,7 @@ const mapZaakDetails = async (zaak: any) => {
   return {
     ...zaak,
     id: id,
+    zaaktypeUrl: zaak.zaaktype,
     zaaktype: zaakzaaktype.id,
     zaaktypeLabel: zaakzaaktype.onderwerp,
     zaaktypeOmschrijving: zaakzaaktype.omschrijving,

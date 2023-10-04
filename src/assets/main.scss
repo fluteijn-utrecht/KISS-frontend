@@ -488,3 +488,26 @@ dt {
 main > h1 + [role="tablist"] {
   margin-block-start: var(--spacing-small);
 }
+
+// HACKATHON
+.hackathon {
+  padding: 2rem;
+  display: flex;
+  gap: 1rem;
+  border: 2px red dashed;
+  border-radius: var(--radius-default);
+  align-items: center;
+
+  &::before {
+    content: "ALLEEN VOOR TIJDENS DE HACKATHON";
+    color: red;
+    font-weight: bold;
+  }
+
+  button {
+    font-weight: bold;
+    border: 2px black solid;
+    border-radius: var(--radius-default);
+    padding: 0.5rem;
+  }
+}

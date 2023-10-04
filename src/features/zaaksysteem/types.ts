@@ -8,6 +8,7 @@ export type ZaakDetails = {
   zaaktype: string;
   zaaktypeLabel: string;
   zaaktypeOmschrijving: string;
+  zaaktypeUrl: string;
   status: string;
   behandelaar: string;
   aanvrager: string;
@@ -16,6 +17,7 @@ export type ZaakDetails = {
   indienDatum?: Date;
   registratieDatum?: Date;
   self: string;
+  url: string;
   documenten?: ZaakDocument[];
   omschrijving: string;
 };
