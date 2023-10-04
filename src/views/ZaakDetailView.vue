@@ -80,6 +80,9 @@
           .submit({
             zaak: zaak.data.url,
             statustype,
+            resultaattype,
+            besluittype,
+            verantwoordelijkeOrganisatie: organisaties[0],
           })
           .then(() => zaak.refresh())
       "
@@ -89,6 +92,30 @@
         <select v-model="statustype" required>
           <option
             v-for="{ url, omschrijving } in statussen.data.page"
+            :value="url"
+            :key="url"
+          >
+            {{ omschrijving }}
+          </option>
+        </select>
+      </label>
+      <label v-if="isEindstatus && resultaten.success">
+        Resultaat
+        <select v-model="resultaattype" required>
+          <option
+            v-for="{ url, omschrijving } in resultaten.data.page"
+            :value="url"
+            :key="url"
+          >
+            {{ omschrijving }}
+          </option>
+        </select>
+      </label>
+      <label v-if="isEindstatus && besluiten.success">
+        Besluit
+        <select v-model="besluittype" required>
+          <option
+            v-for="{ url, omschrijving } in besluiten.data.page"
             :value="url"
             :key="url"
           >
@@ -149,6 +176,8 @@
 <script setup lang="ts">
 import {
   useAddStatusToZaak,
+  useBesluittypen,
+  useResultaattypen,
   useZaakById,
   useZaakStatustypen,
 } from "@/features/zaaksysteem/service";
@@ -173,6 +202,7 @@ import {
 } from "@/features/klanttaak/service";
 import KlantTakenOverzicht from "@/features/klanttaak/KlantTakenOverzicht.vue";
 import { toast } from "@/stores/toast";
+import { useOrganisatieIds } from "@/stores/user";
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
@@ -185,11 +215,31 @@ const notificaties = useContactmomentenByObjectUrl(zaakUrl, "gemeente");
 const activeTab = ref("");
 const title = ref("");
 const taken = useKlantTakenByZaakUrl(() => zaakUrl.value);
-const statussen = useZaakStatustypen(() =>
-  !zaak.success ? "" : zaak.data.zaaktypeUrl,
-);
+const getZaakTypeUrl = () => (!zaak.success ? "" : zaak.data.zaaktypeUrl);
+const statussen = useZaakStatustypen(getZaakTypeUrl);
+
+const resultaten = useResultaattypen(getZaakTypeUrl);
+
+const besluiten = useBesluittypen(getZaakTypeUrl);
+
 const addStatus = useAddStatusToZaak();
+
+const organisaties = useOrganisatieIds();
+
 const statustype = ref("");
+const resultaattype = ref("");
+const besluittype = ref("");
+
+const isEindstatus = computed(
+  () =>
+    statussen.success &&
+    statustype.value &&
+    statussen.data.page.find((x) => x.url === statustype.value)?.isEindstatus,
+);
+
+watch(statustype, () => {
+  resultaattype.value = "";
+});
 
 const createTaak = useCreateTaak();
 

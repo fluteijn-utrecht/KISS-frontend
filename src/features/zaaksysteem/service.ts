@@ -49,6 +49,7 @@ export function useZaakStatustypen(getZaakTypeUrl: () => string) {
               omschrijving: string;
               url: string;
               volgnummer: number;
+              isEindstatus: boolean;
             },
         ),
       )
@@ -112,17 +113,87 @@ export function useRoltypen(getZaakTypeUrl: () => string) {
   );
 }
 
-const addStatusToZaak = (payload: { statustype: string; zaak: string }) =>
-  fetchLoggedIn(zaaksysteemBaseUri + "/statussen", {
+export function useBesluittypen(getZaakTypeUrl: () => string) {
+  function getUrl() {
+    const zaaktypen = getZaakTypeUrl();
+    if (!zaaktypen) return "";
+    return (
+      zakenProxyRoot +
+      "/catalogi/api/v1/besluittypen?" +
+      new URLSearchParams({
+        zaaktypen,
+      })
+    );
+  }
+  return ServiceResult.fromFetcher(getUrl, (url) =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((x) =>
+        parsePagination(
+          x,
+          (y) =>
+            y as {
+              url: string;
+              omschrijving: string;
+              omschrijvingGeneriek: string;
+            },
+        ),
+      ),
+  );
+}
+
+const addStatusToZaak = async ({
+  statustype,
+  zaak,
+  resultaattype,
+  besluittype,
+  verantwoordelijkeOrganisatie,
+}: {
+  statustype: string;
+  zaak: string;
+  resultaattype?: string;
+  besluittype?: string;
+  verantwoordelijkeOrganisatie: string;
+}) => {
+  if (resultaattype && besluittype) {
+    await fetchLoggedIn(zakenProxyRoot + "/besluiten/api/v1/besluiten", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        zaak,
+        datum: formatIsoDate(new Date()),
+        ingangsdatum: formatIsoDate(new Date()),
+        besluittype,
+        verantwoordelijkeOrganisatie,
+      }),
+    }).then(throwIfNotOk);
+
+    await fetchLoggedIn(zaaksysteemBaseUri + "/resultaten", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        resultaattype,
+        zaak,
+      }),
+    }).then(throwIfNotOk);
+  }
+  await fetchLoggedIn(zaaksysteemBaseUri + "/statussen", {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      ...payload,
+      statustype,
+      zaak,
       datumStatusGezet: new Date().toISOString(),
     }),
   }).then(throwIfNotOk);
+};
 
 export const useAddStatusToZaak = () =>
   ServiceResult.fromSubmitter(addStatusToZaak);
@@ -159,6 +230,7 @@ const createZaak = ({
     },
     body: JSON.stringify({
       identificatie,
+      omschrijving,
       toelichting,
       startdatum: formatIsoDate(Date()),
       bronorganisatie,
@@ -179,7 +251,7 @@ const createZaak = ({
           betrokkeneType: "natuurlijk_persoon",
           roltype,
           roltoelichting: "dit is de initiator",
-
+          vertrouwelijkheidaanduiding: "openbaar",
           betrokkeneIdentificatie: {
             inpBsn: bsn,
             geslachtsnaam: achternaam,
@@ -389,6 +461,34 @@ const getDocumenten = async (
 
   return [];
 };
+
+export function useResultaattypen(getZaakTypeUrl: () => string) {
+  function getUrl() {
+    const zaaktype = getZaakTypeUrl();
+    return (
+      zaaktype &&
+      "/api/zaken/catalogi/api/v1/resultaattypen?" +
+        new URLSearchParams({
+          zaaktype,
+        })
+    );
+  }
+  return ServiceResult.fromFetcher(getUrl, (url) =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((x) =>
+        parsePagination(
+          x,
+          (y) =>
+            y as {
+              omschrijving: string;
+              url: string;
+            },
+        ),
+      ),
+  );
+}
 
 const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
   // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
