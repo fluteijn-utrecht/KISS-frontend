@@ -25,7 +25,7 @@
             :key="key"
           >
             <dt>
-              {{ camelCaseToWords(key) }}
+              {{ camelCaseToSentence(key) }}
             </dt>
             <dd>
               {{ value }}
@@ -40,7 +40,7 @@
 <script lang="ts" setup>
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
 import type { KlantTaak } from "./types";
-import { camelCaseToWords } from "@/helpers/string";
+import { camelCaseToSentence } from "@/helpers/string";
 import { formatDateAndTime } from "@/helpers/date";
 defineProps<{
   taken: KlantTaak[];

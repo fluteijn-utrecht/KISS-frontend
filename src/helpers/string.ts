@@ -11,8 +11,8 @@ export function fullName(name: any) {
     .join(" ");
 }
 
-export function camelCaseToWords(s: string | null | undefined) {
+export function camelCaseToSentence(s: string | null | undefined) {
   if (!s) return s;
-  const result = s.replace(/([A-Z])/g, " $1");
-  return result.charAt(0).toUpperCase() + result.slice(1);
+  const words = s.replace(/([A-Z])/g, (c) => " " + c.toLowerCase());
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
