@@ -1,4 +1,4 @@
-type ObjectWrapper<T> = {
+export type ObjectWrapper<T> = {
   url: string;
   uuid: string;
   type: string;
@@ -13,7 +13,7 @@ type ObjectWrapper<T> = {
     correctedBy: unknown;
   };
 };
-export type KlantTaak = ObjectWrapper<{
+export type KlantTaak = {
   data?: {
     [k: string]: unknown;
   };
@@ -33,4 +33,4 @@ export type KlantTaak = ObjectWrapper<{
     [k: string]: unknown;
   };
   verwerker_taak_id: string;
-}>;
+};

@@ -80,16 +80,59 @@
           .then(() => zaak.refresh())
       "
     >
-      <select v-model="statustype" required>
-        <option
-          v-for="{ url, omschrijving } in statussen.data.page"
-          :value="url"
-          :key="url"
-        >
-          {{ omschrijving }}
-        </option>
-      </select>
+      <label>
+        Statustype
+        <select v-model="statustype" required>
+          <option
+            v-for="{ url, omschrijving } in statussen.data.page"
+            :value="url"
+            :key="url"
+          >
+            {{ omschrijving }}
+          </option>
+        </select>
+      </label>
       <button>Voeg status toe</button>
+    </form>
+    <simple-spinner v-if="createTaak.loading" />
+    <form
+      class="hackathon"
+      v-else
+      @submit.prevent="
+        createTaak
+          .submit({
+            title,
+            data: {},
+            verwerker_taak_id: '123',
+            status: 'open',
+            formulier: {
+              type: 'id',
+              value: '123',
+            },
+            verloopdatum: new Date().toISOString(),
+            verzonden_data: {},
+            identificatie: zaak.data.aanvragerBsn
+              ? {
+                  type: 'bsn',
+                  value: zaak.data.aanvragerBsn,
+                }
+              : {},
+            zaak: zaak.data.self,
+          })
+          .then(() => taken.refresh())
+          .catch(() =>
+            toast({
+              text: 'er ging iets mis',
+              type: 'error',
+            }),
+          )
+      "
+    >
+      <label>
+        Titel
+        <input required v-model="title" />
+      </label>
+      <button>Voeg taak toe</button>
     </form>
   </template>
 </template>
@@ -115,8 +158,12 @@ import {
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import { useKlantTakenByZaakUrl } from "@/features/klanttaak/service";
+import {
+  useCreateTaak,
+  useKlantTakenByZaakUrl,
+} from "@/features/klanttaak/service";
 import KlantTakenOverzicht from "@/features/klanttaak/KlantTakenOverzicht.vue";
+import { toast } from "@/stores/toast";
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(computed(() => props.zaakId));
@@ -127,13 +174,16 @@ const contactmomenten = useContactmomentenByObjectUrl(zaakUrl, "klant");
 const notificaties = useContactmomentenByObjectUrl(zaakUrl, "gemeente");
 
 const activeTab = ref("");
-
+const title = ref("");
 const taken = useKlantTakenByZaakUrl(() => zaakUrl.value);
 const statussen = useZaakStatustypen(() =>
   !zaak.success ? "" : zaak.data.zaaktypeUrl,
 );
 const addStatus = useAddStatusToZaak();
 const statustype = ref("");
+
+const createTaak = useCreateTaak();
+
 watch(
   () => zaak.success && zaak.data,
   (z) => {

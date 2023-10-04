@@ -504,6 +504,12 @@ main > h1 + [role="tablist"] {
     font-weight: bold;
   }
 
+  label {
+    font-weight: bold;
+    display: flex;
+    gap: 0.5rem;
+  }
+
   button {
     font-weight: bold;
     border: 2px black solid;

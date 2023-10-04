@@ -434,6 +434,14 @@ const mapZaakDetails = async (zaak: any) => {
     status: await getStatus(zaak.status),
     behandelaar: getNamePerRoltype(rollen, "behandelaar"),
     aanvrager: getNamePerRoltype(rollen, "initiator"),
+    aanvragerBsn: rollen
+      .filter((x) => x.omschrijvingGeneriek === "initiator")
+      .map(
+        (x) =>
+          "inpBsn" in x.betrokkeneIdentificatie &&
+          x.betrokkeneIdentificatie.inpBsn,
+      )
+      .find(Boolean),
     startdatum,
     // fataleDatum: fataleDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard
     // streefDatum: streefDatum, voorlopig niet tonen: openzaakbrondata is niet conform de standaard

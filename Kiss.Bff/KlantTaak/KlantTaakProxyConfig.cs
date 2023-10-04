@@ -6,7 +6,8 @@ namespace Kiss.Bff.Groepen
     public static class KlantTaakExtensions
     {
         public static IServiceCollection AddKlantTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl)
-            => services.AddSingleton<IKissProxyRoute>(new KlantTaakProxyConfig(destination, token, objectTypeUrl));
+            => services.AddSingleton(new KlantTaakProxyConfig(destination, token, objectTypeUrl))
+            .AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<KlantTaakProxyConfig>());
     }
 
     public class KlantTaakProxyConfig : IKissProxyRoute

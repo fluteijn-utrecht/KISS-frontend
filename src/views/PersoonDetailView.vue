@@ -40,6 +40,49 @@
           :zaken="data.page"
           :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
         />
+        <simple-spinner v-if="createZaak.loading" />
+        <form
+          class="hackathon"
+          v-else-if="
+            zaakTypen.success &&
+            persoon.success &&
+            persoon.data &&
+            organisatieIds[0]
+          "
+          @submit.prevent="
+            createZaak
+              .submit({
+                bronorganisatie: organisatieIds[0],
+                zaaktype, // bijzondere bijstand
+                identificatie, //
+                toelichting, //
+                persoon: persoon.data,
+              })
+              .then(() => zaken.refresh())
+          "
+        >
+          <label>
+            Zaaktype
+            <select v-model="zaaktype" required>
+              <option
+                v-for="{ url, omschrijvingGeneriek } in zaakTypen.data.page"
+                :key="url"
+                :value="url"
+              >
+                {{ omschrijvingGeneriek }}
+              </option>
+            </select>
+          </label>
+          <label>
+            Identificatie
+            <input required v-model="identificatie" />
+          </label>
+          <label>
+            Toelichting
+            <input required v-model="toelichting" />
+          </label>
+          <button>Maak zaak aan</button>
+        </form>
       </template>
     </tab-list-data-item>
 
@@ -82,50 +125,14 @@
     <tab-list-data-item label="Taken" :data="taken" :disabled="(c) => !c.count">
       <template #success="{ data }">
         <utrecht-heading :level="2"> Taken</utrecht-heading>
-        <klant-taken-overzicht :taken="data.page" />
+        <klant-taken-overzicht :taken="data.page">
+          <template v-slot:zaak="{ url }">
+            <zaak-preview :zaakurl="url"></zaak-preview>
+          </template>
+        </klant-taken-overzicht>
       </template>
     </tab-list-data-item>
   </tab-list>
-  <simple-spinner v-if="createZaak.loading" />
-  <form
-    class="hackathon"
-    v-else-if="
-      zaakTypen.success && persoon.success && persoon.data && organisatieIds[0]
-    "
-    @submit.prevent="
-      createZaak
-        .submit({
-          bronorganisatie: organisatieIds[0],
-          zaaktype, // bijzondere bijstand
-          identificatie, //
-          toelichting, //
-          persoon: persoon.data,
-        })
-        .then(() => zaken.refresh())
-    "
-  >
-    <label>
-      Zaaktype
-      <select v-model="zaaktype" required>
-        <option
-          v-for="{ url, omschrijvingGeneriek } in zaakTypen.data.page"
-          :key="url"
-          :value="url"
-        >
-          {{ omschrijvingGeneriek }}
-        </option>
-      </select>
-    </label>
-    <label>
-      Identificatie
-      <input required v-model="identificatie" />
-    </label>
-    <label>
-      Toelichting
-      <input required v-model="toelichting" />
-    </label>
-    <button>Maak zaak aan</button>
-  </form>
 </template>
 
 <script setup lang="ts">

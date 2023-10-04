@@ -5,13 +5,14 @@ import {
   parsePagination,
   throwIfNotOk,
 } from "@/services";
-import type { KlantTaak } from "./types";
+import type { KlantTaak, ObjectWrapper } from "./types";
+import { formatIsoDate } from "@/helpers/date";
 
 const fetcher = (url: string) =>
   fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((j) => parsePagination(j, (obj) => obj as KlantTaak));
+    .then((j) => parsePagination(j, (obj) => obj as ObjectWrapper<KlantTaak>));
 
 export function useKlantTakenByZaakUrl(zaakUrl: () => string) {
   function getUrl() {
@@ -41,3 +42,23 @@ export function useKlantTakenByBsn(getBsn: () => string) {
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
 }
+
+function createTaak(taak: KlantTaak) {
+  const now = new Date();
+  const startAt = formatIsoDate(now);
+  return fetchLoggedIn("/api/klanttaken/api/v2/objects", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      record: {
+        typeVersion: 1,
+        startAt,
+        data: taak,
+      },
+    }),
+  }).then(throwIfNotOk);
+}
+
+export const useCreateTaak = () => ServiceResult.fromSubmitter(createTaak);

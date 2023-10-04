@@ -12,6 +12,7 @@ export type ZaakDetails = {
   status: string;
   behandelaar: string;
   aanvrager: string;
+  aanvragerBsn: string | undefined;
   fataleDatum?: Date;
   streefDatum?: Date;
   indienDatum?: Date;
@@ -63,6 +64,7 @@ export type NatuurlijkPersoon = {
   voornamen: string;
   voorvoegselGeslachtsnaam: string;
   geslachtsnaam: string;
+  inpBsn: string;
 };
 
 export type Medewerker = {

@@ -19,17 +19,25 @@
           </time>
           <span v-else />
         </summary>
-        <dl v-if="taak.record.data.data">
-          <template
-            v-for="[key, value] in Object.entries(taak.record.data.data)"
-            :key="key"
+        <dl>
+          <slot
+            v-if="taak.record.data.zaak"
+            name="zaak"
+            :url="taak.record.data.zaak"
           >
-            <dt>
-              {{ camelCaseToSentence(key) }}
-            </dt>
-            <dd>
-              {{ value }}
-            </dd>
+          </slot>
+          <template v-if="taak.record.data.data">
+            <template
+              v-for="[key, value] in Object.entries(taak.record.data.data)"
+              :key="key"
+            >
+              <dt>
+                {{ camelCaseToSentence(key) }}
+              </dt>
+              <dd>
+                {{ value }}
+              </dd>
+            </template>
           </template>
         </dl>
       </template>
@@ -39,10 +47,10 @@
 
 <script lang="ts" setup>
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
-import type { KlantTaak } from "./types";
+import type { KlantTaak, ObjectWrapper } from "./types";
 import { camelCaseToSentence } from "@/helpers/string";
 import { formatDateAndTime } from "@/helpers/date";
 defineProps<{
-  taken: KlantTaak[];
+  taken: ObjectWrapper<KlantTaak>[];
 }>();
 </script>
