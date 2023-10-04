@@ -61,7 +61,11 @@
       >
         <template #success="{ data }">
           <utrecht-heading :level="2"> Taken</utrecht-heading>
-          <klant-taken-overzicht :taken="data.page" />
+          <klant-taken-overzicht :taken="data.page">
+            <template v-slot:zaak="{ url }">
+              <zaak-preview :zaakurl="url"></zaak-preview>
+            </template>
+          </klant-taken-overzicht>
         </template>
       </tab-list-data-item>
     </tab-list>
