@@ -14,20 +14,21 @@
       </slot>
     </template>
   </service-data-wrapper>
-  <service-data-wrapper :data="details">
-    <template #success="{ data }">
-      <template v-if="data">
-        <template v-if="data.vraag">
+  <contactmoment-details-context :url="url">
+    <template #details="{ details }">
+      <template v-if="details">
+        <template v-if="details.vraag">
           <dt>Vraag</dt>
-          <dd>{{ data.vraag }}</dd>
+          <dd>{{ details.vraag }}</dd>
         </template>
-        <template v-if="data.specifiekeVraag">
+        <template v-if="details.specifiekeVraag">
           <dt>Specifieke vraag</dt>
-          <dd>{{ data.specifiekeVraag }}</dd>
+          <dd>{{ details.specifiekeVraag }}</dd>
         </template>
       </template>
     </template>
-  </service-data-wrapper>
+  </contactmoment-details-context>
+
   <service-data-wrapper :data="cm">
     <template #success="{ data }">
       <template v-if="data?.tekst">
@@ -39,10 +40,9 @@
 </template>
 <script setup lang="ts">
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import { useContactmomentByUrl, useContactmomentDetails } from "./service";
+import { useContactmomentByUrl } from "./service";
 import { fullName } from "@/helpers/string";
-
+import ContactmomentDetailsContext from "./ContactmomentDetailsContext.vue";
 const props = defineProps<{ url: string }>();
-const details = useContactmomentDetails(() => props.url);
 const cm = useContactmomentByUrl(() => props.url);
 </script>

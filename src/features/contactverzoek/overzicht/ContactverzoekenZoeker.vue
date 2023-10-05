@@ -21,12 +21,11 @@
         <SearchResultsCaption :results="filteredZoekerData" />
 
         <contactverzoeken-overzicht :contactverzoeken="filteredZoekerData">
+          <template #onderwerp="{ contactmomentUrl }">
+            <slot name="onderwerp" :contactmoment-url="contactmomentUrl"></slot>
+          </template>
           <template #contactmoment="{ url }">
-            <contactmoment-preview :url="url">
-              <template #object="{ object }">
-                <zaak-preview :zaakurl="object.object" />
-              </template>
-            </contactmoment-preview>
+            <slot name="contactmoment" :url="url"></slot>
           </template>
         </contactverzoeken-overzicht>
       </table>
@@ -42,18 +41,13 @@
 <script lang="ts" setup>
 import { watch, computed, ref } from "vue";
 import { useSearch } from "./service";
-//import ContactverzoekenOverzicht from "@/features/klant/contactverzoek/ContactverzoekenOverzicht.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
 import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
 import { useRouter } from "vue-router";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
-
-import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
-
-import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
 
 const store = ensureState({
   stateId: "klant-zoeker",

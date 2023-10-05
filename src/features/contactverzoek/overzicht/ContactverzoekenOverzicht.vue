@@ -8,7 +8,9 @@
         <span id="kanaal-header">Behandelaar</span>
       </template>
 
-      <template v-slot:item="{ item: contactverzoek }">
+      <template
+        v-slot:item="{ item: contactverzoek }: { item: Contactverzoek }"
+      >
         <summary>
           <dutch-date
             v-if="contactverzoek.record.data.registratiedatum"
@@ -16,9 +18,11 @@
           />
           <span v-else />
           <span>
-            <contactverzoek-onderwerp
-              :contactverzoek="contactverzoek.record.data"
-            ></contactverzoek-onderwerp>
+            <slot
+              name="onderwerp"
+              :contactmoment-url="contactverzoek.record.data.contactmoment"
+            >
+            </slot>
           </span>
           <span>{{ contactverzoek.record.data.status }}</span>
           <span>{{ contactverzoek.record.data.actor.naam }}</span>
@@ -82,13 +86,12 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import type { Contactverzoek } from "./service";
 import { watch } from "vue";
 import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
-import ContactverzoekOnderwerp from "@/features/contactverzoek/contactverzoekOnderwerp.vue";
+import type { Contactverzoek } from "../types";
 
 const props = defineProps<{
   contactverzoeken: Contactverzoek[];

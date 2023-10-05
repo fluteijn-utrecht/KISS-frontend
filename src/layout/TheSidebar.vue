@@ -68,7 +68,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ContactverzoekFormulier } from "@/features/contactverzoek";
+import { ContactverzoekFormulier } from "@/features/contactverzoek/formulier";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import ContactmomentVragenMenu from "@/features/contactmoment/ContactmomentVragenMenu.vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
