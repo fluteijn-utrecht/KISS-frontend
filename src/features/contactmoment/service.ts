@@ -192,9 +192,10 @@ export function useContactmomentByUrl(getUrl: () => string) {
       return `${url}?${params}`;
     },
     (u) =>
-      fetchLoggedIn(u)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((r) => r as ContactmomentViewModel),
+      fetchLoggedIn(u).then((r) => {
+        if (r.status === 404) return null;
+        throwIfNotOk(r);
+        return r.json() as Promise<ContactmomentViewModel>;
+      }),
   );
 }

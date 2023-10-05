@@ -5,7 +5,7 @@
       <template #onderwerp="{ contactmomentUrl }">
         <contactmoment-details-context :url="contactmomentUrl">
           <template #details="{ details }">
-            {{ details.vraag }}
+            {{ details?.vraag }}
           </template>
         </contactmoment-details-context>
       </template>

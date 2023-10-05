@@ -1,9 +1,7 @@
 <template>
   <service-data-wrapper :data="details">
     <template #success="{ data }">
-      <template v-if="data">
-        <slot name="details" :details="data" />
-      </template>
+      <slot name="details" :details="data" />
     </template>
   </service-data-wrapper>
 </template>

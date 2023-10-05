@@ -1,14 +1,14 @@
 <template>
   <service-data-wrapper :data="cm">
     <template #success="{ data }">
-      <template v-if="data.medewerkerIdentificatie">
+      <template v-if="data?.medewerkerIdentificatie">
         <dt>Aangemaakt door</dt>
         <dd>{{ fullName(data.medewerkerIdentificatie) }}</dd>
       </template>
       <slot
         name="object"
         :object="object"
-        v-for="(object, k) in data.objectcontactmomenten"
+        v-for="(object, k) in data?.objectcontactmomenten ?? []"
         :key="k"
       >
       </slot>
@@ -16,15 +16,13 @@
   </service-data-wrapper>
   <contactmoment-details-context :url="url">
     <template #details="{ details }">
-      <template v-if="details">
-        <template v-if="details.vraag">
-          <dt>Vraag</dt>
-          <dd>{{ details.vraag }}</dd>
-        </template>
-        <template v-if="details.specifiekeVraag">
-          <dt>Specifieke vraag</dt>
-          <dd>{{ details.specifiekeVraag }}</dd>
-        </template>
+      <template v-if="details?.vraag">
+        <dt>Vraag</dt>
+        <dd>{{ details.vraag }}</dd>
+      </template>
+      <template v-if="details?.specifiekeVraag">
+        <dt>Specifieke vraag</dt>
+        <dd>{{ details.specifiekeVraag }}</dd>
       </template>
     </template>
   </contactmoment-details-context>
