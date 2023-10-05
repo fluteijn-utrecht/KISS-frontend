@@ -85,31 +85,18 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { watch } from "vue";
 import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
 import type { Contactverzoek } from "../types";
 
-const props = defineProps<{
+defineProps<{
   contactverzoeken: Contactverzoek[];
 }>();
 
 const capitalizeFirstLetter = (val: string) =>
   `${val?.[0]?.toLocaleUpperCase() || ""}${val?.substring(1) || ""}`;
-
-const activeContactverzoeken = ref([] as boolean[]);
-
-watch(
-  () => props.contactverzoeken.length - activeContactverzoeken.value.length,
-  (diff) => {
-    for (let index = 0; index < diff; index++) {
-      activeContactverzoeken.value.push(false);
-    }
-  },
-);
 </script>
 
 <style scoped>
