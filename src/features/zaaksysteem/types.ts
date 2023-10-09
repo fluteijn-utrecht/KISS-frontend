@@ -16,6 +16,7 @@ export type ZaakDetails = {
   indienDatum?: Date;
   registratieDatum?: Date;
   self: string;
+  url: string;
   documenten?: ZaakDocument[];
   omschrijving: string;
 };
