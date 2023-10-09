@@ -8,7 +8,6 @@ import {
 } from "@/services";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
-import type { Ref } from "vue";
 import { fullName } from "@/helpers/string";
 import type {
   ContactVerzoekVragenSet,
@@ -18,6 +17,7 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
+import type { NewContactverzoek } from "../types";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
@@ -26,44 +26,6 @@ type ServerContactVerzoekVragenSet = {
   titel: string;
   jsonVragen: string;
   afdelingId: string;
-};
-
-type NewContactverzoek = {
-  record: {
-    typeVersion: number;
-    startAt: string;
-    data: {
-      status: string;
-      contactmoment: string;
-      registratiedatum: string;
-      datumVerwerkt?: string;
-      toelichting?: string;
-      actor: {
-        identificatie: string;
-        soortActor: string;
-        naam: string;
-      };
-      betrokkene: {
-        rol: "klant";
-        klant?: string;
-        persoonsnaam?: {
-          voornaam?: string;
-          voorvoegselAchternaam?: string;
-          achternaam?: string;
-        };
-        organisatie?: string;
-        digitaleAdressen: {
-          adres: string;
-          soortDigitaalAdres?: string;
-          omschrijving?: string;
-        }[];
-      };
-    };
-  };
-};
-
-export type Contactverzoek = NewContactverzoek & {
-  url: string;
 };
 
 export function saveContactverzoek({
@@ -189,29 +151,6 @@ export function saveContactverzoek({
   })
     .then(throwIfNotOk)
     .then((r) => r.json() as Promise<{ url: string }>);
-}
-
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  page: Ref<number>,
-) {
-  function getUrl() {
-    if (!id.value) return "";
-    const url = new URL("/api/internetaak/api/v2/objects", location.href);
-    url.searchParams.set("ordering", "-record__data__registratiedatum");
-    url.searchParams.set("pageSize", "10");
-    url.searchParams.set("page", page.value.toString());
-    url.searchParams.set("data_attrs", `betrokkene__klant__exact__${id.value}`);
-    return url.toString();
-  }
-
-  const fetchContactverzoeken = (url: string) =>
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((r) => parsePagination(r, (v) => v as Contactverzoek));
-
-  return ServiceResult.fromFetcher(getUrl, fetchContactverzoeken);
 }
 
 interface Groep {
