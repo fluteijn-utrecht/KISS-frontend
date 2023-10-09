@@ -32,10 +32,12 @@ const props = defineProps<{
   afdelingId?: string; //de afdeling waarvan vragensets getoond mogen worden in de keuzelijst
   vragenSets: ContactVerzoekVragenSet[]; //alle vragensets
   modelValue?: ContactVerzoekVragenSet; //de (voor)geselecteerde vragenset
+  prefill: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "update:modelValue", v?: ContactVerzoekVragenSet): void;
+  (e: "change"): void;
 }>();
 
 //subset van vragensets horende bij de geselecteerde afdeling
@@ -57,7 +59,7 @@ watchEffect(() => {
 watch(
   afdelingVragenSets,
   (v) => {
-    if (v && v.length > 0 && !vragenSetId.value) {
+    if (v && v.length > 0 && !vragenSetId.value && props.prefill) {
       vragenSetId.value = v[0].id;
       emit("update:modelValue", v[0]);
     }
@@ -82,5 +84,6 @@ const setOnderwerp = () => {
     return x.id === vragenSetId?.value;
   });
   emit("update:modelValue", vragenset);
+  emit("change");
 };
 </script>

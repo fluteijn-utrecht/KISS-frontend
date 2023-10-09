@@ -51,6 +51,7 @@ export type ContactmomentContactVerzoek = {
   interneToelichting?: string;
   vragenSetId?: number;
   contactVerzoekVragenSet?: ContactVerzoekVragenSet;
+  vragenSetChanged: boolean;
   isActive?: boolean;
 };
 
@@ -114,6 +115,7 @@ function initVraag(): Vraag {
       interneToelichting: "",
       isActive: false,
       contactVerzoekVragenSet: undefined,
+      vragenSetChanged: false,
     },
     startdatum: new Date().toISOString(),
     kanaal: "",

@@ -102,7 +102,9 @@
           <contactverzoek-onderwerpen
             :vragenSets="data"
             :afdelingId="form?.afdeling?.id"
+            :prefill="!form.vragenSetChanged"
             v-model:modelValue="form.contactVerzoekVragenSet"
+            @change="form.vragenSetChanged = true"
           />
 
           <!-- Dynamic fields based on selected Onderwerp -->
@@ -305,6 +307,7 @@ const setActive = () => {
 
 const onUpdateAfdeling = () => {
   form.value.contactVerzoekVragenSet = undefined;
+  form.value.vragenSetChanged = false;
   setActive();
 };
 
