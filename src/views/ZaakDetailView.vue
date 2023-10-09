@@ -10,9 +10,18 @@
   <template v-if="zaak.success">
     <back-link />
 
-    <utrecht-heading :level="1"
-      >Zaak {{ zaak.data.identificatie }}</utrecht-heading
-    >
+    <header class="zaak-header">
+      <utrecht-heading :level="1"
+        >Zaak {{ zaak.data.identificatie }}</utrecht-heading
+      >
+      <a
+        v-if="deeplink"
+        :href="deeplink"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Open in zaaksysteem</a
+      >
+    </header>
 
     <tab-list v-model="activeTab">
       <tab-list-item label="Algemeen">
@@ -60,6 +69,7 @@ import {
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
+import { useZaaksysteemDeeplink } from "@/features/zaaksysteem/deeplink";
 
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
@@ -71,6 +81,10 @@ const zaakUrl = computed(() =>
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
 const activeTab = ref("");
+
+const deeplink = useZaaksysteemDeeplink(() =>
+  zaak.success ? zaak.data : undefined,
+);
 
 watch(
   () => zaak.success && zaak.data,
@@ -84,3 +98,12 @@ watch(
   { immediate: true },
 );
 </script>
+
+<style lang="scss" scoped>
+.zaak-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-default);
+  align-items: center;
+}
+</style>
