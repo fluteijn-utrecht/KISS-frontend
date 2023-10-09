@@ -7,7 +7,7 @@ import {
 import type { ZaakDetails } from "./types";
 import { computed } from "vue";
 
-const useZaaksysteemDeeplinkConfig = () =>
+export const useZaaksysteemDeeplinkConfig = () =>
   ServiceResult.fromFetcher("/api/zaaksysteem/deeplinkconfig", (u) =>
     fetchLoggedIn(u)
       .then(throwIfNotOk)

@@ -21,7 +21,7 @@ namespace Kiss.Bff.Test
 
             var dict = new Dictionary<string, string> 
             {
-                ["ZAAKSYSTEEM_DEEPLINK_BASE_URL"] = baseUrl,
+                ["ZAAKSYSTEEM_DEEPLINK_URL"] = baseUrl,
                 ["ZAAKSYSTEEM_DEEPLINK_PROPERTY"] = idProperty,
             };
 

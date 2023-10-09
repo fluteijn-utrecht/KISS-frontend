@@ -15,8 +15,15 @@
         >Zaak {{ zaak.data.identificatie }}</utrecht-heading
       >
       <a
-        v-if="deeplink"
-        :href="deeplink"
+        v-if="
+          deeplinkConfig.success &&
+          deeplinkConfig.data &&
+          (zaak.data as any)[deeplinkConfig.data.idProperty]
+        "
+        :href="
+          deeplinkConfig.data.baseUrl +
+          (zaak.data as any)[deeplinkConfig.data.idProperty]
+        "
         target="_blank"
         rel="noopener noreferrer"
         >Open in zaaksysteem</a
@@ -69,7 +76,7 @@ import {
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import { useZaaksysteemDeeplink } from "@/features/zaaksysteem/deeplink";
+import { useZaaksysteemDeeplinkConfig } from "@/features/zaaksysteem/deeplink";
 
 const props = defineProps<{ zaakId: string }>();
 const contactmomentStore = useContactmomentStore();
@@ -82,9 +89,7 @@ const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
 const activeTab = ref("");
 
-const deeplink = useZaaksysteemDeeplink(() =>
-  zaak.success ? zaak.data : undefined,
-);
+const deeplinkConfig = useZaaksysteemDeeplinkConfig();
 
 watch(
   () => zaak.success && zaak.data,

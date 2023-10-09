@@ -13,7 +13,7 @@ namespace Kiss.Bff.Zaaksysteem
         }
 
         [HttpGet("api/zaaksysteem/deeplinkconfig")]
-        public IActionResult Get() => Ok(new ZaaksysteemDeeplinkConfig(_configuration["ZAAKSYSTEEM_DEEPLINK_BASE_URL"], _configuration["ZAAKSYSTEEM_DEEPLINK_PROPERTY"]));
+        public IActionResult Get() => Ok(new ZaaksysteemDeeplinkConfig(_configuration["ZAAKSYSTEEM_DEEPLINK_URL"], _configuration["ZAAKSYSTEEM_DEEPLINK_PROPERTY"]));
     }
 
     public record ZaaksysteemDeeplinkConfig(string BaseUrl, string IdProperty);
