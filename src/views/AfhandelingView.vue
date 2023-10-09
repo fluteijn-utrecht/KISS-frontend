@@ -425,7 +425,7 @@ import { nanoid } from "nanoid";
 import {
   ContactverzoekFormulier,
   saveContactverzoek,
-} from "@/features/contactverzoek";
+} from "@/features/contactverzoek/formulier";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
 import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
