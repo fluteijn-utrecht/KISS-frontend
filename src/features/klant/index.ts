@@ -7,7 +7,6 @@ export { default as BedrijfZoeker } from "./bedrijf/BedrijfZoeker.vue";
 export { default as HandelsregisterGegevens } from "./bedrijf/HandelsregisterGegevens.vue";
 
 export { default as KlantDetails } from "./KlantDetails.vue";
-export { default as ContactverzoekZoeker } from "./contactverzoek/ContactverzoekenZoeker.vue";
 
 export { usePersoonByBsn } from "./persoon/service";
 export { useBedrijfByVestigingsnummer } from "./bedrijf/service";
