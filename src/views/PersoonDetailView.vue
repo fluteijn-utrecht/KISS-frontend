@@ -52,6 +52,13 @@
         <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
         <contactverzoeken-overzicht :contactverzoeken="data.page">
+          <template #onderwerp="{ contactmomentUrl }">
+            <contactmoment-details-context :url="contactmomentUrl">
+              <template #details="{ details }">
+                {{ details?.vraag || details?.specifiekeVraag }}
+              </template>
+            </contactmoment-details-context>
+          </template>
           <template #contactmoment="{ url }">
             <contactmoment-preview :url="url">
               <template #object="{ object }">
@@ -80,11 +87,12 @@ import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import { useContactverzoekenByKlantId } from "@/features/contactverzoek";
-import ContactverzoekenOverzicht from "@/features/contactverzoek/ContactverzoekenOverzicht.vue";
+import { useContactverzoekenByKlantId } from "@/features/contactverzoek/overzicht/service";
+import ContactverzoekenOverzicht from "@/features/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
+import ContactmomentDetailsContext from "@/features/contactmoment/ContactmomentDetailsContext.vue";
 
 const activeTab = ref("");
 
