@@ -34,10 +34,12 @@ namespace Kiss.Bff.ZaakGerichtWerken
             var secretKey = _apiKey; // "een sleutel van minimaal 16 karakters";
             var client_id = _clientId;
             var iss = _clientId;
-            var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var user_id = userId ?? string.Empty;
             var user_representation = userRepresentation ?? string.Empty;
-
+            var now = DateTimeOffset.UtcNow;
+            // one minute leeway to account for clock differences between machines
+            var issuedAt = now.AddMinutes(-1);
+            var iat = issuedAt.ToUnixTimeSeconds();
 
             var claims = new Dictionary<string, object>
                 {
@@ -52,9 +54,11 @@ namespace Kiss.Bff.ZaakGerichtWerken
             var key = Encoding.UTF8.GetBytes(secretKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                IssuedAt = issuedAt.DateTime, 
+                NotBefore = issuedAt.DateTime, 
                 Claims = claims,
                 Subject = new ClaimsIdentity(),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = now.AddHours(1).DateTime,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
