@@ -68,3 +68,12 @@ To resolve this, follow these steps:
 
 Now, you should be able to add new migrations. The kiss.bff project contains the migrations, and setting this project as your startup project should resolve the above error.
 Make sure to switch back to the original startup project configuration after adding the migrations, if required for your development process.
+
+## OIDC authentication (Azure AD)
+An OIDC identity provider is required to login to the application.
+The secret that is used in the connection must be renewed periodically if Azure AD is used as the identity provider.
+A redirectloop after log in is an idication the secret has expired
+1. go to the appregistration.
+1. go to certificates en secrets.
+1. Add a secret (the value is generated automatically) and copy the value.
+1. update de value of the OIDC_CLIENT_SECRET in your env.local (OIDC_CLIENT_ID is not affected)
