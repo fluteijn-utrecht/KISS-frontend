@@ -68,3 +68,12 @@ To resolve this, follow these steps:
 
 Now, you should be able to add new migrations. The kiss.bff project contains the migrations, and setting this project as your startup project should resolve the above error.
 Make sure to switch back to the original startup project configuration after adding the migrations, if required for your development process.
+
+## OIDC koppeling (Azure AD)
+Om in te kunnen loggen is er een OIDC identity provider nodig.
+Bij gebruik van Azure AD dient het voor de koppeling gebruikte secret periodiek vernieuwd te worden.
+Een redirectloop bij inloggen is indicatie dat dit het geval is
+1. ga naar de appregistration.
+1. ga naar certificates en secrets.
+1. voeg een secret toe (de waarde wordt automatisch gegenereerd) en kopieer de waarde.
+1. update de waarde van OIDC_CLIENT_SECRET in je env.local (OIDC_CLIENT_ID verandert niet)
