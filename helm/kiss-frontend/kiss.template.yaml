@@ -1,7 +1,5 @@
 image:
   pullPolicy: Always
-config:
-  organizationIds: ["999990639"]
 ingress:
   enabled: true
   className: "nginx"
