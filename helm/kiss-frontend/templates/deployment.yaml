@@ -51,26 +51,14 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: kiss-config
+            - secretRef:
+                name: kiss-secrets
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
-            # Referencing ConfigMap
-            {{- range $key, $value := .Values.env.config }}
-            - name: {{ $key }}
-              valueFrom:
-                configMapKeyRef:
-                  name: kiss-config
-                  key: {{ $key }}
-            {{- end }}
-            # Referencing Secret
-            {{- range $key, $_ := .Values.env.secrets }}
-            - name: {{ $key }}
-              valueFrom:
-                secretKeyRef:
-                  name: kiss-secrets
-                  key: {{ $key }}
-            {{- end }}
-
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
