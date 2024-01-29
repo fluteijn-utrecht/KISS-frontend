@@ -51,6 +51,9 @@ namespace Microsoft.AspNetCore.Mvc
 
             foreach (var item in responseMessage.Headers)
             {
+                // deze header geeft aan of de content 'chunked' is. maar die waarde kunnen we niet overnemen,
+                // die is namelijk afhankelijk van hoe we zelf hieronder de eigen response opbouwen.
+                if (item.Key.Equals("transfer-encoding", StringComparison.OrdinalIgnoreCase)) continue;
                 proxiedResponse.Headers[item.Key] = new(item.Value.ToArray());
             }
 
