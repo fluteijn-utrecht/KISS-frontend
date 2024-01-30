@@ -1,14 +1,12 @@
 image:
   pullPolicy: Always
-config:
-  organizationIds: ["999990639"]
 ingress:
   enabled: true
   className: "nginx"
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: 32k #ivm azure open id connect > nginx default buffer 8k te laag
   hosts:
-    - host: dev.kiss-demo.nl
+    - host: www.my-website.nl
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -16,38 +14,6 @@ ingress:
           servicePort: 8080
   tls:
     - hosts:
-        - dev.kiss-demo.nl
+        - www.my-website.nl
       secretName: wildcard-kiss-tls
-elasticstack:
-  elasticHost: https://elastic.dev.kiss-demo.nl
-  kibanaHost: https://kibana.dev.kiss-demo.nl
-  elasticsearch:
-    ingress:
-      hosts:
-        - host: elastic.dev.kiss-demo.nl
-          paths:
-            - path: /
-      tls:
-        - hosts:
-            - elastic.dev.kiss-demo.nl
-          secretName: wildcard-kiss-tls
-    roles:
-      data: "true"
-      ingest: "true"
-      master: "true"
-  kibana:
-    elasticsearchHost: https://elasticsearch-master:9200
-    ingress:
-      hosts:
-        - host: kibana.dev.kiss-demo.nl
-          paths:
-            - path: /
-      tls:
-        - hosts:
-            - kibana.dev.kiss-demo.nl
-          secretName: wildcard-kiss-tls
-  credentials:
-    username: elastic
-    password: password
-
 cronjobs: []
