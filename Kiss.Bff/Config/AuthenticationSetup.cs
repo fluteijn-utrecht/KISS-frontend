@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using System.Text.Json.Nodes;
-using AngleSharp.Io;
 using IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
@@ -48,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class AuthenticationSetupExtensions
     {
         private const string SignOutCallback = "/signout-callback-oidc";
-        private const string CookieSchemeName = "cookieScheme";
+        public const string CookieSchemeName = "cookieScheme";
         private const string ChallengeSchemeName = "challengeScheme";
 
         public static IServiceCollection AddKissAuth(this IServiceCollection services, string authority, string clientId, string clientSecret, string klantcontactmedewerkerRole, string redacteurRole)
@@ -61,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var authBuilder = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieSchemeName;
-                if(!string.IsNullOrWhiteSpace(authority))
+                if (!string.IsNullOrWhiteSpace(authority))
                 {
                     options.DefaultChallengeScheme = ChallengeSchemeName;
                 }
@@ -198,7 +197,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var isLoggedIn = httpContext.User.Identity?.IsAuthenticated ?? false;
             var email = httpContext.User.GetEmail();
             var isRedacteur = httpContext.RequestServices.GetService<IsRedacteur>()?.Invoke(httpContext.User) ?? false;
-            
+
             var organisatieIds = httpContext.RequestServices
                 .GetService<IConfiguration>()
                 ?["ORGANISATIE_IDS"]

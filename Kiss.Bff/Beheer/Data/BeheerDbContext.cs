@@ -1,6 +1,7 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
+using Kiss.Bff.Config;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
@@ -50,6 +51,8 @@ namespace Kiss.Bff.Beheer.Data
             modelBuilder.Entity<ContactVerzoekVragenSet>()
                 .Property(p => p.JsonVragen)
                 .HasColumnType("json");
+
+            modelBuilder.AddTicketStore();
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;
