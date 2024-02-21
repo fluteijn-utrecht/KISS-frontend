@@ -42,13 +42,20 @@ try
         Log.Fatal("Environment variable {variableKey} is missing", AuthorityKey);
     }
 
-    builder.Services.AddKissAuth(
-        authority,
-        builder.Configuration["OIDC_CLIENT_ID"],
-        builder.Configuration["OIDC_CLIENT_SECRET"],
-        builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"],
-        builder.Configuration["OIDC_REDACTEUR_ROLE"]
-    );
+    builder.Services.AddKissAuth(options => 
+    {
+        options.Authority = authority;
+        options.ClientId = builder.Configuration["OIDC_CLIENT_ID"];
+        options.ClientSecret = builder.Configuration["OIDC_CLIENT_SECRET"];
+        options.KlantcontactmedewerkerRole = builder.Configuration["OIDC_KLANTCONTACTMEDEWERKER_ROLE"];
+        options.RedacteurRole = builder.Configuration["OIDC_REDACTEUR_ROLE"];
+        options.MedewerkerIdentificatieClaimType = builder.Configuration["OIDC_MEDEWERKER_IDENTIFICATIE_CLAIM"];
+        if(int.TryParse(builder.Configuration["OIDC_MEDEWERKER_IDENTIFICATIE_TRUNCATE"], out var truncate))
+        {
+            options.TruncateMedewerkerIdentificatie = truncate;
+        }
+    });
+      
     builder.Services.AddKissProxy();
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);

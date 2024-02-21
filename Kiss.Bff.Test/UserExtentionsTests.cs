@@ -140,13 +140,13 @@ namespace Kiss.Bff.Test
             // Arrange
             var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
-                new Claim(JwtClaimTypes.Email, "test@example.com"),
+                new Claim(KissClaimTypes.KissUserNameClaimType, "test@example.com"),
                 new Claim(JwtClaimTypes.FamilyName, "DoeLastName"),
                 new Claim(JwtClaimTypes.GivenName, "JohnFirstName"),
             }));
 
             // Act
-            var medewerkerIdentificatie = user.GetMedewerkerIdentificatie();
+            var medewerkerIdentificatie = user.GetMedewerkerIdentificatie(null);
 
             // Assert
             Assert.AreEqual("DoeLastName", medewerkerIdentificatie["achternaam"]?.GetValue<string>());

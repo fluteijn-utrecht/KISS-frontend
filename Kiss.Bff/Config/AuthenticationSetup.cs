@@ -14,6 +14,11 @@ namespace Kiss
         public const string RedactiePolicy = "RedactiePolicy";
     }
 
+    public static class KissClaimTypes
+    {
+        public const string KissUserNameClaimType = "KISS:UserName";
+    }
+
     public static class UserExtensions
     {
         private const string ObjectIdentitifier = "http://schemas.microsoft.com/identity/claims/objectidentifier";
@@ -21,16 +26,22 @@ namespace Kiss
         public static string? GetEmail(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.Email) ?? user?.FindFirstValue(JwtClaimTypes.PreferredUserName);
         public static string? GetLastName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.FamilyName) ?? user?.FindFirstValue(JwtClaimTypes.Name) ?? user?.Identity?.Name;
         public static string? GetFirstName(this ClaimsPrincipal? user) => user?.FindFirstValue(JwtClaimTypes.GivenName);
-        public static JsonObject GetMedewerkerIdentificatie(this ClaimsPrincipal? user)
+        public static string? GetUserName(this ClaimsPrincipal? user) => user?.FindFirstValue(KissClaimTypes.KissUserNameClaimType);
+        public static JsonObject GetMedewerkerIdentificatie(this ClaimsPrincipal? user, int? truncate)
         {
-            var email = user?.GetEmail();
+            var userName = user?.GetUserName();
             var lastName = user?.GetLastName();
             var firstName = user?.GetFirstName();
+
+            if (truncate.HasValue)
+            {
+                userName = Truncate(userName, truncate.Value);
+            }
 
             return new JsonObject
             {
                 ["achternaam"] = Truncate(lastName, 200) ?? "",
-                ["identificatie"] = Truncate(email, 24) ?? "",
+                ["identificatie"] = userName ?? "",
                 ["voorletters"] = Truncate(firstName, 20) ?? "",
                 ["voorvoegselAchternaam"] = "",
             };
@@ -44,6 +55,18 @@ namespace Kiss
 namespace Microsoft.Extensions.DependencyInjection
 {
     public delegate bool IsRedacteur(ClaimsPrincipal? user);
+    public delegate JsonObject? GetMedewerkerIdentificatie();
+
+    public class KissAuthOptions
+    {
+        public string Authority { get; set; } = "";
+        public string ClientId { get; set; } = "";
+        public string ClientSecret { get; set; } = "";
+        public string? KlantcontactmedewerkerRole { get; set; }
+        public string? RedacteurRole { get; set; }
+        public string? MedewerkerIdentificatieClaimType { get; set; }
+        public int? TruncateMedewerkerIdentificatie { get; set; }
+    }
 
     public static class AuthenticationSetupExtensions
     {
@@ -51,17 +74,28 @@ namespace Microsoft.Extensions.DependencyInjection
         private const string CookieSchemeName = "cookieScheme";
         private const string ChallengeSchemeName = "challengeScheme";
 
-        public static IServiceCollection AddKissAuth(this IServiceCollection services, string authority, string clientId, string clientSecret, string klantcontactmedewerkerRole, string redacteurRole)
+        public static IServiceCollection AddKissAuth(this IServiceCollection services, Action<KissAuthOptions> setOptions)
         {
-            klantcontactmedewerkerRole ??= "Klantcontactmedewerker";
-            redacteurRole ??= "Redacteur";
+            var authOptions = new KissAuthOptions();
+            setOptions(authOptions);
+
+            var klantcontactmedewerkerRole = string.IsNullOrWhiteSpace(authOptions.KlantcontactmedewerkerRole) ? "Klantcontactmedewerker" : authOptions.KlantcontactmedewerkerRole;
+            var redacteurRole = string.IsNullOrWhiteSpace(authOptions.RedacteurRole) ? "Redacteur" : authOptions.RedacteurRole;
+            var userNameClaimType = string.IsNullOrWhiteSpace(authOptions.MedewerkerIdentificatieClaimType) ? "email" : authOptions.MedewerkerIdentificatieClaimType;
+
+
 
             services.AddSingleton<IsRedacteur>(user => user?.IsInRole(redacteurRole) ?? false);
+            services.AddSingleton<GetMedewerkerIdentificatie>(s =>
+            {
+                var accessor = s.GetRequiredService<IHttpContextAccessor>();
+                return () => accessor.HttpContext?.User?.GetMedewerkerIdentificatie(authOptions.TruncateMedewerkerIdentificatie);
+            });
 
             var authBuilder = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieSchemeName;
-                if(!string.IsNullOrWhiteSpace(authority))
+                if(!string.IsNullOrWhiteSpace(authOptions.Authority))
                 {
                     options.DefaultChallengeScheme = ChallengeSchemeName;
                 }
@@ -79,7 +113,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.Events.OnRedirectToLogin = HandleLoggedOut;
             });
 
-            if (!string.IsNullOrWhiteSpace(authority))
+            if (!string.IsNullOrWhiteSpace(authOptions.Authority))
             {
                 authBuilder.AddOpenIdConnect(ChallengeSchemeName, options =>
                 {
@@ -92,14 +126,14 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.CorrelationCookie.SameSite = SameSiteMode.None;
                     options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
 
-                    options.Authority = authority;
-                    options.ClientId = clientId;
-                    options.ClientSecret = clientSecret;
+                    options.Authority = authOptions.Authority;
+                    options.ClientId = authOptions.ClientId;
+                    options.ClientSecret = authOptions.ClientSecret;
                     options.SignedOutRedirectUri = SignOutCallback;
                     options.ResponseType = OidcConstants.ResponseTypes.Code;
                     options.UsePkce = true;
                     options.GetClaimsFromUserInfoEndpoint = true;
-
+                    options.ClaimActions.MapJsonKey(KissClaimTypes.KissUserNameClaimType, userNameClaimType);
                     options.Scope.Clear();
                     options.Scope.Add(OidcConstants.StandardScopes.OpenId);
                     options.Scope.Add(OidcConstants.StandardScopes.Profile);

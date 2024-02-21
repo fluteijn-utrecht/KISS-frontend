@@ -54,11 +54,17 @@ namespace Kiss.Bff.Test
             var clientId = "124567890.87654321";
             var userId = "blablaFakeUserId";
             var userRepresentation = "blablaFakeUserRepresentation";
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim(KissClaimTypes.KissUserNameClaimType, userId),
+                new Claim(ClaimTypes.Name, userRepresentation)
+            });
+            var user = new ClaimsPrincipal(identity);
 
             var tokenProvider = new ZgwTokenProvider(apiKey, clientId);
 
             // Act
-            var token = tokenProvider.GenerateToken(userId, userRepresentation);
+            var token = tokenProvider.GenerateToken(user);
 
             // Assert
             Assert.IsNotNull(token);
