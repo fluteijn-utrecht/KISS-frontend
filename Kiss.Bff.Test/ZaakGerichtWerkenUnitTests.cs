@@ -73,7 +73,6 @@ namespace Kiss.Bff.Test
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = clientId, // Set the valid issuer
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiKey)),
-                ClockSkew = TimeSpan.Zero
             };
 
             // Validate the token
