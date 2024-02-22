@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Config;
 using Kiss.Bff.ZaakGerichtWerken;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Http;

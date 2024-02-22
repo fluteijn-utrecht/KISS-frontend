@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using IdentityModel;
+using Kiss.Bff.Config;
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Transforms;
 

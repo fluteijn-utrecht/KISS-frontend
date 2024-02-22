@@ -33,7 +33,7 @@ namespace Kiss.Bff.InterneTaak
             return new ProxyResult(() =>
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(node) };
-                _config.ApplyHeaders(request.Headers);
+                _config.ApplyHeaders(request.Headers, User);
                 return request;
             });
         }

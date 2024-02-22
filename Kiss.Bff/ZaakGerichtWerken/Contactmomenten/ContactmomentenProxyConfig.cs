@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Security.Claims;
 using IdentityModel;
+using Kiss.Bff.Config;
 using Yarp.ReverseProxy.Transforms;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten

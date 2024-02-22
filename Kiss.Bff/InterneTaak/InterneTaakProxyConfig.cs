@@ -1,24 +1,26 @@
 ﻿using System.Net.Http.Headers;
+using System.Security.Claims;
+using Kiss.Bff.Config;
 using Yarp.ReverseProxy.Transforms;
 
 namespace Kiss.Bff.InterneTaak
 {
     public static class InterneTaakExtensions
     {
-        public static IServiceCollection AddInterneTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl)
-            => services.AddSingleton(new InterneTaakProxyConfig(destination, token, objectTypeUrl))
+        public static IServiceCollection AddInterneTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl, string? clientId)
+            => services.AddSingleton(new InterneTaakProxyConfig(destination, token, objectTypeUrl, clientId))
             .AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<InterneTaakProxyConfig>());
     }
 
     public class InterneTaakProxyConfig : IKissProxyRoute
     {
-        private readonly AuthenticationHeaderValue _authHeader;
+        private readonly SecretOrBearerAuthenticationProvider _auth;
 
-        public InterneTaakProxyConfig(string destination, string token, string objectTypeUrl)
+        public InterneTaakProxyConfig(string destination, string token, string objectTypeUrl, string? clientId)
         {
             Destination = destination;
             ObjectTypeUrl = objectTypeUrl;
-            _authHeader = new AuthenticationHeaderValue("Token", token);
+            _auth = new SecretOrBearerAuthenticationProvider(token, clientId);
         }
 
         public string Route => "internetaak";
@@ -29,7 +31,7 @@ namespace Kiss.Bff.InterneTaak
 
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
-            ApplyHeaders(context.ProxyRequest.Headers);
+            ApplyHeaders(context.ProxyRequest.Headers, context.HttpContext.User);
             var request = context.HttpContext.Request;
             var isObjectsEndpoint = request.Path.Value?.AsSpan().TrimEnd('/').EndsWith("objects") ?? false;
             if (request.Method == HttpMethods.Get && isObjectsEndpoint)
@@ -39,9 +41,9 @@ namespace Kiss.Bff.InterneTaak
             return new();
         }
 
-        public void ApplyHeaders(HttpRequestHeaders headers)
+        public void ApplyHeaders(HttpRequestHeaders headers, ClaimsPrincipal user)
         {
-            headers.Authorization = _authHeader;
+            _auth.SetAuthenticationHeader(headers, user);
             headers.Add("Content-Crs", "EPSG:4326");
         }
     }

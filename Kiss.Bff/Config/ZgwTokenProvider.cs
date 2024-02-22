@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Kiss.Bff.ZaakGerichtWerken
+namespace Kiss.Bff.Config
 {
 
     public static class ZgwTokenExtensions
@@ -54,8 +54,8 @@ namespace Kiss.Bff.ZaakGerichtWerken
             var key = Encoding.UTF8.GetBytes(secretKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                IssuedAt = issuedAt.DateTime, 
-                NotBefore = issuedAt.DateTime, 
+                IssuedAt = issuedAt.DateTime,
+                NotBefore = issuedAt.DateTime,
                 Claims = claims,
                 Subject = new ClaimsIdentity(),
                 Expires = now.AddHours(1).DateTime,

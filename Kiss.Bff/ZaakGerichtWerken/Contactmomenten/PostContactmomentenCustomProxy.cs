@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
+using Kiss.Bff.Config;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
