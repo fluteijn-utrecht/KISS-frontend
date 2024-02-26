@@ -24,7 +24,7 @@
             <a
               :href="document.downloadUrl"
               target="_blank"
-              :download="document.titel"
+              :download="document.bestandsnaam || document.titel"
               >> Downloaden</a
             >
           </td>
