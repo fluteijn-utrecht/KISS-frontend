@@ -17,7 +17,7 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
-import type { NewContactverzoek } from "../types";
+import type { ContactverzoekData, NewContactverzoek } from "../types";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
@@ -31,16 +31,45 @@ type ServerContactVerzoekVragenSet = {
 export function saveContactverzoek({
   data,
   contactmomentUrl,
-  klantUrl,
 }: {
-  data: ContactmomentContactVerzoek;
+  data: Omit<ContactverzoekData, "contactmoment">;
   contactmomentUrl: string;
   klantUrl?: string;
 }) {
   const url = "/api/internetaak/api/v2/objects";
+
+  const body: NewContactverzoek = {
+    record: {
+      typeVersion: 1,
+      startAt: formatIsoDate(data.registratiedatum),
+      data: {
+        ...data,
+        contactmoment: contactmomentUrl,
+      },
+    },
+  };
+
+  return fetchLoggedIn(url, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  })
+    .then(throwIfNotOk)
+    .then((r) => r.json() as Promise<{ url: string }>);
+}
+
+export function mapContactverzoekData({
+  data,
+  klantUrl,
+}: {
+  data: ContactmomentContactVerzoek;
+  klantUrl?: string;
+}): Omit<ContactverzoekData, "contactmoment"> {
   const now = new Date();
   const registratiedatum = now.toISOString();
-  const startAt = formatIsoDate(now);
   const digitaleAdressen = [] as any[];
   if (data.emailadres) {
     digitaleAdressen.push({
@@ -114,43 +143,25 @@ export function saveContactverzoek({
       }
     : organisatorischeEenheid;
 
-  const body: NewContactverzoek = {
-    record: {
-      typeVersion: 1,
-      startAt,
-      data: {
-        status: "te verwerken",
-        contactmoment: contactmomentUrl,
-        registratiedatum,
-        toelichting:
-          data.interneToelichting +
-          (vragenToelichting ? "\n\n" + vragenToelichting : ""),
-        actor,
-        betrokkene: {
-          rol: "klant",
-          klant: klantUrl,
-          persoonsnaam: {
-            voornaam: data.voornaam,
-            voorvoegselAchternaam: data.voorvoegselAchternaam,
-            achternaam: data.achternaam,
-          },
-          organisatie: data.organisatie,
-          digitaleAdressen,
-        },
+  return {
+    status: "te verwerken",
+    registratiedatum,
+    toelichting:
+      data.interneToelichting +
+      (vragenToelichting ? "\n\n" + vragenToelichting : ""),
+    actor,
+    betrokkene: {
+      rol: "klant",
+      klant: klantUrl,
+      persoonsnaam: {
+        voornaam: data.voornaam,
+        voorvoegselAchternaam: data.voorvoegselAchternaam,
+        achternaam: data.achternaam,
       },
+      organisatie: data.organisatie,
+      digitaleAdressen,
     },
   };
-
-  return fetchLoggedIn(url, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  })
-    .then(throwIfNotOk)
-    .then((r) => r.json() as Promise<{ url: string }>);
 }
 
 interface Groep {
