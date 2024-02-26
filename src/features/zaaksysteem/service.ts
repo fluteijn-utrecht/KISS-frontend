@@ -369,6 +369,7 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     id: rawDocumenten.identificatie,
     titel: rawDocumenten.titel,
     bestandsomvang: rawDocumenten.bestandsomvang,
+    bestandsnaam: rawDocumenten.bestandsnaam,
     creatiedatum: new Date(rawDocumenten.creatiedatum),
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,

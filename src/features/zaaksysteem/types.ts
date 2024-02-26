@@ -31,6 +31,7 @@ export interface ZaakDocument {
   id: string;
   titel: string;
   bestandsomvang: number;
+  bestandsnaam: string;
   creatiedatum: Date;
   vertrouwelijkheidaanduiding: string;
   formaat: string;
