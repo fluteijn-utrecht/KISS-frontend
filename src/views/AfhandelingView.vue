@@ -424,6 +424,7 @@ import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
 import {
   ContactverzoekFormulier,
+  mapContactverzoekData,
   saveContactverzoek,
 } from "@/features/contactverzoek/formulier";
 import { writeContactmomentDetails } from "@/features/contactmoment/write-contactmoment-details";
@@ -566,6 +567,20 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   addWerkinstructiesToContactmoment(contactmoment, vraag);
   addVacToContactmoment(contactmoment, vraag);
 
+  const klantUrl = vraag.klanten
+    .filter((x) => x.shouldStore)
+    .map((x) => x.klant.url)
+    .find(Boolean);
+
+  const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
+  const cvData = mapContactverzoekData({
+    klantUrl,
+    data: vraag.contactverzoek,
+  });
+  if (isContactverzoek) {
+    Object.assign(contactmoment, cvData);
+  }
+
   const savedContactmoment = await saveContactmoment(contactmoment);
 
   const promises = [
@@ -573,17 +588,11 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
   ];
 
-  if (vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT) {
-    const klantUrl = vraag.klanten
-      .filter((x) => x.shouldStore)
-      .map((x) => x.klant.url)
-      .find(Boolean);
-
+  if (isContactverzoek) {
     promises.push(
       saveContactverzoek({
-        data: vraag.contactverzoek,
+        data: cvData,
         contactmomentUrl: savedContactmoment.url,
-        klantUrl,
       }),
     );
   }
