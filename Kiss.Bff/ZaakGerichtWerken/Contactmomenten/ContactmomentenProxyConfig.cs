@@ -33,10 +33,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
-            var userId = context.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
-            var userRepresentation = context.HttpContext.User?.Identity?.Name;
-
-            var token = _tokenProvider.GenerateToken(userId, userRepresentation);
+            var token = _tokenProvider.GenerateToken(context.HttpContext.User);
 
             context.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

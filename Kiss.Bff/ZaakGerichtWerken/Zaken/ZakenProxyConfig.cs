@@ -34,15 +34,10 @@ namespace Kiss.Bff.Zaken
         public string Route => "zaken";
         public string Destination { get; }
 
-        public IServiceProvider ServiceProvider => throw new NotImplementedException();
-
         //documentatie: https://open-zaak.readthedocs.io/en/latest/client-development/authentication.html
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
-            var userId = context.HttpContext.User?.FindFirstValue(JwtClaimTypes.PreferredUserName);
-            var userRepresentation = context.HttpContext.User?.Identity?.Name;
-
-            var token = _zgwTokenProvider.GenerateToken(userId, userRepresentation);
+            var token = _zgwTokenProvider.GenerateToken(context.HttpContext.User);
 
             context.ProxyRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

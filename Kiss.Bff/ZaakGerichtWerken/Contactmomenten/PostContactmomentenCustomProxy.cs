@@ -10,14 +10,16 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
     {
         private readonly ZgwTokenProvider _tokenProvider;
         private readonly string _destination;
+        private readonly GetMedewerkerIdentificatie _getMedewerkerIdentificatie;
 
-        public PostContactmomentenCustomProxy(IConfiguration configuration)
+        public PostContactmomentenCustomProxy(IConfiguration configuration, GetMedewerkerIdentificatie getMedewerkerIdentificatie)
         {
             _destination = configuration["CONTACTMOMENTEN_BASE_URL"];
             var clientId = configuration["CONTACTMOMENTEN_API_CLIENT_ID"];
             var apiKey = configuration["CONTACTMOMENTEN_API_KEY"];
 
             _tokenProvider = new ZgwTokenProvider(apiKey, clientId);
+            _getMedewerkerIdentificatie = getMedewerkerIdentificatie;
         }
 
         [HttpPost]
@@ -27,11 +29,10 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var userRepresentation = User?.Identity?.Name;
             if (parsedModel != null)
             {
-                //claims zijn niet standaard. configuratie mogelijkheid vereist voor juiste vulling 
-                parsedModel["medewerkerIdentificatie"] = User?.GetMedewerkerIdentificatie();
+                parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
             }
 
-            var accessToken = _tokenProvider.GenerateToken(email, userRepresentation);
+            var accessToken = _tokenProvider.GenerateToken(User);
 
             var url = _destination.TrimEnd('/') + "/contactmomenten/api/v1/contactmomenten";
 

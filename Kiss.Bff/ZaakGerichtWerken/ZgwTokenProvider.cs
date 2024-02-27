@@ -28,14 +28,14 @@ namespace Kiss.Bff.ZaakGerichtWerken
         }
 
 
-        public string GenerateToken(string? userId, string? userRepresentation)
+        public string GenerateToken(ClaimsPrincipal? claimsPrincipal)
         {
 
             var secretKey = _apiKey; // "een sleutel van minimaal 16 karakters";
             var client_id = _clientId;
             var iss = _clientId;
-            var user_id = userId ?? string.Empty;
-            var user_representation = userRepresentation ?? string.Empty;
+            var user_id = claimsPrincipal.GetUserName() ?? string.Empty;
+            var user_representation = claimsPrincipal?.Identity?.Name ?? string.Empty;
             var now = DateTimeOffset.UtcNow;
             // one minute leeway to account for clock differences between machines
             var issuedAt = now.AddMinutes(-1);

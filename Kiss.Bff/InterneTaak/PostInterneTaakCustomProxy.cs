@@ -7,10 +7,12 @@ namespace Kiss.Bff.InterneTaak
     public class PostInterneTaakCustomProxy : ControllerBase
     {
         private readonly InterneTaakProxyConfig _config;
+        private readonly GetMedewerkerIdentificatie _getMedewerkerIdentificatie;
 
-        public PostInterneTaakCustomProxy(InterneTaakProxyConfig config)
+        public PostInterneTaakCustomProxy(InterneTaakProxyConfig config, GetMedewerkerIdentificatie getMedewerkerIdentificatie)
         {
             _config = config;
+            _getMedewerkerIdentificatie = getMedewerkerIdentificatie;
         }
 
         [HttpPost("api/internetaak/api/{version}/objects")]
@@ -23,7 +25,7 @@ namespace Kiss.Bff.InterneTaak
                 && recordObj.TryGetPropertyValue("data", out var data)
                 && data is JsonObject dataObj)
             {
-                dataObj["medewerkerIdentificatie"] = User.GetMedewerkerIdentificatie();
+                dataObj["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
             }
 
             var url = $"{_config.Destination.AsSpan().TrimEnd('/')}/api/{version}/objects";
