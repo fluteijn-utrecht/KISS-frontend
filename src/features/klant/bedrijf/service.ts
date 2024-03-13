@@ -17,30 +17,31 @@ import type {
 } from "./types";
 
 export const bedrijfQuery = <K extends SearchCategories>(
-  query: BedrijfQuery<K>
+  query: BedrijfQuery<K>,
 ) => query;
 
 type KvkPagination = {
   pagina: number;
-  aantal: number;
+  resultatenPerPagina: number;
   totaal: number;
   resultaten: any[];
 };
 
 const parseKvkPagination = async ({
   pagina,
-  aantal,
+  resultatenPerPagina,
   totaal,
   resultaten,
 }: KvkPagination): Promise<Paginated<Bedrijf>> => ({
   page: await Promise.all(resultaten.map(mapHandelsRegister)),
   pageNumber: pagina,
   totalRecords: totaal,
-  pageSize: aantal,
-  totalPages: totaal === 0 ? 0 : Math.ceil(totaal / aantal),
+  pageSize: resultatenPerPagina,
+  totalPages: totaal === 0 ? 0 : Math.ceil(totaal / resultatenPerPagina),
 });
 
 const handelsRegisterBaseUrl = "/api/kvk";
+const zoekenUrl = `${handelsRegisterBaseUrl}/v2/zoeken`;
 
 const bedrijfQueryDictionary: BedrijfQueryDictionary = {
   postcodeHuisnummer: ({ postcode, huisnummer }) => [
@@ -48,7 +49,7 @@ const bedrijfQueryDictionary: BedrijfQueryDictionary = {
     ["huisnummer", huisnummer],
   ],
   kvkNummer: (search) => [["kvkNummer", search]],
-  handelsnaam: (search) => [["handelsnaam", search]],
+  handelsnaam: (search) => [["naam", search]],
 };
 
 const getSearchBedrijvenUrl = <K extends SearchCategories>({
@@ -61,7 +62,8 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
   // TODO: think about how to search in both klantregister and handelsregister for phone / email
 
   params.set("pagina", page?.toString() ?? "1");
-  params.set("type", "hoofdvestiging,nevenvestiging");
+  params.set("type", "hoofdvestiging");
+  params.append("type", "nevenvestiging");
 
   const searchParams = bedrijfQueryDictionary[query.field](query.value);
 
@@ -69,12 +71,17 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
     params.set(...tuple);
   });
 
-  return `${handelsRegisterBaseUrl}/zoeken?${params}`;
+  return `${zoekenUrl}?${params}`;
 };
 
 async function mapHandelsRegister(json: any): Promise<Bedrijf> {
-  const { vestigingsnummer, kvkNummer, handelsnaam, straatnaam, plaats } =
-    json ?? {};
+  const { vestigingsnummer, kvkNummer, naam, adres } = json ?? {};
+
+  const { binnenlandsAdres, buitenlandsAdres } = adres ?? {};
+
+  const { straatnaam, plaats } = binnenlandsAdres ?? {};
+
+  const { straatHuisnummer, postcodeWoonplaats } = buitenlandsAdres ?? {};
 
   let vestiging: KvkVestiging | undefined;
 
@@ -90,9 +97,9 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
     _typeOfKlant: "bedrijf",
     kvkNummer,
     vestigingsnummer,
-    bedrijfsnaam: handelsnaam,
-    straatnaam,
-    woonplaats: plaats,
+    bedrijfsnaam: naam,
+    straatnaam: straatnaam || straatHuisnummer,
+    woonplaats: plaats || postcodeWoonplaats,
     ...(vestiging ?? {}),
   };
 }
@@ -162,31 +169,31 @@ type SearchBedrijfArguments<K extends SearchCategories> = {
 };
 
 export function useSearchBedrijven<K extends SearchCategories>(
-  getArgs: () => SearchBedrijfArguments<K>
+  getArgs: () => SearchBedrijfArguments<K>,
 ) {
   return ServiceResult.fromFetcher(
     () => getSearchBedrijvenUrl(getArgs()),
-    searchBedrijvenInHandelsRegister
+    searchBedrijvenInHandelsRegister,
   );
 }
 
 const getVestingUrl = (vestigingsnummer?: string) => {
   if (!vestigingsnummer) return "";
-  return handelsRegisterBaseUrl + "/vestigingsprofielen/" + vestigingsnummer;
+  return handelsRegisterBaseUrl + "/v1/vestigingsprofielen/" + vestigingsnummer;
 };
 
 const fetchVestiging = (url: string) =>
   fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapVestiging);
 
 export const useBedrijfByVestigingsnummer = (
-  getVestigingsnummer: () => string | undefined
+  getVestigingsnummer: () => string | undefined,
 ) => {
   const getUrl = () => {
     const vestigingsnummer = getVestigingsnummer();
     if (!vestigingsnummer) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("vestigingsnummer", vestigingsnummer);
-    return `${handelsRegisterBaseUrl}/zoeken?${searchParams}`;
+    return `${zoekenUrl}?${searchParams}`;
   };
 
   const getUniqueId = () => {
