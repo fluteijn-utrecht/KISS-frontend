@@ -70,7 +70,8 @@
 import { parseKvkNummer, parsePostcodeHuisnummer } from "@/helpers/validation";
 import { ensureState } from "@/stores/create-store";
 import { computed, ref, watch } from "vue";
-import { bedrijfQuery, useSearchBedrijven } from "./service";
+import { useSearchBedrijven } from "./service/UseSearchBedrijven";
+
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
@@ -86,6 +87,7 @@ import {
 import { KlantType } from "../types";
 import { useRouter } from "vue-router";
 import { FriendlyError } from "@/services";
+import { bedrijfQuery } from "./service/BedrijfsQuery";
 type SearchFields = KlantSearchField | SearchCategories;
 const labels: { [key in SearchFields]: string } = {
   handelsnaam: "Bedrijfsnaam",
@@ -159,7 +161,7 @@ watch(
     if (!(input instanceof HTMLInputElement)) return;
     input.setCustomValidity(query instanceof Error ? query.message : "");
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const klanten = useSearchKlanten({
