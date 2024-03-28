@@ -1,6 +1,7 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
+using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
@@ -50,6 +51,10 @@ namespace Kiss.Bff.Beheer.Data
             modelBuilder.Entity<ContactVerzoekVragenSet>()
                 .Property(p => p.JsonVragen)
                 .HasColumnType("json");
+
+            modelBuilder.Entity<Kanaal>()
+                .HasIndex(p => p.Naam)
+                .IsUnique();
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;
@@ -61,5 +66,6 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
         public DbSet<ContactmomentDetails> ContactMomentDetails { get; set; } = null!;
         public DbSet<ContactVerzoekVragenSet> ContactVerzoekVragenSets { get; set; } = null!;
+        public DbSet<Kanaal> Kanalen { get; set; } = null!;
     }
 }

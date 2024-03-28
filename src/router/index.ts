@@ -43,6 +43,11 @@ const ContactverzoekFormulierenBeheer = () =>
     "@/views/Beheer/contactverzoek-formulieren/ContactverzoekFormulierenBeheer.vue"
   );
 
+  const KanaalBeheer = () =>
+  import("@/views/Beheer/Kanalen/KanaalBeheer.vue");
+const KanalenBeheer = () =>
+  import("@/views/Beheer/Kanalen/KanalenBeheer.vue");
+
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
   if (contactmoment.contactmomentLoopt) {
@@ -209,6 +214,19 @@ const router = createRouter({
           path: "Contactverzoekformulier/:id?",
           name: "Contactverzoekformulier",
           component: ContactverzoekFormulierBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "kanalen",
+          name: "KanalenBeheer",
+          component: KanalenBeheer,
+          meta: {},
+        },
+        {
+          path: "kanaal/:id?",
+          name: "KanaalBeheer",
+          component: KanaalBeheer,
           props: true,
           meta: {},
         },
