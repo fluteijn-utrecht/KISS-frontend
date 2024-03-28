@@ -29,11 +29,19 @@ namespace Kiss.Bff.Intern.Kanalen
                 Naam = model.Naam
             };
 
+            //de foutmelding bij een savechanges poging varieert afhanelijk van de gebruikte database technologie
+            //derhalve een custom check om een sinvolle melding te kunnen retourneren
+            //ook al is er geen 100% garantie dat de naam na deze check bij het opslaan nog steeds uniek is
+            if(await _context.Kanalen.AnyAsync(x=>x.Naam == model.Naam, token))
+            {
+                return Conflict("De naam van het kanaal moet uniek zijn");
+            }
+
             await _context.Kanalen.AddAsync(entity, token);
             await _context.SaveChangesAsync(token);
 
             return NoContent();
-            //return CreatedAtAction("KanaalToevoegen", new { id = entity.Id }, model with { Id = entity.Id });
+            
         }
                 
     }

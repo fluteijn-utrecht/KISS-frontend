@@ -9,20 +9,12 @@
     <form class="container" @submit.prevent="submit">
       <label for="titel" class="utrecht-form-label">
         <span>Naam</span>
-        <input
-          class="utrecht-textbox utrecht-textbox--html-input"
-          type="text"
-          id="titel"
-          v-model="item.naam"
-          required
-        />
+        <input class="utrecht-textbox utrecht-textbox--html-input" type="text" id="titel" v-model="item.naam"
+          required />
       </label>
       <menu>
         <li>
-          <router-link
-            to="/Beheer/kanalen/"
-            class="utrecht-button utrecht-button--secondary-action"
-          >
+          <router-link to="/Beheer/kanalen/" class="utrecht-button utrecht-button--secondary-action">
             Annuleren
           </router-link>
         </li>
@@ -61,7 +53,7 @@ const props = defineProps<{ id?: string }>();
 
 type Kanaal = {
   id?: string;
-  naam?: string; 
+  naam?: string;
 };
 const router = useRouter();
 
@@ -69,9 +61,9 @@ const loading = ref<boolean>(false);
 
 const item = ref<Kanaal>();
 
-const showError = () => {
+const showError = (message? :string) => {
   toast({
-    text: "Er is een fout opgetreden. Probeer het later opnieuw.",
+    text: message ?? "Er is een fout opgetreden. Probeer het later opnieuw.",
     type: "error",
   });
 };
@@ -108,13 +100,16 @@ const submit = async () => {
         },
         body: JSON.stringify(item.value),
       });
-      if (result.status > 300) {
+
+      if (result.status == 409) {
+        showError("Er bestaat al een item met dezelfde naam");
+      } else if (result.status > 300) {
         showError();
       } else {
         return handleSuccess();
       }
     }
-    return handleSuccess();
+   
   } catch {
     showError();
   } finally {
@@ -122,11 +117,11 @@ const submit = async () => {
   }
 };
 
- 
+
 
 onMounted(async () => {
   loading.value = true;
-console.log(props)
+  console.log
   try {
     if (props.id) {
       //load link
@@ -141,7 +136,7 @@ console.log(props)
     } else {
       item.value = {};
     }
- 
+
   } catch {
     showError();
   } finally {
@@ -151,7 +146,6 @@ console.log(props)
 </script>
 
 <style>
-
 /* todo: algemene beheer styles? */
 
 menu {
@@ -171,7 +165,7 @@ form {
   margin-top: var(--spacing-default);
 }
 
-label > span {
+label>span {
   display: block;
 }
 
