@@ -15,7 +15,7 @@
 
   <back-link />
 
-  <simple-spinner v-if="saving || gespreksresultaten.loading" />
+  <simple-spinner v-if="saving || gespreksresultaten.loading || kanalenKeuzelijst.loading " />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
@@ -328,17 +328,21 @@
               v-model="vraag.kanaal"
               class="utrecht-select utrecht-select--html-select"
               @change="setUserChannel"
-              required
+              required          
             >
-              <option>telefoon</option>
-              <option>e-mail</option>
-              <option>contactformulier</option>
-              <option>Twitter</option>
-              <option>Facebook</option>
-              <option>LinkedIn</option>
-              <option>live chat</option>
-              <option>Instagram</option>
-              <option>WhatsApp</option>
+              <template v-if="!kanalenKeuzelijst.data.length">
+                <option>telefoon</option>
+                <option>e-mail</option>
+                <option>contactformulier</option>
+                <option>Twitter</option>
+                <option>Facebook</option>
+                <option>LinkedIn</option>
+                <option>live chat</option>
+                <option>Instagram</option>
+                <option>WhatsApp</option>
+              </template>
+              <option v-else v-for="{ naam } in kanalenKeuzelijst.data" :key="naam">{{naam}}</option>
+              
             </select>
 
             <label
@@ -435,11 +439,13 @@ import { fetchAfdelingen } from "@/composables/afdelingen";
 
 import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
 import type { Kennisartikel } from "@/features/search/types";
+import { useKanalenKeuzeLijst } from "../features/Kanalen/service";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
+const kanalenKeuzelijst = useKanalenKeuzeLijst();
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.

@@ -10,3 +10,8 @@ async function fetchAll(url: string) {
 export function useKanalen() {
   return ServiceResult.fromFetcher("/api/KanalenBeheerOverzicht", fetchAll);
 }
+
+
+export function useKanalenKeuzeLijst() {
+  return ServiceResult.fromFetcher("/api/KanalenContactmomentKeuzelijst", fetchAll);
+}
