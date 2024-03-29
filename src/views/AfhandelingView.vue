@@ -627,32 +627,12 @@ async function submit() {
     if (!contactmomentStore.huidigContactmoment) return;
 
     const { vragen } = contactmomentStore.huidigContactmoment;
-    const firstVraag = vragen[0];
-    const otherVragen = vragen.slice(1);
-    const saveVraagResult = await saveVraag(firstVraag);
+    const saveVraagResult = await saveVraag(vragen[0]);
 
     if(saveVraagResult.errorMessage){
-      errorMessage.value = saveVraagResult.errorMessage
+      handleSaveVraagError(saveVraagResult.errorMessage);
     } else {
-      let gespreksId  = saveVraagResult.data?.gespreksId;
-
-      if (!gespreksId) {
-        gespreksId = nanoid();
-      }
-
-      const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
-      const otherVrageSaveResults = await Promise.all(promises);
-      const firstErrorInOtherVragen  = otherVrageSaveResults.find(x=>x.errorMessage);
-      
-      if(firstErrorInOtherVragen && firstErrorInOtherVragen.errorMessage){
-        errorMessage.value = firstErrorInOtherVragen.errorMessage
-        return;
-      }  
-    
-      // klaar
-      contactmomentStore.stop();
-      toast({ text: "Het contactmoment is opgeslagen" });
-      navigateToPersonen();
+      await handleSaveVraagSuccess( saveVraagResult.data?.gespreksId, vragen.slice(1));
     }
   } catch (error) {    
     errorMessage.value =
@@ -750,6 +730,31 @@ const addWerkinstructiesToContactmoment = (
 
 const userStore = useUserStore();
 const organisatieIds = useOrganisatieIds();
+
+const handleSaveVraagError = (msg: string) => {
+  errorMessage.value = msg;
+}
+
+const handleSaveVraagSuccess = async (gespreksId: string|undefined, otherVragen:Vraag[] ) =>{
+    
+  if (!gespreksId) {
+    gespreksId = nanoid();
+  }
+
+  const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
+  const otherVrageSaveResults = await Promise.all(promises);
+  const firstErrorInOtherVragen  = otherVrageSaveResults.find(x=>x.errorMessage);
+
+  if(firstErrorInOtherVragen && firstErrorInOtherVragen.errorMessage){
+    handleSaveVraagError( firstErrorInOtherVragen.errorMessage)
+    return;
+  }  
+
+  // klaar
+  contactmomentStore.stop();
+  toast({ text: "Het contactmoment is opgeslagen" });
+  navigateToPersonen();
+}
 
 function setUserChannel(e: Event) {
   if (!(e.target instanceof HTMLSelectElement)) return;
