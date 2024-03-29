@@ -421,6 +421,8 @@ import {
   type Contactmoment,
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
+ type saveContactmomentResponseModel,
+ type saveContactmomentErrorResponse ,
 } from "@/features/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -587,8 +589,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     Object.assign(contactmoment, cvData);
   }
 
-  const savedContactmoment = await saveContactmoment(contactmoment);
+  const savedContactmomentResult = await saveContactmoment(contactmoment);
+  
+  if(savedContactmomentResult.errorMessage || !savedContactmomentResult.data){
+    return savedContactmomentResult
+  }
 
+  const savedContactmoment = savedContactmomentResult.data
+ 
   const promises = [
     writeContactmomentDetails(contactmoment, savedContactmoment.url),
     zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
@@ -607,7 +615,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   await Promise.all(promises);
 
-  return savedContactmoment;
+  return savedContactmomentResult;
 };
 
 const navigateToPersonen = () => router.push({ name: "personen" });
@@ -621,20 +629,32 @@ async function submit() {
     const { vragen } = contactmomentStore.huidigContactmoment;
     const firstVraag = vragen[0];
     const otherVragen = vragen.slice(1);
+    const saveVraagResult = await saveVraag(firstVraag);
 
-    let { gespreksId } = await saveVraag(firstVraag);
-    if (!gespreksId) {
-      gespreksId = nanoid();
+    if(saveVraagResult.errorMessage){
+      errorMessage.value = saveVraagResult.errorMessage
+    } else {
+      let gespreksId  = saveVraagResult.data?.gespreksId;
+
+      if (!gespreksId) {
+        gespreksId = nanoid();
+      }
+
+      const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
+      const otherVrageSaveResults = await Promise.all(promises);
+      const firstErrorInOtherVragen  = otherVrageSaveResults.find(x=>x.errorMessage);
+      
+      if(firstErrorInOtherVragen && firstErrorInOtherVragen.errorMessage){
+        errorMessage.value = firstErrorInOtherVragen.errorMessage
+        return;
+      }  
+    
+      // klaar
+      contactmomentStore.stop();
+      toast({ text: "Het contactmoment is opgeslagen" });
+      navigateToPersonen();
     }
-
-    const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
-    await Promise.all(promises);
-
-    // klaar
-    contactmomentStore.stop();
-    toast({ text: "Het contactmoment is opgeslagen" });
-    navigateToPersonen();
-  } catch (error) {
+  } catch (error) {    
     errorMessage.value =
       "Er is een fout opgetreden bij opslaan van het contactmoment";
   } finally {
