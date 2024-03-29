@@ -14,7 +14,6 @@ import type {
   ZaakContactmoment,
   ObjectContactmoment,
   ContactmomentDetails,
-  saveContactmomentErrorResponse,
   saveContactmomentResponseModel,
 } from "./types";
 import type { ContactmomentViewModel } from "../shared/types";

@@ -26,7 +26,7 @@
       :message="errorMessage"
     />
 
-    <template v-else-if="contactmomentStore.huidigContactmoment">
+    <template v-else-if="contactmomentStore.huidigContactmoment && kanalenKeuzelijst.success">
       <article
         v-for="(vraag, idx) in contactmomentStore.huidigContactmoment.vragen"
         :key="idx"
@@ -323,7 +323,7 @@
             <label :for="'kanaal' + idx" class="utrecht-form-label required"
               >Kanaal</label
             >
-            <select
+            <select 
               :id="'kanaal' + idx"
               v-model="vraag.kanaal"
               class="utrecht-select utrecht-select--html-select"
@@ -422,7 +422,6 @@ import {
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
  type saveContactmomentResponseModel,
- type saveContactmomentErrorResponse ,
 } from "@/features/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
