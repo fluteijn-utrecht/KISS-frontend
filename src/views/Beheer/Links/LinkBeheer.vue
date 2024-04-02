@@ -6,41 +6,42 @@
   </template>
 
   <template v-else-if="link">
-    <form class="container" @submit.prevent="submit">
-      <label for="titel" class="utrecht-form-label">
-        <span>Titel</span>
-        <input
-          class="utrecht-textbox utrecht-textbox--html-input"
-          type="text"
-          id="titel"
-          v-model="link.titel"
-          required
-        />
-      </label>
+    <beheer-form @submit="submit">
+      <template #formFields>
+        <label for="titel" class="utrecht-form-label">
+          <span>Titel</span>
+          <input
+            class="utrecht-textbox utrecht-textbox--html-input"
+            type="text"
+            id="titel"
+            v-model="link.titel"
+            required
+          />
+        </label>
 
-      <label for="naam" class="utrecht-form-label">
-        <span>Url</span>
-        <input
-          type="url"
-          id="url"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          v-model="link.url"
-          required
-        />
-      </label>
+        <label for="naam" class="utrecht-form-label">
+          <span>Url</span>
+          <input
+            type="url"
+            id="url"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            v-model="link.url"
+            required
+          />
+        </label>
 
-      <label for="categorie" class="utrecht-form-label p-r">
-        <span>Categorie</span>
-        <SearchCombobox
-          v-model="link.categorie"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          required
-          :exactMatch="false"
-          :listItems="filteredCategorien"
-        />
-      </label>
-
-      <menu>
+        <label for="categorie" class="utrecht-form-label p-r">
+          <span>Categorie</span>
+          <SearchCombobox
+            v-model="link.categorie"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            required
+            :exactMatch="false"
+            :listItems="filteredCategorien"
+          />
+        </label>
+      </template>
+      <template #formMenu>
         <li>
           <router-link
             to="/Beheer/links/"
@@ -55,8 +56,8 @@
             Opslaan
           </utrecht-button>
         </li>
-      </menu>
-    </form>
+      </template>
+    </beheer-form>
   </template>
 </template>
 
@@ -79,7 +80,7 @@ import { useRouter } from "vue-router";
 import SearchCombobox, {
   type DatalistItem,
 } from "@/components/SearchCombobox.vue";
-
+import BeheerForm from "@/components/beheer/BeheerForm.vue";
 const props = defineProps<{ id?: string }>();
 
 type Link = {
@@ -151,15 +152,15 @@ const categorien = ServiceResult.fromPromise<DatalistItem[]>(
   fetchLoggedIn("/api/categorien")
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((r: string[]) => r.map((value) => ({ value })))
+    .then((r: string[]) => r.map((value) => ({ value }))),
 );
 
 const filteredCategorien = mapServiceData(categorien, (c) =>
   c.filter(
     ({ value }) =>
       link.value?.categorie &&
-      value.toLocaleLowerCase().includes(link.value.categorie)
-  )
+      value.toLocaleLowerCase().includes(link.value.categorie),
+  ),
 );
 
 onMounted(async () => {
@@ -191,27 +192,6 @@ onMounted(async () => {
 </script>
 
 <style>
-menu {
-  margin-top: var(--spacing-large);
-  display: flex;
-  gap: var(--spacing-default);
-  justify-content: flex-end;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-}
-
-form {
-  margin-top: var(--spacing-default);
-}
-
-label > span {
-  display: block;
-}
-
 .p-r {
   position: relative;
 }

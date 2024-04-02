@@ -6,19 +6,20 @@
   </template>
 
   <template v-else-if="gespreksresultaat">
-    <form class="container" @submit.prevent="submit">
-      <label for="titel" class="utrecht-form-label">
-        <span>Titel</span>
-        <input
-          type="text"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          id="titel"
-          v-model="gespreksresultaat.definitie"
-          required
-        />
-      </label>
-
-      <menu>
+    <beheer-form @submit="submit">
+      <template #formFields>
+        <label for="titel" class="utrecht-form-label">
+          <span>Titel</span>
+          <input
+            type="text"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            id="titel"
+            v-model="gespreksresultaat.definitie"
+            required
+          />
+        </label>
+      </template>
+      <template #formMenu>
         <li>
           <router-link :to="LIJST_BEHEER_URL">
             <utrecht-button appearance="secondary-action-button" type="button">
@@ -32,8 +33,8 @@
             Opslaan
           </utrecht-button>
         </li>
-      </menu>
-    </form>
+      </template>
+    </beheer-form>
   </template>
 </template>
 
@@ -47,6 +48,7 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn, parseJson, throwIfNotOk } from "@/services";
 import { useRouter } from "vue-router";
+import beheerForm from "@/components/beheer/BeheerForm.vue";
 
 const props = defineProps<{ id?: string }>();
 const LIJST_BEHEER_URL = "/beheer/gespreksresultaten/";
@@ -107,25 +109,4 @@ onMounted(async () => {
 });
 </script>
 
-<style>
-menu {
-  margin-top: var(--spacing-large);
-  display: flex;
-  gap: var(--spacing-default);
-  justify-content: flex-end;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-}
-
-form {
-  margin-top: var(--spacing-default);
-}
-
-label > span {
-  display: block;
-}
-</style>
+<style></style>
