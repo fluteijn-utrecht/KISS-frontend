@@ -30,7 +30,7 @@ namespace Kiss.Bff.Intern.Kanalen
             };
 
             //de foutmelding bij een savechanges poging varieert afhanelijk van de gebruikte database technologie
-            //derhalve een custom check om een sinvolle melding te kunnen retourneren
+            //derhalve een custom check om een zinvolle melding te kunnen retourneren
             //ook al is er geen 100% garantie dat de naam na deze check bij het opslaan nog steeds uniek is
             if(await _context.Kanalen.AnyAsync(x=>x.Naam == model.Naam, token))
             {

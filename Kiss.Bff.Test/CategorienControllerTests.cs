@@ -1,6 +1,6 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Beheer.Links.Controllers;
 using Kiss.Bff.Beheer.Links.Data.Entities;
+using Kiss.Bff.Intern.Links.Features;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.Test

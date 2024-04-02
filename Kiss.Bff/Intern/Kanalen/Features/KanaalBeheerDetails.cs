@@ -23,15 +23,11 @@ namespace Kiss.Bff.Intern.Kanalen
             var result = await _context
                .Kanalen
                .AsNoTracking()
-               //.Select(x => new KanaalOverzichtModel(x.Id, x.Naam)) 
                .FirstOrDefaultAsync( x=>x.Id == id );
-
 
             return result == null
               ? NotFound()
               : new KanaalOverzichtModel(result.Id, result.Naam);
-
-          //  return Ok(result);
         }
 
     }

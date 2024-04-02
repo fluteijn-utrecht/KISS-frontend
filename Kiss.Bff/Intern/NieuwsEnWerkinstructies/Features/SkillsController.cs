@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
+namespace Kiss.Bff.NieuwsEnWerkinstructies.Features
 {
     [Route("api/[controller]")]
     [ApiController]

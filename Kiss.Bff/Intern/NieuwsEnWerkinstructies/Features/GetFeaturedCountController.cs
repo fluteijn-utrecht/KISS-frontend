@@ -3,7 +3,7 @@ using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
+namespace Kiss.Bff.NieuwsEnWerkinstructies.Features
 {
     [ApiController]
     public class GetFeaturedCountController : ControllerBase

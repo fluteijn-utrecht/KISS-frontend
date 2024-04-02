@@ -1,5 +1,5 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
+using Kiss.Bff.NieuwsEnWerkinstructies.Features;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
