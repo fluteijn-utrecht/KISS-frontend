@@ -6,18 +6,25 @@
   </template>
 
   <template v-else-if="item">
-
     <beheer-form @submit="submit">
       <template #formFields>
         <label for="titel" class="utrecht-form-label">
           <span>Naam</span>
-          <input class="utrecht-textbox utrecht-textbox--html-input" type="text" id="titel" v-model="item.naam"
-            required />
+          <input
+            class="utrecht-textbox utrecht-textbox--html-input"
+            type="text"
+            id="titel"
+            v-model="item.naam"
+            required
+          />
         </label>
       </template>
       <template #formMenu>
         <li>
-          <router-link to="/Beheer/kanalen/" class="utrecht-button utrecht-button--secondary-action">
+          <router-link
+            to="/Beheer/kanalen/"
+            class="utrecht-button utrecht-button--secondary-action"
+          >
             Annuleren
           </router-link>
         </li>
@@ -28,8 +35,6 @@
         </li>
       </template>
     </beheer-form>
-
-
   </template>
 </template>
 
@@ -41,11 +46,9 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
-import {
-  fetchLoggedIn,
-} from "@/services";
+import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
-import beheerForm from "@/components/beheer/BeheerForm.vue"
+import beheerForm from "@/components/beheer/BeheerForm.vue";
 
 const props = defineProps<{ id?: string }>();
 
@@ -107,7 +110,6 @@ const submit = async () => {
         return handleSuccess();
       }
     }
-
   } catch {
     showError();
   } finally {
@@ -115,15 +117,15 @@ const submit = async () => {
   }
 };
 
-
-
 onMounted(async () => {
   loading.value = true;
-  console.log
+  console.log;
   try {
     if (props.id) {
       //load link
-      const response = await fetchLoggedIn("/api/KanaalBeheerDetails/" + props.id);
+      const response = await fetchLoggedIn(
+        "/api/KanaalBeheerDetails/" + props.id,
+      );
       if (response.status > 300) {
         showError();
         return;
@@ -134,7 +136,6 @@ onMounted(async () => {
     } else {
       item.value = {};
     }
-
   } catch {
     showError();
   } finally {
@@ -142,5 +143,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style></style>
