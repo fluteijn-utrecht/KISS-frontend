@@ -43,7 +43,6 @@ import {
 
 const kanalen = useKanalen();
 const loading = ref<boolean>(true);
-const error = ref<boolean>(false);
 const API_URL = "/api/KanaalVerwijderen/";
 const BEHEER_URL = "/beheer/kanaal/";
 
@@ -54,14 +53,14 @@ const showError = () => {
   });
 }; 
 
-//todo verplaatsen naar service
+
 const verwijder = (id: number) => {
   loading.value = true;
   return fetchLoggedIn(API_URL + id, {
     method: "DELETE",
   })
     .then(throwIfNotOk)
-    //.then(load)
+    .then(() => kanalen.refresh())
     .then(() =>
       toast({
         text: "verwijderd",

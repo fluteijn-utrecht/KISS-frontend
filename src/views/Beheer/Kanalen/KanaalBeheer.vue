@@ -6,26 +6,30 @@
   </template>
 
   <template v-else-if="item">
-    <form class="container" @submit.prevent="submit">
-      <label for="titel" class="utrecht-form-label">
-        <span>Naam</span>
-        <input class="utrecht-textbox utrecht-textbox--html-input" type="text" id="titel" v-model="item.naam"
-          required />
-      </label>
-      <menu>
+
+    <beheer-form @submit="submit">
+      <template #formFields>
+        <label for="titel" class="utrecht-form-label">
+          <span>Naam</span>
+          <input class="utrecht-textbox utrecht-textbox--html-input" type="text" id="titel" v-model="item.naam"
+            required />
+        </label>
+      </template>
+      <template #formMenu>
         <li>
           <router-link to="/Beheer/kanalen/" class="utrecht-button utrecht-button--secondary-action">
             Annuleren
           </router-link>
         </li>
-
         <li>
           <utrecht-button appearance="primary-action-button" type="submit">
             Opslaan
           </utrecht-button>
         </li>
-      </menu>
-    </form>
+      </template>
+    </beheer-form>
+
+
   </template>
 </template>
 
@@ -38,16 +42,10 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import {
-  ServiceResult,
   fetchLoggedIn,
-  mapServiceData,
-  parseJson,
-  throwIfNotOk,
 } from "@/services";
 import { useRouter } from "vue-router";
-import SearchCombobox, {
-  type DatalistItem,
-} from "@/components/SearchCombobox.vue";
+import beheerForm from "@/components/beheer/BeheerForm.vue"
 
 const props = defineProps<{ id?: string }>();
 
@@ -61,7 +59,7 @@ const loading = ref<boolean>(false);
 
 const item = ref<Kanaal>();
 
-const showError = (message? :string) => {
+const showError = (message?: string) => {
   toast({
     text: message ?? "Er is een fout opgetreden. Probeer het later opnieuw.",
     type: "error",
@@ -109,7 +107,7 @@ const submit = async () => {
         return handleSuccess();
       }
     }
-   
+
   } catch {
     showError();
   } finally {
@@ -145,31 +143,4 @@ onMounted(async () => {
 });
 </script>
 
-<style>
-/* todo: algemene beheer styles? */
-
-menu {
-  margin-top: var(--spacing-large);
-  display: flex;
-  gap: var(--spacing-default);
-  justify-content: flex-end;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-}
-
-form {
-  margin-top: var(--spacing-default);
-}
-
-label>span {
-  display: block;
-}
-
-.p-r {
-  position: relative;
-}
-</style>
+<style></style>

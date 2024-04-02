@@ -1,14 +1,26 @@
 import { fetchLoggedIn, ServiceResult, throwIfNotOk } from "@/services";
 
-
 async function fetchAll(url: string) {
   return await fetchLoggedIn(url)
   .then(throwIfNotOk)
   .then((r) => r.json());
 }
 
+
+
+// const verwijderKanaal = (id: number) => {
+
+//   return fetchLoggedIn("/api/KanaalVerwijderen/" + id, {
+//     method: "DELETE",
+//   })
+//   .then(load)
+// };
+
+
 export function useKanalen() {
-  return ServiceResult.fromFetcher("/api/KanalenBeheerOverzicht", fetchAll);
+  const kanalen = ServiceResult.fromFetcher("/api/KanalenBeheerOverzicht", fetchAll, { poll: false } );
+
+  return kanalen
 }
 
 
