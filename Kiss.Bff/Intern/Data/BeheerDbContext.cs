@@ -52,9 +52,11 @@ namespace Kiss.Bff.Beheer.Data
                 .Property(p => p.JsonVragen)
                 .HasColumnType("json");
 
-            modelBuilder.Entity<Kanaal>()
-                .HasIndex(p => p.Naam)
-                .IsUnique();
+            modelBuilder.Entity<Kanaal>(k => {
+                k.HasIndex(p => p.Naam).IsUnique();
+                k.Property(p => p.Naam).IsRequired();
+
+            });
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;
