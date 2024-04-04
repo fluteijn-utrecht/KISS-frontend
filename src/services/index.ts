@@ -44,11 +44,6 @@ export function createLookupList<K, V>(entries: [K, V][]): LookupList<K, V> {
 }
 
 export function throwIfNotOk(response: Response ) {
-
-// if(customStatusHandlers && customStatusHandlers[response.status]){
-//   customStatusHandlers[response.status](response)
-// }
-
   if (!response.ok) throw new Error(response.statusText);
   return response as Response & { ok: true };
 }

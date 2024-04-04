@@ -82,5 +82,5 @@ export interface KlantContactmoment {
   rol: string;
 }
 
-export type saveContactmomentResponseModel = {data? : { url: string; gespreksId: string} , errorMessage? : string}
+export type SaveContactmomentResponseModel = {data? : { url: string; gespreksId: string} , errorMessage? : string}
 

@@ -19,7 +19,7 @@
           />
         </label>
       </template>
-      <template #formMenu>
+      <template #formMenuListItems>
         <li>
           <router-link :to="LIJST_BEHEER_URL">
             <utrecht-button appearance="secondary-action-button" type="button">

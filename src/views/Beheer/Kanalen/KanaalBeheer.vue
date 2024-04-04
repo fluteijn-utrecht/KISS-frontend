@@ -81,41 +81,49 @@ const submit = async () => {
 
   try {
     if (props.id) {
-      const result = await fetchLoggedIn("/api/KanaalBewerken/" + props.id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(item.value),
-      });
-      if (result.status > 300) {
-        showError();
-      } else {
-        return handleSuccess();
-      }
-    } else {
-      const result = await fetchLoggedIn("/api/KanaalToevoegen/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(item.value),
-      });
-
-      if (result.status == 409) {
-        showError("Er bestaat al een item met dezelfde naam");
-      } else if (result.status > 300) {
-        showError();
-      } else {
-        return handleSuccess();
-      }
+      return update(props.id);
     }
+    return create();
   } catch {
     showError();
   } finally {
     loading.value = false;
   }
 };
+
+async function update(id: string) {
+  const result = await fetchLoggedIn("/api/KanaalBewerken/" + id, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(item.value),
+  });
+
+  if (result.status > 300) {
+    showError();
+  } else {
+    return handleSuccess();
+  }
+}
+
+async function create() {
+  const result = await fetchLoggedIn("/api/KanaalToevoegen/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(item.value),
+  });
+
+  if (result.status == 409) {
+    showError("Er bestaat al een item met dezelfde naam");
+  } else if (result.status > 300) {
+    showError();
+  } else {
+    return handleSuccess();
+  }
+}
 
 onMounted(async () => {
   loading.value = true;

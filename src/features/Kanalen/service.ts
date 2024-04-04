@@ -21,3 +21,9 @@ export function useKanalenKeuzeLijst() {
     fetchAll,
   );
 }
+
+export function verwijderkanaal(id: number) {
+  return fetchLoggedIn("/api/KanaalVerwijderen/" + id, {
+    method: "DELETE",
+  });
+}

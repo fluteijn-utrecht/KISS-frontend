@@ -6,44 +6,36 @@
     message="Er ging iets mis. Probeer het later nog eens."
   />
 
-  <template  v-if="kanalen.success" >
-  <ul  v-if="kanalen.data.length">
-    <li
-      v-for="{ id, naam } in kanalen.data"
-      :key="id"
-      class="listItem"
-    >
-      <router-link :to="BEHEER_URL + id">{{ naam }}</router-link>
+  <template v-if="kanalen.success">
+    <ul v-if="kanalen.data.length">
+      <li v-for="{ id, naam } in kanalen.data" :key="id" class="listItem">
+        <router-link :to="BEHEER_URL + id">{{ naam }}</router-link>
 
-      <utrecht-button
-        appearance="secondary-action-button"
-        class="icon icon-after trash icon-only"
-        title="Verwijderen"
-        type="button"
-        @click="confirmVerwijder(id)"
-      ></utrecht-button>
-    </li>
-  </ul>
-  <p v-else>Geen kanalen gevonden.</p>
-</template>
-
+        <utrecht-button
+          appearance="secondary-action-button"
+          class="icon icon-after trash icon-only"
+          title="Verwijderen"
+          type="button"
+          @click="confirmVerwijder(id)"
+        ></utrecht-button>
+      </li>
+    </ul>
+    <p v-else>Geen kanalen gevonden.</p>
+  </template>
 </template>
 
 <script lang="ts" setup>
-import { useKanalen } from "./service";
+import { useKanalen, verwijderkanaal } from "./service";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import { ref } from "vue";
- 
+
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn, throwIfNotOk } from "@/services";
-import {
-  Button as UtrechtButton,
-} from "@utrecht/component-library-vue";
+import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 
 const kanalen = useKanalen();
 const loading = ref<boolean>(true);
-const API_URL = "/api/KanaalVerwijderen/";
 const BEHEER_URL = "/beheer/kanaal/";
 
 const showError = () => {
@@ -51,25 +43,23 @@ const showError = () => {
     text: "Er is een fout opgetreden. Probeer het later opnieuw.",
     type: "error",
   });
-}; 
+};
 
-
-const verwijder = (id: number) => {
+const verwijder = async (id: number) => {
   loading.value = true;
-  return fetchLoggedIn(API_URL + id, {
-    method: "DELETE",
-  })
-    .then(throwIfNotOk)
-    .then(() => kanalen.refresh())
-    .then(() =>
-      toast({
-        text: "verwijderd",
-      })
-    )
-    .catch(showError)
-    .finally(() => {
-      loading.value = false;
+
+  try {
+    const response = await verwijderkanaal(id);
+    throwIfNotOk(response);
+    await kanalen.refresh();
+    return toast({
+      text: "Kanaal verwijderd",
     });
+  } catch {
+    return showError();
+  } finally {
+    loading.value = false;
+  }
 };
 
 const confirmVerwijder = (id: number) => {
@@ -77,8 +67,6 @@ const confirmVerwijder = (id: number) => {
     verwijder(id);
   }
 };
-
-
 </script>
 
 <style lang="scss" scoped>
