@@ -16,7 +16,7 @@
             required
         /></label>
       </template>
-      <template #formMenu>
+      <template #formMenuListItems>
         <li>
           <router-link
             to="/Beheer/Skills/"
