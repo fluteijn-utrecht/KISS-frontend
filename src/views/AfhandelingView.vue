@@ -343,7 +343,7 @@
                 <option>Twitter</option>
                 <option>Facebook</option>
                 <option>LinkedIn</option>
-                <option>live chat</option>
+                <option>Live chat</option>
                 <option>Instagram</option>
                 <option>WhatsApp</option>
               </template>
