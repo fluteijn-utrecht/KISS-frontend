@@ -3,6 +3,7 @@ using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Kiss.Bff.ZaakGerichtWerken;
 using Yarp.ReverseProxy.Transforms;
 using Microsoft.AspNetCore.DataProtection;
+using Kiss.Bff.Afdelingen;
 
 namespace Kiss.Bff.InterneTaak
 {
@@ -15,32 +16,12 @@ namespace Kiss.Bff.InterneTaak
 
     public class InterneTaakProxyConfig : IKissProxyRoute
     {
-        private readonly AuthenticationHeaderValue? _authHeader;
-        private readonly ZgwTokenProvider? _tokenProvider;
-
-       // Secret instellen in overige obejcten!!!!
-       
         public InterneTaakProxyConfig(string destination, string token, string objectTypeUrl, string clientId, string clientSecret)
         {
             Destination = destination;
             ObjectTypeUrl = objectTypeUrl;
 
-            if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(clientSecret) ) {
-
-                _tokenProvider = new ZgwTokenProvider(clientSecret, clientId);               
-                return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                _authHeader = new AuthenticationHeaderValue("Token", token);
-                return;
-            }
-
-            if (_tokenProvider == null && _authHeader == null)
-            {
-                throw new Exception("Setting up a proxy for InterneTaak failed. A token or clientId/clientSecret combination should be provided");
-            }
+            _authHeaderProvider = new AuthenticationHeaderProvider(token, clientId, clientSecret);
         }
 
         public string Route => "internetaak";
@@ -48,6 +29,7 @@ namespace Kiss.Bff.InterneTaak
         public string Destination { get; }
         public string ObjectTypeUrl { get; }
 
+        private readonly AuthenticationHeaderProvider _authHeaderProvider;
 
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
@@ -63,17 +45,7 @@ namespace Kiss.Bff.InterneTaak
 
         public void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
         {
-
-            if (_authHeader != null)
-            {
-                headers.Authorization = _authHeader;
-            }
-            else if(_tokenProvider != null)
-            {
-                var token = _tokenProvider.GenerateToken(user);
-                headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            }
-
+            _authHeaderProvider.ApplyAuthorizationHeader(headers, user);
             headers.Add("Content-Crs", "EPSG:4326");
         }
     }
