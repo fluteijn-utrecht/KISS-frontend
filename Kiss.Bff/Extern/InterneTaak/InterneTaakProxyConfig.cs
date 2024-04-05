@@ -1,24 +1,46 @@
 ﻿using System.Net.Http.Headers;
+using Kiss.Bff.ZaakGerichtWerken.Klanten;
+using Kiss.Bff.ZaakGerichtWerken;
 using Yarp.ReverseProxy.Transforms;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Kiss.Bff.InterneTaak
 {
     public static class InterneTaakExtensions
     {
-        public static IServiceCollection AddInterneTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl)
-            => services.AddSingleton(new InterneTaakProxyConfig(destination, token, objectTypeUrl))
+        public static IServiceCollection AddInterneTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl, string clientId, string clientSecret)
+            => services.AddSingleton(new InterneTaakProxyConfig(destination, token, objectTypeUrl, clientId, clientSecret))
             .AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<InterneTaakProxyConfig>());
     }
 
     public class InterneTaakProxyConfig : IKissProxyRoute
     {
-        private readonly AuthenticationHeaderValue _authHeader;
+        private readonly AuthenticationHeaderValue? _authHeader;
+        private readonly ZgwTokenProvider? _tokenProvider;
 
-        public InterneTaakProxyConfig(string destination, string token, string objectTypeUrl)
+       // Secret instellen in overige obejcten!!!!
+       
+        public InterneTaakProxyConfig(string destination, string token, string objectTypeUrl, string clientId, string clientSecret)
         {
             Destination = destination;
             ObjectTypeUrl = objectTypeUrl;
-            _authHeader = new AuthenticationHeaderValue("Token", token);
+
+            if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(clientSecret) ) {
+
+                _tokenProvider = new ZgwTokenProvider(clientSecret, clientId);               
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                _authHeader = new AuthenticationHeaderValue("Token", token);
+                return;
+            }
+
+            if (_tokenProvider == null && _authHeader == null)
+            {
+                throw new Exception("Setting up a proxy for InterneTaak failed. A token or clientId/clientSecret combination should be provided");
+            }
         }
 
         public string Route => "internetaak";
@@ -29,7 +51,7 @@ namespace Kiss.Bff.InterneTaak
 
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
-            ApplyHeaders(context.ProxyRequest.Headers);
+            ApplyHeaders(context.ProxyRequest.Headers, context.HttpContext.User);
             var request = context.HttpContext.Request;
             var isObjectsEndpoint = request.Path.Value?.AsSpan().TrimEnd('/').EndsWith("objects") ?? false;
             if (request.Method == HttpMethods.Get && isObjectsEndpoint)
@@ -39,9 +61,19 @@ namespace Kiss.Bff.InterneTaak
             return new();
         }
 
-        public void ApplyHeaders(HttpRequestHeaders headers)
+        public void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
         {
-            headers.Authorization = _authHeader;
+
+            if (_authHeader != null)
+            {
+                headers.Authorization = _authHeader;
+            }
+            else if(_tokenProvider != null)
+            {
+                var token = _tokenProvider.GenerateToken(user);
+                headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
             headers.Add("Content-Crs", "EPSG:4326");
         }
     }
