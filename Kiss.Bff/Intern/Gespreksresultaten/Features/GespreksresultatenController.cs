@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.Beheer.Gespreksresultaten.Controllers
+namespace Kiss.Bff.Intern.Gespreksresultaten.Features
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace Kiss.Bff.NieuwsEnWerkinstructies.Controllers
+namespace Kiss.Bff.NieuwsEnWerkinstructies.Features
 {
     [ApiController]
     public class MarkeerGelezenController : ControllerBase

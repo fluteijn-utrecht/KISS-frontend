@@ -14,6 +14,7 @@ import type {
   ZaakContactmoment,
   ObjectContactmoment,
   ContactmomentDetails,
+  SaveContactmomentResponseModel,
 } from "./types";
 import type { ContactmomentViewModel } from "../shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -31,9 +32,30 @@ const zaaksysteemApiRoot = `/zaken/api/v1`;
 const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
 const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
 
-export const saveContactmoment = (
+export const saveContactmoment = async (
   data: Contactmoment,
-): Promise<{ url: string; gespreksId: string }> =>
+): Promise<SaveContactmomentResponseModel> => {
+  const response = await postContactmoment(data);
+  const responseBody = await response.json();
+
+  if (response.ok) {
+    return { data: responseBody };
+  }
+
+  if (response.status === 400 && Array.isArray(responseBody.invalidParams)) {
+    return {
+      errorMessage: responseBody.invalidParams
+        .map((x: { reason: string }) => x.reason)
+        .join(""),
+    };
+  }
+
+  return {
+    errorMessage: "Er is een fout opgetreden bij opslaan van het contactmoment",
+  };
+};
+
+const postContactmoment = (data: Contactmoment): Promise<Response> =>
   fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {
@@ -41,9 +63,7 @@ export const saveContactmoment = (
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
-  })
-    .then(throwIfNotOk)
-    .then((r) => r.json());
+  });
 
 export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
 

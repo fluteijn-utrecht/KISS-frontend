@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
+using Kiss.Bff.NieuwsEnWerkinstructies.Features;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

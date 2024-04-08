@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.Beheer.Links.Controllers
+namespace Kiss.Bff.Intern.Links.Features
 {
     [Route("api/[controller]")]
     [ApiController]
