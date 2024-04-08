@@ -1,6 +1,11 @@
 import { fetchLoggedIn, ServiceResult, throwIfNotOk } from "@/services";
 
-async function fetchAll(url: string) {
+type Kanaal = {
+  id: number,
+  naam: string
+}
+
+async function fetchAll(url: string): Promise<Kanaal[]> {
   return await fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((r) => r.json());
