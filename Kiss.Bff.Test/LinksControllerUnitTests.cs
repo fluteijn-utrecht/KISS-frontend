@@ -128,13 +128,13 @@ namespace Kiss.Bff.Test
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-    
+
             var updatedLinkEntity = await context.Links.FindAsync(1);
             Assert.IsNotNull(updatedLinkEntity);
             Assert.AreEqual(updatedLink.Titel, updatedLinkEntity.Titel);
             Assert.AreEqual(updatedLink.Categorie, updatedLinkEntity.Categorie);
             Assert.AreEqual(updatedLink.Url, updatedLinkEntity.Url);
-            
+
         }
 
         [TestMethod]
