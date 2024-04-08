@@ -25,7 +25,7 @@ namespace Kiss.Bff.Intern.Kanalen
             var item = await _context.Kanalen.FirstOrDefaultAsync(x => x.Id == id, cancellationToken: token);
             if (item == null)
             {
-                return NoContent();
+                return NotFound();
             }
 
             _context.Kanalen.Remove(item);

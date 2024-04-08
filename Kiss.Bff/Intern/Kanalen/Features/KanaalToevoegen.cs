@@ -46,5 +46,5 @@ namespace Kiss.Bff.Intern.Kanalen
                 
     }
 
-    public record KanaalToevoegenModel(Guid Id, string Naam);
+    public record KanaalToevoegenModel(string Naam);
 }
