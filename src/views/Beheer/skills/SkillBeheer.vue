@@ -4,17 +4,19 @@
   <template v-if="loading"><SimpleSpinner /></template>
 
   <template v-else>
-    <form class="container" @submit.prevent="submit">
-      <label for="naam" class="utrecht-form-label"
-        ><span>Naam</span>
-        <input
-          class="utrecht-textbox utrecht-textbox--html-input"
-          type="text"
-          id="naam"
-          v-model="skill.naam"
-          required
-      /></label>
-      <menu>
+    <beheer-form @submit="submit">
+      <template #formFields>
+        <label for="naam" class="utrecht-form-label"
+          ><span>Naam</span>
+          <input
+            class="utrecht-textbox utrecht-textbox--html-input"
+            type="text"
+            id="naam"
+            v-model="skill.naam"
+            required
+        /></label>
+      </template>
+      <template #formMenuListItems>
         <li>
           <router-link
             to="/Beheer/Skills/"
@@ -33,8 +35,8 @@
             Opslaan
           </utrecht-button>
         </li>
-      </menu>
-    </form>
+      </template>
+    </beheer-form>
   </template>
 </template>
 
@@ -48,6 +50,8 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 import { useRouter } from "vue-router";
+import BeheerForm from "@/components/beheer/BeheerForm.vue";
+
 const props = defineProps(["id"]);
 
 type skillType = {
@@ -132,26 +136,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style>
-menu {
-  margin-top: var(--spacing-large);
-  display: flex;
-  gap: var(--spacing-default);
-  justify-content: flex-end;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-}
-
-form {
-  margin-top: var(--spacing-default);
-}
-
-label > span {
-  display: block;
-}
-</style>

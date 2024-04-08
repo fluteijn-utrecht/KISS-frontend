@@ -9,11 +9,12 @@ using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.Beheer.Faq;
 using Kiss.Bff.Beheer.Data;
 using Microsoft.EntityFrameworkCore;
-using Kiss.Bff.Beheer.Gespreksresultaten.Controllers;
-using Kiss.Bff.Beheer.Links.Controllers;
-using static Kiss.Bff.Beheer.Links.Controllers.LinksController;
-using Kiss.Bff.NieuwsEnWerkinstructies.Controllers;
+
+using static Kiss.Bff.Intern.Links.Features.LinksController;
+using Kiss.Bff.NieuwsEnWerkinstructies.Features;
 using Kiss.Bff.Beheer.Verwerking;
+using Kiss.Bff.Intern.Links.Features;
+using Kiss.Bff.Intern.Gespreksresultaten.Features;
 
 namespace Kiss.Bff.Test
 {

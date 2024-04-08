@@ -3,6 +3,7 @@ using System;
 using Kiss.Bff.Beheer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
 {
     [DbContext(typeof(BeheerDbContext))]
-    partial class BeheerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240328102419_KanalenTabel")]
+    partial class KanalenTabel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,6 +119,30 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("VerwerkingsLogs");
+                });
+
+            modelBuilder.Entity("Kiss.Bff.Intern.Kanalen.Data.Entities.Kanaal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DateUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Naam")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Naam")
+                        .IsUnique();
+
+                    b.ToTable("Kanalen");
                 });
 
             modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", b =>

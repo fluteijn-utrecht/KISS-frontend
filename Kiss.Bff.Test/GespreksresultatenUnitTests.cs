@@ -1,5 +1,5 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Beheer.Gespreksresultaten.Controllers;
+using Kiss.Bff.Intern.Gespreksresultaten.Features;
 using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 

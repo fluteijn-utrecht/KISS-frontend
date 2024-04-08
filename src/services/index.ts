@@ -43,7 +43,7 @@ export function createLookupList<K, V>(entries: [K, V][]): LookupList<K, V> {
   };
 }
 
-export function throwIfNotOk(response: Response) {
+export function throwIfNotOk(response: Response ) {
   if (!response.ok) throw new Error(response.statusText);
   return response as Response & { ok: true };
 }

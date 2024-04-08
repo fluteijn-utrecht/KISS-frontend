@@ -15,7 +15,9 @@
 
   <back-link />
 
-  <simple-spinner v-if="saving || gespreksresultaten.loading" />
+  <simple-spinner
+    v-if="saving || gespreksresultaten.loading || kanalenKeuzelijst.loading"
+  />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
@@ -26,7 +28,11 @@
       :message="errorMessage"
     />
 
-    <template v-else-if="contactmomentStore.huidigContactmoment">
+    <template
+      v-else-if="
+        contactmomentStore.huidigContactmoment && kanalenKeuzelijst.success
+      "
+    >
       <article
         v-for="(vraag, idx) in contactmomentStore.huidigContactmoment.vragen"
         :key="idx"
@@ -330,15 +336,24 @@
               @change="setUserChannel"
               required
             >
-              <option>telefoon</option>
-              <option>e-mail</option>
-              <option>contactformulier</option>
-              <option>Twitter</option>
-              <option>Facebook</option>
-              <option>LinkedIn</option>
-              <option>live chat</option>
-              <option>Instagram</option>
-              <option>WhatsApp</option>
+              <template v-if="!kanalenKeuzelijst.data.length">
+                <option>Telefoon</option>
+                <option>E-mail</option>
+                <option>Contactformulier</option>
+                <option>Twitter</option>
+                <option>Facebook</option>
+                <option>LinkedIn</option>
+                <option>Live chat</option>
+                <option>Instagram</option>
+                <option>WhatsApp</option>
+              </template>
+              <option
+                v-else
+                v-for="{ naam } in kanalenKeuzelijst.data"
+                :key="naam"
+              >
+                {{ naam }}
+              </option>
             </select>
 
             <label
@@ -417,6 +432,7 @@ import {
   type Contactmoment,
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
+  type SaveContactmomentResponseModel,
 } from "@/features/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -435,11 +451,13 @@ import { fetchAfdelingen } from "@/composables/afdelingen";
 
 import contactmomentVraag from "@/features/contactmoment/ContactmomentVraag.vue";
 import type { Kennisartikel } from "@/features/search/types";
+import { useKanalenKeuzeLijst } from "../features/Kanalen/service";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
 const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
+const kanalenKeuzelijst = useKanalenKeuzeLijst();
 
 onMounted(() => {
   // nog even laten voor een test: rechtstreeks opvragen van een klant.
@@ -581,7 +599,13 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     Object.assign(contactmoment, cvData);
   }
 
-  const savedContactmoment = await saveContactmoment(contactmoment);
+  const savedContactmomentResult = await saveContactmoment(contactmoment);
+
+  if (savedContactmomentResult.errorMessage || !savedContactmomentResult.data) {
+    return savedContactmomentResult;
+  }
+
+  const savedContactmoment = savedContactmomentResult.data;
 
   const promises = [
     writeContactmomentDetails(contactmoment, savedContactmoment.url),
@@ -601,7 +625,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   await Promise.all(promises);
 
-  return savedContactmoment;
+  return savedContactmomentResult;
 };
 
 const navigateToPersonen = () => router.push({ name: "personen" });
@@ -613,21 +637,16 @@ async function submit() {
     if (!contactmomentStore.huidigContactmoment) return;
 
     const { vragen } = contactmomentStore.huidigContactmoment;
-    const firstVraag = vragen[0];
-    const otherVragen = vragen.slice(1);
+    const saveVraagResult = await saveVraag(vragen[0]);
 
-    let { gespreksId } = await saveVraag(firstVraag);
-    if (!gespreksId) {
-      gespreksId = nanoid();
+    if (saveVraagResult.errorMessage) {
+      handleSaveVraagError(saveVraagResult.errorMessage);
+    } else {
+      await handleSaveVraagSuccess(
+        saveVraagResult.data?.gespreksId,
+        vragen.slice(1),
+      );
     }
-
-    const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
-    await Promise.all(promises);
-
-    // klaar
-    contactmomentStore.stop();
-    toast({ text: "Het contactmoment is opgeslagen" });
-    navigateToPersonen();
   } catch (error) {
     errorMessage.value =
       "Er is een fout opgetreden bij opslaan van het contactmoment";
@@ -724,6 +743,35 @@ const addWerkinstructiesToContactmoment = (
 
 const userStore = useUserStore();
 const organisatieIds = useOrganisatieIds();
+
+const handleSaveVraagError = (msg: string) => {
+  errorMessage.value = msg;
+};
+
+const handleSaveVraagSuccess = async (
+  gespreksId: string | undefined,
+  otherVragen: Vraag[],
+) => {
+  if (!gespreksId) {
+    gespreksId = nanoid();
+  }
+
+  const promises = otherVragen.map((x) => saveVraag(x, gespreksId));
+  const otherVrageSaveResults = await Promise.all(promises);
+  const firstErrorInOtherVragen = otherVrageSaveResults.find(
+    (x) => x.errorMessage,
+  );
+
+  if (firstErrorInOtherVragen && firstErrorInOtherVragen.errorMessage) {
+    handleSaveVraagError(firstErrorInOtherVragen.errorMessage);
+    return;
+  }
+
+  // klaar
+  contactmomentStore.stop();
+  toast({ text: "Het contactmoment is opgeslagen" });
+  navigateToPersonen();
+};
 
 function setUserChannel(e: Event) {
   if (!(e.target instanceof HTMLSelectElement)) return;
