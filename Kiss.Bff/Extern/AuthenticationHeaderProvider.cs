@@ -26,10 +26,7 @@ namespace Kiss.Bff.Afdelingen
                 return;
             }
 
-            if (TokenProvider == null && AuthHeader == null)
-            {
-                throw new Exception("Setting up a proxy for InterneTaak failed. A token or clientId/clientSecret combination should be provided");
-            }
+
            
         }
 
@@ -37,6 +34,10 @@ namespace Kiss.Bff.Afdelingen
 
         public void ApplyAuthorizationHeader(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
         {
+            if (TokenProvider == null && AuthHeader == null)
+            {
+                throw new Exception("Setting up a proxy for InterneTaak failed. A token or clientId/clientSecret combination should be provided");
+            }
 
             if (AuthHeader != null)
             {
