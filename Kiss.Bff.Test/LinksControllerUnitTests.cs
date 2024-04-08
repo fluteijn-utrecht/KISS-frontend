@@ -1,8 +1,5 @@
-﻿using AngleSharp.Dom;
-using Kiss.Bff.Beheer.Data;
+﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Links.Data.Entities;
-using Kiss.Bff.Intern.Kanalen;
-using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.Intern.Links.Features;
 using Microsoft.AspNetCore.Mvc;
 using static Kiss.Bff.Intern.Links.Features.LinksController;
@@ -10,152 +7,204 @@ using static Kiss.Bff.Intern.Links.Features.LinksController;
 namespace Kiss.Bff.Test
 {
     [TestClass]
-    public class KanalenTests : TestHelper
+    public class LinksControllerUnitTests : TestHelper
     {
-        private KanaalBeheerDetails? _feature;
+        private LinksController? _controller;
 
         [TestInitialize]
         public void Initialize()
         {
             InitializeDatabase();
-            _feature = new KanaalBeheerDetails(new BeheerDbContext(_dbContextOptions));
+            _controller = new LinksController(new BeheerDbContext(_dbContextOptions));
         }
-               
+
+        //[TestMethod]
+        //public void GetLinks_ReturnsOkResult_WhenLinksExist()
+        //{
+        //    // Arrange
+        //    var dbContext = new BeheerDbContext(_dbContextOptions);
+        //    dbContext.Links.Add(new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" });
+        //    dbContext.SaveChanges();
+
+        //    // Act
+        //    var actionResult = _controller.GetLinks();
+        //    var objectResult = actionResult.Result as ObjectResult;
+        //    var resultLinks = objectResult.Value as IAsyncEnumerable<GetLinkModel>;
+
+        //    // Assert
+        //    Assert.IsNotNull(objectResult);
+        //    Assert.IsNotNull(resultLinks);
+
+        //    var linksList = new List<GetLinkModel>();
+        //    resultLinks.GetAsyncEnumerator().MoveNextAsync().AsTask().Wait();
+        //    var enumerator = resultLinks.GetAsyncEnumerator();
+        //    while (enumerator.MoveNextAsync().AsTask().Result)
+        //    {
+        //        linksList.Add(enumerator.Current);
+        //    }
+
+        //    Assert.AreEqual(1, linksList.Count);
+        //    Assert.AreEqual(1, linksList[0].Id);
+        //    Assert.AreEqual("Link 1", linksList[0].Titel);
+        //    Assert.AreEqual("Category 1", linksList[0].Categorie);
+        //    Assert.AreEqual("https://example.com/1", linksList[0].Url);
+        //}
+
+        //[TestMethod]
+        //public void GetLinks_ReturnsNotFoundResult_WhenLinksDoNotExist()
+        //{
+        //    // Act
+        //    var actionResult = _controller.GetLinks();
+        //    var notFoundResult = actionResult.Result as NotFoundResult;
+
+        //    // Assert
+        //    Assert.IsNotNull(notFoundResult);
+        //}
+
 
         [TestMethod]
-        public async Task Get_WithValidId_ReturnsKanaal()
+        public async Task GetLink_WithValidId_ReturnsLink()
         {
             // Arrange
-            var item = new Kanaal { Naam = "testkanaal" };
+            var link = new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" };
 
             using var context = new BeheerDbContext(_dbContextOptions);
-            context.Kanalen.RemoveRange(context.Kanalen);
-            await context.Kanalen.AddAsync(item);
+            await context.Links.AddAsync(link);
             await context.SaveChangesAsync();
 
-            var feature = new KanaalBeheerDetails(context);
+            var controller = new LinksController(context);
 
             // Act
-            var result = await feature.Get(item.Id);
+            var result = await controller.GetLink(1);
 
             // Assert
-            Assert.IsInstanceOfType(result.Value, typeof(KanaalOverzichtModel));
+            Assert.IsInstanceOfType(result.Value, typeof(Link));
 
-            var returnedItem = result?.Value;
-            Assert.AreEqual(item.Id, returnedItem?.Id);
-            Assert.AreEqual(item.Naam, returnedItem?.Naam);
-            
+            var returnedLink = result?.Value;
+            Assert.AreEqual(link.Id, returnedLink?.Id);
+            Assert.AreEqual(link.Titel, returnedLink?.Titel);
+            Assert.AreEqual(link.Categorie, returnedLink?.Categorie);
+            Assert.AreEqual(link.Url, returnedLink?.Url);
         }
 
         [TestMethod]
-        public async Task Get_WithInvalidId_ReturnsNotFoundResult()
+        public async Task GetLink_WithInvalidId_ReturnsNotFoundResult()
         {
             // Arrange
             using var context = new BeheerDbContext(_dbContextOptions);
-            var feature = new KanaalBeheerDetails(context);
+            var controller = new LinksController(context);
 
             // Act
-            var result = await feature.Get(Guid.NewGuid());
+            var result = await controller.GetLink(1);
 
             // Assert
             Assert.IsInstanceOfType(result.Result, typeof(NotFoundResult));
         }
 
-
-
         [TestMethod]
-        public async Task Put_WithValidId_ReturnsNoContent()
+        public async Task PutLink_WithValidId_ReturnsNoContent()
         {
             // Arrange
-            var item = new Kanaal { Naam = "testkanaal" };
+            var link = new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" };
 
             using var context = new BeheerDbContext(_dbContextOptions);
-            context.Kanalen.RemoveRange(context.Kanalen);
-            await context.Kanalen.AddAsync(item);
+            await context.Links.AddAsync(link);
             await context.SaveChangesAsync();
 
 
-            var updatemodel = new KanaalBewerkenModel(item.Id, "Updated");
+            var updatedLink = new LinkPutModel
+            {
+                Id = 1,
+                Titel = "Updated Link",
+                Categorie = "Updated Category",
+                Url = "https://example.com/updated"
+            };
 
 
-            var feature = new KanaalBewerken(context);
+            var controller = new LinksController(context);
 
             // Act
-            var result = await feature.Put(item.Id, updatemodel, CancellationToken.None);
+            var result = await controller.PutLink(1, updatedLink, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-    
-            var updatedEntity = await context.Kanalen.FindAsync(item.Id);
-            Assert.IsNotNull(updatedEntity);
-            Assert.AreEqual(updatemodel.Naam, updatedEntity.Naam);
-           
-            
+
+            var updatedLinkEntity = await context.Links.FindAsync(1);
+            Assert.IsNotNull(updatedLinkEntity);
+            Assert.AreEqual(updatedLink.Titel, updatedLinkEntity.Titel);
+            Assert.AreEqual(updatedLink.Categorie, updatedLinkEntity.Categorie);
+            Assert.AreEqual(updatedLink.Url, updatedLinkEntity.Url);
+
         }
 
         [TestMethod]
         public async Task PutLink_WithInvalidId_ReturnsNotFoundResult()
         {
             // Arrange
-            var item = new Kanaal { Naam = "testkanaal" };
+            var link = new LinksController.LinkPutModel
+            {
+                Id = 1,
+                Titel = "Link 1",
+                Categorie = "Category 1",
+                Url = "https://example.com/1"
+            };
 
             using var context = new BeheerDbContext(_dbContextOptions);
-            context.Kanalen.RemoveRange(context.Kanalen);
-            await context.Kanalen.AddAsync(item);
-            await context.SaveChangesAsync();
-
-            var id = Guid.NewGuid();
-            var updatemodel = new KanaalBewerkenModel(id, "Updated");
-
-            var feature = new KanaalBewerken(context);
+            var controller = new LinksController(context);
 
             // Act
-            var result = await feature.Put(id, updatemodel, CancellationToken.None);
+            var result = await controller.PutLink(1, link, CancellationToken.None);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
-
         [TestMethod]
-        public async Task Post_WithValid_ReturnsCreatedResult()
+        public async Task PostLink_WithValidLink_ReturnsCreatedResultWithLink()
         {
             // Arrange
-            using var context = new BeheerDbContext(_dbContextOptions);
-            context.Kanalen.RemoveRange(context.Kanalen);
-            
-            var postmodel = new KanaalToevoegenModel("testkanaal");
+            var link = new LinkPostModel
+            {
+                Titel = "New Link",
+                Categorie = "New Category",
+                Url = "https://example.com/new"
+            };
 
-            var feature = new KanaalToevoegen(context);
+            using var context = new BeheerDbContext(_dbContextOptions);
+            var controller = new LinksController(context);
 
             // Act
-            var result = feature.Post(postmodel, CancellationToken.None);
+            var result = await controller.PostLink(link);
 
             // Assert
-            Assert.IsInstanceOfType(result.Result, typeof(ActionResult<KanaalToevoegenModel>));
+            Assert.IsInstanceOfType(result.Result, typeof(CreatedAtActionResult));
 
+            var createdAtActionResult = (CreatedAtActionResult?)result.Result;
+            var createdLink = (Link?)createdAtActionResult?.Value;
+            Assert.AreEqual(link.Titel, createdLink?.Titel);
+            Assert.AreEqual(link.Categorie, createdLink?.Categorie);
+            Assert.AreEqual(link.Url, createdLink?.Url);
         }
 
         [TestMethod]
         public async Task DeleteLink_WithValidId_ReturnsNoContent()
         {
             // Arrange
-            var item = new Kanaal { Naam = "testkanaal" };
+            var link = new Link { Id = 1, Titel = "Link 1", Categorie = "Category 1", Url = "https://example.com/1" };
 
             using var context = new BeheerDbContext(_dbContextOptions);
-            context.Kanalen.RemoveRange(context.Kanalen);
-            await context.Kanalen.AddAsync(item);
+            await context.Links.AddAsync(link);
             await context.SaveChangesAsync();
 
-            var feature = new KanaalVerwijderen(context);
+            var controller = new LinksController(context);
 
             // Act
-            var result = await feature.Delete(item.Id, CancellationToken.None);
+            var result = await controller.DeleteLink(1);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
 
-            var deletedLink = await context.Kanalen.FindAsync(item.Id);
+            var deletedLink = await context.Links.FindAsync(1);
             Assert.IsNull(deletedLink);
         }
 
@@ -164,11 +213,10 @@ namespace Kiss.Bff.Test
         {
             // Arrange
             using var context = new BeheerDbContext(_dbContextOptions);
-            var feature = new KanaalVerwijderen(context);
+            var controller = new LinksController(context);
 
             // Act
-            var result = await feature.Delete(Guid.NewGuid(), CancellationToken.None);
-
+            var result = await controller.DeleteLink(1);
 
             // Assert
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
