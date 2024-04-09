@@ -276,7 +276,10 @@ const getUrlVoorGetKlantById = (ding: BedrijfSearchParameter | undefined) => {
   if ("vestigingsnummer" in ding) {
     if (!ding.vestigingsnummer) return "";
     const url = new URL(klantRootUrl);
-    url.searchParams.set("subjecBedrijf__vestinginsnummer", ding.vestigingsnummer);
+    url.searchParams.set(
+      "subjecBedrijf__vestinginsnummer",
+      ding.vestigingsnummer,
+    );
     url.searchParams.set("subjectType", KlantType.Bedrijf);
     return url.toString();
   } else if ("kvkNummer" in ding) {
@@ -290,10 +293,43 @@ const getUrlVoorGetKlantById = (ding: BedrijfSearchParameter | undefined) => {
     if (!ding.innNnpId) return "";
     const url = new URL(klantRootUrl);
     // url.searchParams.set("subjectNietnatuurlijkPersoon__nnNip", ding.nnNip);
-    url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", ding.innNnpId);
+    url.searchParams.set(
+      "subjectNietNatuurlijkPersoon__innNnpId",
+      ding.innNnpId,
+    );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
   }
+
+  return "";
+};
+
+const getUrlVoorGetKlantByVestigingOrRsin = (
+  ding: CreateBedrijfKlantIdentifier | undefined,
+) => {
+  if (!ding) {
+    return "";
+  }
+
+  if ("vestigingsnummer" in ding) {
+    if (!ding.vestigingsnummer) return "";
+    const url = new URL(klantRootUrl);
+    url.searchParams.set(
+      "subjecBedrijf__vestinginsnummer",
+      ding.vestigingsnummer,
+    );
+    url.searchParams.set("subjectType", KlantType.Bedrijf);
+    return url.toString();
+  } else if ("rsin" in ding) {
+    if (!ding.rsin) return "";
+    const url = new URL(klantRootUrl);
+    // url.searchParams.set("subjectNietnatuurlijkPersoon__nnNip", ding.nnNip);
+    url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", ding.rsin);
+    url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
+    return url.toString();
+  }
+
+  return "";
 };
 
 const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
@@ -304,7 +340,7 @@ const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
   return url.toString();
 };
 
-export const useKlantByVestigingsnummer = (
+export const useKlantByIdentifier = (
   getId: () => BedrijfSearchParameter | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetKlantById(getId());
@@ -319,17 +355,27 @@ export const useKlantByVestigingsnummer = (
   });
 };
 
+export type CreateBedrijfKlantIdentifier =
+  | {
+      vestigingsnummer: string;
+    }
+  | {
+      rsin: string;
+    };
+
+//maak een klant aan in het klanten register als die nog niet bestaat
+//bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan
 export async function ensureKlantForVestigingsnummer(
   {
     bedrijfsnaam,
-    vestigingsnummer,
+    identifier,
   }: {
-    vestigingsnummer: string;
     bedrijfsnaam: string;
+    identifier: CreateBedrijfKlantIdentifier;
   },
   bronorganisatie: string,
 ) {
-  const url = getUrlVoorGetKlantById({vestigingsnummer:  vestigingsnummer} );
+  const url = getUrlVoorGetKlantByVestigingOrRsin(identifier);
   const uniqueId = url && url + "_single";
 
   if (!url || !uniqueId) throw new Error();
@@ -342,6 +388,31 @@ export async function ensureKlantForVestigingsnummer(
     mutate(idUrl, first);
     return first;
   }
+  console.log("identifier", identifier);
+  let subjectType: KlantType;
+  let subjectIdentificatie = {};
+  //afhankelijk van het type 'bedrijf' slaan we andere gegevens op
+  if ("vestigingsnummer" in identifier) {
+    subjectType = KlantType.Bedrijf;
+    subjectIdentificatie = { vestigingsNummer: identifier.vestigingsnummer };
+  } else if ("rsin" in identifier) {
+    subjectType = KlantType.NietNatuurlijkPersoon;
+    subjectIdentificatie = { innNnpId: identifier.rsin };
+    //}
+    // else if ("kvkNummer" in identifier) {
+    //   subjectType = KlantType.NietNatuurlijkPersoon; //todo: willen we dit?
+    //   subjectIdentificatie = { innNnpId: identifier.kvkNummer }; // en dit
+
+    // basisprofiel opvragen en daarin de eigenaar en daarzit rsin in
+
+    // https://localhost:3000/api/kvk/v1/basisprofielen/68727720
+
+    // dus waar we https://localhost:3000/api/kvk/v1/vestigingsprofielen/000037143557 opvragen nu ook basisprofiel vragen
+
+    // dat is in getVestingUrl
+  } else {
+    throw new Error("Kan geen klant aanmaken zonder identificatie");
+  }
 
   const response = await fetchLoggedIn(klantRootUrl, {
     method: "POST",
@@ -352,8 +423,8 @@ export async function ensureKlantForVestigingsnummer(
       bronorganisatie,
       // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: nanoid(8),
-      subjectIdentificatie: { vestigingsNummer: vestigingsnummer },
-      subjectType: KlantType.Bedrijf,
+      subjectIdentificatie: subjectIdentificatie,
+      subjectType: subjectType, ///
       bedrijfsnaam,
     }),
   });

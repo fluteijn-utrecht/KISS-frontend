@@ -59,15 +59,40 @@ const detailLink = computed(() => {
 });
 
 const create = async () => {
+  // console.log("-------");
+  // if (klantData.success && handelsregisterData.success) {
+  //   console.log(
+
+  //     handelsregisterData.data,
+  //   );
+  // }
+  // console.log("-------");
+
   //hier moeten we weten of de klant met een vestigingsnr of een ander id aangemaakt moet worden
   //dus voor bedrijfIdentificatie moet door de enricher ook een ander ding teruggeveen kunnen worden
   if (!bedrijfIdentificatie.value) throw new Error();
+
   const bedrijfsnaam = handelsBedrijfsnaam.success
     ? handelsBedrijfsnaam.data
     : "";
+
+  let x;
+
+  if (handelsregisterData.success) {
+    if (handelsregisterData.data?.vestigingsnummer) {
+      x = { vestigingsnummer: handelsregisterData.data.vestigingsnummer };
+    } else if (handelsregisterData.data?.rsin) {
+      x = { rsin: handelsregisterData.data.rsin };
+    }
+  }
+
+  if (!x) {
+    return;
+  }
+
   const newKlant = await ensureKlantForVestigingsnummer(
     {
-      vestigingsnummer: bedrijfIdentificatie.value,
+      identifier: x,
       bedrijfsnaam,
     },
     organisatieIds.value[0] || "",
@@ -107,10 +132,10 @@ const result: EnrichedBedrijf = reactive({
   detailLink,
   create,
 
-  subjectType: mapServiceData(handelsregisterData, (h) => h?.subjectType ?? ""),
-  subjectIdentificatie: mapServiceData(
-    handelsregisterData,
-    (h) => h?.subjectIdentificatie ?? "",
-  ),
+  // subjectType: mapServiceData(handelsregisterData, (h) => h?..subjectType ?? ""),
+  // subjectIdentificatie: mapServiceData(
+  //   handelsregisterData,
+  //   (h) => h?.subjectIdentificatie ?? "",
+  // ),
 });
 </script>

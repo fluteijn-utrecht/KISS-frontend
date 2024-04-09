@@ -1,5 +1,5 @@
 import type { Klant } from "../../types";
-import { useKlantByVestigingsnummer } from "../../service";
+import { useKlantByIdentifier } from "../../service";
 import { combineEnrichers } from "@/services";
 import { useBedrijfByVestigingsnummer } from "../service/UseGetOndernememing";
 import type { Bedrijf } from "../types";
@@ -9,18 +9,20 @@ const isKlant = (klantOfBedrijf: Klant | Bedrijf): klantOfBedrijf is Klant => {
 };
 
 export const useEnrichedBedrijf = combineEnrichers(
-  useKlantByVestigingsnummer,
+  useKlantByIdentifier,
   useBedrijfByVestigingsnummer,
-  GetId, //de property waarmee je het bijbehorende object in de andere bron gaat zoeken
+  GetSharedIdentifier, //de property waarmee je het bijbehorende object in de andere bron gaat zoeken
   isKlant,
 );
 
-function GetId(
+function GetSharedIdentifier(
   klantofbedrijf: Klant | Bedrijf,
 ): BedrijfSearchParameter | undefined {
   if (klantofbedrijf.vestigingsnummer) {
     return { vestigingsnummer: klantofbedrijf.vestigingsnummer };
-  } else if (klantofbedrijf.kvkNummer) { toch moor dat ID??
+  } else if (klantofbedrijf.innNnpId) {
+    return { innNnpId: klantofbedrijf.innNnpId };
+  } else if (klantofbedrijf.kvkNummer) {
     return { kvkNummer: klantofbedrijf.kvkNummer };
   }
   return;

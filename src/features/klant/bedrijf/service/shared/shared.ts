@@ -67,10 +67,19 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
   const { straatHuisnummer, postcodeWoonplaats } = buitenlandsAdres ?? {};
 
   let vestiging: KvkVestiging | undefined;
+  let naamgeving: KvkNaamgeving | undefined;
 
   if (vestigingsnummer) {
     try {
       vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
+    } catch (e) {
+      console.error(e);
+    }
+  } else {
+    // als er geen verstiging is dan gaan we ervan uit dat het een
+    // niet natuurlijk persoon betreft waarvan we de RSIN proberen te achterhalen
+    try {
+      naamgeving = await fetchNaamgevingen(getNaamgevingenUrl(kvkNummer));
     } catch (e) {
       console.error(e);
     }
@@ -84,8 +93,11 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
     straatnaam: straatnaam || straatHuisnummer,
     woonplaats: plaats || postcodeWoonplaats,
     ...(vestiging ?? {}),
+    ...(naamgeving ?? {}),
   };
 }
+
+////
 
 const fetchVestiging = (url: string) =>
   fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapVestiging);
@@ -116,6 +128,34 @@ const mapVestiging = ({
     huisletter,
   };
 };
+
+//// KvK naamgevingen //////////////////////////////////////////
+
+const naamgevingenUrl = "/api/kvk/v1/naamgevingen/kvknummer/";
+
+type KvkNaamgeving = {
+  rsin: string;
+  kvkNummer: string;
+  handelsnaam: string;
+};
+
+const fetchNaamgevingen = (url: string) =>
+  fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapNaamgeving);
+
+const getNaamgevingenUrl = (kvkNummer?: string) => {
+  if (!kvkNummer) return "";
+  return naamgevingenUrl + kvkNummer;
+};
+
+const mapNaamgeving = ({ rsin, kvkNummer, naam }: any): KvkNaamgeving => {
+  return {
+    rsin,
+    kvkNummer,
+    handelsnaam: naam,
+  };
+};
+
+////
 
 const hasFoutCode = (body: unknown, code: string) => {
   if (
