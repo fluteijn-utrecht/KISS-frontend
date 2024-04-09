@@ -26,8 +26,9 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
 
   const params = new URLSearchParams();
   params.set("pagina", page?.toString() ?? "1");
-  params.set("type", "hoofdvestiging");
-  params.append("type", "nevenvestiging");
+  //todo: we willen ook niet natuurlijke personen zonder verstiging vinden, moeten we dat nog op bepaalde types filteren
+  //params.set("type", "hoofdvestiging");
+  //params.append("type", "nevenvestiging");
 
   const searchParams = bedrijfQueryDictionary[query.field](query.value);
 

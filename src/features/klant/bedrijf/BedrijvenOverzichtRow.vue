@@ -39,7 +39,9 @@
           type="button"
           title="Aanmaken"
           v-else
-          @click="result.create()"
+          @click="
+            result.create(result.subjectType, result.subjectIdentificatie)
+          "
         />
       </template>
     </td>

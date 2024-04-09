@@ -1,13 +1,14 @@
 import { ServiceResult, enforceOneOrZero } from "@/services";
 import { searchBedrijvenInHandelsRegister } from "./shared/shared";
+import type { BedrijfSearchParameter } from "../enricher/bedrijf-enricher";
 
 const zoekenUrl = "/api/kvk/v2/zoeken";
 
 export const useBedrijfByVestigingsnummer = (
-  getVestigingsnummer: () => string | undefined,
+  getId: () => BedrijfSearchParameter | undefined,
 ) => {
   const getUrl = () => {
-    const vestigingsnummer = getVestigingsnummer();
+    const vestigingsnummer = getId();
     if (!vestigingsnummer) return "";
     const searchParams = new URLSearchParams();
     searchParams.set("vestigingsnummer", vestigingsnummer);

@@ -11,6 +11,28 @@ const isKlant = (klantOfBedrijf: Klant | Bedrijf): klantOfBedrijf is Klant => {
 export const useEnrichedBedrijf = combineEnrichers(
   useKlantByVestigingsnummer,
   useBedrijfByVestigingsnummer,
-  (either) => either.vestigingsnummer,
-  isKlant
+  GetId, //de property waarmee je het bijbehorende object in de andere bron gaat zoeken
+  isKlant,
 );
+
+function GetId(
+  klantofbedrijf: Klant | Bedrijf,
+): BedrijfSearchParameter | undefined {
+  if (klantofbedrijf.vestigingsnummer) {
+    return { vestigingsnummer: klantofbedrijf.vestigingsnummer };
+  } else if (klantofbedrijf.kvkNummer) { toch moor dat ID??
+    return { kvkNummer: klantofbedrijf.kvkNummer };
+  }
+  return;
+}
+
+export type BedrijfSearchParameter =
+  | {
+      vestigingsnummer: string;
+    }
+  | {
+      kvkNummer: string;
+    }
+  | {
+      innNnpId: string;
+    };

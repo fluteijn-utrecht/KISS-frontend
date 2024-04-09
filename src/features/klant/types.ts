@@ -11,13 +11,15 @@ export interface Klant {
   emailadres?: string;
   bsn?: string;
   bedrijfsnaam?: string;
-  vestigingsnummer?: string;
+  vestigingsnummer?: string; //als de klant een Kvk klant is, dan gebruiken we dit gegeven om het klantenregistern en de kvk te kunnen matchen. Als het een bedrijf betreft
   url?: string;
+  kvkNummer?: string; //als de klant een Kvk klant is, dan gebruiken we dit gegeven om het klantenregistern en de kvk te kunnen matchen. Als het een kvk entiteit zonder vestiging betreft
 }
 
 export enum KlantType {
   Persoon = "natuurlijk_persoon",
   Bedrijf = "vestiging",
+  NietNatuurlijkPersoon = "niet_natuurlijk_persoon",
 }
 
 export interface Contactverzoek {

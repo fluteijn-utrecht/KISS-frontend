@@ -11,6 +11,8 @@ export interface Bedrijf {
   huisletter?: string;
   huisnummertoevoeging?: string;
   woonplaats?: string;
+
+  
 }
 
 export interface EnrichedBedrijf {
@@ -19,6 +21,10 @@ export interface EnrichedBedrijf {
   postcodeHuisnummer: ServiceData<string>;
   email: ServiceData<string>;
   telefoonnummer: ServiceData<string>;
+
+  subjectType: ServiceData<string>;
+  subjectIdentificatie: ServiceData<any>;
+
   create: () => Promise<void>;
   detailLink: ServiceData<{
     to: string;
