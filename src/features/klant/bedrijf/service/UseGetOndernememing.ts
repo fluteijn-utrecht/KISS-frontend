@@ -4,7 +4,7 @@ import type { BedrijfSearchParameter } from "../enricher/bedrijf-enricher";
 
 const zoekenUrl = "/api/kvk/v2/zoeken";
 
-export const useBedrijfByVestigingsnummer = (
+export const useBedrijfByIdentifier = (
   getId: () => BedrijfSearchParameter | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetBedrijfById(getId());
@@ -39,8 +39,8 @@ const getUrlVoorGetBedrijfById = (ding: BedrijfSearchParameter | undefined) => {
     if (!ding.kvkNummer) return "";
     searchParams.set("kvkNummer", ding.kvkNummer);
     return `${zoekenUrl}?${searchParams}`;
-  } else if ("innNnpId" in ding) {
-    searchParams.set("rsin", ding.innNnpId); //todo: is dit ok? is rsin en innnnpid hetzelfde? kvk api kent alleen rsin
+  } else if ("rsin" in ding) {
+    searchParams.set("rsin", ding.rsin); //todo: is dit ok? is rsin en innnnpid hetzelfde? kvk api kent alleen rsin
     return `${zoekenUrl}?${searchParams}`;
   }
 

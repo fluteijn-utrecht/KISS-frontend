@@ -7,7 +7,7 @@
           'hide-sidebar': $route.meta.hideSidebar,
         }"
       >
-        <global-search class="search-bar" v-if="route.meta.showSearch" />
+        <!-- <global-search class="search-bar" v-if="route.meta.showSearch" /> -->
 
         <nav>
           <ul>

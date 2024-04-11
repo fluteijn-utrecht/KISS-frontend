@@ -18,6 +18,10 @@ import {
 } from "./types";
 import { nanoid } from "nanoid";
 import type { BedrijfSearchParameter } from "./bedrijf/enricher/bedrijf-enricher";
+import {
+  NietNatuurlijkPersoonIdentifiers,
+  usePreferredNietNatuurlijkPersoonIdentifier,
+} from "./bedrijf/service/UsePreferredNietNatuurlijkPersoonIdentifier";
 
 type QueryParam = [string, string][];
 
@@ -99,12 +103,15 @@ function mapKlant(obj: any): Klant {
 }
 
 function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
+  console.log("searchKlanten url", url);
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((j) => parsePagination(j, mapKlant))
     .then((p) => {
       p.page.forEach((klant) => {
+        console.log("searchKlanten klant found", klant);
+
         const idUrl = getKlantIdUrl(klant.id);
         if (idUrl) {
           mutate(idUrl, klant);
@@ -212,6 +219,8 @@ export function useKlantByBsn(
   getBsn: () => string | undefined,
 ): ServiceData<Klant | null> {
   const getUrl = () => getKlantBsnUrl(getBsn());
+
+  console.log("serach klant by BSN ");
 
   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
     getUniqueId: () => getSingleBsnSearchId(getBsn()),
@@ -350,6 +359,8 @@ export const useKlantByIdentifier = (
     return url && url + "_single";
   };
 
+  console.log("useKlantByIdentifier");
+
   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
     getUniqueId,
   });
@@ -361,6 +372,9 @@ export type CreateBedrijfKlantIdentifier =
     }
   | {
       rsin: string;
+    }
+  | {
+      kvknummer: string;
     };
 
 //maak een klant aan in het klanten register als die nog niet bestaat
@@ -388,29 +402,44 @@ export async function ensureKlantForVestigingsnummer(
     mutate(idUrl, first);
     return first;
   }
-  console.log("identifier", identifier);
-  let subjectType: KlantType;
+
+  let subjectType: KlantType | null = null;
   let subjectIdentificatie = {};
   //afhankelijk van het type 'bedrijf' slaan we andere gegevens op
   if ("vestigingsnummer" in identifier) {
     subjectType = KlantType.Bedrijf;
     subjectIdentificatie = { vestigingsNummer: identifier.vestigingsnummer };
-  } else if ("rsin" in identifier) {
-    subjectType = KlantType.NietNatuurlijkPersoon;
-    subjectIdentificatie = { innNnpId: identifier.rsin };
-    //}
-    // else if ("kvkNummer" in identifier) {
-    //   subjectType = KlantType.NietNatuurlijkPersoon; //todo: willen we dit?
-    //   subjectIdentificatie = { innNnpId: identifier.kvkNummer }; // en dit
-
-    // basisprofiel opvragen en daarin de eigenaar en daarzit rsin in
-
-    // https://localhost:3000/api/kvk/v1/basisprofielen/68727720
-
-    // dus waar we https://localhost:3000/api/kvk/v1/vestigingsprofielen/000037143557 opvragen nu ook basisprofiel vragen
-
-    // dat is in getVestingUrl
   } else {
+    //als we niet te maken hebben met een vestiging
+    //dan gebruiken we afhankelijk van de mogelijkheden van de gerbuite registers
+    //rsin of kvkNummer. We halen de ingestelde voorkeurswaarde identifier op
+    //en kijken of dit geven beschikbaar is zodat we hiermee een klant kunnen aanmaken
+    const preferredNietNatuurlijkPersoonIdentifier =
+      await usePreferredNietNatuurlijkPersoonIdentifier();
+    if (
+      "rsin" in identifier &&
+      preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+        NietNatuurlijkPersoonIdentifiers.rsin
+    ) {
+      subjectType = KlantType.NietNatuurlijkPersoon;
+      subjectIdentificatie = { innNnpId: identifier.rsin };
+    } else if (
+      "kvknummer" in identifier &&
+      preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+        NietNatuurlijkPersoonIdentifiers.kvkNummer
+    ) {
+      subjectType = KlantType.NietNatuurlijkPersoon;
+      subjectIdentificatie = { innNnpId: identifier.kvknummer };
+    }
+
+    console.log("###################");
+    console.log(
+      preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier,
+    );
+    console.log("###################");
+  }
+
+  if (!subjectType || !subjectIdentificatie) {
     throw new Error("Kan geen klant aanmaken zonder identificatie");
   }
 

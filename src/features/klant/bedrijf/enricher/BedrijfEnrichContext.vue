@@ -38,10 +38,10 @@ const klantBedrijfsnaam = mapServiceData(
   (k) => k?.bedrijfsnaam ?? "",
 );
 
-const handelsBedrijfsnaam = mapServiceData(
-  handelsregisterData,
-  (k) => k?.bedrijfsnaam ?? "",
-);
+const handelsBedrijfsnaam = mapServiceData(handelsregisterData, (k) => {
+  console.log(k);
+  return k?.bedrijfsnaam ?? "";
+});
 
 const bedrijfsnaam = computed(() => {
   if (handelsBedrijfsnaam.success && handelsBedrijfsnaam.data)
