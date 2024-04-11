@@ -1,23 +1,25 @@
 ﻿using System.Net.Http.Headers;
+using Kiss.Bff.ZaakGerichtWerken;
 using Yarp.ReverseProxy.Transforms;
 
 namespace Kiss.Bff.Afdelingen
 {
     public static class AfdelingenExtensions
     {
-        public static IServiceCollection AddAfdelingenProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl)
-            => services.AddSingleton<IKissProxyRoute>(new AfdelingenProxyConfig(destination, token, objectTypeUrl));
+        public static IServiceCollection AddAfdelingenProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl, string clientId, string clientSecret)
+            => services.AddSingleton<IKissProxyRoute>(new AfdelingenProxyConfig(destination, token, objectTypeUrl,  clientId,  clientSecret));
     }
 
     public class AfdelingenProxyConfig : IKissProxyRoute
     {
-        private readonly AuthenticationHeaderValue _authHeader;
-
-        public AfdelingenProxyConfig(string destination, string token, string objectTypeUrl)
+        private readonly AuthenticationHeaderProvider _authHeaderProvider;
+     
+        public AfdelingenProxyConfig(string destination, string token, string objectTypeUrl, string clientId, string clientSecret)
         {
             Destination = destination;
             ObjectTypeUrl = objectTypeUrl;
-            _authHeader = new AuthenticationHeaderValue("Token", token);
+
+            _authHeaderProvider = new AuthenticationHeaderProvider(token, clientId, clientSecret);           
         }
 
         public string Route => "afdelingen";
@@ -28,7 +30,7 @@ namespace Kiss.Bff.Afdelingen
 
         public ValueTask ApplyRequestTransform(RequestTransformContext context)
         {
-            ApplyHeaders(context.ProxyRequest.Headers);
+            ApplyHeaders(context.ProxyRequest.Headers, context.HttpContext.User);
             var request = context.HttpContext.Request;
             var isObjectsEndpoint = request.Path.Value?.AsSpan().TrimEnd('/').EndsWith("objects") ?? false;
             if (request.Method == HttpMethods.Get && isObjectsEndpoint)
@@ -38,9 +40,9 @@ namespace Kiss.Bff.Afdelingen
             return new();
         }
 
-        public void ApplyHeaders(HttpRequestHeaders headers)
+        public void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
         {
-            headers.Authorization = _authHeader;
+            _authHeaderProvider.ApplyAuthorizationHeader(headers, user);
             headers.Add("Content-Crs", "EPSG:4326");
         }
     }

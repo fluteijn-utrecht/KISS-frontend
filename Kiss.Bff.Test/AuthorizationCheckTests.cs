@@ -68,6 +68,7 @@ namespace Kiss.Bff.Test
         [DataRow("/api/faq")]
         [DataRow("/api/contactmomentendetails?id=1")]
         [DataRow("/api/zaaksysteem/deeplinkconfig")]
+        [DataRow("/api/KanaalToevoegen", "post")]
         public async Task Test(string url, string method = "get")
         {
             using var request = new HttpRequestMessage(new(method), url);
