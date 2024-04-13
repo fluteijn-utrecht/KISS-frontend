@@ -45,6 +45,11 @@ const handelsBedrijfsnaam = mapServiceData(handelsregisterData, (k) => {
 
 const bedrijfsnaam = computed(() => {
   if (handelsBedrijfsnaam.success && handelsBedrijfsnaam.data)
+    console.log(" handelsBedrijfsnaam ", handelsBedrijfsnaam.data);
+  if (klantBedrijfsnaam.success && klantBedrijfsnaam.data)
+    console.log(" klantBedrijfsnaam ", klantBedrijfsnaam.data);
+
+  if (handelsBedrijfsnaam.success && handelsBedrijfsnaam.data)
     return handelsBedrijfsnaam;
   if (klantBedrijfsnaam.success && klantBedrijfsnaam.data)
     return klantBedrijfsnaam;
@@ -54,6 +59,7 @@ const bedrijfsnaam = computed(() => {
 });
 
 const detailLink = computed(() => {
+  console.log("ok we have got a bedrijfsnaam, now make a detail link");
   const n = bedrijfsnaam.value.success ? bedrijfsnaam.value?.data : null;
   return mapServiceData(klantData, (k) => mapLink(k, n ?? null));
 });
