@@ -15,6 +15,12 @@ export interface Klant {
   url?: string;
   innNnpId?: string; //als de klant een Kvk klant is, dan gebruiken we dit gegeven om het klantenregistern en de kvk te kunnen matchen. Als het een kvk entiteit zonder vestiging betreft
   kvkNummer?: string; //todo: uitzoeken waarom niet dit ipv innNnpId > als de klant een Kvk klant is, dan gebruiken we dit gegeven om het klantenregistern en de kvk te kunnen matchen. Als het een kvk entiteit zonder vestiging betreft
+
+  subjectIdentificatie?: subjectIdentificatie;
+}
+
+export interface subjectIdentificatie {
+  innNnpId: string;
 }
 
 export enum KlantType {

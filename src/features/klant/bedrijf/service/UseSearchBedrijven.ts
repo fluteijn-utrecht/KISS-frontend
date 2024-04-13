@@ -35,7 +35,7 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
   searchParams.forEach((tuple) => {
     params.set(...tuple);
   });
-
+  console.log("getSearchBedrijvenUrl, ", getSearchBedrijvenUrl);
   return `${zoekenUrl}?${params}`;
 };
 

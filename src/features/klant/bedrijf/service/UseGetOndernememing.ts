@@ -8,6 +8,7 @@ export const useBedrijfByIdentifier = (
   getId: () => BedrijfSearchParameter | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetBedrijfById(getId());
+  console.log("=zoek bedrijf info=== getUrlVoorGetBedrijfById", getUrl());
 
   // useBedrijfByVestigingsnummer private //////////////////////////
 
@@ -25,10 +26,11 @@ export const useBedrijfByIdentifier = (
 };
 
 const getUrlVoorGetBedrijfById = (ding: BedrijfSearchParameter | undefined) => {
-  if (!ding) {
+  console.log("=zoek bedrijf info=== getUrlVoorGetBedrijfById 1", ding);
+  if (!ding || typeof ding != "object") {
     return "";
   }
-
+  console.log("=zoek bedrijf info=== getUrlVoorGetBedrijfById 11", ding);
   const searchParams = new URLSearchParams();
 
   if ("vestigingsnummer" in ding) {
@@ -41,6 +43,9 @@ const getUrlVoorGetBedrijfById = (ding: BedrijfSearchParameter | undefined) => {
     return `${zoekenUrl}?${searchParams}`;
   } else if ("rsin" in ding) {
     searchParams.set("rsin", ding.rsin); //todo: is dit ok? is rsin en innnnpid hetzelfde? kvk api kent alleen rsin
+    return `${zoekenUrl}?${searchParams}`;
+  } else if ("innNnpId" in ding) {
+    searchParams.set("rsin", ding.innNnpId); //todo: is dit ok? is rsin en innnnpid hetzelfde? kvk api kent alleen rsin
     return `${zoekenUrl}?${searchParams}`;
   }
 

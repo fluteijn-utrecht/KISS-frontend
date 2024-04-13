@@ -22,6 +22,7 @@ const telefoonnummer = mapServiceData(
 const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
 
 function mapLink(klant: Klant | null, naam: string | null) {
+  console.log("--klant", klant, naam);
   return (
     klant && {
       to: getKlantUrl(klant),
@@ -59,12 +60,18 @@ const bedrijfsnaam = computed(() => {
 });
 
 const detailLink = computed(() => {
-  console.log("ok we have got a bedrijfsnaam, now make a detail link");
   const n = bedrijfsnaam.value.success ? bedrijfsnaam.value?.data : null;
+  console.log(
+    "ok we have got a bedrijfsnaam, now make a detail link",
+    bedrijfsnaam.value.success,
+    bedrijfsnaam.value?.data,
+    klantData.success,
+  );
   return mapServiceData(klantData, (k) => mapLink(k, n ?? null));
 });
 
 const create = async () => {
+  console.log("-------0");
   // console.log("-------");
   // if (klantData.success && handelsregisterData.success) {
   //   console.log(
@@ -123,7 +130,10 @@ const create = async () => {
   //     organisatieIds.value[0] || "",
   //   );
   // }
+
+  console.log("-------1");
   const url = getKlantUrl(newKlant);
+  console.log("-------2");
   router.push(url);
 };
 

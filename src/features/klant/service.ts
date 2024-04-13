@@ -359,7 +359,7 @@ export const useKlantByIdentifier = (
     return url && url + "_single";
   };
 
-  console.log("useKlantByIdentifier");
+  console.log("--useKlantByIdentifier", getUrl(), getId());
 
   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
     getUniqueId,
@@ -418,14 +418,14 @@ export async function ensureKlantForVestigingsnummer(
       await usePreferredNietNatuurlijkPersoonIdentifier();
     if (
       "rsin" in identifier &&
-      preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+      preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.rsin
     ) {
       subjectType = KlantType.NietNatuurlijkPersoon;
       subjectIdentificatie = { innNnpId: identifier.rsin };
     } else if (
       "kvknummer" in identifier &&
-      preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+      preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.kvkNummer
     ) {
       subjectType = KlantType.NietNatuurlijkPersoon;
@@ -434,7 +434,7 @@ export async function ensureKlantForVestigingsnummer(
 
     console.log("###################");
     console.log(
-      preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier,
+      preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier,
     );
     console.log("###################");
   }

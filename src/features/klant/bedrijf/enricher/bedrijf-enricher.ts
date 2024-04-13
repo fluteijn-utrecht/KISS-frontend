@@ -44,7 +44,7 @@ function GetSharedIdentifier(
 
     if (klantofbedrijf._typeOfKlant === "bedrijf") {
       if (
-        preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+        preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.rsin
       ) {
         //dus.... we hebben een bedrijf en we willen de bijbehorende klant zoeken
@@ -59,7 +59,7 @@ function GetSharedIdentifier(
       }
 
       if (
-        preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+        preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.kvkNummer
       ) {
         //dus.... we hebben een bedrijf en we willen de bijbehorende klant zoeken
@@ -76,7 +76,7 @@ function GetSharedIdentifier(
 
     if (klantofbedrijf._typeOfKlant === "klant") {
       if (
-        preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+        preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.rsin
       ) {
         //dus.... we hebben een klant en we willen de bijbehorende onderneming zoeken bij de kvk
@@ -91,7 +91,7 @@ function GetSharedIdentifier(
       }
 
       if (
-        preferredNietNatuurlijkPersoonIdentifier.NietNatuurlijkPersoonIdentifier ===
+        preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.kvkNummer
       ) {
         //dus.... we hebben een klant en we willen de bijbehorende onderneming zoeken bij de kvk
@@ -129,4 +129,7 @@ export type BedrijfSearchParameter =
     }
   | {
       rsin: string;
+    }
+  | {
+      innNnpIp: string;
     };

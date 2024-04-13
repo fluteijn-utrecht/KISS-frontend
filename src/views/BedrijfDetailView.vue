@@ -128,13 +128,41 @@ const contactmomenten = useContactmomentenByKlantId(
 //   contactmomentenPage.value = page;
 // };
 
-const getVestigingsnummer = () =>
-  !klant.success || !klant.data.vestigingsnummer
-    ? ""
-    : klant.data.vestigingsnummer;
+const getVestigingsnummer = () => {
+  if (klant.success && klant.data) {
+    if (klant.data.vestigingsnummer) {
+      return klant.data.vestigingsnummer;
+    } else if (klant.data.subjectIdentificatie?.innNnpId)
+      return klant.data.subjectIdentificatie?.innNnpId;
+  }
+
+  return "";
+
+  // return !klant.success || !klant.data.vestigingsnummer
+  //   ? ""
+  //   : klant.data.vestigingsnummer;
+};
+
 const klantVestigingsnummer = computed(getVestigingsnummer);
 
+//todo
+//todo zaken opzoekne bij vestigingsnummer of by iinNpIdd!!!!!!!!!!!!!!
+//todo
+//todo
 const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
 
-const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
+console.log("=zoek bedrijf info===", klantVestigingsnummer.value);
+
+const bedrijf = useBedrijfByVestigingsnummer(() => {
+  if (klant.success && klant.data) {
+    if (klant.data.vestigingsnummer) {
+      return { vestigingsnummer: klant.data.vestigingsnummer };
+    } else if (klant.data.subjectIdentificatie?.innNnpId)
+      return { rsin: klant.data.subjectIdentificatie?.innNnpId };
+  }
+
+  return;
+});
+
+//console.log("=gevonden bedrijf info===", bedrijf.state, bedrijf.data);
 </script>

@@ -10,7 +10,7 @@ export async function usePreferredNietNatuurlijkPersoonIdentifier() {
 }
 
 export type NietNatuurlijkPersoonIdentifier = {
-  NietNatuurlijkPersoonIdentifier: string;
+  nietNatuurlijkPersoonIdentifier: string;
 };
 
 export const NietNatuurlijkPersoonIdentifiers = {
