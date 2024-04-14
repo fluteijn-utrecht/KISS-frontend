@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Ganss.Xss;
 using IdentityModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.Feedback
@@ -15,6 +16,7 @@ namespace Kiss.Bff.Feedback
         
         private readonly IConfiguration _configuration;
 
+       
         public GetNietNatuurlijkPersoonIdentifier( IConfiguration configuration)
         {        
             _configuration = configuration;
@@ -27,6 +29,7 @@ namespace Kiss.Bff.Feedback
         //maar voor niet natuurlijke personen moet men rsin of kvknummer kunnen gebruiken
         //openklant accepteert geen kvknummer, de e-Suite kent geen rsin         
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Get()
         {
             //todo: get from configuration

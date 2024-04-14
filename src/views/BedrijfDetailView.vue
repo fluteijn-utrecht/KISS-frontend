@@ -1,6 +1,5 @@
 <template>
   <back-link />
-
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
 
   <tab-list v-model="currentTab">
@@ -76,17 +75,14 @@ import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contactmoment";
 import {
-  useBedrijfByVestigingsnummer,
+  useBedrijfByIdentifier,
   HandelsregisterGegevens,
   KlantDetails,
   useKlantById,
 } from "@/features/klant";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
-import {
-  useZakenByVestigingsnummer,
-  ZakenOverzicht,
-} from "@/features/zaaksysteem";
+import { useZakenByIdentifier, ZakenOverzicht } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek/overzicht/service";
@@ -118,7 +114,6 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage,
 );
 
-const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl,
   // contactmomentenPage
@@ -128,32 +123,18 @@ const contactmomenten = useContactmomentenByKlantId(
 //   contactmomentenPage.value = page;
 // };
 
-const getVestigingsnummer = () => {
+const zaken = useZakenByIdentifier(() => {
   if (klant.success && klant.data) {
     if (klant.data.vestigingsnummer) {
-      return klant.data.vestigingsnummer;
+      return { vestigingsnummer: klant.data.vestigingsnummer };
     } else if (klant.data.subjectIdentificatie?.innNnpId)
-      return klant.data.subjectIdentificatie?.innNnpId;
+      return { innNnpId: klant.data.subjectIdentificatie?.innNnpId };
   }
 
-  return "";
+  return;
+});
 
-  // return !klant.success || !klant.data.vestigingsnummer
-  //   ? ""
-  //   : klant.data.vestigingsnummer;
-};
-
-const klantVestigingsnummer = computed(getVestigingsnummer);
-
-//todo
-//todo zaken opzoekne bij vestigingsnummer of by iinNpIdd!!!!!!!!!!!!!!
-//todo
-//todo
-const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
-
-console.log("=zoek bedrijf info===", klantVestigingsnummer.value);
-
-const bedrijf = useBedrijfByVestigingsnummer(() => {
+const bedrijf = useBedrijfByIdentifier(() => {
   if (klant.success && klant.data) {
     if (klant.data.vestigingsnummer) {
       return { vestigingsnummer: klant.data.vestigingsnummer };

@@ -12,6 +12,7 @@ export const useBedrijfByIdentifier = (
 
   // useBedrijfByVestigingsnummer private //////////////////////////
 
+  //regelt alleen maar een unieke id voor de cache ofzo. 
   const getUniqueId = () => {
     const url = getUrl();
     return url && url + "_single";

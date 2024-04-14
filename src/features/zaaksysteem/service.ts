@@ -21,6 +21,7 @@ import type {
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { toRelativeProxyUrl } from "@/helpers/url";
+import type { BedrijfSearchParameter } from "../klant/bedrijf/enricher/bedrijf-enricher";
 
 const zakenProxyRoot = "/api/zaken";
 
@@ -31,7 +32,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
       "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
-      bsn.value
+      bsn.value,
     );
     return url.toString();
   };
@@ -78,15 +79,44 @@ export const useZaakById = (id: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, singleZaakFetcher);
 };
 
-export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
+//
+//
+//
+//Todo: bespreken er lijkt geen rol meegepost te worden bij het opslaan van 
+//een zaak bij een contactmoment voor een bedrijf.
+//daardoor is de zaak niet terug te vinden als je het bedrijf weer zoekt.
+//er wordt dan gezocht adhv de rollen 
+//(een rol lijkt hier een verkeerde term), het gaat niet om de rollen het bedrijf heeft, maar met welke rollen het bedrijf aan welke zaken gekoppeld is
+//als je een contactmoment aanmaakt, met daaraan gekoppeld een bedrijf en een zaak
+//en je zoekt het bedrijf weer op dan staat de zaak wel bij het contactmoment, maar de zaken tab blijft leeg
+//zo werkt het al op prod. is dit een bug of een feature?!
+//
+//
+//
+
+
+
+
+export const useZakenByIdentifier = (
+  getId: () => BedrijfSearchParameter | undefined,
+) => {
   const getUrl = () => {
-    if (!vestigingsnummer.value) return "";
+    const searchParam = getId();
+    if (!searchParam) return "";
     const url = new URL(location.href);
     url.pathname = zaaksysteemBaseUri + "/rollen";
-    url.searchParams.set(
-      "betrokkeneIdentificatie__vestiging__vestigingsNummer",
-      vestigingsnummer.value
-    );
+
+    if ("vestigingsnummer" in searchParam) {
+      url.searchParams.set(
+        "betrokkeneIdentificatie__vestiging__vestigingsNummer",
+        searchParam.vestigingsnummer,
+      );
+    } else if ("innNnpId" in searchParam) {
+      url.searchParams.set(
+        "betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId",
+        searchParam.innNnpId,
+      );
+    }
     return url.toString();
   };
 
@@ -99,7 +129,8 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
           const split = (x as RolType)?.zaak?.split("/");
           if (!Array.isArray(split) || !split.length) {
             throw new Error(
-              "kan url van zaak niet ophalen obv rol: " + x && JSON.stringify(x)
+              "kan url van zaak niet ophalen obv rol: " + x &&
+                JSON.stringify(x),
             );
           }
           const id = split[split.length - 1];
@@ -108,7 +139,7 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
           const result = await singleZaakFetcher(url);
           mutate(url, result);
           return result;
-        })
+        }),
       );
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
@@ -123,7 +154,7 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
 
   //we gaan er in de interface vanuit dat een rol maar 1 keer voorkomt bij een zaak
   const rol = rollen.find(
-    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam
+    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam,
   );
 
   if (!rol || !rol.betrokkeneIdentificatie) {
@@ -164,7 +195,7 @@ const getStatus = async (statusUrl: string) => {
   if (!statusId) return "";
 
   const statusType = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/statussen/${statusId}`
+    `${zaaksysteemBaseUri}/statussen/${statusId}`,
   )
     .then(throwIfNotOk)
     .then((x) => x.json())
@@ -185,10 +216,10 @@ const getStatus = async (statusUrl: string) => {
 };
 
 const getDocumenten = async (
-  zaakurl: string
+  zaakurl: string,
 ): Promise<Array<ZaakDocument | null>> => {
   const infoObjecten = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
+    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`,
   )
     .then(throwIfNotOk)
     .then((x) => x.json());
@@ -344,7 +375,7 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
 
 export async function updateToelichting(
   zaak: ZaakDetails,
-  toelichting: string
+  toelichting: string,
 ): Promise<void> {
   const url = getZaakUrl(zaak.id);
   const res = await fetchLoggedIn(url, {

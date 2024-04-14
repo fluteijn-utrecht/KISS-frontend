@@ -9,5 +9,5 @@ export { default as HandelsregisterGegevens } from "./bedrijf/HandelsregisterGeg
 export { default as KlantDetails } from "./KlantDetails.vue";
 
 export { usePersoonByBsn } from "./persoon/service";
-export { useBedrijfByIdentifier as useBedrijfByVestigingsnummer } from "./bedrijf/service/UseGetOndernememing";
+export { useBedrijfByIdentifier as useBedrijfByIdentifier } from "./bedrijf/service/UseGetOndernememing";
 export { useKlantById } from "./service";
