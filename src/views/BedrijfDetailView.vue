@@ -114,14 +114,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage,
 );
 
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  // contactmomentenPage
-);
-
-// const onContactmomentenNavigate = (page: number) => {
-//   contactmomentenPage.value = page;
-// };
+const contactmomenten = useContactmomentenByKlantId(klantUrl);
 
 const zaken = useZakenByIdentifier(() => {
   if (klant.success && klant.data) {
@@ -144,6 +137,4 @@ const bedrijf = useBedrijfByIdentifier(() => {
 
   return;
 });
-
-//console.log("=gevonden bedrijf info===", bedrijf.state, bedrijf.data);
 </script>

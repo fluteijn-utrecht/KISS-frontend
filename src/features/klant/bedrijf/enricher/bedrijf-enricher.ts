@@ -16,15 +16,16 @@ const isKlant = (klantOfBedrijf: Klant | Bedrijf): klantOfBedrijf is Klant => {
 //moeten matchen. Door incompatabiliteit tussen esuite en openklant
 //moet de gebruikte matching gegeven configurabel zijn.
 //aangezien de combineenrichers geen async functie support voor
-//het vaststellen van de gedeelde identifier, moeten we  het te gebruiken veld dan toch mar preventief
-//hier alvast binnenhalen
+//het vaststellen van de gedeelde identifier,
+//moeten we het te gebruiken veld dan maar preventief alvast binnenhalen
 const preferredNietNatuurlijkPersoonIdentifier =
   await usePreferredNietNatuurlijkPersoonIdentifier();
 
+//zoekt een bedrijf in twee bronnen en combineert het resultaat.
 export const useEnrichedBedrijf = combineEnrichers(
   useKlantByIdentifier,
   useBedrijfByIdentifier,
-  GetSharedIdentifier, //de property waarmee je het bijbehorende object in de andere bron gaat zoeken
+  GetSharedIdentifier, //een functie die de property waarmee je het bijbehorende object in de andere bron gaat zoeken
   isKlant,
 );
 
@@ -40,20 +41,16 @@ function GetSharedIdentifier(
     //willen daar de bijbehorende klant bij zoeken
     //dan moeten we afhanekelijk van de context waarin KISS draait (openklant of e-suite)
     //het kvknummer (e-suite) of rsin (openklant) gebruiken om de bijbehordengegeevesn te zoeken
-    // welk gegeven gebruikt moet worden kunnen we opvragen
+    //welk gegeven gebruikt moet worden kunnen we opvragen
 
     if (klantofbedrijf._typeOfKlant === "bedrijf") {
       if (
         preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.rsin
       ) {
-        //dus.... we hebben een bedrijf en we willen de bijbehorende klant zoeken
+        //dus we hebben nu een bedrijf en we willen de bijbehorende klant zoeken
         //op basis van de rsin die in openklant innNnpId heet
-
         if ("rsin" in klantofbedrijf && klantofbedrijf.rsin) {
-          console.log(
-            "we hebben een kvk record en willen het bijbehorende klant record zoeken adhv de rsin van de kvk die moet matchen met de innNnpId van openklant",
-          );
           return { innNnpId: klantofbedrijf.rsin };
         }
       }
@@ -62,13 +59,9 @@ function GetSharedIdentifier(
         preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.kvkNummer
       ) {
-        //dus.... we hebben een bedrijf en we willen de bijbehorende klant zoeken
+        //dus we hebben nu een bedrijf en we willen de bijbehorende klant zoeken
         //op basis van de rsin die in openklant innNnpId heet
-
         if ("rsin" in klantofbedrijf && klantofbedrijf.kvkNummer) {
-          console.log(
-            "we hebben een kvk record en willen het bijbehorende klant record zoeken adhv het kvknummer van de kvk die moet matchen met het kvknummer in de e-suite",
-          );
           return { kvkNummer: klantofbedrijf.kvkNummer };
         }
       }
@@ -79,13 +72,9 @@ function GetSharedIdentifier(
         preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.rsin
       ) {
-        //dus.... we hebben een klant en we willen de bijbehorende onderneming zoeken bij de kvk
+        //dus we hebben nu een klant en we willen de bijbehorende onderneming zoeken bij de kvk
         //op basis van de rsin die in openklant innNnpId heet
-
         if ("rsin" in klantofbedrijf && klantofbedrijf.innNnpId) {
-          console.log(
-            "we hebben een klant record en willen het bijbehorende kvk record zoeken adhv het innNnPid van openklant die moet matchen met de rsin in de kvk",
-          );
           return { rsin: klantofbedrijf.innNnpId };
         }
       }
@@ -94,26 +83,15 @@ function GetSharedIdentifier(
         preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
         NietNatuurlijkPersoonIdentifiers.kvkNummer
       ) {
-        //dus.... we hebben een klant en we willen de bijbehorende onderneming zoeken bij de kvk
+        //dus we hebben nu een klant en we willen de bijbehorende onderneming zoeken bij de kvk
         //op basis van het kvknummer
-
         if ("rsin" in klantofbedrijf && klantofbedrijf.kvkNummer) {
-          console.log(
-            "we hebben een klant record en willen het bijbehorende kvk record zoeken adhv het kvknummer van de e-suite die moet matchen met het kvknummer in de kvk",
-          );
           return { kvkNummer: klantofbedrijf.kvkNummer };
         }
       }
     }
   }
 
-  // if (klantofbedrijf.vestigingsnummer) {
-  //   return { vestigingsnummer: klantofbedrijf.vestigingsnummer };
-  // } else if (klantofbedrijf.innNnpId) {
-  //   return { innNnpId: klantofbedrijf.innNnpId };
-  // } else if (klantofbedrijf.kvkNummer) {
-  //   return { kvkNummer: klantofbedrijf.kvkNummer };
-  // }
   return;
 }
 

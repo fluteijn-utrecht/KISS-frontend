@@ -23,7 +23,6 @@ type KvkVestiging = {
 };
 
 export function searchBedrijvenInHandelsRegister(url: string) {
-  console.log("!!searchBedrijvenInHandelsRegister----> ", url);
   return fetchLoggedIn(url).then(async (r) => {
     if (r.status === 404) {
       const body = await r.json();
@@ -67,10 +66,9 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
 
   const { straatHuisnummer, postcodeWoonplaats } = buitenlandsAdres ?? {};
 
-  console.log("123123123");
   let vestiging: KvkVestiging | undefined;
   let naamgeving: KvkNaamgeving | undefined;
-  console.log("999999999999");
+
   if (vestigingsnummer) {
     try {
       vestiging = await fetchVestiging(getVestingUrl(vestigingsnummer));
@@ -78,12 +76,10 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
       console.error(e);
     }
   } else {
-    console.log("0000000");
     // als er geen verstiging is dan gaan we ervan uit dat het een
     // niet natuurlijk persoon betreft waarvan we de RSIN proberen te achterhalen
     try {
       naamgeving = await fetchNaamgevingen(getNaamgevingenUrl(kvkNummer));
-      console.log("0000000", naamgeving);
     } catch (e) {
       console.error(e);
     }

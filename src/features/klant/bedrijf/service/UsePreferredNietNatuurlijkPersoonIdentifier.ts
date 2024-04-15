@@ -1,12 +1,10 @@
-import { ServiceResult, fetchLoggedIn, throwIfNotOk } from "@/services";
+import { fetchLoggedIn, throwIfNotOk } from "@/services";
 
 export async function usePreferredNietNatuurlijkPersoonIdentifier() {
-  // return ServiceResult.fromPromise<NietNatuurlijkPersoonIdentifier>(
   return await fetchLoggedIn("/api/GetNietNatuurlijkPersoonIdentifier")
     .then(throwIfNotOk)
     .then((r) => r.json())
     .then((r: NietNatuurlijkPersoonIdentifier) => r);
-  //  );
 }
 
 export type NietNatuurlijkPersoonIdentifier = {

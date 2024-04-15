@@ -22,7 +22,7 @@ namespace Kiss.Bff.Feedback
             _configuration = configuration;
         }
 
-        //Afhaneklijk van de gebruikte bron (openklant of e-Suite)
+        //Afhanekelijk van de gebruikte bron (openklant of e-Suite)
         //moet men in kunnen stellen welk gegeven gebruikt wordt om 
         //Kvk gegevens aan klanten te koppelen
         //standaard wordt daar vestigingsnummer voor gebruikt,
@@ -32,7 +32,9 @@ namespace Kiss.Bff.Feedback
         [AllowAnonymous]
         public IActionResult Get()
         {
+            //
             //todo: get from configuration
+            //
             return Ok(new NietNatuurlijkPersoonIdentifierModel("rsin"));
         }
 

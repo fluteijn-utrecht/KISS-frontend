@@ -11,7 +11,7 @@ export interface Bedrijf {
   huisletter?: string;
   huisnummertoevoeging?: string;
   woonplaats?: string;
-  innNnpId?: string; //todo: dit gebruiken of toch kvk als het een 'bedrijf' zonder vestiging betreft
+  innNnpId?: string;
   rsin?: string;
 }
 
@@ -21,9 +21,6 @@ export interface EnrichedBedrijf {
   postcodeHuisnummer: ServiceData<string>;
   email: ServiceData<string>;
   telefoonnummer: ServiceData<string>;
-
-  // subjectType: ServiceData<string>;
-  // subjectIdentificatie: ServiceData<any>;
 
   create: () => Promise<void>;
   detailLink: ServiceData<{

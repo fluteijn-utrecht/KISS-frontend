@@ -103,15 +103,12 @@ function mapKlant(obj: any): Klant {
 }
 
 function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
-  console.log("searchKlanten url", url);
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((j) => parsePagination(j, mapKlant))
     .then((p) => {
       p.page.forEach((klant) => {
-        console.log("searchKlanten klant found", klant);
-
         const idUrl = getKlantIdUrl(klant.id);
         if (idUrl) {
           mutate(idUrl, klant);
@@ -220,8 +217,6 @@ export function useKlantByBsn(
 ): ServiceData<Klant | null> {
   const getUrl = () => getKlantBsnUrl(getBsn());
 
-  console.log("serach klant by BSN ");
-
   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
     getUniqueId: () => getSingleBsnSearchId(getBsn()),
   });
@@ -258,7 +253,6 @@ export async function ensureKlantForBsn(
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       bronorganisatie,
-      // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: nanoid(8),
       subjectIdentificatie: { inpBsn: bsn },
       subjectType: KlantType.Persoon,
@@ -277,34 +271,34 @@ export async function ensureKlantForBsn(
   return newKlant;
 }
 
-const getUrlVoorGetKlantById = (ding: BedrijfSearchParameter | undefined) => {
-  if (!ding) {
+const getUrlVoorGetKlantById = (
+  bedrijfSearchParameter: BedrijfSearchParameter | undefined,
+) => {
+  if (!bedrijfSearchParameter) {
     return "";
   }
 
-  if ("vestigingsnummer" in ding) {
-    if (!ding.vestigingsnummer) return "";
+  if ("vestigingsnummer" in bedrijfSearchParameter) {
+    if (!bedrijfSearchParameter.vestigingsnummer) return "";
     const url = new URL(klantRootUrl);
     url.searchParams.set(
       "subjecBedrijf__vestinginsnummer",
-      ding.vestigingsnummer,
+      bedrijfSearchParameter.vestigingsnummer,
     );
     url.searchParams.set("subjectType", KlantType.Bedrijf);
     return url.toString();
-  } else if ("kvkNummer" in ding) {
-    if (!ding.kvkNummer) return "";
+  } else if ("kvkNummer" in bedrijfSearchParameter) {
+    if (!bedrijfSearchParameter.kvkNummer) return "";
     const url = new URL(klantRootUrl);
-    // url.searchParams.set("subjectNietnatuurlijkPersoon__nnNip", ding.nnNip);
-    url.searchParams.set("kvkNummer", ding.kvkNummer);
+    url.searchParams.set("kvkNummer", bedrijfSearchParameter.kvkNummer);
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
-  } else if ("innNnpId" in ding) {
-    if (!ding.innNnpId) return "";
+  } else if ("innNnpId" in bedrijfSearchParameter) {
+    if (!bedrijfSearchParameter.innNnpId) return "";
     const url = new URL(klantRootUrl);
-    // url.searchParams.set("subjectNietnatuurlijkPersoon__nnNip", ding.nnNip);
     url.searchParams.set(
       "subjectNietNatuurlijkPersoon__innNnpId",
-      ding.innNnpId,
+      bedrijfSearchParameter.innNnpId,
     );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
@@ -314,26 +308,28 @@ const getUrlVoorGetKlantById = (ding: BedrijfSearchParameter | undefined) => {
 };
 
 const getUrlVoorGetKlantByVestigingOrRsin = (
-  ding: CreateBedrijfKlantIdentifier | undefined,
+  createBedrijfKlantIdentifier: CreateBedrijfKlantIdentifier | undefined,
 ) => {
-  if (!ding) {
+  if (!createBedrijfKlantIdentifier) {
     return "";
   }
 
-  if ("vestigingsnummer" in ding) {
-    if (!ding.vestigingsnummer) return "";
+  if ("vestigingsnummer" in createBedrijfKlantIdentifier) {
+    if (!createBedrijfKlantIdentifier.vestigingsnummer) return "";
     const url = new URL(klantRootUrl);
     url.searchParams.set(
       "subjecBedrijf__vestinginsnummer",
-      ding.vestigingsnummer,
+      createBedrijfKlantIdentifier.vestigingsnummer,
     );
     url.searchParams.set("subjectType", KlantType.Bedrijf);
     return url.toString();
-  } else if ("rsin" in ding) {
-    if (!ding.rsin) return "";
+  } else if ("rsin" in createBedrijfKlantIdentifier) {
+    if (!createBedrijfKlantIdentifier.rsin) return "";
     const url = new URL(klantRootUrl);
-    // url.searchParams.set("subjectNietnatuurlijkPersoon__nnNip", ding.nnNip);
-    url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", ding.rsin);
+    url.searchParams.set(
+      "subjectNietNatuurlijkPersoon__innNnpId",
+      createBedrijfKlantIdentifier.rsin,
+    );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
   }
@@ -358,8 +354,6 @@ export const useKlantByIdentifier = (
     const url = getUrl();
     return url && url + "_single";
   };
-
-  console.log("--useKlantByIdentifier", getUrl(), getId());
 
   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
     getUniqueId,
@@ -431,12 +425,6 @@ export async function ensureKlantForVestigingsnummer(
       subjectType = KlantType.NietNatuurlijkPersoon;
       subjectIdentificatie = { innNnpId: identifier.kvknummer };
     }
-
-    console.log("###################");
-    console.log(
-      preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier,
-    );
-    console.log("###################");
   }
 
   if (!subjectType || !subjectIdentificatie) {

@@ -26,7 +26,7 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
 
   const params = new URLSearchParams();
   params.set("pagina", page?.toString() ?? "1");
-  //todo: we willen ook niet natuurlijke personen zonder verstiging vinden, moeten we dat nog op bepaalde types filteren
+  //todo: we zoeken niet natuurlijke personen en verstigingen. Welke types precies wel of niet
   //params.set("type", "hoofdvestiging");
   //params.append("type", "nevenvestiging");
 
@@ -35,7 +35,6 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
   searchParams.forEach((tuple) => {
     params.set(...tuple);
   });
-  console.log("getSearchBedrijvenUrl, ", getSearchBedrijvenUrl);
   return `${zoekenUrl}?${params}`;
 };
 

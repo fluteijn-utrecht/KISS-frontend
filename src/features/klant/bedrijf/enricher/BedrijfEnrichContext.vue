@@ -22,7 +22,6 @@ const telefoonnummer = mapServiceData(
 const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
 
 function mapLink(klant: Klant | null, naam: string | null) {
-  console.log("--klant", klant, naam);
   return (
     klant && {
       to: getKlantUrl(klant),
@@ -46,11 +45,6 @@ const handelsBedrijfsnaam = mapServiceData(handelsregisterData, (k) => {
 
 const bedrijfsnaam = computed(() => {
   if (handelsBedrijfsnaam.success && handelsBedrijfsnaam.data)
-    console.log(" handelsBedrijfsnaam ", handelsBedrijfsnaam.data);
-  if (klantBedrijfsnaam.success && klantBedrijfsnaam.data)
-    console.log(" klantBedrijfsnaam ", klantBedrijfsnaam.data);
-
-  if (handelsBedrijfsnaam.success && handelsBedrijfsnaam.data)
     return handelsBedrijfsnaam;
   if (klantBedrijfsnaam.success && klantBedrijfsnaam.data)
     return klantBedrijfsnaam;
@@ -61,79 +55,45 @@ const bedrijfsnaam = computed(() => {
 
 const detailLink = computed(() => {
   const n = bedrijfsnaam.value.success ? bedrijfsnaam.value?.data : null;
-  console.log(
-    "ok we have got a bedrijfsnaam, now make a detail link",
-    bedrijfsnaam.value.success,
-    bedrijfsnaam.value?.data,
-    klantData.success,
-  );
   return mapServiceData(klantData, (k) => mapLink(k, n ?? null));
 });
 
 const create = async () => {
-  console.log("-------0");
-  // console.log("-------");
-  // if (klantData.success && handelsregisterData.success) {
-  //   console.log(
-
-  //     handelsregisterData.data,
-  //   );
-  // }
-  // console.log("-------");
-
+  //We maken bij een kvk bedrijf een klant aan.
   //hier moeten we weten of de klant met een vestigingsnr of een ander id aangemaakt moet worden
-  //dus voor bedrijfIdentificatie moet door de enricher ook een ander ding teruggeveen kunnen worden
+  //voor niet natuurlijke personen gebruiken we rsin
+  //voor overige bedrijven het vestigingsnummer
   if (!bedrijfIdentificatie.value) throw new Error();
 
   const bedrijfsnaam = handelsBedrijfsnaam.success
     ? handelsBedrijfsnaam.data
     : "";
 
-  let x;
+  let identifier;
 
   if (handelsregisterData.success) {
     if (handelsregisterData.data?.vestigingsnummer) {
-      x = { vestigingsnummer: handelsregisterData.data.vestigingsnummer };
+      identifier = {
+        vestigingsnummer: handelsregisterData.data.vestigingsnummer,
+      };
     } else if (handelsregisterData.data?.rsin) {
-      x = { rsin: handelsregisterData.data.rsin };
+      identifier = { rsin: handelsregisterData.data.rsin };
     }
   }
 
-  if (!x) {
+  if (!identifier) {
     return;
   }
 
   const newKlant = await ensureKlantForVestigingsnummer(
     {
-      identifier: x,
+      identifier: identifier,
       bedrijfsnaam,
     },
     organisatieIds.value[0] || "",
   );
 
-  // let newKlant = null;
-
-  // if (vestigingsnummer.value) {
-  //   newKlant = await ensureKlantForVestigingsnummer(
-  //     {
-  //       vestigingsnummer: vestigingsnummer.value,
-  //       bedrijfsnaam,
-  //     },
-  //     organisatieIds.value[0] || "",
-  //   );
-  // } else {
-  //   newKlant = await ensureKlantForNietNatuurlijkPersoon(
-  //     {
-  //       bedrijfsnaam,
-  //       id: handelsregisterData..state..value,
-  //     },
-  //     organisatieIds.value[0] || "",
-  //   );
-  // }
-
-  console.log("-------1");
   const url = getKlantUrl(newKlant);
-  console.log("-------2");
   router.push(url);
 };
 
@@ -147,11 +107,5 @@ const result: EnrichedBedrijf = reactive({
   telefoonnummer,
   detailLink,
   create,
-
-  // subjectType: mapServiceData(handelsregisterData, (h) => h?..subjectType ?? ""),
-  // subjectIdentificatie: mapServiceData(
-  //   handelsregisterData,
-  //   (h) => h?.subjectIdentificatie ?? "",
-  // ),
 });
 </script>
