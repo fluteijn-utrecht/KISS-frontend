@@ -58,7 +58,7 @@ type KvkPagination = {
 };
 
 async function mapHandelsRegister(json: any): Promise<Bedrijf> {
-  const { vestigingsnummer, kvkNummer, naam, adres } = json ?? {};
+  const { vestigingsnummer, kvkNummer, naam, adres, type } = json ?? {};
 
   const { binnenlandsAdres, buitenlandsAdres } = adres ?? {};
 
@@ -87,6 +87,7 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
 
   return {
     _typeOfKlant: "bedrijf",
+    type,
     kvkNummer,
     vestigingsnummer,
     bedrijfsnaam: naam,

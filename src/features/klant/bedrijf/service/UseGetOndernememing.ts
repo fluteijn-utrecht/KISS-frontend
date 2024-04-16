@@ -1,11 +1,11 @@
 import { ServiceResult, enforceOneOrZero } from "@/services";
 import { searchBedrijvenInHandelsRegister } from "./shared/shared";
-import type { BedrijfSearchParameter } from "../enricher/bedrijf-enricher";
+import type { BedrijfIdentifier } from "../types";
 
 const zoekenUrl = "/api/kvk/v2/zoeken";
 
 export const useBedrijfByIdentifier = (
-  getId: () => BedrijfSearchParameter | undefined,
+  getId: () => BedrijfIdentifier | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetBedrijfById(getId());
 
@@ -26,7 +26,7 @@ export const useBedrijfByIdentifier = (
 };
 
 const getUrlVoorGetBedrijfById = (
-  bedrijfsZoekParamter: BedrijfSearchParameter | undefined,
+  bedrijfsZoekParamter: BedrijfIdentifier | undefined,
 ) => {
   if (!bedrijfsZoekParamter || typeof bedrijfsZoekParamter != "object") {
     return "";
@@ -34,19 +34,23 @@ const getUrlVoorGetBedrijfById = (
 
   const searchParams = new URLSearchParams();
 
-  if ("vestigingsnummer" in bedrijfsZoekParamter) {
-    if (!bedrijfsZoekParamter.vestigingsnummer) return "";
+  if (
+    "vestigingsnummer" in bedrijfsZoekParamter &&
+    bedrijfsZoekParamter.vestigingsnummer
+  ) {
     searchParams.set("vestigingsnummer", bedrijfsZoekParamter.vestigingsnummer);
     return `${zoekenUrl}?${searchParams}`;
-  } else if ("kvkNummer" in bedrijfsZoekParamter) {
-    if (!bedrijfsZoekParamter.kvkNummer) return "";
+  }
+
+  if ("kvkNummer" in bedrijfsZoekParamter && bedrijfsZoekParamter.kvkNummer) {
     searchParams.set("kvkNummer", bedrijfsZoekParamter.kvkNummer);
+    searchParams.set("type", "rechtspersoon");
     return `${zoekenUrl}?${searchParams}`;
-  } else if ("rsin" in bedrijfsZoekParamter) {
+  }
+
+  if ("rsin" in bedrijfsZoekParamter && bedrijfsZoekParamter.rsin) {
     searchParams.set("rsin", bedrijfsZoekParamter.rsin);
-    return `${zoekenUrl}?${searchParams}`;
-  } else if ("innNnpId" in bedrijfsZoekParamter) {
-    searchParams.set("rsin", bedrijfsZoekParamter.innNnpId);
+    searchParams.set("type", "rechtspersoon");
     return `${zoekenUrl}?${searchParams}`;
   }
 

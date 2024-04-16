@@ -7,7 +7,7 @@ import type { Bedrijf as Bedrijf, EnrichedBedrijf } from "../types";
 import { useEnrichedBedrijf } from "./bedrijf-enricher";
 import { useOrganisatieIds } from "@/stores/user";
 import type { Klant } from "../../types";
-import { ensureKlantForVestigingsnummer } from "../../service";
+import { ensureKlantForBedrijfIdentifier } from "../../service";
 
 const props = defineProps<{ record: Bedrijf | Klant }>();
 const [bedrijfIdentificatie, klantData, handelsregisterData] =
@@ -71,23 +71,23 @@ const create = async () => {
 
   let identifier;
 
-  if (handelsregisterData.success) {
-    if (handelsregisterData.data?.vestigingsnummer) {
-      identifier = {
-        vestigingsnummer: handelsregisterData.data.vestigingsnummer,
-      };
-    } else if (handelsregisterData.data?.rsin) {
-      identifier = { rsin: handelsregisterData.data.rsin };
-    }
+  if (!handelsregisterData.success) return;
+
+  if (handelsregisterData.data?.vestigingsnummer) {
+    identifier = {
+      vestigingsnummer: handelsregisterData.data.vestigingsnummer,
+    };
+  } else if (handelsregisterData.data?.rsin) {
+    identifier = { rsin: handelsregisterData.data.rsin };
   }
 
   if (!identifier) {
     return;
   }
 
-  const newKlant = await ensureKlantForVestigingsnummer(
+  const newKlant = await ensureKlantForBedrijfIdentifier(
     {
-      identifier: identifier,
+      identifier,
       bedrijfsnaam,
     },
     organisatieIds.value[0] || "",
@@ -99,6 +99,7 @@ const create = async () => {
 
 const result: EnrichedBedrijf = reactive({
   bedrijfsnaam,
+  type: mapServiceData(handelsregisterData, (h) => h?.type ?? ""),
   kvkNummer: mapServiceData(handelsregisterData, (h) => h?.kvkNummer ?? ""),
   postcodeHuisnummer: mapServiceData(handelsregisterData, (h) =>
     [h?.postcode, h?.huisnummer].join(" "),
