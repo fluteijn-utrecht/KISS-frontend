@@ -39,7 +39,6 @@ const klantBedrijfsnaam = mapServiceData(
 );
 
 const handelsBedrijfsnaam = mapServiceData(handelsregisterData, (k) => {
-  console.log(k);
   return k?.bedrijfsnaam ?? "";
 });
 
