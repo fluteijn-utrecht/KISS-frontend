@@ -296,7 +296,10 @@ const getUrlVoorGetKlantById = (
     bedrijfSearchParameter.kvkNummer
   ) {
     const url = new URL(klantRootUrl);
-    url.searchParams.set("kvkNummer", bedrijfSearchParameter.kvkNummer);
+    url.searchParams.set(
+      "subjectNietNatuurlijkPersoon__innNnpId",
+      bedrijfSearchParameter.kvkNummer,
+    );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
   }
