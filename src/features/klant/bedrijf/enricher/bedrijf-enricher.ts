@@ -1,12 +1,12 @@
 import type { Klant } from "../../types";
 import { useKlantByIdentifier } from "../../service";
 import { ServiceResult, combineEnrichers } from "@/services";
-import { useBedrijfByIdentifier } from "../service/UseGetOndernememing";
+import { useBedrijfByIdentifier } from "../service/use-bedrijf-by-identifier";
 import type { Bedrijf, BedrijfIdentifier } from "../types";
 import {
   NietNatuurlijkPersoonIdentifiers,
   fetchPreferredNietNatuurlijkPersoonIdentifier,
-} from "../service/UsePreferredNietNatuurlijkPersoonIdentifier";
+} from "../service/fetch-preferred-niet-natuurlijk-persoon-identifier";
 
 const isKlant = (klantOfBedrijf: Klant | Bedrijf): klantOfBedrijf is Klant => {
   return klantOfBedrijf._typeOfKlant === "klant";

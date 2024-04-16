@@ -82,7 +82,10 @@ import {
 } from "@/features/klant";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
-import { useZakenByIdentifier, ZakenOverzicht } from "@/features/zaaksysteem";
+import {
+  useZakenByKlantBedrijfIdentifier,
+  ZakenOverzicht,
+} from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import { useContactverzoekenByKlantId } from "@/features/contactverzoek/overzicht/service";
@@ -116,7 +119,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomenten = useContactmomentenByKlantId(klantUrl);
 
-const zaken = useZakenByIdentifier(() => {
+const zaken = useZakenByKlantBedrijfIdentifier(() => {
   if (klant.success && klant.data) {
     if (klant.data.vestigingsnummer) {
       return { vestigingsnummer: klant.data.vestigingsnummer };

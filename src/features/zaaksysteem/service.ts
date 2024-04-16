@@ -21,7 +21,6 @@ import type {
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { toRelativeProxyUrl } from "@/helpers/url";
-import type { BedrijfSearchParameter } from "../klant/bedrijf/enricher/bedrijf-enricher";
 
 const zakenProxyRoot = "/api/zaken";
 
@@ -82,10 +81,10 @@ export const useZaakById = (id: Ref<string>) => {
 //
 //
 //
-//Todo: bespreken er lijkt geen rol meegepost te worden bij het opslaan van 
+//Todo: bespreken er lijkt geen rol meegepost te worden bij het opslaan van
 //een zaak bij een contactmoment voor een bedrijf.
 //daardoor is de zaak niet terug te vinden als je het bedrijf weer zoekt.
-//er wordt dan gezocht adhv de rollen 
+//er wordt dan gezocht adhv de rollen
 //(een rol lijkt hier een verkeerde term), het gaat niet om de rollen het bedrijf heeft, maar met welke rollen het bedrijf aan welke zaken gekoppeld is
 //als je een contactmoment aanmaakt, met daaraan gekoppeld een bedrijf en een zaak
 //en je zoekt het bedrijf weer op dan staat de zaak wel bij het contactmoment, maar de zaken tab blijft leeg
@@ -93,12 +92,16 @@ export const useZaakById = (id: Ref<string>) => {
 //
 //
 //
+type ZaakBedrijfIdentifier =
+  | {
+      vestigingsnummer: string;
+    }
+  | {
+      innNnpId: string;
+    };
 
-
-
-
-export const useZakenByIdentifier = (
-  getId: () => BedrijfSearchParameter | undefined,
+export const useZakenByKlantBedrijfIdentifier = (
+  getId: () => ZaakBedrijfIdentifier | undefined,
 ) => {
   const getUrl = () => {
     const searchParam = getId();

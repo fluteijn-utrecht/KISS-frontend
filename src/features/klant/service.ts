@@ -21,7 +21,7 @@ import type { BedrijfIdentifier } from "./bedrijf/types";
 import {
   NietNatuurlijkPersoonIdentifiers,
   fetchPreferredNietNatuurlijkPersoonIdentifier,
-} from "./bedrijf/service/UsePreferredNietNatuurlijkPersoonIdentifier";
+} from "./bedrijf/service/fetch-preferred-niet-natuurlijk-persoon-identifier";
 
 type QueryParam = [string, string][];
 
