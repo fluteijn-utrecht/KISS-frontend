@@ -13,7 +13,6 @@ export interface Bedrijf {
   huisnummertoevoeging?: string;
   woonplaats?: string;
   innNnpId?: string;
-  rsin?: string;
 }
 
 export interface EnrichedBedrijf {
@@ -57,8 +56,5 @@ export type BedrijfIdentifier =
       vestigingsnummer: string;
     }
   | {
-      kvkNummer: string;
-    }
-  | {
-      rsin: string;
+      innNnpId: string;
     };

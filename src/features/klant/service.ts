@@ -20,8 +20,8 @@ import { nanoid } from "nanoid";
 import type { BedrijfIdentifier } from "./bedrijf/types";
 import {
   NietNatuurlijkPersoonIdentifiers,
-  fetchPreferredNietNatuurlijkPersoonIdentifier,
-} from "./bedrijf/service/fetch-preferred-niet-natuurlijk-persoon-identifier";
+  preferredNietNatuurlijkPersoonIdentifierPromise,
+} from "./bedrijf/service/shared/shared";
 
 type QueryParam = [string, string][];
 
@@ -291,24 +291,11 @@ const getUrlVoorGetKlantById = (
     return url.toString();
   }
 
-  if (
-    "kvkNummer" in bedrijfSearchParameter &&
-    bedrijfSearchParameter.kvkNummer
-  ) {
+  if ("innNnpId" in bedrijfSearchParameter && bedrijfSearchParameter.innNnpId) {
     const url = new URL(klantRootUrl);
     url.searchParams.set(
       "subjectNietNatuurlijkPersoon__innNnpId",
-      bedrijfSearchParameter.kvkNummer,
-    );
-    url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
-    return url.toString();
-  }
-
-  if ("rsin" in bedrijfSearchParameter && bedrijfSearchParameter.rsin) {
-    const url = new URL(klantRootUrl);
-    url.searchParams.set(
-      "subjectNietNatuurlijkPersoon__innNnpId",
-      bedrijfSearchParameter.rsin,
+      bedrijfSearchParameter.innNnpId,
     );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
@@ -378,7 +365,7 @@ export async function ensureKlantForBedrijfIdentifier(
     //rsin of kvkNummer. We halen de ingestelde voorkeurswaarde identifier op
     //en kijken of dit geven beschikbaar is zodat we hiermee een klant kunnen aanmaken
     const preferredNietNatuurlijkPersoonIdentifier =
-      await fetchPreferredNietNatuurlijkPersoonIdentifier();
+      await preferredNietNatuurlijkPersoonIdentifierPromise;
 
     if (
       "rsin" in identifier &&

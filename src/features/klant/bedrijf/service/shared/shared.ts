@@ -42,13 +42,18 @@ const parseKvkPagination = async ({
   resultatenPerPagina,
   totaal,
   resultaten,
-}: KvkPagination): Promise<Paginated<Bedrijf>> => ({
-  page: await Promise.all(resultaten.map(mapHandelsRegister)),
-  pageNumber: pagina,
-  totalRecords: totaal,
-  pageSize: resultatenPerPagina,
-  totalPages: totaal === 0 ? 0 : Math.ceil(totaal / resultatenPerPagina),
-});
+}: KvkPagination): Promise<Paginated<Bedrijf>> => {
+  const config = await preferredNietNatuurlijkPersoonIdentifierPromise;
+  return {
+    page: await Promise.all(
+      resultaten.map((x) => mapHandelsRegister(x, config)),
+    ),
+    pageNumber: pagina,
+    totalRecords: totaal,
+    pageSize: resultatenPerPagina,
+    totalPages: totaal === 0 ? 0 : Math.ceil(totaal / resultatenPerPagina),
+  };
+};
 
 type KvkPagination = {
   pagina: number;
@@ -57,14 +62,23 @@ type KvkPagination = {
   resultaten: any[];
 };
 
-async function mapHandelsRegister(json: any): Promise<Bedrijf> {
-  const { vestigingsnummer, kvkNummer, naam, adres, type } = json ?? {};
+async function mapHandelsRegister(
+  json: any,
+  identifier: PreferredNietNatuurlijkPersoonIdentifier,
+): Promise<Bedrijf> {
+  const { vestigingsnummer, kvkNummer, naam, adres, type, rsin } = json ?? {};
 
   const { binnenlandsAdres, buitenlandsAdres } = adres ?? {};
 
   const { straatnaam, plaats } = binnenlandsAdres ?? {};
 
   const { straatHuisnummer, postcodeWoonplaats } = buitenlandsAdres ?? {};
+
+  const innNnpId =
+    identifier.nietNatuurlijkPersoonIdentifier ===
+    NietNatuurlijkPersoonIdentifiers.rsin
+      ? rsin
+      : kvkNummer;
 
   let vestiging: KvkVestiging | undefined;
   let naamgeving: KvkNaamgeving | undefined;
@@ -93,6 +107,7 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
     bedrijfsnaam: naam,
     straatnaam: straatnaam || straatHuisnummer,
     woonplaats: plaats || postcodeWoonplaats,
+    innNnpId,
     ...(vestiging ?? {}),
     ...(naamgeving ?? {}),
   };
@@ -169,3 +184,18 @@ const hasFoutCode = (body: unknown, code: string) => {
   }
   return false;
 };
+
+export const preferredNietNatuurlijkPersoonIdentifierPromise =
+  fetchLoggedIn("/api/GetNietNatuurlijkPersoonIdentifier")
+    .then(throwIfNotOk)
+    .then((r) => r.json())
+    .then((r: PreferredNietNatuurlijkPersoonIdentifier) => r);
+
+export type PreferredNietNatuurlijkPersoonIdentifier = {
+  nietNatuurlijkPersoonIdentifier: string;
+};
+
+export const NietNatuurlijkPersoonIdentifiers = {
+  rsin: "rsin",
+  kvkNummer: "kvkNummer",
+} as const;

@@ -135,7 +135,7 @@ const bedrijf = useBedrijfByIdentifier(() => {
     if (klant.data.vestigingsnummer) {
       return { vestigingsnummer: klant.data.vestigingsnummer };
     } else if (klant.data.subjectIdentificatie?.innNnpId)
-      return { rsin: klant.data.subjectIdentificatie?.innNnpId };
+      return { innNnpId: klant.data.subjectIdentificatie?.innNnpId };
   }
 
   return;

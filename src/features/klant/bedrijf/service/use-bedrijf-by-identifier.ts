@@ -1,6 +1,15 @@
 import { ServiceResult, enforceOneOrZero } from "@/services";
-import { searchBedrijvenInHandelsRegister } from "./shared/shared";
+import {
+  searchBedrijvenInHandelsRegister,
+  preferredNietNatuurlijkPersoonIdentifierPromise,
+} from "./shared/shared";
 import type { BedrijfIdentifier } from "../types";
+
+let identifier = "";
+
+preferredNietNatuurlijkPersoonIdentifierPromise.then((r) => {
+  identifier = r.nietNatuurlijkPersoonIdentifier;
+});
 
 const zoekenUrl = "/api/kvk/v2/zoeken";
 
@@ -28,7 +37,11 @@ export const useBedrijfByIdentifier = (
 const getUrlVoorGetBedrijfById = (
   bedrijfsZoekParamter: BedrijfIdentifier | undefined,
 ) => {
-  if (!bedrijfsZoekParamter || typeof bedrijfsZoekParamter != "object") {
+  if (
+    !identifier ||
+    !bedrijfsZoekParamter ||
+    typeof bedrijfsZoekParamter != "object"
+  ) {
     return "";
   }
 
@@ -42,14 +55,8 @@ const getUrlVoorGetBedrijfById = (
     return `${zoekenUrl}?${searchParams}`;
   }
 
-  if ("kvkNummer" in bedrijfsZoekParamter && bedrijfsZoekParamter.kvkNummer) {
-    searchParams.set("kvkNummer", bedrijfsZoekParamter.kvkNummer);
-    searchParams.set("type", "rechtspersoon");
-    return `${zoekenUrl}?${searchParams}`;
-  }
-
-  if ("rsin" in bedrijfsZoekParamter && bedrijfsZoekParamter.rsin) {
-    searchParams.set("rsin", bedrijfsZoekParamter.rsin);
+  if ("innNnpId" in bedrijfsZoekParamter && bedrijfsZoekParamter.innNnpId) {
+    searchParams.set(identifier, bedrijfsZoekParamter.innNnpId);
     searchParams.set("type", "rechtspersoon");
     return `${zoekenUrl}?${searchParams}`;
   }

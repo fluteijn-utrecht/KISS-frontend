@@ -76,8 +76,8 @@ const create = async () => {
     identifier = {
       vestigingsnummer: handelsregisterData.data.vestigingsnummer,
     };
-  } else if (handelsregisterData.data?.rsin) {
-    identifier = { rsin: handelsregisterData.data.rsin };
+  } else if (handelsregisterData.data?.innNnpId) {
+    identifier = { innNnpId: handelsregisterData.data.innNnpId };
   }
 
   if (!identifier) {
