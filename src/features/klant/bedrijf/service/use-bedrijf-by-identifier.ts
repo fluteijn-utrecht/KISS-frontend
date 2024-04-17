@@ -2,7 +2,6 @@ import { ServiceResult, enforceOneOrZero } from "@/services";
 import {
   searchBedrijvenInHandelsRegister,
   preferredNietNatuurlijkPersoonIdentifierPromise,
-  NietNatuurlijkPersoonIdentifiers,
 } from "./shared/shared";
 import type { BedrijfIdentifier } from "../types";
 
@@ -57,11 +56,7 @@ const getUrlVoorGetBedrijfById = (
   }
 
   if ("innNnpId" in bedrijfsZoekParamter && bedrijfsZoekParamter.innNnpId) {
-    const queryParam =
-      identifier === NietNatuurlijkPersoonIdentifiers.kvkNummer
-        ? "kvkNummer"
-        : "rsin";
-    searchParams.set(queryParam, bedrijfsZoekParamter.innNnpId);
+    searchParams.set(identifier, bedrijfsZoekParamter.innNnpId);
     searchParams.set("type", "rechtspersoon");
     return `${zoekenUrl}?${searchParams}`;
   }
