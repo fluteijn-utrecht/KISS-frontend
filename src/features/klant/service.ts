@@ -18,10 +18,6 @@ import {
 } from "./types";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier } from "./bedrijf/types";
-import {
-  NietNatuurlijkPersoonIdentifiers,
-  preferredNietNatuurlijkPersoonIdentifierPromise,
-} from "./bedrijf/service/shared/shared";
 
 type QueryParam = [string, string][];
 
@@ -356,34 +352,14 @@ export async function ensureKlantForBedrijfIdentifier(
   let subjectType: KlantType | null = null;
   let subjectIdentificatie = {};
   //afhankelijk van het type 'bedrijf' slaan we andere gegevens op
-  if ("vestigingsnummer" in identifier) {
+  if ("vestigingsnummer" in identifier && identifier.vestigingsnummer) {
     subjectType = KlantType.Bedrijf;
     subjectIdentificatie = { vestigingsNummer: identifier.vestigingsnummer };
-  } else {
+  } else if ("innNnpId" in identifier && identifier.innNnpId) {
     //als we niet te maken hebben met een vestiging
     //dan gebruiken we afhankelijk van de mogelijkheden van de gerbuite registers
-    //rsin of kvkNummer. We halen de ingestelde voorkeurswaarde identifier op
-    //en kijken of dit geven beschikbaar is zodat we hiermee een klant kunnen aanmaken
-    const preferredNietNatuurlijkPersoonIdentifier =
-      await preferredNietNatuurlijkPersoonIdentifierPromise;
-
-    if (
-      "rsin" in identifier &&
-      identifier.rsin &&
-      preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
-        NietNatuurlijkPersoonIdentifiers.rsin
-    ) {
-      subjectType = KlantType.NietNatuurlijkPersoon;
-      subjectIdentificatie = { innNnpId: identifier.rsin };
-    } else if (
-      "kvkNummer" in identifier &&
-      identifier.kvkNummer &&
-      preferredNietNatuurlijkPersoonIdentifier.nietNatuurlijkPersoonIdentifier ===
-        NietNatuurlijkPersoonIdentifiers.kvkNummer
-    ) {
-      subjectType = KlantType.NietNatuurlijkPersoon;
-      subjectIdentificatie = { innNnpId: identifier.kvkNummer };
-    }
+    subjectType = KlantType.NietNatuurlijkPersoon;
+    subjectIdentificatie = { innNnpId: identifier.innNnpId };
   }
 
   if (!subjectType || !subjectIdentificatie) {
