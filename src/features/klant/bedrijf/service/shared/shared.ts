@@ -93,23 +93,23 @@ async function mapHandelsRegister(
     }
   }
 
-  const innNnpId =
-    identifier.nietNatuurlijkPersoonIdentifier ===
-    NietNatuurlijkPersoonIdentifiers.rsin
-      ? naamgeving?.rsin
-      : kvkNummer;
-
-  return {
-    _typeOfKlant: "bedrijf",
+  const merged = {
+    _typeOfKlant: "bedrijf" as const,
     type,
     kvkNummer,
     vestigingsnummer,
     bedrijfsnaam: naam,
     straatnaam: straatnaam || straatHuisnummer,
     woonplaats: plaats || postcodeWoonplaats,
-    innNnpId,
     ...(vestiging ?? {}),
     ...(naamgeving ?? {}),
+  };
+
+  const innNnpId = merged[identifier.nietNatuurlijkPersoonIdentifier];
+
+  return {
+    ...merged,
+    innNnpId,
   };
 }
 
