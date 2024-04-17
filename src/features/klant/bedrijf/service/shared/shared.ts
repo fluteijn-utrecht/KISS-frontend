@@ -66,19 +66,13 @@ async function mapHandelsRegister(
   json: any,
   identifier: PreferredNietNatuurlijkPersoonIdentifier,
 ): Promise<Bedrijf> {
-  const { vestigingsnummer, kvkNummer, naam, adres, type, rsin } = json ?? {};
+  const { vestigingsnummer, kvkNummer, naam, adres, type } = json ?? {};
 
   const { binnenlandsAdres, buitenlandsAdres } = adres ?? {};
 
   const { straatnaam, plaats } = binnenlandsAdres ?? {};
 
   const { straatHuisnummer, postcodeWoonplaats } = buitenlandsAdres ?? {};
-
-  const innNnpId =
-    identifier.nietNatuurlijkPersoonIdentifier ===
-    NietNatuurlijkPersoonIdentifiers.rsin
-      ? rsin
-      : kvkNummer;
 
   let vestiging: KvkVestiging | undefined;
   let naamgeving: KvkNaamgeving | undefined;
@@ -98,6 +92,12 @@ async function mapHandelsRegister(
       console.error(e);
     }
   }
+
+  const innNnpId =
+    identifier.nietNatuurlijkPersoonIdentifier ===
+    NietNatuurlijkPersoonIdentifiers.rsin
+      ? naamgeving?.rsin
+      : kvkNummer;
 
   return {
     _typeOfKlant: "bedrijf",
@@ -185,11 +185,12 @@ const hasFoutCode = (body: unknown, code: string) => {
   return false;
 };
 
-export const preferredNietNatuurlijkPersoonIdentifierPromise =
-  fetchLoggedIn("/api/GetNietNatuurlijkPersoonIdentifier")
-    .then(throwIfNotOk)
-    .then((r) => r.json())
-    .then((r: PreferredNietNatuurlijkPersoonIdentifier) => r);
+export const preferredNietNatuurlijkPersoonIdentifierPromise = fetchLoggedIn(
+  "/api/GetNietNatuurlijkPersoonIdentifier",
+)
+  .then(throwIfNotOk)
+  .then((r) => r.json())
+  .then((r: PreferredNietNatuurlijkPersoonIdentifier) => r);
 
 export type PreferredNietNatuurlijkPersoonIdentifier = {
   nietNatuurlijkPersoonIdentifier: string;
