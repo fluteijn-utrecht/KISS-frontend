@@ -2,10 +2,11 @@ import { ServiceResult, enforceOneOrZero } from "@/services";
 import {
   searchBedrijvenInHandelsRegister,
   preferredNietNatuurlijkPersoonIdentifierPromise,
+  type NietNatuurlijkPersoonIdentifierValue,
 } from "./shared/shared";
 import type { BedrijfIdentifier } from "../types";
 
-let identifier = "";
+let identifier: NietNatuurlijkPersoonIdentifierValue | undefined;
 
 preferredNietNatuurlijkPersoonIdentifierPromise.then((r) => {
   identifier = r.nietNatuurlijkPersoonIdentifier;

@@ -192,8 +192,11 @@ export const preferredNietNatuurlijkPersoonIdentifierPromise = fetchLoggedIn(
   .then((r) => r.json())
   .then((r: PreferredNietNatuurlijkPersoonIdentifier) => r);
 
+export type NietNatuurlijkPersoonIdentifierValue =
+  (typeof NietNatuurlijkPersoonIdentifiers)[keyof typeof NietNatuurlijkPersoonIdentifiers];
+
 export type PreferredNietNatuurlijkPersoonIdentifier = {
-  nietNatuurlijkPersoonIdentifier: string;
+  nietNatuurlijkPersoonIdentifier: NietNatuurlijkPersoonIdentifierValue;
 };
 
 export const NietNatuurlijkPersoonIdentifiers = {
