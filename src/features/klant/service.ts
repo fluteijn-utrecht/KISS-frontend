@@ -85,7 +85,7 @@ function getKlantSearchUrl<K extends KlantSearchField>(
 
 function mapKlant(obj: any): Klant {
   const { subjectIdentificatie, url } = obj ?? {};
-  const { inpBsn, vestigingsNummer } = subjectIdentificatie ?? {};
+  const { inpBsn, vestigingsNummer, innNnpId } = subjectIdentificatie ?? {};
   const urlSplit: string[] = url?.split("/") ?? [];
 
   return {
@@ -95,6 +95,7 @@ function mapKlant(obj: any): Klant {
     bsn: inpBsn,
     vestigingsnummer: vestigingsNummer,
     url: url,
+    innNnpId,
   };
 }
 

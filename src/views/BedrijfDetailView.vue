@@ -93,6 +93,7 @@ import ContactverzoekenOverzicht from "@/features/contactverzoek/overzicht/Conta
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contactmoment/ContactmomentDetailsContext.vue";
+import type { BedrijfIdentifier } from "@/features/klant/bedrijf/types";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -119,25 +120,19 @@ const contactverzoeken = useContactverzoekenByKlantId(
 
 const contactmomenten = useContactmomentenByKlantId(klantUrl);
 
-const zaken = useZakenByKlantBedrijfIdentifier(() => {
-  if (klant.success && klant.data) {
-    if (klant.data.vestigingsnummer) {
-      return { vestigingsnummer: klant.data.vestigingsnummer };
-    } else if (klant.data.subjectIdentificatie?.innNnpId)
-      return { innNnpId: klant.data.subjectIdentificatie?.innNnpId };
-  }
+const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
+  if (!klant.success || !klant.data) return undefined;
+  if (klant.data.vestigingsnummer)
+    return {
+      vestigingsnummer: klant.data.vestigingsnummer,
+    };
+  if (klant.data.innNnpId)
+    return {
+      innNnpId: klant.data.innNnpId,
+    };
+};
 
-  return;
-});
+const zaken = useZakenByKlantBedrijfIdentifier(getBedrijfIdentifier);
 
-const bedrijf = useBedrijfByIdentifier(() => {
-  if (klant.success && klant.data) {
-    if (klant.data.vestigingsnummer) {
-      return { vestigingsnummer: klant.data.vestigingsnummer };
-    } else if (klant.data.subjectIdentificatie?.innNnpId)
-      return { innNnpId: klant.data.subjectIdentificatie?.innNnpId };
-  }
-
-  return;
-});
+const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
 </script>
