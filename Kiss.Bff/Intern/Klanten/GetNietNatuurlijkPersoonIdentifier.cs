@@ -14,12 +14,14 @@ namespace Kiss.Bff.Feedback
     public class GetNietNatuurlijkPersoonIdentifier : ControllerBase
     {
         
-        private readonly IConfiguration _configuration;
+        private readonly string  _identifier;
 
        
         public GetNietNatuurlijkPersoonIdentifier( IConfiguration configuration)
-        {        
-            _configuration = configuration;
+        {
+            _identifier = configuration != null && !string.IsNullOrWhiteSpace(configuration["NIETNATUURLIJKPERSOONIDENTIFIER"])
+                ? configuration["NIETNATUURLIJKPERSOONIDENTIFIER"]
+                : "rsin";
         }
 
         //Afhanekelijk van de gebruikte bron (openklant of e-Suite)
@@ -31,11 +33,8 @@ namespace Kiss.Bff.Feedback
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Get()
-        {
-            //
-            //todo: get from configuration
-            //
-            return Ok(new NietNatuurlijkPersoonIdentifierModel("rsin"));
+        {           
+            return Ok(new NietNatuurlijkPersoonIdentifierModel(_identifier));
         }
 
      
