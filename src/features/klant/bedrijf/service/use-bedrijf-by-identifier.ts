@@ -56,8 +56,14 @@ const getUrlVoorGetBedrijfById = (
     return `${zoekenUrl}?${searchParams}`;
   }
 
-  if ("innNnpId" in bedrijfsZoekParamter && bedrijfsZoekParamter.innNnpId) {
-    searchParams.set(identifier, bedrijfsZoekParamter.innNnpId);
+  if (
+    "nietNatuurlijkPersoonIdentifier" in bedrijfsZoekParamter &&
+    bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier
+  ) {
+    searchParams.set(
+      identifier,
+      bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier,
+    );
     searchParams.set("type", "rechtspersoon");
     return `${zoekenUrl}?${searchParams}`;
   }

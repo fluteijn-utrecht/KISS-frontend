@@ -105,11 +105,18 @@ async function mapHandelsRegister(
     ...(naamgeving ?? {}),
   };
 
-  const innNnpId = merged[identifier.nietNatuurlijkPersoonIdentifier];
+  // vanuit de configuratie wordt bepaald welk gegeven gebruikt wordt
+  // om KvK gegevens van niet natuurlijke personen te koppelen aan bedrijven in
+  // het klantregeiser (bijvoorbeeld OpenKlant of de e-Suite)
+  // dit veld kan bijvoorbeeld een rsin of een kvknummer bevatten
+  // nb. dit veld wordt via de klnaten API gecommuniceerd in het veld innNnpId bij een subjectNietNatuurlijkPersoon,
+  // de waarde kan dus zowel een kvknummer of een rsin bevatten
+  const nietNatuurlijkPersoonIdentifier =
+    merged[identifier.nietNatuurlijkPersoonIdentifier];
 
   return {
     ...merged,
-    innNnpId,
+    nietNatuurlijkPersoonIdentifier: nietNatuurlijkPersoonIdentifier,
   };
 }
 

@@ -126,9 +126,9 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     return {
       vestigingsnummer: klant.data.vestigingsnummer,
     };
-  if (klant.data.innNnpId)
+  if (klant.data.nietNatuurlijkPersoonIdentifier)
     return {
-      innNnpId: klant.data.innNnpId,
+      nietNatuurlijkPersoonIdentifier: klant.data.nietNatuurlijkPersoonIdentifier,
     };
 };
 

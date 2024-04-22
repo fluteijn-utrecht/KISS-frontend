@@ -17,9 +17,9 @@ function getSharedIdentifier(
     return { vestigingsnummer: klantofbedrijf.vestigingsnummer };
   }
 
-  if (klantofbedrijf.innNnpId) {
+  if (klantofbedrijf.nietNatuurlijkPersoonIdentifier) {
     return {
-      innNnpId: klantofbedrijf.innNnpId,
+      nietNatuurlijkPersoonIdentifier: klantofbedrijf.nietNatuurlijkPersoonIdentifier,
     };
   }
 }

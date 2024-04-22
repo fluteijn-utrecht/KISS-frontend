@@ -76,8 +76,11 @@ const create = async () => {
     identifier = {
       vestigingsnummer: handelsregisterData.data.vestigingsnummer,
     };
-  } else if (handelsregisterData.data?.innNnpId) {
-    identifier = { innNnpId: handelsregisterData.data.innNnpId };
+  } else if (handelsregisterData.data?.nietNatuurlijkPersoonIdentifier) {
+    identifier = {
+      nietNatuurlijkPersoonIdentifier:
+        handelsregisterData.data.nietNatuurlijkPersoonIdentifier,
+    };
   }
 
   if (!identifier) {

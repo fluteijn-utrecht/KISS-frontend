@@ -12,7 +12,7 @@ export interface Bedrijf {
   huisletter?: string;
   huisnummertoevoeging?: string;
   woonplaats?: string;
-  innNnpId?: string;
+  nietNatuurlijkPersoonIdentifier?: string;
 }
 
 export interface EnrichedBedrijf {
@@ -56,5 +56,5 @@ export type BedrijfIdentifier =
       vestigingsnummer: string;
     }
   | {
-      innNnpId: string;
+      nietNatuurlijkPersoonIdentifier: string;
     };

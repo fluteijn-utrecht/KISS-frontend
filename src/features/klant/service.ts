@@ -95,7 +95,7 @@ function mapKlant(obj: any): Klant {
     bsn: inpBsn,
     vestigingsnummer: vestigingsNummer,
     url: url,
-    innNnpId,
+    nietNatuurlijkPersoonIdentifier: innNnpId,
   };
 }
 
@@ -288,11 +288,14 @@ const getUrlVoorGetKlantById = (
     return url.toString();
   }
 
-  if ("innNnpId" in bedrijfSearchParameter && bedrijfSearchParameter.innNnpId) {
+  if (
+    "nietNatuurlijkPersoonIdentifier" in bedrijfSearchParameter &&
+    bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier
+  ) {
     const url = new URL(klantRootUrl);
     url.searchParams.set(
       "subjectNietNatuurlijkPersoon__innNnpId",
-      bedrijfSearchParameter.innNnpId,
+      bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier,
     );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
@@ -304,7 +307,7 @@ const getUrlVoorGetKlantById = (
 const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
   if (!id) return "";
   const url = new URL(klantRootUrl);
-  url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", id); //todo make arg instelbaar
+  url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", id);
   url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
   return url.toString();
 };
@@ -356,11 +359,16 @@ export async function ensureKlantForBedrijfIdentifier(
   if ("vestigingsnummer" in identifier && identifier.vestigingsnummer) {
     subjectType = KlantType.Bedrijf;
     subjectIdentificatie = { vestigingsNummer: identifier.vestigingsnummer };
-  } else if ("innNnpId" in identifier && identifier.innNnpId) {
+  } else if (
+    "nietNatuurlijkPersoonIdentifier" in identifier &&
+    identifier.nietNatuurlijkPersoonIdentifier
+  ) {
     //als we niet te maken hebben met een vestiging
     //dan gebruiken we afhankelijk van de mogelijkheden van de gerbuite registers
     subjectType = KlantType.NietNatuurlijkPersoon;
-    subjectIdentificatie = { innNnpId: identifier.innNnpId };
+    subjectIdentificatie = {
+      innNnpId: identifier.nietNatuurlijkPersoonIdentifier,
+    };
   }
 
   if (!subjectType || !subjectIdentificatie) {
@@ -425,9 +433,8 @@ export async function ensureKlantForNietNatuurlijkPersoon(
     },
     body: JSON.stringify({
       bronorganisatie,
-      // TODO: WAT MOET HIER IN KOMEN?
       klantnummer: nanoid(8),
-      subjectIdentificatie: { innNnpId: id }, //todo innNnpId variabel maken
+      subjectIdentificatie: { innNnpId: id },
       subjectType: KlantType.NietNatuurlijkPersoon,
       bedrijfsnaam,
     }),

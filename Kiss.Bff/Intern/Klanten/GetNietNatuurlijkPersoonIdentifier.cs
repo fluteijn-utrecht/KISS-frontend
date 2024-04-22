@@ -13,11 +13,11 @@ namespace Kiss.Bff.Feedback
     [ApiController]
     public class GetNietNatuurlijkPersoonIdentifier : ControllerBase
     {
-        
-        private readonly string  _identifier;
 
-       
-        public GetNietNatuurlijkPersoonIdentifier( IConfiguration configuration)
+        private readonly string _identifier;
+
+
+        public GetNietNatuurlijkPersoonIdentifier(IConfiguration configuration)
         {
             _identifier = configuration != null && !string.IsNullOrWhiteSpace(configuration["NIETNATUURLIJKPERSOONIDENTIFIER"])
                 ? configuration["NIETNATUURLIJKPERSOONIDENTIFIER"]
@@ -33,11 +33,11 @@ namespace Kiss.Bff.Feedback
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Get()
-        {           
-            return Ok(new NietNatuurlijkPersoonIdentifierModel(_identifier));
+        {            
+           return Ok(new NietNatuurlijkPersoonIdentifierModel(_identifier));
         }
 
-     
+
     }
 
     public record NietNatuurlijkPersoonIdentifierModel(string NietNatuurlijkPersoonIdentifier);
