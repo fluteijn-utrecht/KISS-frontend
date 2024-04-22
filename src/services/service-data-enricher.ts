@@ -13,17 +13,17 @@ import { type ServiceData, ServiceResult } from "./service-data";
 type GetParameters<K, I> = (i: NonNullable<I>) => NonNullable<K> | undefined;
 
 type GetServiceData<K, O> = (
-  keyFactory: () => NonNullable<K> | undefined
+  keyFactory: () => NonNullable<K> | undefined,
 ) => ServiceData<NonNullable<O> | null>;
 
 type GetInput<I> = () => NonNullable<I>;
 
 export type TwoWayEnricher<Input, Parameters, Output> = (
-  getInput: GetInput<Input | Output>
+  getInput: GetInput<Input | Output>,
 ) => readonly [
   Readonly<Ref<NonNullable<Parameters> | undefined>>,
   ServiceData<NonNullable<Input> | null>,
-  ServiceData<NonNullable<Output> | null>
+  ServiceData<NonNullable<Output> | null>,
 ];
 
 /**
@@ -40,8 +40,8 @@ export function combineEnrichers<Left, Right, Parameters>(
   getDataTheOtherDirection: GetServiceData<Parameters, Right>,
   getCommonParameters: GetParameters<Parameters, Left | Right>,
   isLeft: (
-    either: NonNullable<Left> | NonNullable<Right>
-  ) => either is NonNullable<Left>
+    either: NonNullable<Left> | NonNullable<Right>,
+  ) => either is NonNullable<Left>,
 ): TwoWayEnricher<Left, Parameters, Right> {
   return (getEither) => {
     const eitherRef = computed(getEither);

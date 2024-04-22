@@ -5,6 +5,7 @@
       <thead>
         <tr>
           <th>Naam</th>
+          <th>Type</th>
           <th>KvK-nummer</th>
           <th class="wrap">Postcode + Huisnummer</th>
           <th>E-mailadres</th>

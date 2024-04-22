@@ -7,6 +7,10 @@
       }}</template>
     </th>
     <td>
+      <div class="skeleton" v-if="result.type.loading" />
+      <template v-if="result.type.success">{{ result.type.data }}</template>
+    </td>
+    <td>
       <div class="skeleton" v-if="result.kvkNummer.loading" />
       <template v-if="result.kvkNummer.success">{{
         result.kvkNummer.data

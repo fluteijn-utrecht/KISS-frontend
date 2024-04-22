@@ -1,6 +1,5 @@
 <template>
   <back-link />
-
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
 
   <tab-list v-model="currentTab">
@@ -76,7 +75,7 @@ import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contactmoment";
 import {
-  useBedrijfByVestigingsnummer,
+  useBedrijfByIdentifier,
   HandelsregisterGegevens,
   KlantDetails,
   useKlantById,
@@ -84,7 +83,7 @@ import {
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
 import {
-  useZakenByVestigingsnummer,
+  useZakenByKlantBedrijfIdentifier,
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
@@ -94,6 +93,7 @@ import ContactverzoekenOverzicht from "@/features/contactverzoek/overzicht/Conta
 import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contactmoment/ContactmomentDetailsContext.vue";
+import type { BedrijfIdentifier } from "@/features/klant/bedrijf/types";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -118,23 +118,21 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage,
 );
 
-const contactmomentenPage = ref(1);
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  // contactmomentenPage
-);
+const contactmomenten = useContactmomentenByKlantId(klantUrl);
 
-// const onContactmomentenNavigate = (page: number) => {
-//   contactmomentenPage.value = page;
-// };
+const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
+  if (!klant.success || !klant.data) return undefined;
+  if (klant.data.vestigingsnummer)
+    return {
+      vestigingsnummer: klant.data.vestigingsnummer,
+    };
+  if (klant.data.nietNatuurlijkPersoonIdentifier)
+    return {
+      nietNatuurlijkPersoonIdentifier: klant.data.nietNatuurlijkPersoonIdentifier,
+    };
+};
 
-const getVestigingsnummer = () =>
-  !klant.success || !klant.data.vestigingsnummer
-    ? ""
-    : klant.data.vestigingsnummer;
-const klantVestigingsnummer = computed(getVestigingsnummer);
+const zaken = useZakenByKlantBedrijfIdentifier(getBedrijfIdentifier);
 
-const zaken = useZakenByVestigingsnummer(klantVestigingsnummer);
-
-const bedrijf = useBedrijfByVestigingsnummer(getVestigingsnummer);
+const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
 </script>

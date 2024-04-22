@@ -3,7 +3,8 @@ import type { ServiceData } from "@/services";
 export interface Bedrijf {
   _typeOfKlant: "bedrijf";
   kvkNummer: string;
-  vestigingsnummer: string;
+  type: string;
+  vestigingsnummer?: string;
   bedrijfsnaam: string;
   postcode?: string;
   huisnummer?: string;
@@ -11,14 +12,17 @@ export interface Bedrijf {
   huisletter?: string;
   huisnummertoevoeging?: string;
   woonplaats?: string;
+  nietNatuurlijkPersoonIdentifier?: string;
 }
 
 export interface EnrichedBedrijf {
   bedrijfsnaam: ServiceData<string>;
+  type: ServiceData<string>;
   kvkNummer: ServiceData<string>;
   postcodeHuisnummer: ServiceData<string>;
   email: ServiceData<string>;
   telefoonnummer: ServiceData<string>;
+
   create: () => Promise<void>;
   detailLink: ServiceData<{
     to: string;
@@ -46,3 +50,11 @@ export type BedrijfQuery<K extends SearchCategories = SearchCategories> = {
   field: K;
   value: SearchCategoryTypes[K];
 };
+
+export type BedrijfIdentifier =
+  | {
+      vestigingsnummer: string;
+    }
+  | {
+      nietNatuurlijkPersoonIdentifier: string;
+    };
