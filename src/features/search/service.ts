@@ -192,6 +192,45 @@ function useQueryTemplate() {
   return ServiceResult.fromFetcher(url, fetcher);
 }
 
+// function useEmptyTemplate() {
+//   // Define the endpoint for the template-based search.
+//   // Replace 'your_index_name' with the name of the actual index you are querying.
+//   const url = "/search-smoelenboek/_search/template";
+
+//   // Define the body of the request using the template ID and parameters.
+//   const body = JSON.stringify({
+//     id: "empty_template",
+//     params: {
+//       field_name: "afdeling_naam",
+//       query_string: "{{query}}"
+//     }
+//   });
+
+  
+//   function fetcher(url: string, query: string) {
+//     return fetchLoggedIn(url, {
+//       method: "POST",
+//       body: body.replace("{{query}}", query), // Replace placeholder with actual query term.
+//       headers: {
+//         "content-type": "application/json",
+//       },
+//     })
+//     .then(throwIfNotOk)
+//     .then(parseJson)
+//     .then(({ hits }) => {
+//       // Assuming the response structure includes a 'hits' key.
+//       // You can adjust the logic here based on the actual response structure.
+//       return hits.hits.map(hit => hit._source); // Map over the hits to return the source data.
+//     });
+//   }
+
+//   // Encapsulate the fetcher in a service handling function, adapting for your setup.
+//   // Assuming there is a function or class `ServiceResult` handling the result.
+//   // The actual query string should be passed when calling this function.
+//   return (query) => ServiceResult.fromFetcher(url, () => fetcher(url, query));
+// }
+
+
 const BRON_QUERY = JSON.stringify({
   size: 0,
   aggs: {

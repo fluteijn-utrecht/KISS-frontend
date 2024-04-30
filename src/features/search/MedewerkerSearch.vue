@@ -2,13 +2,14 @@
   <div>
     <search-combobox
       v-bind="{ ...$attrs, ...props }"
-      placeholder="Zoek een medewerker"
+      :placeholder="placeholder" 
       :model-value="searchText"
       @update:model-value="updateModelValue"
       :result="result"
       :list-items="datalistItems"
       :exact-match="true"
       :required="true"
+      :disabled="isDisabled"
     />
   </div>
 </template>
@@ -45,6 +46,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isDisabled: {
+    type: Boolean,
+    default: false,
+  },
+  afdelingId: { //wordt nu de naam in opgeslagen, veranderen naar id ipv naam
+    type: String,
+    default: undefined,
+  },
+  groepId: { //wordt nu de naam in opgeslagen, veranderen naar id ipv naam
+    type: String,
+    default: undefined,
+  },
+  placeholder: {
+    type: String,
+    default: 'Zoek medewerker' 
+  }
 });
 
 function mapDatalistItem(
@@ -94,7 +111,22 @@ const sources = useSources();
 const searchParams = computed(() => {
   if (sources.success) {
     const smoelen = sources.data.find((x) => x.name === "Smoelenboek");
-    if (smoelen) {
+
+    if((props.afdelingId))
+    {
+      return {
+        filters: [smoelen],
+        search: props.afdelingId,
+      };
+    }
+    else if((props.groepId))
+    {
+      return {
+        filters: [smoelen],
+        search: props.groepId,
+      };
+    }
+    else if (smoelen) {
       return {
         filters: [smoelen],
         search: debouncedSearchText.value,
@@ -105,6 +137,23 @@ const searchParams = computed(() => {
     filters: [],
   };
 });
+
+// const searchParams = computed(() => {
+//   const filters = [];
+//   if (sources.success) {
+//     const smoelen = sources.data.find((x) => x.name === "Smoelenboek");
+//     if (smoelen) {
+//       filters.push(smoelen);
+//     }
+//   }
+  // if (props.afdelingId) {
+  //   filters.push({ key: "departmentId", value: props.afdelingId });
+  // }
+//   return {
+//     filters: filters,
+//     search: debouncedSearchText.value,
+//   };
+// });
 
 const result = useGlobalSearch(searchParams);
 const datalistItems = mapServiceData(result, (paginated) =>

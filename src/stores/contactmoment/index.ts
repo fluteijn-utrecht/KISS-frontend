@@ -20,26 +20,58 @@ export interface ContactverzoekAfdeling {
   naam: string;
 }
 
+export interface ContactverzoekGroep {
+  id: string;
+  afdelingId: string;
+  identificatie: string;
+  naam: string;
+}
+
+export interface ContactVerzoekGroepAfdeling {
+  id: string;
+  identificatie: string;
+  naam: string;
+}
+
 export interface MedewerkerAfdelingen {
   afdelingId: string;
+  id: string;
+  identificatie: string;
+  afdelingnaam: string;
+}
+
+export interface MedewerkerGroepen {
+  afdelingId: string;
+  id: string;
+  identificatie: string;
+  groepsnaam: string;
+}
+
+export interface ContactVerzoekMedewerker
+{
+  user: string;
+  identificatie?: string;
+  voornaam?: string;
+  voorvoegselAchternaam?: string;
+  achternaam?: string;
+  afdelingen: MedewerkerAfdelingen[];
+  groepen: MedewerkerGroepen[];
 }
 
 export type ContactmomentContactVerzoek = {
   url?: string;
   isMedewerker?: true;
-  medewerker?: {
-    user: string;
-    identificatie?: string;
-    voornaam?: string;
-    voorvoegselAchternaam?: string;
-    achternaam?: string;
-    afdelingen: MedewerkerAfdelingen[];
-  };
+  selectedOption?: 'afdeling' | 'medewerker' | 'groep'; 
+  afdelingMedewerker?: ContactVerzoekMedewerker
+  groepMedewerker?: ContactVerzoekMedewerker
+  medewerker?: ContactVerzoekMedewerker
   afdeling?: ContactverzoekAfdeling;
-  groep?: {
-    identificatie: string;
-    naam: string;
-  };
+  groep?: ContactverzoekGroep;
+  groepAfdeling: ContactVerzoekGroepAfdeling
+  // groep?: {
+  //   identificatie: string;
+  //   naam: string;
+  // };
   organisatie?: string;
   voornaam?: string;
   achternaam?: string;
