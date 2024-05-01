@@ -1,5 +1,6 @@
 <template>
-  <div class="container" @submit.prevent>    <form-fieldset class="radio-group">
+  <div class="container" @submit.prevent>    
+    <form-fieldset class="radio-group">
       <form-fieldset-legend class="required"
         >Contactverzoek maken voor</form-fieldset-legend
       >
@@ -121,10 +122,10 @@
           <select 
             id="groep" 
             class="utrecht-textbox utrecht-textbox--html-input" 
-            v-model="form.groepAfdeling"
+            v-model="form.mederwerkerGroepAfdeling"
           >
-            <option v-for="item in afdelingenGroepen" :value="item" :key="item">
-              {{ item }}
+            <option v-for="item in afdelingenGroepen" :value="item" :key="item.id">
+              {{ item.naam }}
             </option>
           </select>
       </label>
@@ -369,29 +370,14 @@ const setOnderwerp = () => {
 
 const groepen = useGroepen(() => form.value.groep?.naam);
 
-
-//const afdelingenGroepen = useAfdelingenGroepen(() => form.value.medewerker?.groepen[0].naam)
-
-// const afdelingenGroepen = computed(() => {
-//   const searchKey = form.value.medewerker?.groepen[0]?.groepsnaam;
-//   if (!searchKey) return [];
-
-//   const data = useAfdelingenGroepen(() => searchKey);
-//   return data(); // Now calling the function to get the actual data
-// });
-
-
 const afdelingenGroepen = computed(() => {
   const afdelingenArray = form.value.medewerker?.afdelingen.map(afdeling => afdeling.afdelingnaam) || [];
   const groepenArray = form.value.medewerker?.groepen.map(groep => groep.groepsnaam) || [];
 
-  const data = useAfdelingenGroepen([], []);
+  const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
+  
   return data;
 });
-
-// const afdelingenGroepen = computed(() => {
-//     return useAfdelingenGroepen(() =>  form.value.groepAfdeling?.naam);
-//   });
 
 const groepSearchRef = ref();
 
@@ -425,33 +411,6 @@ watch(
   },
 );
 
-// watch(
-//   () => form.value.afdeling,
-//   () => {
-//     form.value.groep = undefined;
-//   },
-// );
-
-// const afdelingId = computed(() => {
-//   const afdelingen = props.modelValue.medewerker?.afdelingen;
-//   if (Array.isArray(afdelingen) && afdelingen.length > 0) {
-//     return afdelingen[0].afdelingId;
-//   }
-//   return null;
-// });
-
-// watch(
-//   () => form.value.medewerker,
-//   () => {
-//     form.value.afdeling = {
-//       id: afdelingId.value ?? "",
-//       identificatie: "",
-//       naam: "",
-//     };
-//     setOnderwerp();
-//   },
-// );
-
 watch(
   () => form.value.afdeling,
   () => {
@@ -468,61 +427,14 @@ watch(
   },
 );
 
-// // Watch the computed property for changes and update form accordingly
-// watch(afdelingenGroepen, (newValue) => {
-//   if (newValue.length === 1) {
-//     const selected = newValue[0]; // Assuming the selection text includes 'Afdeling: ' or 'Groep: '
-//     console.log("Auto-selected:", selected); // Example action
+watch(
+  () => form.value.medewerker,
+  () => {
+    form.value.isMedewerker = true;
+    setActive();
+  },
+);
 
-//   //   // Initialize or ensure the groepAfdeling object is set up properly
-//   //   if (!form.value.groepAfdeling) {
-//   //     form.value.groepAfdeling = { id: '', identificatie: '', naam: '' };
-//   //   }
-
-//   //   // Assign the name without the prefix to the form
-//   //   form.value.groepAfdeling.naam = selected.includes("Afdeling: ") ? selected.replace("Afdeling: ", "") : selected.replace("Groep: ", "");
-    
-//   //   // Optionally, automatically select the radio button or update any other relevant part of the form
-//   //   form.value.selectedOption = selected.includes("Afdeling: ") ? 'afdeling' : 'groep';
-//   }
-// });
-
-// watch(
-//   () => form.value.medewerker,
-//   () => {
-//     form.value.groepAfdeling?.naam = "burgerzaken" 
-//     setActive();
-//   },
-// );
-
-// watch(
-//   () => form.value.medewerker,  // Watch the medewerker object for changes
-//   (newVal, oldVal) => {
-//     // console.log('Medewerker changed from', oldVal, 'to', newVal);
-//     if (newVal && newVal.groepen && newVal.groepen.length > 0) {
-      
-
-//       if (form.value.medewerker?.groepen) {
-//         console.log(newVal?.groepen)
-//         form.value.medewerker.groepen = newVal.groepen;
-//        }
-//     }
-//   },
-//   { deep: true },
-// );
-
-
-// const currentMedewerker = computed(() => {
-//   return form.value.selectedOption === 'afdeling' ? form.value.medewerker
-//          : form.value.selectedOption === 'groep' ? form.value.groepMedewerker
-//          : null;
-// });
-
-// // Watch for changes in selectedOption to manage medewerker state
-// watch(() => form.value.selectedOption, (newVal, oldVal) => {
-//   // Restore the appropriate medewerker based on the new selected option
-//   form.value.medewerker = currentMedewerker.value;
-// }, { immediate: false });
 
 </script>
 

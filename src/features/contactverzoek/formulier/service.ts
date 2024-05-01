@@ -1,12 +1,9 @@
 import {
   fetchLoggedIn,
-  parseJson,
-  parsePagination,
   ServiceResult,
   throwIfNotOk,
-  type PaginatedResult,
 } from "@/services";
-import type { ContactmomentContactVerzoek, ContactverzoekGroep } from "@/stores/contactmoment";
+import type { ContactmomentContactVerzoek, MederwerkerGroepAfdeling } from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
 import { fullName } from "@/helpers/string";
 import type {
@@ -17,10 +14,10 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
-import type { ContactverzoekData, NewContactverzoek } from "../types";
+import type { ContactverzoekData, NewContactverzoek  } from "../types";
+import { TypeOrganisatorischeEenheid } from "../types";
 import { useAfdelingen } from "@/composables/afdelingen";
 import { useGroepen } from "@/composables/groepen";
-import { computed } from 'vue'
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
@@ -125,26 +122,53 @@ export function mapContactverzoekData({
           data.contactVerzoekVragenSet.vraagAntwoord,
         )
       : "";
-
+  // groep
   const organisatorischeEenheid = data.groep
-    ? {
-        identificatie: data.groep.identificatie,
-        naam: data.groep.naam,
-        soortActor: "organisatorische eenheid",
-      }
-    : {
-        identificatie: data.afdeling?.identificatie || "",
-        naam: data.afdeling?.naam || "",
-        soortActor: "organisatorische eenheid",
-      };
+  ? {
+      ...(data.groepMedewerker
+        ? {
+            naam: fullName(data.groepMedewerker),
+            identificatie: data.afdelingMedewerker?.identificatie || "",
+            naamOrganisatorischeEenheid: data.groep?.naam || "",
+            identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
+          }
+        : {
+            naam: data.groep?.naam || "",
+            identificatie: data.groep?.identificatie || "",
+          }),
+      soortActor: data.groepMedewerker ? "medewerker" : "organisatorische eenheid",
+      typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
+    }
+  : // afdeling
+    {
+      ...(data.afdelingMedewerker
+        ? {
+            naam: fullName(data.afdelingMedewerker),
+            identificatie: data.afdelingMedewerker?.identificatie || "",
+            naamOrganisatorischeEenheid: data.afdeling?.naam || "",
+            identificatieOrganisatorischeEenheid: data.afdeling?.identificatie || "",
+          }
+        : {
+            naam: data.afdeling?.naam || "",
+            identificatie: data.afdeling?.identificatie || "",
+          }),
+      soortActor: data.afdelingMedewerker ? "medewerker" : "organisatorische eenheid",
+      typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
+    };
 
+  // medewerker
   const actor = data.isMedewerker
-    ? {
-        identificatie: data.medewerker?.identificatie || "",
-        naam: fullName(data.medewerker),
-        soortActor: "medewerker",
-      }
-    : organisatorischeEenheid;
+  ? {
+      naam: fullName(data.medewerker),
+      soortActor: "medewerker",
+      identificatie: data.medewerker?.identificatie || "",
+      naamOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.naam.split(": ")[1] || "",
+      typeOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.naam.toLowerCase().includes("afdeling")
+        ? TypeOrganisatorischeEenheid.Afdeling
+        : TypeOrganisatorischeEenheid.Groep,
+      identificatieOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.identificatie || "",
+    }
+  : organisatorischeEenheid;
 
   return {
     status: "te verwerken",
@@ -167,179 +191,6 @@ export function mapContactverzoekData({
   };
 }
 
-// export function useAfdelingenGroepen(search: () => string | undefined): ComputedRef<(Afdeling | Groep)[]> {
-//     const afdelingen = useAfdelingen(search);
-//     const groepen = useGroepen(search);
-
-//     // Combining data with prefixes and computed to be reactive
-//     const combinedData = computed(() => {
-//         const afdelingenWithPrefix = afdelingen.value.map(afdeling => ({
-//             ...afdeling,
-//             naam: `afdeling: ${afdeling.naam}`
-//         }));
-
-//         const groepenWithPrefix = groepen.value.map(groep => ({
-//             ...groep,
-//             naam: `groep: ${groep.naam}`
-//         }));
-
-//         return [...afdelingenWithPrefix, ...groepenWithPrefix];
-//     });
-
-//     return combinedData;
-// }
-
-// export function useAfdelingenGroepen(search: () => string | undefined) {
-//   const afdelingen = useAfdelingen(search);
-//   const groepen = useGroepen(search);
-
-//   const combinedData = computed(() => {
-//       // Combine data from both sources
-//       return [...afdelingen.value, ...groepen.value];
-//   });
-
-//   return combinedData;
-// }
-
-
-// export function useAfdelingenGroepen(search: () => string | undefined) {
-//   const afdelingen = useAfdelingen(search);
-//   const groepen = useGroepen(search);
-
-//   // Return the result directly or through a method, not a computed
-//   return () => {
-//     if (afdelingen.success && groepen.success) {
-//       const afdelingenList = afdelingen.data.page.map(item => "Afdeling: " + item.naam);
-//       const groepenList = groepen.data.page.map(item => "Groep: " + item.naam);
-//       return [...afdelingenList, ...groepenList];
-//     } else {
-//       return [];
-//     }
-//   };
-// }
-
-export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: string[]) {
-  const results: string[] = [];
-
-  // Process each afdeling
-  afdelingenNames.forEach(afdeling => {
-    const afdelingen = useAfdelingen(() => undefined);
-    if (afdelingen.success) {
-      const afdelingenList = afdelingen.data.page.map(item => "Afdeling: " + item.naam);
-      results.push(...afdelingenList);
-    }
-  });
-
-  // Process each groep
-  groepenNames.forEach(groep => {
-    const groepen = useGroepen(() => undefined);
-    if (groepen.success) {
-      const groepenList = groepen.data.page.map(item => "Groep: " + item.naam);
-      results.push(...groepenList);
-    }
-  });
-
-  return results;
-}
-
-// export function useSearchAfdelingenGroepen(search: () => string | undefined) {
-//   const afdelingen = useAfdelingen(search);
-//   const groepen = useGroepen(search);
-
-//   const combinedData = computed(() => {
-//     if (afdelingen.success && groepen.success) {
-//       const afdelingenList = afdelingen.data.page.map((item) => ({
-//         naam: "Afdeling: " + item.naam,
-//         identificatie: item.id 
-//       }));
-//       const groepenList = groepen.data.page.map((item) => ({
-//         naam: "Groep: " + item.naam,
-//         identificatie: item.id
-//       }));
-//       return [...afdelingenList, ...groepenList];
-//     }
-//     return [];
-//   });
-
-//   return { 
-//     data: combinedData,
-//     success: computed(() => afdelingen.success && groepen.success)
-//   };
-// }
-// export function useGroepen(search?: () => string | undefined) {
-//   const getUrl = () => {
-//     const searchParams = new URLSearchParams();
-//     searchParams.set("ordering", "record__data__naam");
-
-//     // Initialize an empty array for dynamic query parameters
-//     const data_attrs = [];
-
-//     // Retrieve the search string if the search function is defined
-//     const searchStr = search?.();
-//     if (searchStr) {
-//       data_attrs.push(`naam__icontains__${searchStr}`);
-//     }
-
-//     // Only add the data_attrs parameter if there are any conditions to add
-//     if (data_attrs.length > 0) {
-//       searchParams.set("data_attrs", data_attrs.join(","));
-//     }
-
-//     return "/api/groepen/api/v2/objects?" + searchParams.toString();
-//   };
-
-//   const mapOrganisatie = (x: any) => x.record.data as ContactverzoekGroep;
-
-//   const fetcher = (url: string): Promise<PaginatedResult<ContactverzoekGroep>> =>
-//     fetchLoggedIn(url)
-//       .then(throwIfNotOk)
-//       .then(parseJson)
-//       .then((json) => parsePagination(json, mapOrganisatie));
-
-//   return ServiceResult.fromFetcher(getUrl, fetcher);
-// }
-
-// export function useGroepenByAfdelingId(
-//   getAfdelingId: () => string | undefined,
-//   search?: () => string | undefined,
-// ) {
-//   const getUrl = () => {
-//     const afdelingId = getAfdelingId();
-//     if (!afdelingId) return "";
-//     const searchParams = new URLSearchParams();
-//     searchParams.set("ordering", "record__data__naam");
-//     const data_attrs = [`afdelingId__exact__${afdelingId}`];
-
-//     const searchStr = search?.();
-//     if (searchStr) {
-//       data_attrs.push(`naam__icontains__${searchStr}`);
-//     }
-
-//     searchParams.set("data_attrs", data_attrs.join(","));
-
-//     return "/api/groepen/api/v2/objects?" + searchParams;
-//   };
-
-//   const mapOrganisatie = (x: any) => x.record.data as ContactverzoekGroep;
-
-//   const fetcher = (url: string): Promise<PaginatedResult<ContactverzoekGroep>> =>
-//     fetchLoggedIn(url)
-//       .then(throwIfNotOk)
-//       .then(parseJson)
-//       .then((json) => parsePagination(json, mapOrganisatie));
-
-//   return ServiceResult.fromFetcher(getUrl, fetcher);
-// }
-
-export function useVragenSets() {
-  return ServiceResult.fromFetcher(
-    () => contactMomentVragenSets,
-    fetchVragenSets,
-  );
-}
-
-
-
 export function fetchVragenSets(url: string) {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
@@ -347,6 +198,13 @@ export function fetchVragenSets(url: string) {
     .then((data) => {
       return mapToClientContactVerzoekVragenSets(data);
     });
+}
+
+export function useVragenSets() {
+  return ServiceResult.fromFetcher(
+    () => contactMomentVragenSets,
+    fetchVragenSets,
+  );
 }
 
 function mapToClientContactVerzoekVragenSets(
@@ -453,4 +311,41 @@ function mapSchemaToVragen(schema: any): Vraag[] {
         return baseVraag;
     }
   });
+}
+
+
+export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: string[]) {
+  const results: MederwerkerGroepAfdeling[] = [];
+  const areBothArraysEmpty = afdelingenNames.length === 0 && groepenNames.length === 0;
+
+  if (areBothArraysEmpty) {
+    results.push(...processAfdelingen(() => undefined));
+    results.push(...processGroepen(() => undefined));
+  } else {
+    afdelingenNames.forEach(afdeling => {
+      results.push(...processAfdelingen(() => afdeling));
+    });
+
+    groepenNames.forEach(groep => {
+      results.push(...processGroepen(() => groep));
+    });
+  }
+
+  return results;
+}
+
+function processAfdelingen(afdeling: () => string | undefined) {
+  const afdelingen = useAfdelingen(afdeling);
+  if (afdelingen.success) {
+    return afdelingen.data.page.map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Afdeling: " + item.naam }));
+  }
+  return [];
+}
+
+function processGroepen(groep: () => string | undefined) {
+  const groepen = useGroepen(groep);
+  if (groepen.success) {
+    return groepen.data.page.map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Groep: " + item.naam }));
+  }
+  return [];
 }

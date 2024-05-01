@@ -8,7 +8,7 @@
       :result="result"
       :list-items="datalistItems"
       :exact-match="true"
-      :required="true"
+      :required="required"
       :disabled="isDisabled"
     />
   </div>
