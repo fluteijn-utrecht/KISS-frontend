@@ -31,7 +31,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
       "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
-      bsn.value
+      bsn.value,
     );
     return url.toString();
   };
@@ -78,15 +78,34 @@ export const useZaakById = (id: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, singleZaakFetcher);
 };
 
-export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
+type ZaakBedrijfIdentifier =
+  | {
+      vestigingsnummer: string;
+    }
+  | {
+      nietNatuurlijkPersoonIdentifier: string;
+    };
+
+export const useZakenByKlantBedrijfIdentifier = (
+  getId: () => ZaakBedrijfIdentifier | undefined,
+) => {
   const getUrl = () => {
-    if (!vestigingsnummer.value) return "";
+    const searchParam = getId();
+    if (!searchParam) return "";
     const url = new URL(location.href);
     url.pathname = zaaksysteemBaseUri + "/rollen";
-    url.searchParams.set(
-      "betrokkeneIdentificatie__vestiging__vestigingsNummer",
-      vestigingsnummer.value
-    );
+
+    if ("vestigingsnummer" in searchParam) {
+      url.searchParams.set(
+        "betrokkeneIdentificatie__vestiging__vestigingsNummer",
+        searchParam.vestigingsnummer,
+      );
+    } else if ("nietNatuurlijkPersoonIdentifier" in searchParam) {
+      url.searchParams.set(
+        "betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId",
+        searchParam.nietNatuurlijkPersoonIdentifier,
+      );
+    }
     return url.toString();
   };
 
@@ -99,7 +118,8 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
           const split = (x as RolType)?.zaak?.split("/");
           if (!Array.isArray(split) || !split.length) {
             throw new Error(
-              "kan url van zaak niet ophalen obv rol: " + x && JSON.stringify(x)
+              "kan url van zaak niet ophalen obv rol: " + x &&
+                JSON.stringify(x),
             );
           }
           const id = split[split.length - 1];
@@ -108,7 +128,7 @@ export const useZakenByVestigingsnummer = (vestigingsnummer: Ref<string>) => {
           const result = await singleZaakFetcher(url);
           mutate(url, result);
           return result;
-        })
+        }),
       );
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
@@ -123,7 +143,7 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
 
   //we gaan er in de interface vanuit dat een rol maar 1 keer voorkomt bij een zaak
   const rol = rollen.find(
-    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam
+    (rol: RolType) => rol.omschrijvingGeneriek === roleNaam,
   );
 
   if (!rol || !rol.betrokkeneIdentificatie) {
@@ -164,7 +184,7 @@ const getStatus = async (statusUrl: string) => {
   if (!statusId) return "";
 
   const statusType = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/statussen/${statusId}`
+    `${zaaksysteemBaseUri}/statussen/${statusId}`,
   )
     .then(throwIfNotOk)
     .then((x) => x.json())
@@ -185,10 +205,10 @@ const getStatus = async (statusUrl: string) => {
 };
 
 const getDocumenten = async (
-  zaakurl: string
+  zaakurl: string,
 ): Promise<Array<ZaakDocument | null>> => {
   const infoObjecten = await fetchLoggedIn(
-    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`
+    `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`,
   )
     .then(throwIfNotOk)
     .then((x) => x.json());
@@ -344,7 +364,7 @@ const overviewFetcher = (url: string): Promise<PaginatedResult<ZaakDetails>> =>
 
 export async function updateToelichting(
   zaak: ZaakDetails,
-  toelichting: string
+  toelichting: string,
 ): Promise<void> {
   const url = getZaakUrl(zaak.id);
   const res = await fetchLoggedIn(url, {

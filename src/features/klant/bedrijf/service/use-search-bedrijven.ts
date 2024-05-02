@@ -26,15 +26,15 @@ const getSearchBedrijvenUrl = <K extends SearchCategories>({
 
   const params = new URLSearchParams();
   params.set("pagina", page?.toString() ?? "1");
-  params.set("type", "hoofdvestiging");
-  params.append("type", "nevenvestiging");
+  //todo: we zoeken niet natuurlijke personen en verstigingen. Welke types precies wel of niet
+  //params.set("type", "hoofdvestiging");
+  //params.append("type", "nevenvestiging");
 
   const searchParams = bedrijfQueryDictionary[query.field](query.value);
 
   searchParams.forEach((tuple) => {
     params.set(...tuple);
   });
-
   return `${zoekenUrl}?${params}`;
 };
 
