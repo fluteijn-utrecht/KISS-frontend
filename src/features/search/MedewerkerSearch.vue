@@ -60,7 +60,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Zoek medewerker' 
+    default: 'Zoek een medewerker' 
   }
 });
 
