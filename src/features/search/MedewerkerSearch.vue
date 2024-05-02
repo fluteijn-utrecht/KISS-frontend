@@ -50,11 +50,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  afdelingId: { //wordt nu de naam in opgeslagen, veranderen naar id ipv naam
+  afdelingNaam: { 
     type: String,
     default: undefined,
   },
-  groepId: { //wordt nu de naam in opgeslagen, veranderen naar id ipv naam
+  groepNaam: {
     type: String,
     default: undefined,
   },
@@ -112,24 +112,10 @@ const searchParams = computed(() => {
   if (sources.success) {
     const smoelen = sources.data.find((x) => x.name === "Smoelenboek");
 
-    if((props.afdelingId))
-    {
+  if (smoelen) {
       return {
         filters: [smoelen],
-        search: props.afdelingId,
-      };
-    }
-    else if((props.groepId))
-    {
-      return {
-        filters: [smoelen],
-        search: props.groepId,
-      };
-    }
-    else if (smoelen) {
-      return {
-        filters: [smoelen],
-        search: debouncedSearchText.value,
+        search: props.afdelingNaam ?? props.groepNaam ?? debouncedSearchText.value,
       };
     }
   }
@@ -137,23 +123,6 @@ const searchParams = computed(() => {
     filters: [],
   };
 });
-
-// const searchParams = computed(() => {
-//   const filters = [];
-//   if (sources.success) {
-//     const smoelen = sources.data.find((x) => x.name === "Smoelenboek");
-//     if (smoelen) {
-//       filters.push(smoelen);
-//     }
-//   }
-  // if (props.afdelingId) {
-  //   filters.push({ key: "departmentId", value: props.afdelingId });
-  // }
-//   return {
-//     filters: filters,
-//     search: debouncedSearchText.value,
-//   };
-// });
 
 const result = useGlobalSearch(searchParams);
 const datalistItems = mapServiceData(result, (paginated) =>

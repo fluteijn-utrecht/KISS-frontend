@@ -8,9 +8,9 @@ export type ContactverzoekData = {
     naam: string;
     soortActor: string;
     identificatie: string;
-    naamOrganisatorischeEenheid: string;
+    naamOrganisatorischeEenheid?: string;
     typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid;
-    identificatieOrganisatorischeEenheid: string;
+    identificatieOrganisatorischeEenheid?: string;
   };
   betrokkene: {
     rol: "klant";

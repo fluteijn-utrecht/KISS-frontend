@@ -55,7 +55,7 @@
         <medewerker-search
           class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.afdelingMedewerker"
-          :afdeling-id="form.afdeling?.naam"
+          :afdeling-naam="form.afdeling?.naam"
           @update:model-value="setActive"
           :required="!form.afdeling?.id"
           :isDisabled="!form.afdeling?.id" 
@@ -95,7 +95,7 @@
         <medewerker-search
           class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.groepMedewerker"
-          :groep-id="form.groep?.naam"
+          :groep-naam="form.groep?.naam"
           @update:model-value="setActive"
           :required="!form.groep?.id"
           :isDisabled="!form.groep?.id" 
