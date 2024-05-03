@@ -72,6 +72,7 @@
             <span class="required">Groep</span>
             <service-data-search
               class="utrecht-textbox utrecht-textbox--html-input"
+              :required="true"
               v-model="form.groep"
               placeholder='Zoek een groep'
               @update:model-value="setActive"
@@ -359,8 +360,6 @@ const vragenSets = useVragenSets();
 const setOnderwerp = () => {
   setActive();
 };
-
-const groepen = useGroepen(() => form.value.groep?.naam);
 
 const afdelingenGroepen = computed(() => {
   const afdelingenArray = form.value.medewerker?.afdelingen.map(afdeling => afdeling.afdelingnaam) || [];
