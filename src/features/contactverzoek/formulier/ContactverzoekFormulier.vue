@@ -68,28 +68,20 @@
 
     <!-- Groep -->
     <template v-if="form.selectedOption === 'groep'">
-      <service-data-wrapper :data="groepen">
-        <template #init>
-        </template>
-        <template #success="{ data }">
           <label class="utrecht-form-label">
             <span class="required">Groep</span>
             <service-data-search
               class="utrecht-textbox utrecht-textbox--html-input"
               v-model="form.groep"
-              :placeholder="
-                !data.count ? 'Geen groepen gevonden' : 'Zoek een groep'
-              "
+              placeholder='Zoek een groep'
               @update:model-value="setActive"
               :get-data="useGroepen" 
               :map-value="(x) => x?.naam"
               :map-description="(x) => x?.identificatie"
               ref="groepSearchRef"
-              :disabled="!data.count"
             />
           </label>
-        </template>
-      </service-data-wrapper>
+     
       <label :class="['utrecht-form-label', { disabled: !form.groep?.id }]">
         <span class="">Medewerker binnen groep</span>
         <medewerker-search
