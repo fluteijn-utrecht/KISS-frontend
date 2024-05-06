@@ -55,7 +55,8 @@
         <medewerker-search
           class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.afdelingMedewerker"
-          :afdeling-naam="form.afdeling?.naam"
+          :filter-field="'Smoelenboek.afdelingen.afdelingnaam'"
+          :filter-value="form.afdeling?.naam"
           @update:model-value="setActive"
           :required="!form.afdeling?.id"
           :isDisabled="!form.afdeling?.id" 
@@ -88,7 +89,8 @@
         <medewerker-search
           class="utrecht-textbox utrecht-textbox--html-input"
           v-model="form.groepMedewerker"
-          :groep-naam="form.groep?.naam"
+          :filter-field="'Smoelenboek.groepen.groepsnaam'"
+          :filter-value="form.groep?.naam"
           @update:model-value="setActive"
           :required="!form.groep?.id"
           :isDisabled="!form.groep?.id" 

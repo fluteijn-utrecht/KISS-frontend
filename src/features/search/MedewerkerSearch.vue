@@ -23,7 +23,7 @@ export default {
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
-import { useGlobalSearch, useSources } from "./service";
+import { useFilteredSearch } from "./service";
 import type { SearchResult } from "./types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
@@ -42,6 +42,14 @@ const props = defineProps({
     type: String,
     default: undefined,
   },
+  filterField: {
+    type: String,
+    default: undefined,
+  },
+  filterValue: {
+    type: String,
+    default: undefined,
+  },
   required: {
     type: Boolean,
     default: false,
@@ -49,14 +57,6 @@ const props = defineProps({
   isDisabled: {
     type: Boolean,
     default: false,
-  },
-  afdelingNaam: { 
-    type: String,
-    default: undefined,
-  },
-  groepNaam: {
-    type: String,
-    default: undefined,
   },
   placeholder: {
     type: String,
@@ -106,28 +106,19 @@ watch(
   { immediate: true },
 );
 
-const sources = useSources();
-
-const searchParams = computed(() => {
-  if (sources.success) {
-    const smoelen = sources.data.find((x) => x.name === "Smoelenboek");
-
-  if (smoelen) {
+const filteredSearchParams = computed(() => {
       return {
-        filters: [smoelen],
-        search: props.afdelingNaam ?? props.groepNaam ?? debouncedSearchText.value,
+        filterField: props.filterField,
+        filterValue: props.filterValue,
+        search: debouncedSearchText.value,
       };
-    }
-  }
-  return {
-    filters: [],
-  };
 });
 
-const result = useGlobalSearch(searchParams);
+const result = useFilteredSearch(filteredSearchParams);
 const datalistItems = mapServiceData(result, (paginated) =>
   paginated.page.map(mapDatalistItem),
 );
+
 </script>
 
 <style lang="scss" scoped>

@@ -14,7 +14,7 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
-import type { ContactverzoekData, NewContactverzoek  } from "../types";
+import type { ContactverzoekData, NewContactverzoek } from "../types";
 import { TypeOrganisatorischeEenheid } from "../types";
 import { useAfdelingen } from "@/composables/afdelingen";
 import { useGroepen } from "@/composables/groepen";
@@ -122,6 +122,16 @@ export function mapContactverzoekData({
           data.contactVerzoekVragenSet.vraagAntwoord,
         )
       : "";
+
+      let verantwoordelijkheAfdeling = "";
+      if (data.groep) {
+        verantwoordelijkheAfdeling = data.groep.naam;
+      } else if (data.afdeling) {
+        verantwoordelijkheAfdeling = data.afdeling.naam;
+      } else if (data.mederwerkerGroepAfdeling) {
+        verantwoordelijkheAfdeling = data.mederwerkerGroepAfdeling.naam.split(": ")[1] || "";
+      } 
+
   // groep
   const organisatorischeEenheid = data.groep
   ? {
@@ -171,6 +181,7 @@ export function mapContactverzoekData({
   : organisatorischeEenheid;
 
   return {
+    verantwoodelijkeAfdeling: verantwoordelijkheAfdeling,
     status: "te verwerken",
     registratiedatum,
     toelichting:
