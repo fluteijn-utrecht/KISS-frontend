@@ -345,18 +345,19 @@ export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: st
   return results;
 }
 
-function processAfdelingen(afdeling: () => string | undefined) {
-  const afdelingen = useAfdelingen(afdeling);
-  if (afdelingen.success) {
-    return afdelingen.data.page.map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Afdeling: " + item.naam }));
+function processAfdelingen(afdeling: string | undefined) {
+  const afdelingen = useAfdelingen(() => afdeling);
+  if (afdelingen.success && afdelingen.data.page) {
+    
+    return afdelingen.data.page.filter(x=> x.naam === afdeling).map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Afdeling: " + item.naam }));
   }
   return [];
 }
 
-function processGroepen(groep: () => string | undefined) {
-  const groepen = useGroepen(groep);
-  if (groepen.success) {
-    return groepen.data.page.map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Groep: " + item.naam }));
+function processGroepen(groep: string | undefined) {
+  const groepen = useGroepen(() => groep);
+  if (groepen.success && groepen.data.page) {
+    return groepen.data.page.filter(x=> x.naam === groep).map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Groep: " + item.naam }));
   }
   return [];
 }
