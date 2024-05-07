@@ -27,7 +27,7 @@ export type ContactverzoekData = {
       omschrijving?: string;
     }[];
   };
-  verantwoodelijkeAfdeling: string;
+  verantwoordelijkeAfdeling: string;
 };
 
 export type NewContactverzoek = {

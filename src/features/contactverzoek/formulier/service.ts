@@ -181,7 +181,7 @@ export function mapContactverzoekData({
   : organisatorischeEenheid;
 
   return {
-    verantwoodelijkeAfdeling: verantwoordelijkheAfdeling,
+    verantwoordelijkeAfdeling: verantwoordelijkheAfdeling,
     status: "te verwerken",
     registratiedatum,
     toelichting:
