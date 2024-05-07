@@ -27,6 +27,7 @@ export type ContactverzoekData = {
       omschrijving?: string;
     }[];
   };
+  verantwoodelijkeAfdeling: string;
 };
 
 export type NewContactverzoek = {

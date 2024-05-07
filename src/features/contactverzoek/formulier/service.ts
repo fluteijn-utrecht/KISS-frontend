@@ -14,7 +14,7 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
-import type { ContactverzoekData, NewContactverzoek  } from "../types";
+import type { ContactverzoekData, NewContactverzoek } from "../types";
 import { TypeOrganisatorischeEenheid } from "../types";
 import { useAfdelingen } from "@/composables/afdelingen";
 import { useGroepen } from "@/composables/groepen";
@@ -122,13 +122,23 @@ export function mapContactverzoekData({
           data.contactVerzoekVragenSet.vraagAntwoord,
         )
       : "";
+
+      let verantwoordelijkheAfdeling = "";
+      if (data.groep) {
+        verantwoordelijkheAfdeling = data.groep.naam;
+      } else if (data.afdeling) {
+        verantwoordelijkheAfdeling = data.afdeling.naam;
+      } else if (data.mederwerkerGroepAfdeling) {
+        verantwoordelijkheAfdeling = data.mederwerkerGroepAfdeling.naam.split(": ")[1] || "";
+      } 
+
   // groep
-  const organisatorischeEenheid = data.groep
+  const organisatorischeEenheid = data.selectedOption == "groep"
   ? {
       ...(data.groepMedewerker
         ? {
             naam: fullName(data.groepMedewerker),
-            identificatie: data.afdelingMedewerker?.identificatie || "",
+            identificatie: data.groepMedewerker?.identificatie || "",
             naamOrganisatorischeEenheid: data.groep?.naam || "",
             identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
           }
@@ -157,7 +167,7 @@ export function mapContactverzoekData({
     };
 
   // medewerker
-  const actor = data.isMedewerker
+  const actor = data.selectedOption == "medewerker"
   ? {
       naam: fullName(data.medewerker),
       soortActor: "medewerker",
@@ -171,6 +181,7 @@ export function mapContactverzoekData({
   : organisatorischeEenheid;
 
   return {
+    verantwoodelijkeAfdeling: verantwoordelijkheAfdeling,
     status: "te verwerken",
     registratiedatum,
     toelichting:

@@ -573,15 +573,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     vraag: vraag?.vraag?.title,
     specifiekevraag: vraag.specifiekevraag || undefined,
     gespreksresultaat: vraag.gespreksresultaat,
-
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
+    startdatum: vraag.startdatum,
     // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
     gespreksId,
     vorigContactmoment: undefined,
     voorkeurskanaal: "",
     voorkeurstaal: "",
     medewerker: "",
-    startdatum: vraag.startdatum,
-    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
     einddatum: new Date().toISOString(),
   };
 

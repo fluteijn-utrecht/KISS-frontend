@@ -25,12 +25,7 @@ namespace Kiss.Bff.Afdelingen
                 AuthHeader = new AuthenticationHeaderValue("Token", token);
                 return;
             }
-
-
-           
         }
-
-            
 
         public void ApplyAuthorizationHeader(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
         {
