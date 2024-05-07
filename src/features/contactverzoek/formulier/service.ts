@@ -330,15 +330,15 @@ export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: st
   const areBothArraysEmpty = afdelingenNames.length === 0 && groepenNames.length === 0;
 
   if (areBothArraysEmpty) {
-    results.push(...processAfdelingen(() => undefined));
-    results.push(...processGroepen(() => undefined));
+    results.push(...processAfdelingen(undefined));
+    results.push(...processGroepen(undefined));
   } else {
     afdelingenNames.forEach(afdeling => {
-      results.push(...processAfdelingen(() => afdeling));
+      results.push(...processAfdelingen(afdeling));
     });
 
     groepenNames.forEach(groep => {
-      results.push(...processGroepen(() => groep));
+      results.push(...processGroepen(groep));
     });
   }
 
