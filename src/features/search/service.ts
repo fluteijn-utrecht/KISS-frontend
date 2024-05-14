@@ -272,9 +272,8 @@ export function useFilteredSearch(parameters:
     filterValue?: string 
   }>) {
   const getUrl = () => `${globalSearchBaseUri}/search-smoelenboek/_search`;
-
+  
   const getPayload = () => {
-
       const 
       { 
         search,
@@ -282,22 +281,36 @@ export function useFilteredSearch(parameters:
         filterField,
         filterValue 
       } = parameters.value;
-      
       const from = (page - 1) * pageSize;
 
+      const searchQuery = search ? {
+        simple_query_string: {
+          query: search
+        }
+      } : {
+        match_all: {}
+      };
+
+      const filterMatchQuery = filterField && filterValue ? {
+        match: {
+          [`${filterField}.enum`]: filterValue
+        }
+      } : null;
+
       const query = {
-          from,
-          size: pageSize,
-          query: {
-              bool: {
-                  must: {
-                      simple_query_string: {
-                          query: search || '""'
-                      }
-                  },
-                  filter: filterField && filterValue ? [{ term: { [filterField]: filterValue.toLowerCase() } }] : []
-              }
+        from,
+        size: pageSize,
+        sort: [
+          { "Smoelenboek.achternaam.enum": { "order": "asc" } }
+        ],
+        query: {
+          bool: {
+            must: [
+              searchQuery,
+              filterMatchQuery
+            ].filter(Boolean) 
           }
+        }
       };
 
       return JSON.stringify(query);
@@ -318,6 +331,7 @@ export function useFilteredSearch(parameters:
       } = json ?? {};
       const totalPages = Math.ceil((total?.value || 0) / pageSize);
       const page = Array.isArray(hits) ? hits.map(mapResult) : [];
+      
       return {
           page,
           pageSize,
@@ -330,7 +344,7 @@ export function useFilteredSearch(parameters:
   const searchService = ServiceResult.fromFetcher(getUrl, fetcher);
 
   watch(
-      () => parameters.value.search,
+      () => parameters.value?.search,
       () => {
           searchService.refresh()
       },

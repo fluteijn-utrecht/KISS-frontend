@@ -364,8 +364,8 @@ const setOnderwerp = () => {
 };
 
 const afdelingenGroepen = computed(() => {
-  const afdelingenArray = form.value.medewerker?.afdelingen.map(afdeling => afdeling.afdelingnaam) || [];
-  const groepenArray = form.value.medewerker?.groepen.map(groep => groep.groepsnaam) || [];
+  const afdelingenArray = form.value.medewerker?.afdelingen?.map(afdeling => afdeling.afdelingnaam) || [];
+  const groepenArray = form.value.medewerker?.groepen?.map(groep => groep.groepsnaam) || [];
 
   const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
   

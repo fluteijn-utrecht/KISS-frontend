@@ -133,12 +133,12 @@ export function mapContactverzoekData({
       } 
 
   // groep
-  const organisatorischeEenheid = data.groep
+  const organisatorischeEenheid = data.selectedOption == "groep"
   ? {
       ...(data.groepMedewerker
         ? {
             naam: fullName(data.groepMedewerker),
-            identificatie: data.afdelingMedewerker?.identificatie || "",
+            identificatie: data.groepMedewerker?.identificatie || "",
             naamOrganisatorischeEenheid: data.groep?.naam || "",
             identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
           }
@@ -167,7 +167,7 @@ export function mapContactverzoekData({
     };
 
   // medewerker
-  const actor = data.isMedewerker
+  const actor = data.selectedOption == "medewerker"
   ? {
       naam: fullName(data.medewerker),
       soortActor: "medewerker",
@@ -181,7 +181,7 @@ export function mapContactverzoekData({
   : organisatorischeEenheid;
 
   return {
-    verantwoodelijkeAfdeling: verantwoordelijkheAfdeling,
+    verantwoordelijkeAfdeling: verantwoordelijkheAfdeling,
     status: "te verwerken",
     registratiedatum,
     toelichting:
@@ -330,33 +330,34 @@ export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: st
   const areBothArraysEmpty = afdelingenNames.length === 0 && groepenNames.length === 0;
 
   if (areBothArraysEmpty) {
-    results.push(...processAfdelingen(() => undefined));
-    results.push(...processGroepen(() => undefined));
+    results.push(...processAfdelingen(undefined));
+    results.push(...processGroepen(undefined));
   } else {
     afdelingenNames.forEach(afdeling => {
-      results.push(...processAfdelingen(() => afdeling));
+      results.push(...processAfdelingen(afdeling));
     });
 
     groepenNames.forEach(groep => {
-      results.push(...processGroepen(() => groep));
+      results.push(...processGroepen(groep));
     });
   }
 
   return results;
 }
 
-function processAfdelingen(afdeling: () => string | undefined) {
-  const afdelingen = useAfdelingen(afdeling);
-  if (afdelingen.success) {
-    return afdelingen.data.page.map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Afdeling: " + item.naam }));
+function processAfdelingen(afdeling: string | undefined) {
+  const afdelingen = useAfdelingen(() => afdeling);
+  if (afdelingen.success && afdelingen.data.page) {
+    
+    return afdelingen.data.page.filter(x=> x.naam === afdeling).map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Afdeling: " + item.naam }));
   }
   return [];
 }
 
-function processGroepen(groep: () => string | undefined) {
-  const groepen = useGroepen(groep);
-  if (groepen.success) {
-    return groepen.data.page.map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Groep: " + item.naam }));
+function processGroepen(groep: string | undefined) {
+  const groepen = useGroepen(() => groep);
+  if (groepen.success && groepen.data.page) {
+    return groepen.data.page.filter(x=> x.naam === groep).map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Groep: " + item.naam }));
   }
   return [];
 }

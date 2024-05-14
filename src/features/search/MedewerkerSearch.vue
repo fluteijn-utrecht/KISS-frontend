@@ -2,7 +2,7 @@
   <div>
     <search-combobox
       v-bind="{ ...$attrs, ...props }"
-      :placeholder="placeholder" 
+      :placeholder="placeholder"
       :model-value="searchText"
       @update:model-value="updateModelValue"
       :result="result"
@@ -107,16 +107,23 @@ watch(
 );
 
 const filteredSearchParams = computed(() => {
-      return {
-        filterField: props.filterField,
-        filterValue: props.filterValue,
-        search: debouncedSearchText.value,
-      };
+  return {
+    filterField: props.filterField,
+    filterValue: props.filterValue,
+    search: debouncedSearchText.value,
+  };
 });
 
 const result = useFilteredSearch(filteredSearchParams);
 const datalistItems = mapServiceData(result, (paginated) =>
   paginated.page.map(mapDatalistItem),
+);
+
+watch(
+  [() => props.filterField, () => props.filterValue],
+  () => {
+    result.refresh();
+  },
 );
 
 </script>

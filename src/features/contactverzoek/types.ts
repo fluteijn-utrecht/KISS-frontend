@@ -24,10 +24,10 @@ export type ContactverzoekData = {
     digitaleAdressen: {
       adres: string;
       soortDigitaalAdres?: string;
-      omschrijving?: string;
+      omschrijving?: string; 
     }[];
   };
-  verantwoodelijkeAfdeling: string;
+  verantwoordelijkeAfdeling: string;
 };
 
 export type NewContactverzoek = {
