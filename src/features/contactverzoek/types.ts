@@ -5,9 +5,12 @@ export type ContactverzoekData = {
   datumVerwerkt?: string;
   toelichting?: string;
   actor: {
-    identificatie: string;
-    soortActor: string;
     naam: string;
+    soortActor: string;
+    identificatie: string;
+    naamOrganisatorischeEenheid?: string;
+    typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid;
+    identificatieOrganisatorischeEenheid?: string;
   };
   betrokkene: {
     rol: "klant";
@@ -21,9 +24,10 @@ export type ContactverzoekData = {
     digitaleAdressen: {
       adres: string;
       soortDigitaalAdres?: string;
-      omschrijving?: string;
+      omschrijving?: string; 
     }[];
   };
+  verantwoordelijkeAfdeling: string;
 };
 
 export type NewContactverzoek = {
@@ -37,3 +41,10 @@ export type NewContactverzoek = {
 export type Contactverzoek = NewContactverzoek & {
   url: string;
 };
+
+export enum TypeOrganisatorischeEenheid {
+  Groep = "groep",
+  Afdeling = "afdeling",
+}
+
+

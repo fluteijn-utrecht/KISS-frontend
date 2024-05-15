@@ -2,13 +2,14 @@
   <div>
     <search-combobox
       v-bind="{ ...$attrs, ...props }"
-      placeholder="Zoek een medewerker"
+      :placeholder="placeholder"
       :model-value="searchText"
       @update:model-value="updateModelValue"
       :result="result"
       :list-items="datalistItems"
       :exact-match="true"
-      :required="true"
+      :required="required"
+      :disabled="isDisabled"
     />
   </div>
 </template>
@@ -22,7 +23,7 @@ export default {
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
-import { useGlobalSearch, useSources } from "./service";
+import { useFilteredSearch } from "./service";
 import type { SearchResult } from "./types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
@@ -41,10 +42,26 @@ const props = defineProps({
     type: String,
     default: undefined,
   },
+  filterField: {
+    type: String,
+    default: undefined,
+  },
+  filterValue: {
+    type: String,
+    default: undefined,
+  },
   required: {
     type: Boolean,
     default: false,
   },
+  isDisabled: {
+    type: Boolean,
+    default: false,
+  },
+  placeholder: {
+    type: String,
+    default: 'Zoek een medewerker' 
+  }
 });
 
 function mapDatalistItem(
@@ -89,27 +106,26 @@ watch(
   { immediate: true },
 );
 
-const sources = useSources();
-
-const searchParams = computed(() => {
-  if (sources.success) {
-    const smoelen = sources.data.find((x) => x.name === "Smoelenboek");
-    if (smoelen) {
-      return {
-        filters: [smoelen],
-        search: debouncedSearchText.value,
-      };
-    }
-  }
+const filteredSearchParams = computed(() => {
   return {
-    filters: [],
+    filterField: props.filterField,
+    filterValue: props.filterValue,
+    search: debouncedSearchText.value,
   };
 });
 
-const result = useGlobalSearch(searchParams);
+const result = useFilteredSearch(filteredSearchParams);
 const datalistItems = mapServiceData(result, (paginated) =>
   paginated.page.map(mapDatalistItem),
 );
+
+watch(
+  [() => props.filterField, () => props.filterValue],
+  () => {
+    result.refresh();
+  },
+);
+
 </script>
 
 <style lang="scss" scoped>

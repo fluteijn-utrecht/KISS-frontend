@@ -1,5 +1,5 @@
 <template>
-  <div class="container" @submit.prevent>
+  <div class="container" @submit.prevent>    
     <form-fieldset class="radio-group">
       <form-fieldset-legend class="required"
         >Contactverzoek maken voor</form-fieldset-legend
@@ -7,34 +7,34 @@
       <label>
         <input
           type="radio"
-          :value="undefined"
+          value="afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.isMedewerker"
+          v-model="form.selectedOption"
         />
         Afdeling
       </label>
       <label>
         <input
           type="radio"
-          :value="true"
+          value="groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.isMedewerker"
+          v-model="form.selectedOption"
+        />
+        Groep
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="medewerker"
+          class="utrecht-radio-button utrecht-radio-button--html-input"
+          v-model="form.selectedOption"
         />
         Medewerker
       </label>
     </form-fieldset>
 
-    <label class="utrecht-form-label" v-if="form.isMedewerker">
-      <span class="required">Contactverzoek versturen naar</span>
-      <medewerker-search
-        class="utrecht-textbox utrecht-textbox--html-input"
-        required
-        v-model="form.medewerker"
-        @update:model-value="setActive"
-      />
-    </label>
-
-    <template v-else>
+     <!-- Afdeling -->
+    <template v-if="form.selectedOption === 'afdeling'">
       <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
         <service-data-search
@@ -50,37 +50,81 @@
         />
       </label>
 
-      <service-data-wrapper :data="groepenFirstPage">
-        <template #init>
-          <label class="disabled utrecht-form-label">
-            Groep
-            <input
-              type="text"
-              class="utrecht-textbox utrecht-textbox--html-input"
-              disabled
-              placeholder="Kies eerst een afdeling"
-            />
-          </label>
-        </template>
-        <template #success="{ data }">
-          <label :class="['utrecht-form-label', { disabled: !data.count }]">
-            Groep
+      <label :class="['utrecht-form-label', { disabled: !form.afdeling?.id }]">
+        <span class="">Medewerker binnen afdeling</span>
+        <medewerker-search
+          class="utrecht-textbox utrecht-textbox--html-input"
+          v-model="form.afdelingMedewerker"
+          :filter-field="'Smoelenboek.afdelingen.afdelingnaam'"
+          :filter-value="form.afdeling?.naam"
+          @update:model-value="setActive"
+          :required="!form.afdeling?.id"
+          :isDisabled="!form.afdeling?.id" 
+          :placeholder="form.afdeling?.id ? 'Zoek een medewerker' : 'Kies eerst een afdeling'"
+        />
+      </label>
+
+  
+    </template>
+
+    <!-- Groep -->
+    <template v-if="form.selectedOption === 'groep'">
+          <label class="utrecht-form-label">
+            <span class="required">Groep</span>
             <service-data-search
               class="utrecht-textbox utrecht-textbox--html-input"
+              :required="true"
               v-model="form.groep"
-              :placeholder="
-                !data.count ? 'Geen groepen gevonden' : 'Zoek een groep'
-              "
+              placeholder='Zoek een groep'
               @update:model-value="setActive"
-              :get-data="(x) => useGroepen(() => form.afdeling?.id, x)"
+              :get-data="useGroepen" 
               :map-value="(x) => x?.naam"
               :map-description="(x) => x?.identificatie"
               ref="groepSearchRef"
-              :disabled="!data.count"
             />
           </label>
-        </template>
-      </service-data-wrapper>
+     
+      <label :class="['utrecht-form-label', { disabled: !form.groep?.id }]">
+        <span class="">Medewerker binnen groep</span>
+        <medewerker-search
+          class="utrecht-textbox utrecht-textbox--html-input"
+          v-model="form.groepMedewerker"
+          :filter-field="'Smoelenboek.groepen.groepsnaam'"
+          :filter-value="form.groep?.naam"
+          @update:model-value="setActive"
+          :required="!form.groep?.id"
+          :isDisabled="!form.groep?.id" 
+          :placeholder="form.groep?.id ? 'Zoek een medewerker' : 'Kies eerst een groep'"
+        />
+      </label>
+    </template>
+
+     <!-- Medewerker -->
+     <template v-if="form.selectedOption === 'medewerker'">
+     <label class="utrecht-form-label">
+      <span class="required">Medewerker</span>
+      <medewerker-search
+        class="utrecht-textbox utrecht-textbox--html-input"
+        required
+        v-model="form.medewerker"
+        @update:model-value="setActive"
+      />
+    </label>
+
+      <div>
+        <label for="groep" class="utrecht-form-label">
+          <span class="required">Afdeling / groep </span>
+          <select 
+            id="groep" 
+            class="utrecht-textbox utrecht-textbox--html-input" 
+            v-model="form.mederwerkerGroepAfdeling"
+          >
+            <option v-for="item in afdelingenGroepen" :value="item" :key="item.id">
+              {{ item.naam }}
+            </option>
+          </select>
+      </label>
+      </div>
     </template>
 
     <label class="utrecht-form-label notitieveld">
@@ -269,16 +313,17 @@ import { whenever } from "@vueuse/core";
 import { nextTick } from "vue";
 import {
   useVragenSets,
-  useGroepen,
   isInputVraag,
   isTextareaVraag,
   isDropdownVraag,
   isCheckboxVraag,
+  useAfdelingenGroepen
 } from "./service";
 
 import { useAfdelingen } from "@/composables/afdelingen";
-import { computed } from "vue";
+import { useGroepen } from "@/composables/groepen";
 import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
+import { computed } from 'vue'
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -318,7 +363,14 @@ const setOnderwerp = () => {
   setActive();
 };
 
-const groepenFirstPage = useGroepen(() => form.value.afdeling?.id);
+const afdelingenGroepen = computed(() => {
+  const afdelingenArray = form.value.medewerker?.afdelingen?.map(afdeling => afdeling.afdelingnaam) || [];
+  const groepenArray = form.value.medewerker?.groepen?.map(groep => groep.groepsnaam) || [];
+
+  const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
+  
+  return data;
+});
 
 const groepSearchRef = ref();
 
@@ -355,29 +407,28 @@ watch(
 watch(
   () => form.value.afdeling,
   () => {
-    form.value.groep = undefined;
+    form.value.afdelingMedewerker = undefined;
+    setActive();
   },
 );
 
-const afdelingId = computed(() => {
-  const afdelingen = props.modelValue.medewerker?.afdelingen;
-  if (Array.isArray(afdelingen) && afdelingen.length > 0) {
-    return afdelingen[0].afdelingId;
-  }
-  return null;
-});
+watch(
+  () => form.value.groep,
+  () => {
+    form.value.groepMedewerker = undefined;
+    setActive();
+  },
+);
 
 watch(
   () => form.value.medewerker,
   () => {
-    form.value.afdeling = {
-      id: afdelingId.value ?? "",
-      identificatie: "",
-      naam: "",
-    };
-    setOnderwerp();
+    form.value.isMedewerker = true;
+    setActive();
   },
 );
+
+
 </script>
 
 <style lang="scss" scoped>

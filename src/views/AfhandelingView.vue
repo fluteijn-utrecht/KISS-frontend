@@ -311,21 +311,6 @@
               :id="'notitie' + idx"
               v-model="vraag.notitie"
             ></textarea>
-            <label :for="'afdeling' + idx" class="utrecht-form-label required"
-              >Afdeling</label
-            >
-            <div class="relative">
-              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
-                extraheren naar eigen componenten -->
-              <afdelingen-search
-                v-model="vraag.afdeling"
-                :exact-match="true"
-                :id="'afdeling' + idx"
-                class="utrecht-textbox utrecht-textbox--html-input"
-                :required="true"
-                placeholder="Zoek een afdeling"
-              />
-            </div>
             <label :for="'kanaal' + idx" class="utrecht-form-label required"
               >Kanaal</label
             >
@@ -378,6 +363,28 @@
             </select>
           </fieldset>
         </section>
+
+        <section
+        v-if="vraag.gespreksresultaat !== CONTACTVERZOEK_GEMAAKT"
+      >
+        <utrecht-heading :level="3"> Afgehandeld voor</utrecht-heading>
+        <fieldset class="utrecht-form-fieldset">
+          <label :for="'afdeling' + idx" class="utrecht-form-label required"
+            >Afdeling</label>
+          <div class="relative">
+            <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
+              extraheren naar eigen componenten -->
+            <afdelingen-search
+              v-model="vraag.afdeling"
+              :exact-match="true"
+              :id="'afdeling' + idx"
+              class="utrecht-textbox utrecht-textbox--html-input"
+              :required="true"
+              placeholder="Zoek een afdeling"
+            />
+          </div>
+        </fieldset>
+      </section>
 
         <section
           v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT"
@@ -566,15 +573,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     vraag: vraag?.vraag?.title,
     specifiekevraag: vraag.specifiekevraag || undefined,
     gespreksresultaat: vraag.gespreksresultaat,
-
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
+    startdatum: vraag.startdatum,
     // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
     gespreksId,
     vorigContactmoment: undefined,
     voorkeurskanaal: "",
     voorkeurstaal: "",
     medewerker: "",
-    startdatum: vraag.startdatum,
-    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
     einddatum: new Date().toISOString(),
   };
 

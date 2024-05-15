@@ -11,10 +11,22 @@ import { defineStore } from "pinia";
 import { createSession, type Session } from "../switchable-store";
 export * from "./types";
 import type { ContactVerzoekVragenSet } from "@/features/contactverzoek/formulier/types";
-import type { Afdeling } from "@/composables/afdelingen";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
 
-export interface ContactverzoekAfdeling {
+export interface Afdeling {
+  id: string;
+  identificatie: string;
+  naam: string;
+}
+
+export interface Groep {
+  id: string;
+  afdelingId: string;
+  identificatie: string;
+  naam: string;
+}
+
+export interface MederwerkerGroepAfdeling {
   id: string;
   identificatie: string;
   naam: string;
@@ -22,24 +34,43 @@ export interface ContactverzoekAfdeling {
 
 export interface MedewerkerAfdelingen {
   afdelingId: string;
+  id: string;
+  identificatie: string;
+  afdelingnaam: string;
+}
+
+export interface MedewerkerGroepen {
+  afdelingId: string;
+  id: string;
+  identificatie: string;
+  groepsnaam: string;
+}
+
+export interface ContactVerzoekMedewerker
+{
+  user: string;
+  identificatie?: string;
+  voornaam?: string;
+  voorvoegselAchternaam?: string;
+  achternaam?: string;
+  afdelingen: MedewerkerAfdelingen[];
+  groepen: MedewerkerGroepen[];
 }
 
 export type ContactmomentContactVerzoek = {
   url?: string;
   isMedewerker?: true;
-  medewerker?: {
-    user: string;
-    identificatie?: string;
-    voornaam?: string;
-    voorvoegselAchternaam?: string;
-    achternaam?: string;
-    afdelingen: MedewerkerAfdelingen[];
-  };
-  afdeling?: ContactverzoekAfdeling;
-  groep?: {
-    identificatie: string;
-    naam: string;
-  };
+  selectedOption?: 'afdeling' | 'medewerker' | 'groep'; 
+  afdeling?: Afdeling;
+  afdelingMedewerker?: ContactVerzoekMedewerker
+  groep?: Groep;
+  groepMedewerker?: ContactVerzoekMedewerker
+  medewerker?: ContactVerzoekMedewerker
+  mederwerkerGroepAfdeling?: MederwerkerGroepAfdeling
+  // groep?: {
+  //   identificatie: string;
+  //   naam: string;
+  // };
   organisatie?: string;
   voornaam?: string;
   achternaam?: string;
@@ -105,9 +136,12 @@ function initVraag(): Vraag {
     contactverzoek: {
       url: "",
       isMedewerker: undefined,
-      medewerker: undefined,
       afdeling: undefined,
+      afdelingMedewerker: undefined,
       groep: undefined,
+      groepMedewerker: undefined,
+      medewerker: undefined,
+      mederwerkerGroepAfdeling: undefined,
       telefoonnummer1: "",
       telefoonnummer2: "",
       omschrijvingTelefoonnummer2: "",

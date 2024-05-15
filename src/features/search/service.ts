@@ -8,7 +8,7 @@ import {
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
-import { computed } from "vue";
+import { computed, watch } from "vue";
 
 function mapResult(obj: any): SearchResult {
   const source = obj?._source?.object_bron ?? "Website";
@@ -262,4 +262,94 @@ export function useSources() {
   }
 
   return ServiceResult.fromFetcher(getUrl, fetcher);
+}
+
+export function useFilteredSearch(parameters: 
+  Ref<{ 
+    search?: string;
+    page?: number;
+    filterField?: string;
+    filterValue?: string 
+  }>) {
+  const getUrl = () => `${globalSearchBaseUri}/search-smoelenboek/_search`;
+  
+  const getPayload = () => {
+      const 
+      { 
+        search,
+        page = 1,
+        filterField,
+        filterValue 
+      } = parameters.value;
+      const from = (page - 1) * pageSize;
+
+      const searchQuery = search ? {
+        simple_query_string: {
+          query: search
+        }
+      } : {
+        match_all: {}
+      };
+
+      const filterMatchQuery = filterField && filterValue ? {
+        match: {
+          [`${filterField}.enum`]: filterValue
+        }
+      } : null;
+
+      const query = {
+        from,
+        size: pageSize,
+        sort: [
+          { "Smoelenboek.achternaam.enum": { "order": "asc" } }
+        ],
+        query: {
+          bool: {
+            must: [
+              searchQuery,
+              filterMatchQuery
+            ].filter(Boolean) 
+          }
+        }
+      };
+
+      return JSON.stringify(query);
+  };
+
+  async function fetcher(url: string): Promise<Paginated<SearchResult> & { suggestions: string[] }> {
+      const r = await fetchLoggedIn(url, {
+          method: "POST",
+          headers: {
+              "content-type": "application/json",
+          },
+          body: getPayload(),
+      });
+      if (!r.ok) throw new Error();
+      const json = await r.json();
+      const {
+          hits: { total, hits },
+      } = json ?? {};
+      const totalPages = Math.ceil((total?.value || 0) / pageSize);
+      const page = Array.isArray(hits) ? hits.map(mapResult) : [];
+      
+      return {
+          page,
+          pageSize,
+          pageNumber: parameters.value.page || 1,
+          totalPages,
+          suggestions: mapSuggestions(json),
+      };
+  }
+
+  const searchService = ServiceResult.fromFetcher(getUrl, fetcher);
+
+  watch(
+      () => parameters.value?.search,
+      () => {
+          searchService.refresh()
+      },
+      { immediate: true },
+  );
+
+  return searchService;
 }
