@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kiss.Bff.InterneTaak
 {
     [ApiController]
-    [Route("api/internetaak/api/{version}/objects")]
     public class PostInterneTaakCustomProxy : ControllerBase
     {
         private readonly InterneTaakProxyConfig _config;
@@ -17,6 +16,7 @@ namespace Kiss.Bff.InterneTaak
         }
 
         [HttpPost]
+        [Route("api/internetaak/api/{version}/objects")]
         public IActionResult Post([FromRoute] string version, [FromBody] JsonObject node)
         {
             node["type"] = _config.ObjectTypeUrl;
