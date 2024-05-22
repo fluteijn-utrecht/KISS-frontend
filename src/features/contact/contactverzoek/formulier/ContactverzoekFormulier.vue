@@ -298,7 +298,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import MedewerkerSearch from "@/features/search/MedewerkerSearch.vue";
+import MedewerkerSearch from "./MedewerkerSearch.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";

@@ -23,8 +23,8 @@ export default {
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
-import { useFilteredSearch } from "./service";
-import type { SearchResult } from "./types";
+import { useFilteredSearch } from "@/features/search/service";
+import type { SearchResult } from "@/features/search/types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
 import { mapServiceData } from "@/services";
 import type { PropType } from "vue";
@@ -60,8 +60,8 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Zoek een medewerker' 
-  }
+    default: "Zoek een medewerker",
+  },
 });
 
 function mapDatalistItem(
@@ -119,13 +119,9 @@ const datalistItems = mapServiceData(result, (paginated) =>
   paginated.page.map(mapDatalistItem),
 );
 
-watch(
-  [() => props.filterField, () => props.filterValue],
-  () => {
-    result.refresh();
-  },
-);
-
+watch([() => props.filterField, () => props.filterValue], () => {
+  result.refresh();
+});
 </script>
 
 <style lang="scss" scoped>
