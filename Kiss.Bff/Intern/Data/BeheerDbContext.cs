@@ -1,6 +1,7 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
+using Kiss.Bff.Intern.Data;
 using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
@@ -57,6 +58,15 @@ namespace Kiss.Bff.Beheer.Data
                 k.Property(p => p.Naam).IsRequired();
 
             });
+
+            modelBuilder.SeedData<Gespreksresultaat>("Data/SeedData/Gespreksresultaat.json");
+            modelBuilder.SeedData<Kanaal>("Data/SeedData/Kanaal.json");
+            modelBuilder.SeedData<Link>("Data/SeedData/Link.json");
+            modelBuilder.SeedData<Skill>("Data/SeedData/Skill.json");
+            modelBuilder.SeedData<Bericht>("Data/SeedData/Bericht.json");
+            modelBuilder.SeedData<BerichtGelezen>("Data/SeedData/BerichtGelezen.json");
+            modelBuilder.SeedData<ContactVerzoekVragenSet>("Data/SeedData/ContactVerzoekVragenSet.json");
+
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;

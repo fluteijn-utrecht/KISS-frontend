@@ -1,0 +1,10 @@
+[
+    {
+        "Id": 1,
+        "DateCreated": "2024-05-22T13:30:00Z",
+        "DateUpdated": null,
+        "Titel": "Sample title",
+        "Url": "https://example.com",
+        "Categorie": "Sample category"
+    }
+]

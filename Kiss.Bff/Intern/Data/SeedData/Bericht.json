@@ -1,0 +1,15 @@
+[
+    {
+        "Id": 1,
+        "DateCreated": "2024-05-22T13:30:00Z",
+        "DateUpdated": null,
+        "PublicatieDatum": "2024-05-22T13:30:00Z",
+        "PublicatieEinddatum": null,
+        "Titel": "Sample title",
+        "Inhoud": "Sample content",
+        "IsBelangrijk": true,
+        "Type": "Sample type",
+        "Skills": [],
+        "Gelezen": []
+    }
+]
