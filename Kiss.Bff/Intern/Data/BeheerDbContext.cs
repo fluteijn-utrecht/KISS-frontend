@@ -58,14 +58,7 @@ namespace Kiss.Bff.Beheer.Data
                 k.Property(p => p.Naam).IsRequired();
 
             });
-
-            modelBuilder.SeedData<Gespreksresultaat>("Data/SeedData/Gespreksresultaat.json");
-            modelBuilder.SeedData<Kanaal>("Data/SeedData/Kanaal.json");
-            modelBuilder.SeedData<Link>("Data/SeedData/Link.json");
-            modelBuilder.SeedData<Skill>("Data/SeedData/Skill.json");
-            modelBuilder.SeedData<Bericht>("Data/SeedData/Bericht.json");
-            modelBuilder.SeedData<BerichtGelezen>("Data/SeedData/BerichtGelezen.json");
-            modelBuilder.SeedData<ContactVerzoekVragenSet>("Data/SeedData/ContactVerzoekVragenSet.json");
+            
 
         }
 
