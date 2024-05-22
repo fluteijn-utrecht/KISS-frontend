@@ -371,8 +371,6 @@
               >Afdeling</label
             >
             <div class="relative">
-              <!-- TODO: alle metadata / contactmoment-details uit dit scherm 
-              extraheren naar eigen componenten -->
               <afdelingen-search
                 v-model="vraag.afdeling"
                 :exact-match="true"

@@ -37,16 +37,13 @@
     <template v-if="form.selectedOption === 'afdeling'">
       <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
-        <service-data-search
+        <afdelingen-search
+          v-model="form.afdeling"
+          :exact-match="true"
           class="utrecht-textbox utrecht-textbox--html-input"
           :required="true"
-          v-model="form.afdeling"
           placeholder="Zoek een afdeling"
           @update:model-value="onUpdateAfdeling"
-          :get-data="useAfdelingen"
-          :map-value="(x) => x?.naam"
-          @keydown.enter="setEnterPressed"
-          :map-description="(x) => x?.identificatie"
         />
       </label>
 
@@ -73,16 +70,12 @@
     <template v-if="form.selectedOption === 'groep'">
       <label class="utrecht-form-label">
         <span class="required">Groep</span>
-        <service-data-search
+        <groepen-search
+          v-model="form.groep"
+          :exact-match="true"
           class="utrecht-textbox utrecht-textbox--html-input"
           :required="true"
-          v-model="form.groep"
           placeholder="Zoek een groep"
-          @update:model-value="setActive"
-          :get-data="useGroepen"
-          :map-value="(x) => x?.naam"
-          :map-description="(x) => x?.identificatie"
-          ref="groepSearchRef"
         />
       </label>
 
@@ -314,11 +307,7 @@ import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
-
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
-import { whenever } from "@vueuse/core";
-import { nextTick } from "vue";
 import {
   useVragenSets,
   isInputVraag,
@@ -327,11 +316,10 @@ import {
   isCheckboxVraag,
   useAfdelingenGroepen,
 } from "./service";
-
-import { useAfdelingen } from "@/composables/afdelingen";
-import { useGroepen } from "@/composables/groepen";
 import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
 import { computed } from "vue";
+import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
+import GroepenSearch from "./GroepenSearch.vue";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -382,22 +370,6 @@ const afdelingenGroepen = computed(() => {
   const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
 
   return data;
-});
-
-const groepSearchRef = ref();
-
-const enterPressed = ref(false);
-const setEnterPressed = () => {
-  enterPressed.value = true;
-};
-
-// focus groep search element whenever it appears on the page (so when you select a Afdeling that has Groepen)
-whenever(groepSearchRef, (v) => {
-  if (!enterPressed.value) return;
-  enterPressed.value = false;
-  nextTick(() => {
-    (v.$el as HTMLElement)?.getElementsByTagName("input")?.[0]?.focus();
-  });
 });
 
 watch(
