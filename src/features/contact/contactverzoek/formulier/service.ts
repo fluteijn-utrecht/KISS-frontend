@@ -15,8 +15,8 @@ import type {
 } from "./types";
 import type { ContactverzoekData, NewContactverzoek } from "../types";
 import { TypeOrganisatorischeEenheid } from "../types";
-import { useAfdelingen } from "@/composables/afdelingen";
-import { useGroepen } from "@/composables/groepen";
+import { fetchAfdelingen, useAfdelingen } from "@/composables/afdelingen";
+import { fetchGroepen, useGroepen } from "@/composables/groepen";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
@@ -336,54 +336,56 @@ function mapSchemaToVragen(schema: any): Vraag[] {
   });
 }
 
-export function useAfdelingenGroepen(
-  afdelingenNames: string[],
-  groepenNames: string[],
-) {
-  const results: MederwerkerGroepAfdeling[] = [];
-  const areBothArraysEmpty =
-    afdelingenNames.length === 0 && groepenNames.length === 0;
+// export async function useAfdelingenGroepen(
+//   afdelingenNames: string[],
+//   groepenNames: string[],
+// ) {
+//   const results: MederwerkerGroepAfdeling[] = [];
+//   const areBothArraysEmpty =
+//     afdelingenNames.length === 0 && groepenNames.length === 0;
 
-  if (areBothArraysEmpty) {
-    results.push(...processAfdelingen(undefined));
-    results.push(...processGroepen(undefined));
-  } else {
-    afdelingenNames.forEach((afdeling) => {
-      results.push(...processAfdelingen(afdeling));
-    });
+//   if (areBothArraysEmpty) {
+//     results.push(...(await processAfdelingen(undefined)));
+//     results.push(...(await processGroepen(undefined)));
+//   } else {
+//     for (const afdeling of afdelingenNames) {
+//       results.push(...(await processAfdelingen(afdeling)));
+//     }
 
-    groepenNames.forEach((groep) => {
-      results.push(...processGroepen(groep));
-    });
-  }
+//     for (const groep of groepenNames) {
+//       results.push(...(await processGroepen(groep)));
+//     }
+//   }
 
-  return results;
-}
+//   return results;
+// }
 
-function processAfdelingen(afdeling: string | undefined) {
-  const afdelingen = useAfdelingen(() => afdeling);
-  if (afdelingen.success && afdelingen.data.page) {
-    return afdelingen.data.page
-      .filter((x) => x.naam === afdeling)
-      .map((item) => ({
-        id: item.id,
-        identificatie: item.identificatie,
-        naam: "Afdeling: " + item.naam,
-      }));
-  }
-  return [];
-}
+// async function processAfdelingen(afdeling: string | undefined) {
+//   const afdelingen = await fetchAfdelingen(afdeling, false);
 
-function processGroepen(groep: string | undefined) {
-  const groepen = useGroepen(() => groep);
-  if (groepen.success && groepen.data.page) {
-    return groepen.data.page
-      .filter((x) => x.naam === groep)
-      .map((item) => ({
-        id: item.id,
-        identificatie: item.identificatie,
-        naam: "Groep: " + item.naam,
-      }));
-  }
-  return [];
-}
+//   if (afdelingen.page) {
+//     return afdelingen.page
+//       .filter((x) => x.naam === afdeling)
+//       .map((item) => ({
+//         id: item.id,
+//         identificatie: item.identificatie,
+//         naam: "Afdeling: " + item.naam,
+//       }));
+//   }
+//   return [];
+// }
+
+// async function processGroepen(groep: string | undefined) {
+//   const groepen = await fetchGroepen(groep, false);
+
+//   if (groepen.page) {
+//     return groepen.page
+//       .filter((x) => x.naam === groep)
+//       .map((item) => ({
+//         id: item.id,
+//         identificatie: item.identificatie,
+//         naam: "Groep: " + item.naam,
+//       }));
+//   }
+//   return [];
+// }

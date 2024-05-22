@@ -111,10 +111,12 @@
       <div>
         <label for="groep" class="utrecht-form-label">
           <span class="required">Afdeling / groep </span>
+
           <select
             id="groep"
             class="utrecht-textbox utrecht-textbox--html-input"
             v-model="form.mederwerkerGroepAfdeling"
+            :disabled="!afdelingenGroepen?.length"
           >
             <option
               v-for="item in afdelingenGroepen"
@@ -137,7 +139,7 @@
         class="utrecht-textarea utrecht-textarea--html-textarea"
         rows="5"
         @input="setActive"
-      />
+      ></textarea>
     </label>
 
     <form-fieldset>
@@ -314,12 +316,13 @@ import {
   isTextareaVraag,
   isDropdownVraag,
   isCheckboxVraag,
-  useAfdelingenGroepen,
 } from "./service";
 import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
 import { computed } from "vue";
 import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
 import GroepenSearch from "./GroepenSearch.vue";
+import { fetchAfdelingen } from "@/composables/afdelingen";
+import { fetchGroepen } from "@/composables/groepen";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -359,18 +362,156 @@ const setOnderwerp = () => {
   setActive();
 };
 
-const afdelingenGroepen = computed(() => {
-  const afdelingenArray =
+const afdelingenArray = computed(() => {
+  return (
     form.value.medewerker?.afdelingen?.map(
       (afdeling) => afdeling.afdelingnaam,
-    ) || [];
-  const groepenArray =
-    form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
-
-  const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
-
-  return data;
+    ) || []
+  );
 });
+
+const groepenArray = computed(() => {
+  return form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
+});
+
+//////////////////////////////////////////////
+
+// export async function useAfdelingenGroepen(
+//   afdelingenNames: string[],
+//   groepenNames: string[],
+// ) {
+//   const results: MederwerkerGroepAfdeling[] = [];
+//   const areBothArraysEmpty =
+//     afdelingenNames.length === 0 && groepenNames.length === 0;
+
+//   if (areBothArraysEmpty) {
+//     results.push(...(await processAfdelingen(undefined)));
+//     results.push(...(await processGroepen(undefined)));
+//   } else {
+//     for (const afdeling of afdelingenNames) {
+//       results.push(...(await processAfdelingen(afdeling)));
+//     }
+
+//     for (const groep of groepenNames) {
+//       results.push(...(await processGroepen(groep)));
+//     }
+//   }
+
+//   return results;
+// }
+
+// async function processAfdelingen(afdeling: string | undefined) {
+//   const afdelingen = await fetchAfdelingen(afdeling, false);
+
+//   if (afdelingen.page) {
+//     return afdelingen.page
+//       .filter((x) => x.naam === afdeling) <----!! dit is waar het misgaat bij generieke code! doe nou gewoon een aparte code voor alle ophalen en voor een lijst afdelingen ophalen. nu filtert hij op undefinded
+//       .map((item) => ({
+//         id: item.id,
+//         identificatie: item.identificatie,
+//         naam: "Afdeling: " + item.naam,
+//       }));
+//   }
+//   return [];
+// }
+
+// async function processGroepen(groep: string | undefined) {
+//   const groepen = await fetchGroepen(groep, false);
+
+//   if (groepen.page) {
+//     return groepen.page
+//       .filter((x) => x.naam === groep)
+//       .map((item) => ({
+//         id: item.id,
+//         identificatie: item.identificatie,
+//         naam: "Groep: " + item.naam,
+//       }));
+//   }
+//   return [];
+// }
+
+const afdelingenGroepen = ref();
+
+const getAllAfdelingen = async () => {
+  const organisatorischeEenheid = await fetchAfdelingen(undefined, false);
+
+  if (organisatorischeEenheid.page) {
+    const items = organisatorischeEenheid.page
+      .filter((x) => x.naam === naam)
+      .map((item) => ({
+        id: item.id,
+        identificatie: item.identificatie,
+        naam: "Afdeling: " + item.naam,
+      }));
+
+    afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+  }
+};
+
+const refreshAfdelingen = async (namen: string[]) => {
+  for (const naam of namen) {
+    const organisatorischeEenheid = await fetchAfdelingen(naam, false);
+
+    if (organisatorischeEenheid.page) {
+      const items = organisatorischeEenheid.page
+        .filter((x) => x.naam === naam)
+        .map((item) => ({
+          id: item.id,
+          identificatie: item.identificatie,
+          naam: "Afdeling: " + item.naam,
+        }));
+
+      afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+    }
+  }
+};
+
+const refreshGroepen = async (namen: string[]) => {
+  for (const naam of namen) {
+    const organisatorischeEenheid = await fetchGroepen(naam, false);
+
+    if (organisatorischeEenheid.page) {
+      const items = organisatorischeEenheid.page
+        .filter((x) => x.naam === naam)
+        .map((item) => ({
+          id: item.id,
+          identificatie: item.identificatie,
+          naam: "Groep: " + item.naam,
+        }));
+
+      afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+    }
+  }
+};
+
+watch([afdelingenArray, groepenArray], async () => {
+  afdelingenGroepen.value = [];
+
+  //als er geen afdelingen en geen groepen zijn, toon dan alle afdelingen en groepen
+  //de koppeling is niet perfect, dan kan de kcm zelf een keuze maken uit de complete lijst
+  // if (afdelingenArray.value.length === 0 && groepenArray.value.length === 0) {
+
+  await refreshAfdelingen();
+  await refreshGroepen();
+
+  return;
+  //}
+
+  if (afdelingenArray.value) {
+    await refreshAfdelingen(afdelingenArray.value);
+  }
+
+  if (groepenArray.value) {
+    await refreshGroepen(groepenArray.value);
+  }
+
+  // afdelingenGroepen.value = await useAfdelingenGroepen(
+  //   afdelingenArray.value,
+  //   groepenArray.value,
+  // );
+});
+
+///////////////////////////////////////////////
 
 watch(
   [

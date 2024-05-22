@@ -38,8 +38,10 @@ const afdelingenFetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
     .then(parseJson)
     .then((json) => parsePagination(json, mapOrganisatie));
 
-export const fetchAfdelingen = (search: string, exactMatch: boolean) =>
-  afdelingenFetcher(getAfdelingenSearchUrl(search, exactMatch));
+export const fetchAfdelingen = (
+  search: string | undefined,
+  exactMatch: boolean,
+) => afdelingenFetcher(getAfdelingenSearchUrl(search, exactMatch));
 
 export function useAfdelingen(search: () => string | undefined) {
   const getUrl = () => getAfdelingenSearchUrl(search(), false);
