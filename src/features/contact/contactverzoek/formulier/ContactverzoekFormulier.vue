@@ -1,5 +1,5 @@
 <template>
-  <div class="container" @submit.prevent>    
+  <div class="container" @submit.prevent>
     <form-fieldset class="radio-group">
       <form-fieldset-legend class="required"
         >Contactverzoek maken voor</form-fieldset-legend
@@ -33,7 +33,7 @@
       </label>
     </form-fieldset>
 
-     <!-- Afdeling -->
+    <!-- Afdeling -->
     <template v-if="form.selectedOption === 'afdeling'">
       <label class="utrecht-form-label">
         <span class="required">Afdeling</span>
@@ -59,31 +59,33 @@
           :filter-value="form.afdeling?.naam"
           @update:model-value="setActive"
           :required="!form.afdeling?.id"
-          :isDisabled="!form.afdeling?.id" 
-          :placeholder="form.afdeling?.id ? 'Zoek een medewerker' : 'Kies eerst een afdeling'"
+          :isDisabled="!form.afdeling?.id"
+          :placeholder="
+            form.afdeling?.id
+              ? 'Zoek een medewerker'
+              : 'Kies eerst een afdeling'
+          "
         />
       </label>
-
-  
     </template>
 
     <!-- Groep -->
     <template v-if="form.selectedOption === 'groep'">
-          <label class="utrecht-form-label">
-            <span class="required">Groep</span>
-            <service-data-search
-              class="utrecht-textbox utrecht-textbox--html-input"
-              :required="true"
-              v-model="form.groep"
-              placeholder='Zoek een groep'
-              @update:model-value="setActive"
-              :get-data="useGroepen" 
-              :map-value="(x) => x?.naam"
-              :map-description="(x) => x?.identificatie"
-              ref="groepSearchRef"
-            />
-          </label>
-     
+      <label class="utrecht-form-label">
+        <span class="required">Groep</span>
+        <service-data-search
+          class="utrecht-textbox utrecht-textbox--html-input"
+          :required="true"
+          v-model="form.groep"
+          placeholder="Zoek een groep"
+          @update:model-value="setActive"
+          :get-data="useGroepen"
+          :map-value="(x) => x?.naam"
+          :map-description="(x) => x?.identificatie"
+          ref="groepSearchRef"
+        />
+      </label>
+
       <label :class="['utrecht-form-label', { disabled: !form.groep?.id }]">
         <span class="">Medewerker binnen groep</span>
         <medewerker-search
@@ -93,37 +95,43 @@
           :filter-value="form.groep?.naam"
           @update:model-value="setActive"
           :required="!form.groep?.id"
-          :isDisabled="!form.groep?.id" 
-          :placeholder="form.groep?.id ? 'Zoek een medewerker' : 'Kies eerst een groep'"
+          :isDisabled="!form.groep?.id"
+          :placeholder="
+            form.groep?.id ? 'Zoek een medewerker' : 'Kies eerst een groep'
+          "
         />
       </label>
     </template>
 
-     <!-- Medewerker -->
-     <template v-if="form.selectedOption === 'medewerker'">
-     <label class="utrecht-form-label">
-      <span class="required">Medewerker</span>
-      <medewerker-search
-        class="utrecht-textbox utrecht-textbox--html-input"
-        required
-        v-model="form.medewerker"
-        @update:model-value="setActive"
-      />
-    </label>
+    <!-- Medewerker -->
+    <template v-if="form.selectedOption === 'medewerker'">
+      <label class="utrecht-form-label">
+        <span class="required">Medewerker</span>
+        <medewerker-search
+          class="utrecht-textbox utrecht-textbox--html-input"
+          required
+          v-model="form.medewerker"
+          @update:model-value="setActive"
+        />
+      </label>
 
       <div>
         <label for="groep" class="utrecht-form-label">
           <span class="required">Afdeling / groep </span>
-          <select 
-            id="groep" 
-            class="utrecht-textbox utrecht-textbox--html-input" 
+          <select
+            id="groep"
+            class="utrecht-textbox utrecht-textbox--html-input"
             v-model="form.mederwerkerGroepAfdeling"
           >
-            <option v-for="item in afdelingenGroepen" :value="item" :key="item.id">
+            <option
+              v-for="item in afdelingenGroepen"
+              :value="item"
+              :key="item.id"
+            >
               {{ item.naam }}
             </option>
           </select>
-      </label>
+        </label>
       </div>
     </template>
 
@@ -298,7 +306,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import MedewerkerSearch from "./MedewerkerSearch.vue";
+import MedewerkerSearch from "@/features/contact/contactverzoek/formulier/MedewerkerSearch.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
@@ -317,13 +325,13 @@ import {
   isTextareaVraag,
   isDropdownVraag,
   isCheckboxVraag,
-  useAfdelingenGroepen
+  useAfdelingenGroepen,
 } from "./service";
 
 import { useAfdelingen } from "@/composables/afdelingen";
 import { useGroepen } from "@/composables/groepen";
 import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -364,11 +372,15 @@ const setOnderwerp = () => {
 };
 
 const afdelingenGroepen = computed(() => {
-  const afdelingenArray = form.value.medewerker?.afdelingen?.map(afdeling => afdeling.afdelingnaam) || [];
-  const groepenArray = form.value.medewerker?.groepen?.map(groep => groep.groepsnaam) || [];
+  const afdelingenArray =
+    form.value.medewerker?.afdelingen?.map(
+      (afdeling) => afdeling.afdelingnaam,
+    ) || [];
+  const groepenArray =
+    form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
 
   const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
-  
+
   return data;
 });
 
@@ -427,8 +439,6 @@ watch(
     setActive();
   },
 );
-
-
 </script>
 
 <style lang="scss" scoped>

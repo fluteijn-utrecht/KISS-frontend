@@ -1,9 +1,8 @@
-import {
-  fetchLoggedIn,
-  ServiceResult,
-  throwIfNotOk,
-} from "@/services";
-import type { ContactmomentContactVerzoek, MederwerkerGroepAfdeling } from "@/stores/contactmoment";
+import { fetchLoggedIn, ServiceResult, throwIfNotOk } from "@/services";
+import type {
+  ContactmomentContactVerzoek,
+  MederwerkerGroepAfdeling,
+} from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
 import { fullName } from "@/helpers/string";
 import type {
@@ -40,7 +39,7 @@ export function saveContactverzoek({
 
   const body: NewContactverzoek = {
     record: {
-      typeVersion: 3, //todo configureerbaar 
+      typeVersion: 3, //todo configureerbaar
       startAt: formatIsoDate(data.registratiedatum),
       data: {
         ...data,
@@ -123,62 +122,75 @@ export function mapContactverzoekData({
         )
       : "";
 
-      let verantwoordelijkheAfdeling = "";
-      if (data.groep) {
-        verantwoordelijkheAfdeling = data.groep.naam;
-      } else if (data.afdeling) {
-        verantwoordelijkheAfdeling = data.afdeling.naam;
-      } else if (data.mederwerkerGroepAfdeling) {
-        verantwoordelijkheAfdeling = data.mederwerkerGroepAfdeling.naam.split(": ")[1] || "";
-      } 
+  let verantwoordelijkheAfdeling = "";
+  if (data.groep) {
+    verantwoordelijkheAfdeling = data.groep.naam;
+  } else if (data.afdeling) {
+    verantwoordelijkheAfdeling = data.afdeling.naam;
+  } else if (data.mederwerkerGroepAfdeling) {
+    verantwoordelijkheAfdeling =
+      data.mederwerkerGroepAfdeling.naam.split(": ")[1] || "";
+  }
 
   // groep
-  const organisatorischeEenheid = data.selectedOption == "groep"
-  ? {
-      ...(data.groepMedewerker
-        ? {
-            naam: fullName(data.groepMedewerker),
-            identificatie: data.groepMedewerker?.identificatie || "",
-            naamOrganisatorischeEenheid: data.groep?.naam || "",
-            identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
-          }
-        : {
-            naam: data.groep?.naam || "",
-            identificatie: data.groep?.identificatie || "",
-          }),
-      soortActor: data.groepMedewerker ? "medewerker" : "organisatorische eenheid",
-      typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
-    }
-  : // afdeling
-    {
-      ...(data.afdelingMedewerker
-        ? {
-            naam: fullName(data.afdelingMedewerker),
-            identificatie: data.afdelingMedewerker?.identificatie || "",
-            naamOrganisatorischeEenheid: data.afdeling?.naam || "",
-            identificatieOrganisatorischeEenheid: data.afdeling?.identificatie || "",
-          }
-        : {
-            naam: data.afdeling?.naam || "",
-            identificatie: data.afdeling?.identificatie || "",
-          }),
-      soortActor: data.afdelingMedewerker ? "medewerker" : "organisatorische eenheid",
-      typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
-    };
+  const organisatorischeEenheid =
+    data.selectedOption == "groep"
+      ? {
+          ...(data.groepMedewerker
+            ? {
+                naam: fullName(data.groepMedewerker),
+                identificatie: data.groepMedewerker?.identificatie || "",
+                naamOrganisatorischeEenheid: data.groep?.naam || "",
+                identificatieOrganisatorischeEenheid:
+                  data.groep?.identificatie || "",
+              }
+            : {
+                naam: data.groep?.naam || "",
+                identificatie: data.groep?.identificatie || "",
+              }),
+          soortActor: data.groepMedewerker
+            ? "medewerker"
+            : "organisatorische eenheid",
+          typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
+        }
+      : // afdeling
+        {
+          ...(data.afdelingMedewerker
+            ? {
+                naam: fullName(data.afdelingMedewerker),
+                identificatie: data.afdelingMedewerker?.identificatie || "",
+                naamOrganisatorischeEenheid: data.afdeling?.naam || "",
+                identificatieOrganisatorischeEenheid:
+                  data.afdeling?.identificatie || "",
+              }
+            : {
+                naam: data.afdeling?.naam || "",
+                identificatie: data.afdeling?.identificatie || "",
+              }),
+          soortActor: data.afdelingMedewerker
+            ? "medewerker"
+            : "organisatorische eenheid",
+          typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
+        };
 
   // medewerker
-  const actor = data.selectedOption == "medewerker"
-  ? {
-      naam: fullName(data.medewerker),
-      soortActor: "medewerker",
-      identificatie: data.medewerker?.identificatie || "",
-      naamOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.naam.split(": ")[1] || "",
-      typeOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.naam.toLowerCase().includes("afdeling")
-        ? TypeOrganisatorischeEenheid.Afdeling
-        : TypeOrganisatorischeEenheid.Groep,
-      identificatieOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.identificatie || "",
-    }
-  : organisatorischeEenheid;
+  const actor =
+    data.selectedOption == "medewerker"
+      ? {
+          naam: fullName(data.medewerker),
+          soortActor: "medewerker",
+          identificatie: data.medewerker?.identificatie || "",
+          naamOrganisatorischeEenheid:
+            data.mederwerkerGroepAfdeling?.naam.split(": ")[1] || "",
+          typeOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.naam
+            .toLowerCase()
+            .includes("afdeling")
+            ? TypeOrganisatorischeEenheid.Afdeling
+            : TypeOrganisatorischeEenheid.Groep,
+          identificatieOrganisatorischeEenheid:
+            data.mederwerkerGroepAfdeling?.identificatie || "",
+        }
+      : organisatorischeEenheid;
 
   return {
     verantwoordelijkeAfdeling: verantwoordelijkheAfdeling,
@@ -324,20 +336,23 @@ function mapSchemaToVragen(schema: any): Vraag[] {
   });
 }
 
-
-export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: string[]) {
+export function useAfdelingenGroepen(
+  afdelingenNames: string[],
+  groepenNames: string[],
+) {
   const results: MederwerkerGroepAfdeling[] = [];
-  const areBothArraysEmpty = afdelingenNames.length === 0 && groepenNames.length === 0;
+  const areBothArraysEmpty =
+    afdelingenNames.length === 0 && groepenNames.length === 0;
 
   if (areBothArraysEmpty) {
     results.push(...processAfdelingen(undefined));
     results.push(...processGroepen(undefined));
   } else {
-    afdelingenNames.forEach(afdeling => {
+    afdelingenNames.forEach((afdeling) => {
       results.push(...processAfdelingen(afdeling));
     });
 
-    groepenNames.forEach(groep => {
+    groepenNames.forEach((groep) => {
       results.push(...processGroepen(groep));
     });
   }
@@ -348,8 +363,13 @@ export function useAfdelingenGroepen(afdelingenNames: string[], groepenNames: st
 function processAfdelingen(afdeling: string | undefined) {
   const afdelingen = useAfdelingen(() => afdeling);
   if (afdelingen.success && afdelingen.data.page) {
-    
-    return afdelingen.data.page.filter(x=> x.naam === afdeling).map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Afdeling: " + item.naam }));
+    return afdelingen.data.page
+      .filter((x) => x.naam === afdeling)
+      .map((item) => ({
+        id: item.id,
+        identificatie: item.identificatie,
+        naam: "Afdeling: " + item.naam,
+      }));
   }
   return [];
 }
@@ -357,7 +377,13 @@ function processAfdelingen(afdeling: string | undefined) {
 function processGroepen(groep: string | undefined) {
   const groepen = useGroepen(() => groep);
   if (groepen.success && groepen.data.page) {
-    return groepen.data.page.filter(x=> x.naam === groep).map(item => ({ id: item.id, identificatie: item.identificatie, naam: "Groep: " + item.naam }));
+    return groepen.data.page
+      .filter((x) => x.naam === groep)
+      .map((item) => ({
+        id: item.id,
+        identificatie: item.identificatie,
+        naam: "Groep: " + item.naam,
+      }));
   }
   return [];
 }
