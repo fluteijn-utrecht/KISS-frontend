@@ -116,7 +116,6 @@
             id="groep"
             class="utrecht-textbox utrecht-textbox--html-input"
             v-model="form.mederwerkerGroepAfdeling"
-            :disabled="!afdelingenGroepen?.length"
           >
             <option
               v-for="item in afdelingenGroepen"
@@ -438,30 +437,34 @@ const refreshGroepen = async (namen: string[]) => {
   }
 };
 
-watch([medewerkerAfdelingen, medewerkerGroepen], async () => {
-  //als er een andere medewerker geselecteerd wordt en zodoende de lijsten met
-  //afdelingen of groepen van de geselecteerde medewerker wijzigen,
-  afdelingenGroepen.value = [];
+watch(
+  [medewerkerAfdelingen, medewerkerGroepen],
+  async () => {
+    //als er een andere medewerker geselecteerd wordt en zodoende de lijsten met
+    //afdelingen of groepen van de geselecteerde medewerker wijzigen,
+    afdelingenGroepen.value = [];
 
-  //als er geen afdelingen en geen groepen zijn, toon dan alle afdelingen en groepen
-  //de koppeling is niet perfect, dan kan de kcm zelf een keuze maken uit de complete lijst
-  if (
-    medewerkerAfdelingen.value.length === 0 &&
-    medewerkerGroepen.value.length === 0
-  ) {
-    await refreshAllAfdelingen();
-    await refreshAllGroepen();
-    return;
-  }
+    //als er geen afdelingen en geen groepen zijn, toon dan alle afdelingen en groepen
+    //de koppeling is niet perfect, dan kan de kcm zelf een keuze maken uit de complete lijst
+    if (
+      medewerkerAfdelingen.value.length === 0 &&
+      medewerkerGroepen.value.length === 0
+    ) {
+      await refreshAllAfdelingen();
+      await refreshAllGroepen();
+      return;
+    }
 
-  if (medewerkerAfdelingen.value) {
-    await refreshAfdelingen(medewerkerAfdelingen.value);
-  }
+    if (medewerkerAfdelingen.value) {
+      await refreshAfdelingen(medewerkerAfdelingen.value);
+    }
 
-  if (medewerkerGroepen.value) {
-    await refreshGroepen(medewerkerGroepen.value);
-  }
-});
+    if (medewerkerGroepen.value) {
+      await refreshGroepen(medewerkerGroepen.value);
+    }
+  },
+  { immediate: true },
+);
 
 //////////////////////////////////////////////////////
 
