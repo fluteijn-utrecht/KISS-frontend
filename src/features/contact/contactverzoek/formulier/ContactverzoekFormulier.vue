@@ -301,7 +301,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import MedewerkerSearch from "@/features/contact/contactverzoek/formulier/MedewerkerSearch.vue";
+import MedewerkerSearch from "./components/MedewerkerSearch.vue";
 import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
@@ -317,12 +317,12 @@ import {
   isDropdownVraag,
   isCheckboxVraag,
 } from "./service";
-import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
+import ContactverzoekOnderwerpen from "./components/ContactverzoekOnderwerpen.vue";
 import { computed } from "vue";
 import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
-import GroepenSearch from "@/features/contact/contactverzoek/formulier/GroepenSearch.vue";
+import GroepenSearch from "./components/GroepenSearch.vue";
 import { fetchAfdelingen } from "@/composables/afdelingen";
-import { fetchGroepen } from "@/composables/groepen";
+import { fetchGroepen } from "./components/groepen";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;

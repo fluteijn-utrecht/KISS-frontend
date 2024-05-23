@@ -16,7 +16,7 @@ import type {
   ContactmomentDetails,
   SaveContactmomentResponseModel,
 } from "./types";
-import type { ContactmomentViewModel } from "../shared/types";
+import type { ContactmomentViewModel } from "@/features/shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
 
 const contactmomentenProxyRoot = "/api/contactmomenten";

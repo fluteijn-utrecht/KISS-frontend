@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type { ContactVerzoekVragenSet } from "./types";
+import type { ContactVerzoekVragenSet } from "../types";
 import { watchEffect } from "vue";
 
 const props = defineProps<{

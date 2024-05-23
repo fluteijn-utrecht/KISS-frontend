@@ -11,11 +11,7 @@
 
 <script setup lang="ts">
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
-import {
-  getGroepenSearchUrl,
-  groepenFetcher,
-  type Groep,
-} from "@/composables/groepen";
+import { getGroepenSearchUrl, groepenFetcher, type Groep } from "./groepen";
 import { ServiceResult } from "@/services";
 defineProps<{ modelValue: Groep | undefined }>();
 defineEmits<{ "update:modelValue": [Groep | undefined] }>();
