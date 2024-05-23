@@ -7,127 +7,99 @@
       <label>
         <input
           type="radio"
-          value="afdeling"
+          :value="typeActorOptions.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.selectedOption"
+          v-model="typeActor"
         />
         Afdeling
       </label>
       <label>
         <input
           type="radio"
-          value="groep"
+          :value="typeActorOptions.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.selectedOption"
+          v-model="typeActor"
         />
         Groep
       </label>
       <label>
         <input
           type="radio"
-          value="medewerker"
+          :value="typeActorOptions.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.selectedOption"
+          v-model="typeActor"
         />
         Medewerker
       </label>
     </form-fieldset>
+    <label
+      v-if="typeActor === typeActorOptions.afdeling"
+      class="utrecht-form-label"
+    >
+      <span class="required">Afdeling</span>
+      <afdelingen-search
+        v-model="form.afdeling"
+        :exact-match="true"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een afdeling"
+        @update:model-value="onUpdateAfdeling"
+      />
+    </label>
 
-    <!-- Afdeling -->
-    <template v-if="form.selectedOption === 'afdeling'">
-      <label class="utrecht-form-label">
-        <span class="required">Afdeling</span>
-        <afdelingen-search
-          v-model="form.afdeling"
-          :exact-match="true"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          :required="true"
-          placeholder="Zoek een afdeling"
-          @update:model-value="onUpdateAfdeling"
-        />
-      </label>
+    <label
+      v-if="typeActor === typeActorOptions.groep"
+      class="utrecht-form-label"
+    >
+      <span class="required">Groep</span>
+      <groepen-search
+        v-model="form.groep"
+        :exact-match="true"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een groep"
+      />
+    </label>
 
-      <label :class="['utrecht-form-label', { disabled: !form.afdeling?.id }]">
-        <span class="">Medewerker binnen afdeling</span>
-        <medewerker-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          v-model="form.afdelingMedewerker"
-          :filter-field="'Smoelenboek.afdelingen.afdelingnaam'"
-          :filter-value="form.afdeling?.naam"
-          @update:model-value="setActive"
-          :required="!form.afdeling?.id"
-          :isDisabled="!form.afdeling?.id"
-          :placeholder="
-            form.afdeling?.id
-              ? 'Zoek een medewerker'
-              : 'Kies eerst een afdeling'
-          "
-        />
-      </label>
-    </template>
+    <label
+      :class="[
+        'utrecht-form-label',
+        { disabled: !form.afdeling?.id && !form.groep?.id },
+      ]"
+    >
+      <span class="">Medewerker</span>
+      <medewerker-search
+        class="utrecht-textbox utrecht-textbox--html-input"
+        v-model="form.medewerker"
+        :filter-field="'Smoelenboek.afdelingen.afdelingnaam'"
+        :filter-value="form.afdeling ? form.afdeling.naam : form.groep?.naam"
+        @update:model-value="setActive"
+        :required="false"
+        :isDisabled="!form.afdeling?.id && !form.groep?.id"
+        :placeholder="
+          form.afdeling
+            ? 'Zoek een medewerker'
+            : 'Kies eerst een afdeling of groep'
+        "
+      />
+    </label>
 
-    <!-- Groep -->
-    <template v-if="form.selectedOption === 'groep'">
-      <label class="utrecht-form-label">
-        <span class="required">Groep</span>
-        <groepen-search
-          v-model="form.groep"
-          :exact-match="true"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          :required="true"
-          placeholder="Zoek een groep"
-        />
-      </label>
-
-      <label :class="['utrecht-form-label', { disabled: !form.groep?.id }]">
-        <span class="">Medewerker binnen groep</span>
-        <medewerker-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          v-model="form.groepMedewerker"
-          :filter-field="'Smoelenboek.groepen.groepsnaam'"
-          :filter-value="form.groep?.naam"
-          @update:model-value="setActive"
-          :required="!form.groep?.id"
-          :isDisabled="!form.groep?.id"
-          :placeholder="
-            form.groep?.id ? 'Zoek een medewerker' : 'Kies eerst een groep'
-          "
-        />
-      </label>
-    </template>
-
-    <!-- Medewerker -->
-    <template v-if="form.selectedOption === 'medewerker'">
-      <label class="utrecht-form-label">
-        <span class="required">Medewerker</span>
-        <medewerker-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          required
-          v-model="form.medewerker"
-          @update:model-value="setActive"
-        />
-      </label>
-
-      <div>
-        <label for="groep" class="utrecht-form-label">
-          <span class="required">Afdeling / groep </span>
-
-          <select
-            id="groep"
-            class="utrecht-textbox utrecht-textbox--html-input"
-            v-model="form.mederwerkerGroepAfdeling"
-          >
-            <option
-              v-for="item in afdelingenGroepen"
-              :value="item"
-              :key="item.id"
-            >
-              {{ item.naam }}
-            </option>
-          </select>
-        </label>
-      </div>
-    </template>
+    <label
+      v-if="typeActor === typeActorOptions.medewerker"
+      for="groep"
+      class="utrecht-form-label"
+    >
+      <span class="required">Afdeling / groep </span>
+      <select
+        id="groep"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        v-model="form.organisatorischeEenheidVanMedewerker"
+      >
+        <option v-for="item in afdelingenGroepen" :value="item" :key="item.id">
+          {{ item.naam }}
+        </option>
+      </select>
+    </label>
 
     <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
@@ -329,6 +301,19 @@ const props = defineProps<{
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
+/////////////////////////////
+//actor selectie
+
+enum typeActorOptions {
+  "afdeling",
+  "groep",
+  "medewerker",
+}
+const typeActor = ref<typeActorOptions>(typeActorOptions.afdeling);
+
+////////////////////////////////
+
+//waarom is dit nodig? is dit vooor als er gewisseld wordt tussen contactverzoeken, of tussen vragen, of als het contactverzeok in de store wijzigt (en als dat het gval is, waarom zou je dat doen)?
 watch(
   () => props.modelValue,
   (v) => {
@@ -337,12 +322,12 @@ watch(
   { immediate: true },
 );
 
-watch(
-  () => form.value.afdeling,
-  () => {
-    setOnderwerp();
-  },
-);
+// watch(
+//   () => form.value.afdeling,
+//   () => {
+//     setOnderwerp();
+//   },
+// );
 
 const setActive = () => {
   form.value.isActive = true;
@@ -357,9 +342,9 @@ const onUpdateAfdeling = () => {
 const telEl = ref<HTMLInputElement>();
 const vragenSets = useVragenSets();
 
-const setOnderwerp = () => {
-  setActive();
-};
+// const setOnderwerp = () => {
+//   setActive();
+// };
 
 /////////////////////////////////////////////////////////
 
@@ -484,18 +469,20 @@ watch(
   },
 );
 
+//als de afdeling wijzigt, dan moet de medewerker gereset worden
 watch(
   () => form.value.afdeling,
   () => {
-    form.value.afdelingMedewerker = undefined;
+    form.value.medewerker = undefined;
     setActive();
   },
 );
 
+//als de groep wijzigt, moet de medewerker reset worden
 watch(
   () => form.value.groep,
   () => {
-    form.value.groepMedewerker = undefined;
+    form.value.medewerker = undefined;
     setActive();
   },
 );
