@@ -1,3 +1,9 @@
+export type DigitaalAdres = {
+  adres: string;
+  soortDigitaalAdres?: string;
+  omschrijving?: string;
+};
+
 export type ContactverzoekData = {
   status: string;
   contactmoment: string;
@@ -21,11 +27,7 @@ export type ContactverzoekData = {
       achternaam?: string;
     };
     organisatie?: string;
-    digitaleAdressen: {
-      adres: string;
-      soortDigitaalAdres?: string;
-      omschrijving?: string; 
-    }[];
+    digitaleAdressen: DigitaalAdres[];
   };
   verantwoordelijkeAfdeling: string;
 };
@@ -46,5 +48,3 @@ export enum TypeOrganisatorischeEenheid {
   Groep = "groep",
   Afdeling = "afdeling",
 }
-
-

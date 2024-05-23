@@ -11,7 +11,21 @@
 
 <script setup lang="ts">
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
-import { useGroepen, type Groep } from "@/composables/groepen";
+import {
+  getGroepenSearchUrl,
+  groepenFetcher,
+  type Groep,
+} from "@/composables/groepen";
+import { ServiceResult } from "@/services";
 defineProps<{ modelValue: Groep | undefined }>();
 defineEmits<{ "update:modelValue": [Groep | undefined] }>();
+
+//refactoring suggestie: servicedatasearch voegt hier niets toe
+//liever rechtstreeks search-combobox gebruiken, maar dan is een variant zonder servicedata nodig
+//dat zou de totale hoeveelheid code en de leesbaarder van onderstaande verbeteren
+//(dan is alleen een watch op de gedebouncde invoer nodig zijn, die een nieuwe groepen fetch doet)
+const useGroepen = (search: () => string | undefined) => {
+  const getUrl = () => getGroepenSearchUrl(search(), false);
+  return ServiceResult.fromFetcher(getUrl, groepenFetcher);
+};
 </script>

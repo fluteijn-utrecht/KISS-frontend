@@ -36,6 +36,7 @@ type DatalistItem = {
 
 const props = defineProps({
   modelValue: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type: Object as PropType<Record<string, any> | undefined>,
   },
   id: {
@@ -66,6 +67,7 @@ const props = defineProps({
 
 function mapDatalistItem(
   x: SearchResult,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): DatalistItem & { obj: Record<string, any> } {
   const functie = x?.jsonObject?.functie || x?.jsonObject?.function;
   const department =
@@ -84,7 +86,7 @@ const emit = defineEmits(["update:modelValue"]);
 const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
 
-function updateModelValue(v: any) {
+function updateModelValue(v: string) {
   searchText.value = v;
   if (result.success) {
     const match = result.data.page.find((x) => x?.title === v);

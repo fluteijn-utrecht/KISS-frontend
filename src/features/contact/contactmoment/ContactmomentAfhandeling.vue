@@ -413,7 +413,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -422,11 +422,7 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
-import {
-  useContactmomentStore,
-  type Bron,
-  type Vraag,
-} from "@/stores/contactmoment";
+import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
@@ -436,7 +432,6 @@ import {
   type Contactmoment,
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
-  type SaveContactmomentResponseModel,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -448,13 +443,11 @@ import {
   saveContactverzoek,
 } from "@/features/contact/contactverzoek/formulier";
 import { writeContactmomentDetails } from "@/features/contact/contactmoment/write-contactmoment-details";
-import { createKlant } from "@/features/klant/service";
 import BackLink from "@/components/BackLink.vue";
 import AfdelingenSearch from "@/features/contact/components/AfdelingenSearch.vue";
 import { fetchAfdelingen } from "@/composables/afdelingen";
 
 import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVraag.vue";
-import type { Kennisartikel } from "@/features/search/types";
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();

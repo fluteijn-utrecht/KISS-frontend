@@ -1,8 +1,5 @@
 import { fetchLoggedIn, ServiceResult, throwIfNotOk } from "@/services";
-import type {
-  ContactmomentContactVerzoek,
-  MederwerkerGroepAfdeling,
-} from "@/stores/contactmoment";
+import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
 import { fullName } from "@/helpers/string";
 import type {
@@ -13,10 +10,8 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
-import type { ContactverzoekData, NewContactverzoek } from "../types";
+import type { ContactverzoekData, DigitaalAdres, NewContactverzoek } from "../types";
 import { TypeOrganisatorischeEenheid } from "../types";
-import { fetchAfdelingen, useAfdelingen } from "@/composables/afdelingen";
-import { fetchGroepen, useGroepen } from "@/composables/groepen";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
 
@@ -69,7 +64,7 @@ export function mapContactverzoekData({
 }): Omit<ContactverzoekData, "contactmoment"> {
   const now = new Date();
   const registratiedatum = now.toISOString();
-  const digitaleAdressen = [] as any[];
+  const digitaleAdressen = [] as DigitaalAdres[];
   if (data.emailadres) {
     digitaleAdressen.push({
       adres: data.emailadres,
@@ -296,11 +291,13 @@ export function isCheckboxVraag(question: Vraag): question is CheckboxVraag {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapSchemaToVragen(schema: any): Vraag[] {
   if (!schema || !schema.properties) {
     return [];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return Object.values(schema.properties).map((property: any) => {
     const questionType = property.questiontype;
 

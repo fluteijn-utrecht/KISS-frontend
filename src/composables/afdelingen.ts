@@ -26,6 +26,7 @@ const getAfdelingenSearchUrl = (
   return "/api/afdelingen/api/v2/objects?" + searchParams;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapOrganisatie = (x: any) =>
   ({
     ...x.record.data,

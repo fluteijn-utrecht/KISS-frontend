@@ -320,7 +320,7 @@ import {
 import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
 import { computed } from "vue";
 import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
-import GroepenSearch from "./GroepenSearch.vue";
+import GroepenSearch from "@/features/contact/contactverzoek/formulier/GroepenSearch.vue";
 import { fetchAfdelingen } from "@/composables/afdelingen";
 import { fetchGroepen } from "@/composables/groepen";
 
@@ -362,7 +362,9 @@ const setOnderwerp = () => {
   setActive();
 };
 
-const afdelingenArray = computed(() => {
+/////////////////////////////////////////////////////////
+
+const medewerkerAfdelingen = computed(() => {
   return (
     form.value.medewerker?.afdelingen?.map(
       (afdeling) => afdeling.afdelingnaam,
@@ -370,80 +372,32 @@ const afdelingenArray = computed(() => {
   );
 });
 
-const groepenArray = computed(() => {
+const medewerkerGroepen = computed(() => {
   return form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
 });
 
-//////////////////////////////////////////////
-
-// export async function useAfdelingenGroepen(
-//   afdelingenNames: string[],
-//   groepenNames: string[],
-// ) {
-//   const results: MederwerkerGroepAfdeling[] = [];
-//   const areBothArraysEmpty =
-//     afdelingenNames.length === 0 && groepenNames.length === 0;
-
-//   if (areBothArraysEmpty) {
-//     results.push(...(await processAfdelingen(undefined)));
-//     results.push(...(await processGroepen(undefined)));
-//   } else {
-//     for (const afdeling of afdelingenNames) {
-//       results.push(...(await processAfdelingen(afdeling)));
-//     }
-
-//     for (const groep of groepenNames) {
-//       results.push(...(await processGroepen(groep)));
-//     }
-//   }
-
-//   return results;
-// }
-
-// async function processAfdelingen(afdeling: string | undefined) {
-//   const afdelingen = await fetchAfdelingen(afdeling, false);
-
-//   if (afdelingen.page) {
-//     return afdelingen.page
-//       .filter((x) => x.naam === afdeling) <----!! dit is waar het misgaat bij generieke code! doe nou gewoon een aparte code voor alle ophalen en voor een lijst afdelingen ophalen. nu filtert hij op undefinded
-//       .map((item) => ({
-//         id: item.id,
-//         identificatie: item.identificatie,
-//         naam: "Afdeling: " + item.naam,
-//       }));
-//   }
-//   return [];
-// }
-
-// async function processGroepen(groep: string | undefined) {
-//   const groepen = await fetchGroepen(groep, false);
-
-//   if (groepen.page) {
-//     return groepen.page
-//       .filter((x) => x.naam === groep)
-//       .map((item) => ({
-//         id: item.id,
-//         identificatie: item.identificatie,
-//         naam: "Groep: " + item.naam,
-//       }));
-//   }
-//   return [];
-// }
-
 const afdelingenGroepen = ref();
 
-const getAllAfdelingen = async () => {
+const refreshAllAfdelingen = async () => {
   const organisatorischeEenheid = await fetchAfdelingen(undefined, false);
-
   if (organisatorischeEenheid.page) {
-    const items = organisatorischeEenheid.page
-      .filter((x) => x.naam === naam)
-      .map((item) => ({
-        id: item.id,
-        identificatie: item.identificatie,
-        naam: "Afdeling: " + item.naam,
-      }));
+    const items = organisatorischeEenheid.page.map((item) => ({
+      id: item.id,
+      identificatie: item.identificatie,
+      naam: "Afdeling: " + item.naam,
+    }));
+    afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+  }
+};
 
+const refreshAllGroepen = async () => {
+  const organisatorischeEenheid = await fetchGroepen(undefined, false);
+  if (organisatorischeEenheid.page) {
+    const items = organisatorischeEenheid.page.map((item) => ({
+      id: item.id,
+      identificatie: item.identificatie,
+      naam: "Groep: " + item.naam,
+    }));
     afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
   }
 };
@@ -484,34 +438,32 @@ const refreshGroepen = async (namen: string[]) => {
   }
 };
 
-watch([afdelingenArray, groepenArray], async () => {
+watch([medewerkerAfdelingen, medewerkerGroepen], async () => {
+  //als er een andere medewerker geselecteerd wordt en zodoende de lijsten met
+  //afdelingen of groepen van de geselecteerde medewerker wijzigen,
   afdelingenGroepen.value = [];
 
   //als er geen afdelingen en geen groepen zijn, toon dan alle afdelingen en groepen
   //de koppeling is niet perfect, dan kan de kcm zelf een keuze maken uit de complete lijst
-  // if (afdelingenArray.value.length === 0 && groepenArray.value.length === 0) {
-
-  await refreshAfdelingen();
-  await refreshGroepen();
-
-  return;
-  //}
-
-  if (afdelingenArray.value) {
-    await refreshAfdelingen(afdelingenArray.value);
+  if (
+    medewerkerAfdelingen.value.length === 0 &&
+    medewerkerGroepen.value.length === 0
+  ) {
+    await refreshAllAfdelingen();
+    await refreshAllGroepen();
+    return;
   }
 
-  if (groepenArray.value) {
-    await refreshGroepen(groepenArray.value);
+  if (medewerkerAfdelingen.value) {
+    await refreshAfdelingen(medewerkerAfdelingen.value);
   }
 
-  // afdelingenGroepen.value = await useAfdelingenGroepen(
-  //   afdelingenArray.value,
-  //   groepenArray.value,
-  // );
+  if (medewerkerGroepen.value) {
+    await refreshGroepen(medewerkerGroepen.value);
+  }
 });
 
-///////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 watch(
   [

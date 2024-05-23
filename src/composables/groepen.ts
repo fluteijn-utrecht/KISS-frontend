@@ -1,5 +1,4 @@
 import {
-  ServiceResult,
   fetchLoggedIn,
   parseJson,
   parsePagination,
@@ -14,7 +13,7 @@ export interface Groep {
   naam: string;
 }
 
-const getGroepenSearchUrl = (
+export const getGroepenSearchUrl = (
   search: string | undefined,
   exactMatch: boolean,
 ) => {
@@ -28,6 +27,7 @@ const getGroepenSearchUrl = (
   return "/api/groepen/api/v2/objects?" + searchParams.toString();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapGroep = (x: any): Groep => ({
   id: x.uuid,
   afdelingId: x.afdelingId,
@@ -35,7 +35,7 @@ const mapGroep = (x: any): Groep => ({
   identificatie: x.record.data.identificatie,
 });
 
-const groepenFetcher = (url: string): Promise<PaginatedResult<Groep>> =>
+export const groepenFetcher = (url: string): Promise<PaginatedResult<Groep>> =>
   fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
@@ -43,9 +43,3 @@ const groepenFetcher = (url: string): Promise<PaginatedResult<Groep>> =>
 
 export const fetchGroepen = (search: string | undefined, exactMatch: boolean) =>
   groepenFetcher(getGroepenSearchUrl(search, exactMatch));
-
-//todo uitzetten
-export function useGroepen(search: () => string | undefined) {
-  const getUrl = () => getGroepenSearchUrl(search(), false);
-  return ServiceResult.fromFetcher(getUrl, groepenFetcher);
-}
