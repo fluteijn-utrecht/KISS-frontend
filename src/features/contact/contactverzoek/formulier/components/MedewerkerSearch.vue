@@ -10,6 +10,7 @@
       :exact-match="true"
       :required="required"
       :disabled="isDisabled"
+      ref="searchCombo"
     />
   </div>
 </template>

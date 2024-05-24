@@ -17,7 +17,6 @@
       >
         <div class="contactmoment-header">
           <current-contactmoment-info />
-          <utrecht-heading :level="3">Vragen</utrecht-heading>
           <contactmoment-vragen-menu />
         </div>
         <div class="notitie-tabs">

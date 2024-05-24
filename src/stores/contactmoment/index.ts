@@ -60,6 +60,12 @@ export interface ContactVerzoekMedewerker {
   groepen: MedewerkerGroepen[];
 }
 
+export enum typeActorOptions {
+  "afdeling",
+  "groep",
+  "medewerker",
+}
+
 export type ContactmomentContactVerzoek = {
   url?: string;
   isMedewerker?: true;
@@ -69,7 +75,7 @@ export type ContactmomentContactVerzoek = {
   // - een groep + optieneel een  medewerker
   // - medewerker + verplicht een afdeling/groep uit (als er geen aande medewerker gekopplede afdeling/grope gevonden wordt, dan kiezen uit alle afdelingen/groepen)
 
-  // selectedOption?: 'afdeling' | 'medewerker' | 'groep';
+  typeActor?: typeActorOptions;
   // afdeling?: Afdeling;
   // afdelingMedewerker?: ContactVerzoekMedewerker
   // groep?: Groep;

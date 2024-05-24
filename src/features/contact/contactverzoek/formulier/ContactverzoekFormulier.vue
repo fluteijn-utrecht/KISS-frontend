@@ -9,7 +9,7 @@
           type="radio"
           :value="typeActorOptions.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="typeActor"
+          v-model="form.typeActor"
         />
         Afdeling
       </label>
@@ -18,7 +18,7 @@
           type="radio"
           :value="typeActorOptions.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="typeActor"
+          v-model="form.typeActor"
         />
         Groep
       </label>
@@ -27,13 +27,13 @@
           type="radio"
           :value="typeActorOptions.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="typeActor"
+          v-model="form.typeActor"
         />
         Medewerker
       </label>
     </form-fieldset>
     <label
-      v-if="typeActor === typeActorOptions.afdeling"
+      v-if="form.typeActor === typeActorOptions.afdeling"
       class="utrecht-form-label"
     >
       <span class="required">Afdeling</span>
@@ -48,7 +48,7 @@
     </label>
 
     <label
-      v-if="typeActor === typeActorOptions.groep"
+      v-if="form.typeActor === typeActorOptions.groep"
       class="utrecht-form-label"
     >
       <span class="required">Groep</span>
@@ -58,26 +58,38 @@
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een groep"
+        @update:model-value="onUpdateGroep"
       />
     </label>
-
     <label
       :class="[
         'utrecht-form-label',
-        { disabled: !form.afdeling?.id && !form.groep?.id },
+        {
+          disabled:
+            (form.typeActor == typeActorOptions.afdeling &&
+              !form.afdeling?.id) ||
+            (form.typeActor == typeActorOptions.groep && !form.groep?.id),
+        },
       ]"
     >
       <span class="">Medewerker</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="form.medewerker"
-        :filter-field="'Smoelenboek.afdelingen.afdelingnaam'"
-        :filter-value="form.afdeling ? form.afdeling.naam : form.groep?.naam"
-        @update:model-value="setActive"
+        v-model="medewerker"
+        :filter-field="medewerkerFilterField"
+        :filter-value="
+          form.typeActor === typeActorOptions.afdeling
+            ? form.afdeling?.naam
+            : form.groep?.naam
+        "
+        @update:model-value="onUpdateMedewerker"
         :required="false"
-        :isDisabled="!form.afdeling?.id && !form.groep?.id"
+        :isDisabled="
+          (form.typeActor == typeActorOptions.afdeling && !form.afdeling?.id) ||
+          (form.typeActor == typeActorOptions.groep && !form.groep?.id)
+        "
         :placeholder="
-          form.afdeling
+          form.typeActor === typeActorOptions.medewerker
             ? 'Zoek een medewerker'
             : 'Kies eerst een afdeling of groep'
         "
@@ -85,7 +97,7 @@
     </label>
 
     <label
-      v-if="typeActor === typeActorOptions.medewerker"
+      v-if="form.typeActor === typeActorOptions.medewerker && medewerker"
       for="groep"
       class="utrecht-form-label"
     >
@@ -273,7 +285,15 @@ export default {
 
 <script lang="ts" setup>
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
-import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
+import type {
+  Afdeling,
+  ContactVerzoekMedewerker,
+  ContactmomentContactVerzoek,
+  Groep,
+  Medewerker,
+} from "@/stores/contactmoment";
+
+import { typeActorOptions } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
 import {
@@ -301,33 +321,34 @@ const props = defineProps<{
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
-/////////////////////////////
-//actor selectie
+const medewerker = ref<ContactVerzoekMedewerker>();
+const medewerkerFilterField = ref<string>();
+watch(
+  () => form.value.typeActor,
+  (nieuw, oud) => {
+    console.log("fff");
+    medewerker.value = nieuw != oud ? undefined : medewerker.value;
 
-enum typeActorOptions {
-  "afdeling",
-  "groep",
-  "medewerker",
-}
-const typeActor = ref<typeActorOptions>(typeActorOptions.afdeling);
+    medewerkerFilterField.value =
+      nieuw === typeActorOptions.afdeling
+        ? "Smoelenboek.afdelingen.afdelingnaam"
+        : nieuw === typeActorOptions.groep
+        ? "Smoelenboek.groepen.groepsnaam"
+        : "";
+  },
+);
 
 ////////////////////////////////
 
-//waarom is dit nodig? is dit vooor als er gewisseld wordt tussen contactverzoeken, of tussen vragen, of als het contactverzeok in de store wijzigt (en als dat het gval is, waarom zou je dat doen)?
+// update het formulier als er tussen vragen geswitched wordt
 watch(
   () => props.modelValue,
   (v) => {
     form.value = v;
+    medewerker.value = undefined;
   },
   { immediate: true },
 );
-
-// watch(
-//   () => form.value.afdeling,
-//   () => {
-//     setOnderwerp();
-//   },
-// );
 
 const setActive = () => {
   form.value.isActive = true;
@@ -336,6 +357,17 @@ const setActive = () => {
 const onUpdateAfdeling = () => {
   form.value.contactVerzoekVragenSet = undefined;
   form.value.vragenSetChanged = false;
+  medewerker.value = undefined;
+  setActive();
+};
+
+const onUpdateGroep = () => {
+  medewerker.value = undefined;
+  setActive();
+};
+
+const onUpdateMedewerker = () => {
+  form.value.medewerker = medewerker.value;
   setActive();
 };
 
@@ -349,6 +381,8 @@ const vragenSets = useVragenSets();
 /////////////////////////////////////////////////////////
 
 const medewerkerAfdelingen = computed(() => {
+  console.log(444, form.value.medewerker);
+
   return (
     form.value.medewerker?.afdelingen?.map(
       (afdeling) => afdeling.afdelingnaam,

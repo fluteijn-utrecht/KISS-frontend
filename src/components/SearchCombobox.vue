@@ -19,6 +19,8 @@
     @keydown.up.prevent="previousIndex"
     @keydown.enter="selectItem(true)"
     @mouseenter="setMinIndex"
+    @focus="onFocus"
+    @blur="onBlur"
   />
   <simple-spinner
     v-if="!matchingResult && listItems.loading"
@@ -56,7 +58,6 @@ export default {
 
 <script lang="ts" setup>
 import { computed } from "vue";
-import { useFocus } from "@vueuse/core";
 import { ref, watch, type PropType } from "vue";
 import { nanoid } from "nanoid";
 import { focusNextFormItem } from "@/helpers/html";
@@ -134,6 +135,10 @@ function setMinIndex() {
 }
 
 function selectItem(focusNext = false) {
+  // setTimeout(() => {
+  //   showList.value = false;
+  // }, 100);
+
   const item = workingList.value[activeIndex.value];
   if (item) {
     emit("update:modelValue", item.value);
@@ -141,10 +146,10 @@ function selectItem(focusNext = false) {
   if (focusNext && inputRef.value) {
     focusNextFormItem(inputRef.value);
   } else {
-    forceclosed.value = true;
-    setTimeout(() => {
-      inputRef.value?.focus?.();
-    });
+    // forceclosed.value = true;
+    // setTimeout(() => {
+    //   inputRef.value?.focus?.();
+    // });
   }
 }
 
@@ -154,23 +159,25 @@ const inputRef = ref<HTMLInputElement>();
 const ulref = ref();
 
 function onInput(e: Event) {
-  forceclosed.value = false;
+  showList.value = true;
+  //  forceclosed.value = false;
   if (!(e.currentTarget instanceof HTMLInputElement)) return;
   emit("update:modelValue", e.currentTarget.value);
 }
 
+function onFocus() {
+  showList.value = !showList.value;
+}
+
+function onBlur() {
+  showList.value = false;
+}
+
 const isScrolling = ref(false);
 
-const hasFocus = useFocus(inputRef);
-const forceclosed = ref(false);
+//const forceclosed = ref(false);
 
-const showList = computed(
-  () =>
-    !props.disabled &&
-    !forceclosed.value &&
-    !!workingList.value.length &&
-    hasFocus.focused.value,
-);
+const showList = ref<boolean>(false);
 
 watch(workingList.value, (r) => {
   activeIndex.value = Math.max(
