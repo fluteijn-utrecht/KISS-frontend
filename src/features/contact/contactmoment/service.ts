@@ -55,8 +55,9 @@ export const saveContactmoment = async (
   };
 };
 
-const postContactmoment = (data: Contactmoment): Promise<Response> =>
-  fetchLoggedIn(`/api/postcontactmomenten`, {
+const postContactmoment = (data: Contactmoment): Promise<Response> => {
+  console.log(data);
+  return fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -64,7 +65,7 @@ const postContactmoment = (data: Contactmoment): Promise<Response> =>
     },
     body: JSON.stringify(data),
   });
-
+};
 export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
 
 export const useGespreksResultaten = () => {

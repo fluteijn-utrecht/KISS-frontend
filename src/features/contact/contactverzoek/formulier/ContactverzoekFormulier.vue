@@ -10,7 +10,7 @@
           :value="typeActorOptions.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @click="onTypeActorSelected"
+          @change="onTypeActorSelected"
         />
         Afdeling
       </label>
@@ -20,7 +20,7 @@
           :value="typeActorOptions.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @click="onTypeActorSelected"
+          @change="onTypeActorSelected"
         />
         Groep
       </label>
@@ -30,7 +30,7 @@
           :value="typeActorOptions.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @click="onTypeActorSelected"
+          @change="onTypeActorSelected"
         />
         Medewerker
       </label>
@@ -109,6 +109,7 @@
         id="groep"
         class="utrecht-textbox utrecht-textbox--html-input"
         v-model="form.organisatorischeEenheidVanMedewerker"
+        required="true"
       >
         <option v-for="item in afdelingenGroepen" :value="item" :key="item.id">
           {{ item.naam }}
@@ -289,11 +290,8 @@ export default {
 <script lang="ts" setup>
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
 import type {
-  Afdeling,
   ContactVerzoekMedewerker,
   ContactmomentContactVerzoek,
-  Groep,
-  Medewerker,
 } from "@/stores/contactmoment";
 
 import { typeActorOptions } from "@/stores/contactmoment";
@@ -326,23 +324,22 @@ const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
 const medewerker = ref<ContactVerzoekMedewerker>();
 const medewerkerFilterField = ref<string>();
-watch(
-  () => form.value.typeActor,
-  (nieuw, oud) => {
-    //medewerker.value = nieuw != oud ? undefined : medewerker.value;
 
-    medewerkerFilterField.value =
-      nieuw === typeActorOptions.afdeling
-        ? "Smoelenboek.afdelingen.afdelingnaam"
-        : nieuw === typeActorOptions.groep
-        ? "Smoelenboek.groepen.groepsnaam"
-        : "";
-  },
-);
+// watch(
+//   () => form.value.typeActor,
+//   (nieuw) => {
+//     medewerkerFilterField.value =
+//       nieuw === typeActorOptions.afdeling
+//         ? "Smoelenboek.afdelingen.afdelingnaam"
+//         : nieuw === typeActorOptions.groep
+//         ? "Smoelenboek.groepen.groepsnaam"
+//         : "";
+//   },
+// );
 
 ////////////////////////////////
 
-// update het formulier als er tussen vragen geswitched wordt
+// update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
   () => props.modelValue,
   (v) => {
@@ -374,29 +371,32 @@ const onUpdateMedewerker = () => {
 };
 
 const onTypeActorSelected = () => {
+  medewerkerFilterField.value =
+    form.value.typeActor === typeActorOptions.afdeling
+      ? "Smoelenboek.afdelingen.afdelingnaam"
+      : form.value.typeActor === typeActorOptions.groep
+      ? "Smoelenboek.groepen.groepsnaam"
+      : "";
+
   medewerker.value = undefined;
 };
 
 const telEl = ref<HTMLInputElement>();
 const vragenSets = useVragenSets();
 
-// const setOnderwerp = () => {
-//   setActive();
-// };
-
 /////////////////////////////////////////////////////////
 
-const medewerkerAfdelingen = computed(() => {
-  return (
-    form.value.medewerker?.afdelingen?.map(
-      (afdeling) => afdeling.afdelingnaam,
-    ) || []
-  );
-});
+// const medewerkerAfdelingen = computed(() => {
+//   return (
+//     form.value.medewerker?.afdelingen?.map(
+//       (afdeling) => afdeling.afdelingnaam,
+//     ) || []
+//   );
+// });
 
-const medewerkerGroepen = computed(() => {
-  return form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
-});
+// const medewerkerGroepen = computed(() => {
+//   return form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
+// });
 
 const afdelingenGroepen = ref();
 
@@ -461,7 +461,10 @@ const refreshGroepen = async (namen: string[]) => {
 };
 
 watch(
-  [medewerkerAfdelingen, medewerkerGroepen],
+  [
+    () => form.value.medewerker?.afdelingen,
+    () => form.value.medewerker?.groepen,
+  ],
   async () => {
     //als er een andere medewerker geselecteerd wordt en zodoende de lijsten met
     //afdelingen of groepen van de geselecteerde medewerker wijzigen,
@@ -470,20 +473,26 @@ watch(
     //als er geen afdelingen en geen groepen zijn, toon dan alle afdelingen en groepen
     //de koppeling is niet perfect, dan kan de kcm zelf een keuze maken uit de complete lijst
     if (
-      medewerkerAfdelingen.value.length === 0 &&
-      medewerkerGroepen.value.length === 0
+      !form.value.medewerker?.afdelingen?.length &&
+      !form.value.medewerker?.groepen?.length
     ) {
       await refreshAllAfdelingen();
       await refreshAllGroepen();
       return;
     }
 
-    if (medewerkerAfdelingen.value) {
-      await refreshAfdelingen(medewerkerAfdelingen.value);
+    if (form.value.medewerker?.afdelingen) {
+      await refreshAfdelingen(
+        form.value.medewerker?.afdelingen.map(
+          (afdeling) => afdeling.afdelingnaam,
+        ) || [],
+      );
     }
 
-    if (medewerkerGroepen.value) {
-      await refreshGroepen(medewerkerGroepen.value);
+    if (form.value.medewerker?.groepen) {
+      await refreshGroepen(
+        form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [],
+      );
     }
   },
   { immediate: true },

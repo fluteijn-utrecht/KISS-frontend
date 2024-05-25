@@ -587,11 +587,13 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     .find(Boolean);
 
   const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
-  const cvData = mapContactverzoekData({
-    klantUrl,
-    data: vraag.contactverzoek,
-  });
+  let cvData;
   if (isContactverzoek) {
+    cvData = mapContactverzoekData({
+      klantUrl,
+      data: vraag.contactverzoek,
+    });
+
     Object.assign(contactmoment, cvData);
   }
 
@@ -608,7 +610,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
   ];
 
-  if (isContactverzoek) {
+  if (isContactverzoek && cvData) {
     promises.push(
       saveContactverzoek({
         data: cvData,
