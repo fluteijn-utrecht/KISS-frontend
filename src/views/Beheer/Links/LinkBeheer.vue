@@ -192,7 +192,7 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-    .p-r {
-        position: relative;
-    }
+.p-r {
+  position: relative;
+}
 </style>

@@ -27,7 +27,7 @@
     class="spinner small"
   />
   <ul
-    v-if="showList"
+    v-if="showList && workingList.length"
     class="utrecht-textbox"
     role="listbox"
     :id="listboxId"

@@ -5,8 +5,7 @@
       :placeholder="placeholder"
       :model-value="searchText"
       @update:model-value="updateModelValue"
-      :result="result"
-      :list-items="datalistItems"
+      :list-items="result"
       :exact-match="true"
       :required="required"
       :disabled="isDisabled"
@@ -24,10 +23,18 @@ export default {
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
-import { useFilteredSearch } from "@/features/search/service";
+import {
+  searchMedewerkers,
+  useFilteredSearch,
+} from "@/features/search/service";
 import type { SearchResult } from "@/features/search/types";
 import SearchCombobox from "@/components/SearchCombobox.vue";
-import { mapServiceData } from "@/services";
+import {
+  mapServiceData,
+  ServiceResult,
+  type ServiceData,
+  fetchLoggedIn,
+} from "@/services";
 import type { PropType } from "vue";
 
 type DatalistItem = {
@@ -66,21 +73,21 @@ const props = defineProps({
   },
 });
 
-function mapDatalistItem(
-  x: SearchResult,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): DatalistItem & { obj: Record<string, any> } {
-  const functie = x?.jsonObject?.functie || x?.jsonObject?.function;
-  const department =
-    x?.jsonObject?.afdelingen?.[0]?.afdelingnaam || x?.jsonObject?.department;
+// function mapDatalistItem(
+//   x: SearchResult,
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// ): DatalistItem & { obj: Record<string, any> } {
+//   const functie = x?.jsonObject?.functie || x?.jsonObject?.function;
+//   const department =
+//     x?.jsonObject?.afdelingen?.[0]?.afdelingnaam || x?.jsonObject?.department;
 
-  const werk = [functie, department].filter(Boolean).join(" bij ");
-  return {
-    obj: x.jsonObject,
-    value: x.title,
-    description: werk,
-  };
-}
+//   const werk = [functie, department].filter(Boolean).join(" bij ");
+//   return {
+//     obj: x.jsonObject,
+//     value: x.title,
+//     description: werk,
+//   };
+// }
 
 const emit = defineEmits(["update:modelValue"]);
 
@@ -89,13 +96,18 @@ const debouncedSearchText = debouncedRef(searchText, 300);
 
 function updateModelValue(v: string) {
   searchText.value = v;
-  if (result.success) {
-    const match = result.data.page.find((x) => x?.title === v);
+  if (result?.value?.success) {
+    const match = result.value.data.find(
+      (x: { value: string }) => x?.value === v,
+    );
+
+    console.log(515, match?.identificatie, match?.afdelingen);
     emit(
       "update:modelValue",
       match && {
-        ...match.jsonObject,
-        title: match.title,
+        //wat moet hier en global serach fixen..
+        //...match.jsonObject,
+        title: match.value,
       },
     );
   }
@@ -109,22 +121,59 @@ watch(
   { immediate: true },
 );
 
-const filteredSearchParams = computed(() => {
-  return {
-    filterField: props.filterField,
-    filterValue: props.filterValue,
-    search: debouncedSearchText.value,
-  };
-});
+// const filteredSearchParams = computed(() => {
+//   return {
+//     filterField: props.filterField,
+//     filterValue: props.filterValue,
+//     search: debouncedSearchText.value,
+//   };
+// });
 
-const result = useFilteredSearch(filteredSearchParams);
-const datalistItems = mapServiceData(result, (paginated) =>
-  paginated.page.map(mapDatalistItem),
+// const result = useFilteredSearch(filteredSearchParams);
+//  const datalistItems = mapServiceData(result, (paginated) =>
+//   paginated.page.map(mapDatalistItem),
+//  );
+
+// watch([() => props.filterField, () => props.filterValue], () => {
+//   result.refresh();
+// });
+
+const result = ref<ServiceData<DatalistItem[]>>(ServiceResult.init());
+
+// const datalistItems = computed(() => {
+//   if (result.value?.success) {
+//     return mapServiceData(result.value, (paginated) =>
+//       paginated.map((xx) => {
+//         xx;
+//       }),
+//     );
+//   }
+//   return undefined;
+// });
+
+watch(
+  [
+    () => props.filterField,
+    () => props.filterValue,
+    () => debouncedSearchText.value,
+  ],
+  () => {
+    // d.value = ServiceResult.loading()(
+    //   props.filterField,
+    //   props.filterValue,
+    //   debouncedSearchText,
+    // );
+    // " props.filterField, props.filterValue, debouncedSearchText    ";
+
+    result.value = ServiceResult.fromPromise<DatalistItem[]>(
+      searchMedewerkers({
+        search: debouncedSearchText.value,
+        filterField: props.filterField,
+        filterValue: props.filterValue,
+      }),
+    );
+  },
 );
-
-watch([() => props.filterField, () => props.filterValue], () => {
-  result.refresh();
-});
 </script>
 
 <style lang="scss" scoped>

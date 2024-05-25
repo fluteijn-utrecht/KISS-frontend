@@ -10,7 +10,7 @@ import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
 import { computed, watch } from "vue";
 
-function mapResult(obj: any): SearchResult {
+export function mapResult(obj: any): SearchResult {
   const source = obj?._source?.object_bron ?? "Website";
   const id = obj?._id;
 
@@ -264,6 +264,99 @@ export function useSources() {
   return ServiceResult.fromFetcher(getUrl, fetcher);
 }
 
+//
+
+export type DatalistItem = {
+  value: string;
+  description: string;
+};
+
+export function searchMedewerkers(parameters: any): Promise<DatalistItem[]> {
+  function mapToDataListItem(obj: any): any {
+    const functie = obj?._source.Smoelenboek.functie || obj.function;
+    const department =
+      obj?._source.Smoelenboek.afdelingen?.[0]?.afdelingnaam ||
+      obj?._source.Smoelenboek.department;
+
+    const werk = [functie, department].filter(Boolean).join(" bij ");
+    return {
+      value: obj?._source.title,
+      description: werk,
+
+      identificatie: obj?._source?.Smoelenboek?.identificatie,
+      afdelingen: obj?._source?.Smoelenboek?.afdelingen,
+      groepen: obj?._source?.Smoelenboek?.groepen,
+    };
+  }
+
+  const getPayload = () => {
+    const { search, filterField, filterValue } = parameters;
+
+    const searchQuery = search
+      ? {
+          simple_query_string: {
+            query: search,
+          },
+        }
+      : {
+          match_all: {},
+        };
+
+    const filterMatchQuery =
+      filterField && filterValue
+        ? {
+            match: {
+              [`${filterField}.enum`]: filterValue,
+            },
+          }
+        : null;
+
+    const query = {
+      from: 0,
+      size: 30,
+      sort: [{ "Smoelenboek.achternaam.enum": { order: "asc" } }],
+      query: {
+        bool: {
+          must: [searchQuery, filterMatchQuery].filter(Boolean),
+        },
+      },
+    };
+
+    return JSON.stringify(query);
+  };
+
+  return fetchLoggedIn(`${globalSearchBaseUri}/search-smoelenboek/_search`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: getPayload(),
+  })
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r: any) => {
+      // console.log(r);
+      // return r.map((value) => ({
+      //   value: value,
+      //   description: value,
+      // }));
+
+      //we moeten per se een serviceresult returneren, wan tde medewerker serach gebruikt een searchcombobox die dat verwacht
+      //refactoring suggestie: de searchcombobox zo maken dat hij gewoon een lijst ontvangt
+
+      return new Promise((resolve) => {
+        const {
+          hits: { hits },
+        } = r ?? {};
+
+        const page = Array.isArray(hits) ? hits.map(mapToDataListItem) : [];
+
+        resolve(page);
+      });
+    });
+}
+
+//weg
 export function useFilteredSearch(
   parameters: Ref<{
     search?: string;

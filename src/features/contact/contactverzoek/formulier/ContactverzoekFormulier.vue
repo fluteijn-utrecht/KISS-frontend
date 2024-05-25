@@ -381,8 +381,6 @@ const vragenSets = useVragenSets();
 /////////////////////////////////////////////////////////
 
 const medewerkerAfdelingen = computed(() => {
-  console.log(444, form.value.medewerker);
-
   return (
     form.value.medewerker?.afdelingen?.map(
       (afdeling) => afdeling.afdelingnaam,
