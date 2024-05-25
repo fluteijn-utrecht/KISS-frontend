@@ -10,6 +10,7 @@
           :value="typeActorOptions.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
+          @click="onTypeActorSelected"
         />
         Afdeling
       </label>
@@ -19,6 +20,7 @@
           :value="typeActorOptions.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
+          @click="onTypeActorSelected"
         />
         Groep
       </label>
@@ -28,6 +30,7 @@
           :value="typeActorOptions.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
+          @click="onTypeActorSelected"
         />
         Medewerker
       </label>
@@ -326,8 +329,7 @@ const medewerkerFilterField = ref<string>();
 watch(
   () => form.value.typeActor,
   (nieuw, oud) => {
-    console.log("fff");
-    medewerker.value = nieuw != oud ? undefined : medewerker.value;
+    //medewerker.value = nieuw != oud ? undefined : medewerker.value;
 
     medewerkerFilterField.value =
       nieuw === typeActorOptions.afdeling
@@ -345,7 +347,7 @@ watch(
   () => props.modelValue,
   (v) => {
     form.value = v;
-    medewerker.value = undefined;
+    medewerker.value = form.value.medewerker;
   },
   { immediate: true },
 );
@@ -369,6 +371,10 @@ const onUpdateGroep = () => {
 const onUpdateMedewerker = () => {
   form.value.medewerker = medewerker.value;
   setActive();
+};
+
+const onTypeActorSelected = () => {
+  medewerker.value = undefined;
 };
 
 const telEl = ref<HTMLInputElement>();

@@ -101,13 +101,13 @@ function updateModelValue(v: string) {
       (x: { value: string }) => x?.value === v,
     );
 
-    console.log(515, match?.identificatie, match?.afdelingen);
     emit(
       "update:modelValue",
       match && {
         //wat moet hier en global serach fixen..
-        //...match.jsonObject,
+        ...match,
         title: match.value,
+        achternaam: match.value,
       },
     );
   }

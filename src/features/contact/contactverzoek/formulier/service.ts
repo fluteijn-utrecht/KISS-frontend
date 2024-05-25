@@ -1,5 +1,8 @@
 import { fetchLoggedIn, ServiceResult, throwIfNotOk } from "@/services";
-import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
+import {
+  typeActorOptions,
+  type ContactmomentContactVerzoek,
+} from "@/stores/contactmoment";
 import { formatIsoDate } from "@/helpers/date";
 import { fullName } from "@/helpers/string";
 import type {
@@ -10,7 +13,11 @@ import type {
   DropdownVraag,
   CheckboxVraag,
 } from "./types";
-import type { ContactverzoekData, DigitaalAdres, NewContactverzoek } from "../types";
+import type {
+  ContactverzoekData,
+  DigitaalAdres,
+  NewContactverzoek,
+} from "../types";
 import { TypeOrganisatorischeEenheid } from "../types";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
@@ -122,70 +129,78 @@ export function mapContactverzoekData({
     verantwoordelijkheAfdeling = data.groep.naam;
   } else if (data.afdeling) {
     verantwoordelijkheAfdeling = data.afdeling.naam;
-  } else if (data.mederwerkerGroepAfdeling) {
+  } else if (data.organisatorischeEenheidVanMedewerker) {
     verantwoordelijkheAfdeling =
-      data.mederwerkerGroepAfdeling.naam.split(": ")[1] || "";
+      data.organisatorischeEenheidVanMedewerker.naam.split(": ")[1] || "";
   }
 
   // groep
-  const organisatorischeEenheid =
-    data.selectedOption == "groep"
-      ? {
-          ...(data.groepMedewerker
-            ? {
-                naam: fullName(data.groepMedewerker),
-                identificatie: data.groepMedewerker?.identificatie || "",
-                naamOrganisatorischeEenheid: data.groep?.naam || "",
-                identificatieOrganisatorischeEenheid:
-                  data.groep?.identificatie || "",
-              }
-            : {
-                naam: data.groep?.naam || "",
-                identificatie: data.groep?.identificatie || "",
-              }),
-          soortActor: data.groepMedewerker
-            ? "medewerker"
-            : "organisatorische eenheid",
-          typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
-        }
-      : // afdeling
-        {
-          ...(data.afdelingMedewerker
-            ? {
-                naam: fullName(data.afdelingMedewerker),
-                identificatie: data.afdelingMedewerker?.identificatie || "",
-                naamOrganisatorischeEenheid: data.afdeling?.naam || "",
-                identificatieOrganisatorischeEenheid:
-                  data.afdeling?.identificatie || "",
-              }
-            : {
-                naam: data.afdeling?.naam || "",
-                identificatie: data.afdeling?.identificatie || "",
-              }),
-          soortActor: data.afdelingMedewerker
-            ? "medewerker"
-            : "organisatorische eenheid",
-          typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
-        };
+  let actor = null;
 
-  // medewerker
-  const actor =
-    data.selectedOption == "medewerker"
-      ? {
-          naam: fullName(data.medewerker),
-          soortActor: "medewerker",
-          identificatie: data.medewerker?.identificatie || "",
-          naamOrganisatorischeEenheid:
-            data.mederwerkerGroepAfdeling?.naam.split(": ")[1] || "",
-          typeOrganisatorischeEenheid: data.mederwerkerGroepAfdeling?.naam
-            .toLowerCase()
-            .includes("afdeling")
-            ? TypeOrganisatorischeEenheid.Afdeling
-            : TypeOrganisatorischeEenheid.Groep,
-          identificatieOrganisatorischeEenheid:
-            data.mederwerkerGroepAfdeling?.identificatie || "",
-        }
-      : organisatorischeEenheid;
+  if (data.typeActor == typeActorOptions.groep) {
+    if (data.medewerker) {
+      //voor een medewerker van een groep
+      actor = {
+        naam: data.medewerker.achternaam || "",
+        soortActor: "medewerker",
+        identificatie: data.medewerker?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
+        naamOrganisatorischeEenheid: data.groep?.naam || "",
+        identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
+      };
+    } else {
+      //alleen een groep. geen medewerker geselecteerd
+      actor = {
+        naam: data.groep?.naam || "",
+        soortActor: "organisatorische eenheid",
+        identificatie: data.groep?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
+      };
+    }
+  }
+  if (data.typeActor == typeActorOptions.afdeling) {
+    console.log("data.medewerker", data.medewerker);
+    if (data.medewerker) {
+      //voor een medewerker van een afdeling
+      actor = {
+        naam: data.medewerker.achternaam || "",
+        soortActor: "medewerker",
+        identificatie: data.medewerker?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
+        naamOrganisatorischeEenheid: data.afdeling?.naam || "",
+        identificatieOrganisatorischeEenheid:
+          data.afdeling?.identificatie || "",
+      };
+    } else {
+      //alleen een afdeling. geen medewerker geselecteerd
+      actor = {
+        naam: data.afdeling?.naam || "",
+        soortActor: "organisatorische eenheid",
+        identificatie: data.afdeling?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
+      };
+    }
+  }
+  if (data.typeActor == typeActorOptions.medewerker) {
+    actor = {
+      naam: data.medewerker?.achternaam || "",
+      soortActor: "medewerker",
+      identificatie: data.medewerker?.identificatie || "",
+      typeOrganisatorischeEenheid:
+        data.organisatorischeEenheidVanMedewerker?.naam.split(": ")[0] ==
+        "afdeling"
+          ? TypeOrganisatorischeEenheid.Afdeling
+          : TypeOrganisatorischeEenheid.Groep,
+      naamOrganisatorischeEenheid:
+        data.organisatorischeEenheidVanMedewerker?.naam.split(": ")[1] || "",
+      identificatieOrganisatorischeEenheid:
+        data.organisatorischeEenheidVanMedewerker?.identificatie || "",
+    };
+  }
+
+  if (actor === null) {
+    throw new Error("actor kan niet bepaald worden");
+  }
 
   return {
     verantwoordelijkeAfdeling: verantwoordelijkheAfdeling,
@@ -194,7 +209,7 @@ export function mapContactverzoekData({
     toelichting:
       data.interneToelichting +
       (vragenToelichting ? "\n\n" + vragenToelichting : ""),
-    actor,
+    actor: actor,
     betrokkene: {
       rol: "klant",
       klant: klantUrl,
