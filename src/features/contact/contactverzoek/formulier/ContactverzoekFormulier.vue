@@ -325,20 +325,6 @@ const form = ref<Partial<ContactmomentContactVerzoek>>({});
 const medewerker = ref<ContactVerzoekMedewerker>();
 const medewerkerFilterField = ref<string>();
 
-// watch(
-//   () => form.value.typeActor,
-//   (nieuw) => {
-//     medewerkerFilterField.value =
-//       nieuw === typeActorOptions.afdeling
-//         ? "Smoelenboek.afdelingen.afdelingnaam"
-//         : nieuw === typeActorOptions.groep
-//         ? "Smoelenboek.groepen.groepsnaam"
-//         : "";
-//   },
-// );
-
-////////////////////////////////
-
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
   () => props.modelValue,
@@ -356,11 +342,13 @@ const setActive = () => {
 const onUpdateAfdeling = () => {
   form.value.contactVerzoekVragenSet = undefined;
   form.value.vragenSetChanged = false;
+  console.log("erase medewerker ua");
   medewerker.value = undefined;
   setActive();
 };
 
 const onUpdateGroep = () => {
+  console.log("erase medewerker ug");
   medewerker.value = undefined;
   setActive();
 };
@@ -377,7 +365,7 @@ const onTypeActorSelected = () => {
       : form.value.typeActor === typeActorOptions.groep
       ? "Smoelenboek.groepen.groepsnaam"
       : "";
-
+  console.log("erase medewerker");
   medewerker.value = undefined;
 };
 
@@ -385,18 +373,6 @@ const telEl = ref<HTMLInputElement>();
 const vragenSets = useVragenSets();
 
 /////////////////////////////////////////////////////////
-
-// const medewerkerAfdelingen = computed(() => {
-//   return (
-//     form.value.medewerker?.afdelingen?.map(
-//       (afdeling) => afdeling.afdelingnaam,
-//     ) || []
-//   );
-// });
-
-// const medewerkerGroepen = computed(() => {
-//   return form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
-// });
 
 const afdelingenGroepen = ref();
 
@@ -519,8 +495,10 @@ watch(
 //als de afdeling wijzigt, dan moet de medewerker gereset worden
 watch(
   () => form.value.afdeling,
-  () => {
-    form.value.medewerker = undefined;
+  (n, o) => {
+    if (n != o) {
+      form.value.medewerker = undefined;
+    }
     setActive();
   },
 );

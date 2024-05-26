@@ -76,18 +76,10 @@ export type ContactmomentContactVerzoek = {
   // - medewerker + verplicht een afdeling/groep uit (als er geen aande medewerker gekopplede afdeling/grope gevonden wordt, dan kiezen uit alle afdelingen/groepen)
 
   typeActor?: typeActorOptions;
-  // afdeling?: Afdeling;
-  // afdelingMedewerker?: ContactVerzoekMedewerker
-  // groep?: Groep;
-  // groepMedewerker?: ContactVerzoekMedewerker
-  // medewerker?: ContactVerzoekMedewerker
-  // mederwerkerGroepAfdeling?: MederwerkerGroepAfdeling
-
   medewerker?: ContactVerzoekMedewerker;
   afdeling?: Afdeling;
   groep?: Groep;
   organisatorischeEenheidVanMedewerker?: MederwerkerGroepAfdeling;
-
   organisatie?: string;
   voornaam?: string;
   achternaam?: string;
@@ -116,8 +108,6 @@ export type ContactmomentKlant = {
 };
 
 export type Bron = {
-  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; };
-  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; } | undefined;
   title: string;
   url: string;
   afdeling?: string;
@@ -153,6 +143,7 @@ function initVraag(): Vraag {
     contactverzoek: {
       url: "",
       isMedewerker: undefined,
+      typeActor: typeActorOptions.afdeling,
       afdeling: undefined,
       groep: undefined,
       medewerker: undefined,

@@ -344,15 +344,11 @@ export function searchMedewerkers(parameters: any): Promise<DatalistItem[]> {
       //we moeten per se een serviceresult returneren, wan tde medewerker serach gebruikt een searchcombobox die dat verwacht
       //refactoring suggestie: de searchcombobox zo maken dat hij gewoon een lijst ontvangt
 
-      return new Promise((resolve) => {
-        const {
-          hits: { hits },
-        } = r ?? {};
+      const {
+        hits: { hits },
+      } = r ?? {};
 
-        const page = Array.isArray(hits) ? hits.map(mapToDataListItem) : [];
-
-        resolve(page);
-      });
+      return Array.isArray(hits) ? hits.map(mapToDataListItem) : [];
     });
 }
 
