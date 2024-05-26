@@ -35,11 +35,15 @@
     <div class="search-bar">
       <label for="global-search-input"> Zoekterm</label>
       <search-combobox
-        :list-items="listItems"
+        :list-items="listItems.success ? listItems.data : []"
         v-model="state.searchInput"
-        placeholder="Zoeken..."
+        :placeholder="'Zoeken...'"
         @search.prevent="applySearch"
         id="global-search-input"
+        :required="false"
+        :disabled="false"
+        :loading="listItems.loading"
+        :exact-match="false"
       />
       <button><span>Zoeken</span></button>
     </div>

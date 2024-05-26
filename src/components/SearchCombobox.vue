@@ -53,7 +53,7 @@ export default {
 };
 </script>
 
-<script lang="ts" setup generic="T">
+<script lang="ts" setup generic="T extends DatalistItem">
 import { computed } from "vue";
 import { ref, watch, type PropType } from "vue";
 import { nanoid } from "nanoid";
@@ -66,12 +66,14 @@ export type DatalistItem = {
 };
 
 const props = defineProps<{
-  modelValue: string;
+  modelValue: string | undefined;
   listItems: T[];
   exactMatch: boolean;
   required: boolean;
   disabled: boolean;
   loading: boolean;
+  placeholder?: string;
+  id?: string;
 }>();
 
 const generatedLabelId = nanoid();
@@ -170,9 +172,10 @@ watch(
 const matchingResult = computed(() => {
   if (
     Array.isArray(props.listItems) &&
-    props.listItems.some((x) => x === props.modelValue)
-  )
+    props.listItems.some((x) => x.value === props.modelValue)
+  ) {
     return props.modelValue;
+  }
   return "";
 });
 

@@ -17,7 +17,7 @@ defineProps<{ modelValue: Groep | undefined }>();
 defineEmits<{ "update:modelValue": [Groep | undefined] }>();
 
 //refactoring suggestie: servicedatasearch voegt hier niets toe
-//liever rechtstreeks search-combobox gebruiken, maar dan is een variant zonder servicedata nodig
+//liever rechtstreeks search-combobox gebruiken, daar is een variant zonder servicedata nodig en die is er nu.
 //dat zou de totale hoeveelheid code en de leesbaarder van onderstaande verbeteren
 //(dan is alleen een watch op de gedebouncde invoer nodig zijn, die een nieuwe groepen fetch doet)
 const useGroepen = (search: () => string | undefined) => {

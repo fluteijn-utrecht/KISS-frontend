@@ -38,6 +38,9 @@
             required
             :exactMatch="false"
             :listItems="filteredCategorien"
+            :loading="isLoadingCategorien"
+            :disabled="false"
+            @update:model-value="updateModelValue"
           />
         </label>
       </template>
@@ -69,17 +72,9 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
-import {
-  ServiceResult,
-  fetchLoggedIn,
-  mapServiceData,
-  parseJson,
-  throwIfNotOk,
-} from "@/services";
+import { fetchLoggedIn, parseJson, throwIfNotOk } from "@/services";
 import { useRouter } from "vue-router";
-import SearchCombobox, {
-  type DatalistItem,
-} from "@/components/SearchCombobox.vue";
+import SearchCombobox from "@/components/SearchCombobox.vue";
 import BeheerForm from "@/components/beheer/BeheerForm.vue";
 const props = defineProps<{ id?: string }>();
 
@@ -148,20 +143,31 @@ const submit = async () => {
   }
 };
 
-const categorien = ServiceResult.fromPromise<DatalistItem[]>(
-  fetchLoggedIn("/api/categorien")
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((r: string[]) => r.map((value) => ({ value }))),
-);
+const isLoadingCategorien = ref<boolean>(true);
+const filteredCategorien = ref<any[]>([]);
 
-const filteredCategorien = mapServiceData(categorien, (c) =>
-  c.filter(
-    ({ value }) =>
-      link.value?.categorie &&
-      value.toLocaleLowerCase().includes(link.value.categorie),
-  ),
-);
+async function getCategorieen() {
+  isLoadingCategorien.value = true;
+  try {
+    filteredCategorien.value = await fetchLoggedIn("/api/categorien")
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((r: string[]) => r.map((value) => ({ value })))
+      .then((c) =>
+        c.filter(
+          ({ value }) =>
+            link.value?.categorie &&
+            value.toLocaleLowerCase().includes(link.value.categorie),
+        ),
+      );
+  } finally {
+    isLoadingCategorien.value = false;
+  }
+}
+
+function updateModelValue() {
+  getCategorieen();
+}
 
 onMounted(async () => {
   loading.value = true;
@@ -181,8 +187,7 @@ onMounted(async () => {
       link.value = {};
     }
 
-    //load categorie suggestions
-    await categorien;
+    await getCategorieen();
   } catch {
     showError();
   } finally {
