@@ -55,7 +55,7 @@ export default {
 
 <script lang="ts" setup generic="T extends DatalistItem">
 import { computed } from "vue";
-import { ref, watch, type PropType } from "vue";
+import { ref, watch } from "vue";
 import { nanoid } from "nanoid";
 import { focusNextFormItem } from "@/helpers/html";
 import SimpleSpinner from "./SimpleSpinner.vue";

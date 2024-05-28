@@ -251,7 +251,7 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { fetchLoggedIn } from "@/services";
 import { toast } from "@/stores/toast";
 import { useRouter } from "vue-router";
-import { useAfdelingen } from "@/composables/afdelingen";
+import { useAfdelingen } from "@/features/contact/components/afdelingen";
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 
 const router = useRouter();
