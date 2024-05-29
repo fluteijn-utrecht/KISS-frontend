@@ -9,7 +9,7 @@ namespace Kiss.Bff.InterneTaak
 {
     public static class InterneTaakExtensions
     {
-        public static IServiceCollection AddInterneTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl, string clientId, string clientSecret, string typeVersion)
+        public static IServiceCollection AddInterneTaakProxy(this IServiceCollection services, string destination, string token, string objectTypeUrl, string clientId, string clientSecret, string typeVersion = "1")
             => services.AddSingleton(new InterneTaakProxyConfig(destination, token, objectTypeUrl, clientId, clientSecret, typeVersion))
             .AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<InterneTaakProxyConfig>());
     }
