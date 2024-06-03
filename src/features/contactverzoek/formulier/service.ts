@@ -38,9 +38,11 @@ export function saveContactverzoek({
 }) {
   const url = "/api/internetaak/api/v2/objects";
 
+
   const body: NewContactverzoek = {
     record: {
-      typeVersion: 3, //todo configureerbaar 
+      // typeVersion wordt nu geconfigureerd en ingesteld in de backend.
+      // Dit vereenvoudigt de frontend code en centraliseert de configuratie.
       startAt: formatIsoDate(data.registratiedatum),
       data: {
         ...data,
