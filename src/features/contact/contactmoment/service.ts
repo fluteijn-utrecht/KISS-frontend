@@ -76,7 +76,6 @@ export const saveContactmoment = async (
 };
 
 const postContactmoment = (data: Contactmoment): Promise<Response> => {
-  console.log(data);
   return fetchLoggedIn(`/api/postcontactmomenten`, {
     method: "POST",
     headers: {
@@ -253,7 +252,8 @@ export function saveContactverzoek({
 
   const body: NewContactverzoek = {
     record: {
-      typeVersion: 3, //todo configureerbaar
+      // typeVersion wordt nu geconfigureerd en ingesteld in de backend.
+      // Dit vereenvoudigt de frontend code en centraliseert de configuratie.
       startAt: formatIsoDate(data.registratiedatum),
       data: {
         ...data,
@@ -371,7 +371,6 @@ export function mapContactverzoekData({
     }
   }
   if (data.typeActor == typeActorOptions.afdeling) {
-    console.log("data.medewerker", data.medewerker);
     if (data.medewerker) {
       //voor een medewerker van een afdeling
       actor = {
