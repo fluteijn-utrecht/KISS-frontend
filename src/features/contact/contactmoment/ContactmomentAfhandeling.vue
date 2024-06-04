@@ -421,7 +421,6 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-
 import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
@@ -432,23 +431,21 @@ import {
   type Contactmoment,
   koppelZaakContactmoment,
   CONTACTVERZOEK_GEMAAKT,
+  saveContactverzoek,
+  mapContactverzoekData,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
-import {
-  ContactverzoekFormulier,
-  mapContactverzoekData,
-  saveContactverzoek,
-} from "@/features/contact/contactverzoek/formulier";
 import { writeContactmomentDetails } from "@/features/contact/contactmoment/write-contactmoment-details";
 import BackLink from "@/components/BackLink.vue";
 import AfdelingenSearch from "@/features/contact/components/AfdelingenSearch.vue";
-import { fetchAfdelingen } from "@/composables/afdelingen";
-
+import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVraag.vue";
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
+import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
+
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
 const saving = ref(false);
@@ -587,11 +584,13 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     .find(Boolean);
 
   const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
-  const cvData = mapContactverzoekData({
-    klantUrl,
-    data: vraag.contactverzoek,
-  });
+  let cvData;
   if (isContactverzoek) {
+    cvData = mapContactverzoekData({
+      klantUrl,
+      data: vraag.contactverzoek,
+    });
+
     Object.assign(contactmoment, cvData);
   }
 
@@ -608,7 +607,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
   ];
 
-  if (isContactverzoek) {
+  if (isContactverzoek && cvData) {
     promises.push(
       saveContactverzoek({
         data: cvData,

@@ -6,7 +6,8 @@ import {
   parsePagination,
 } from "@/services";
 import type { Ref } from "vue";
-import type { Contactverzoek } from "../types";
+import type { Contactverzoek } from "./types";
+
 
 type SearchParameters = {
   query: string;

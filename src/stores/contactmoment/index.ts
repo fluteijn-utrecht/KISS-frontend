@@ -10,8 +10,12 @@ import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { defineStore } from "pinia";
 import { createSession, type Session } from "../switchable-store";
 export * from "./types";
-import type { ContactVerzoekVragenSet } from "@/features/contact/contactverzoek/formulier/types";
+import type { ContactVerzoekVragenSet } from "@/features/contact/components/types";
 export type ContactmomentZaak = { zaak: ZaakDetails; shouldStore: boolean };
+
+export interface OrganisatorischeEenheid extends Afdeling, Groep {
+  typeOrganisatorischeEenheid: string;
+}
 
 export interface Afdeling {
   id: string;
@@ -46,8 +50,7 @@ export interface MedewerkerGroepen {
   groepsnaam: string;
 }
 
-export interface ContactVerzoekMedewerker
-{
+export interface ContactVerzoekMedewerker {
   user: string;
   identificatie?: string;
   voornaam?: string;
@@ -57,20 +60,26 @@ export interface ContactVerzoekMedewerker
   groepen: MedewerkerGroepen[];
 }
 
+export enum typeActorOptions {
+  "afdeling",
+  "groep",
+  "medewerker",
+}
+
 export type ContactmomentContactVerzoek = {
   url?: string;
   isMedewerker?: true;
-  selectedOption?: 'afdeling' | 'medewerker' | 'groep'; 
+
+  //een cv kan zijn voor
+  // - een afdeling + optioneel een medewerker
+  // - een groep + optieneel een  medewerker
+  // - medewerker + verplicht een afdeling/groep uit (als er geen aande medewerker gekopplede afdeling/grope gevonden wordt, dan kiezen uit alle afdelingen/groepen)
+
+  typeActor?: typeActorOptions;
+  medewerker?: ContactVerzoekMedewerker;
   afdeling?: Afdeling;
-  afdelingMedewerker?: ContactVerzoekMedewerker
   groep?: Groep;
-  groepMedewerker?: ContactVerzoekMedewerker
-  medewerker?: ContactVerzoekMedewerker
-  mederwerkerGroepAfdeling?: MederwerkerGroepAfdeling
-  // groep?: {
-  //   identificatie: string;
-  //   naam: string;
-  // };
+  organisatorischeEenheidVanMedewerker?: MederwerkerGroepAfdeling;
   organisatie?: string;
   voornaam?: string;
   achternaam?: string;
@@ -99,8 +108,6 @@ export type ContactmomentKlant = {
 };
 
 export type Bron = {
-  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; };
-  //value: { title: string; url: string; afdeling?: string | undefined; sectionIndex?: number | undefined; } | undefined;
   title: string;
   url: string;
   afdeling?: string;
@@ -136,12 +143,11 @@ function initVraag(): Vraag {
     contactverzoek: {
       url: "",
       isMedewerker: undefined,
+      typeActor: typeActorOptions.afdeling,
       afdeling: undefined,
-      afdelingMedewerker: undefined,
       groep: undefined,
-      groepMedewerker: undefined,
       medewerker: undefined,
-      mederwerkerGroepAfdeling: undefined,
+      organisatorischeEenheidVanMedewerker: undefined,
       telefoonnummer1: "",
       telefoonnummer2: "",
       omschrijvingTelefoonnummer2: "",
