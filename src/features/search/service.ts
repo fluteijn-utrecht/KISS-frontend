@@ -120,19 +120,6 @@ export function useGlobalSearch(
     };
   }
 
-  //refactoring suggestion. alleen zoeken als de zoekparameter gewijzigd is
-  // //in get uniwueid:  if (x.value === false) return "";
-  // const x = ref<boolean>(false);
-  // watch(
-  //   () => parameters.value.search,
-  //   (newvalue, old) => {
-  //     console.log(old, newvalue);
-  //     if (old != newvalue) {
-  //       x.value = true;
-  //     }
-  //   },
-  // );
-
   function getUniqueId() {
     if (!parameters.value.search) return "";
     const payload = getPayload();
@@ -335,15 +322,6 @@ export function searchMedewerkers(parameters: any): Promise<DatalistItem[]> {
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r: any) => {
-      // console.log(r);
-      // return r.map((value) => ({
-      //   value: value,
-      //   description: value,
-      // }));
-
-      //we moeten per se een serviceresult returneren, wan tde medewerker serach gebruikt een searchcombobox die dat verwacht
-      //refactoring suggestie: de searchcombobox zo maken dat hij gewoon een lijst ontvangt
-
       const {
         hits: { hits },
       } = r ?? {};

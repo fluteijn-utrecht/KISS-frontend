@@ -302,18 +302,17 @@ import {
   FormFieldset,
 } from "@utrecht/component-library-vue";
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
+import { useVragenSets } from "./service";
 import {
-  useVragenSets,
   isInputVraag,
   isTextareaVraag,
   isDropdownVraag,
   isCheckboxVraag,
-} from "./service";
+} from "@/features/contact/components/service";
 import ContactverzoekOnderwerpen from "./components/ContactverzoekOnderwerpen.vue";
-import { computed } from "vue";
 import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
 import GroepenSearch from "./components/GroepenSearch.vue";
-import { fetchAfdelingen } from "@/composables/afdelingen";
+import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import { fetchGroepen } from "./components/groepen";
 
 const props = defineProps<{
@@ -379,11 +378,13 @@ const afdelingenGroepen = ref();
 const refreshAllAfdelingen = async () => {
   const organisatorischeEenheid = await fetchAfdelingen(undefined, false);
   if (organisatorischeEenheid.page) {
-    const items = organisatorischeEenheid.page.map((item) => ({
-      id: item.id,
-      identificatie: item.identificatie,
-      naam: "Afdeling: " + item.naam,
-    }));
+    const items = organisatorischeEenheid.page.map(
+      (item: { id: any; identificatie: any; naam: string }) => ({
+        id: item.id,
+        identificatie: item.identificatie,
+        naam: "Afdeling: " + item.naam,
+      }),
+    );
     afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
   }
 };
@@ -406,8 +407,8 @@ const refreshAfdelingen = async (namen: string[]) => {
 
     if (organisatorischeEenheid.page) {
       const items = organisatorischeEenheid.page
-        .filter((x) => x.naam === naam)
-        .map((item) => ({
+        .filter((x: { naam: string }) => x.naam === naam)
+        .map((item: { id: any; identificatie: any; naam: string }) => ({
           id: item.id,
           identificatie: item.identificatie,
           naam: "Afdeling: " + item.naam,
