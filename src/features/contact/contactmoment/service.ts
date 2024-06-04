@@ -7,17 +7,37 @@ import {
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
 
-import type {
-  Gespreksresultaat,
-  ContactmomentObject,
-  Contactmoment,
-  ZaakContactmoment,
-  ObjectContactmoment,
-  ContactmomentDetails,
-  SaveContactmomentResponseModel,
+import {
+  type Gespreksresultaat,
+  type ContactmomentObject,
+  type Contactmoment,
+  type ZaakContactmoment,
+  type ObjectContactmoment,
+  type ContactmomentDetails,
+  type SaveContactmomentResponseModel,
 } from "./types";
 import type { ContactmomentViewModel } from "@/features/shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
+
+import { formatIsoDate } from "@/helpers/date";
+import {
+  typeActorOptions,
+  type ContactmomentContactVerzoek,
+} from "@/stores/contactmoment";
+
+import {
+  TypeOrganisatorischeEenheid,
+  type Vraag,
+  type ContactverzoekData,
+  type DigitaalAdres,
+  type NewContactverzoek,
+} from "../components/types";
+import {
+  isCheckboxVraag,
+  isDropdownVraag,
+  isInputVraag,
+  isTextareaVraag,
+} from "../components/service";
 
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
@@ -219,4 +239,199 @@ export function useContactmomentByUrl(getUrl: () => string) {
         return r.json() as Promise<ContactmomentViewModel>;
       }),
   );
+}
+
+export function saveContactverzoek({
+  data,
+  contactmomentUrl,
+}: {
+  data: Omit<ContactverzoekData, "contactmoment">;
+  contactmomentUrl: string;
+  klantUrl?: string;
+}) {
+  const url = "/api/internetaak/api/v2/objects";
+
+  const body: NewContactverzoek = {
+    record: {
+      typeVersion: 3, //todo configureerbaar
+      startAt: formatIsoDate(data.registratiedatum),
+      data: {
+        ...data,
+        contactmoment: contactmomentUrl,
+      },
+    },
+  };
+
+  return fetchLoggedIn(url, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  })
+    .then(throwIfNotOk)
+    .then((r) => r.json() as Promise<{ url: string }>);
+}
+
+export function mapContactverzoekData({
+  data,
+  klantUrl,
+}: {
+  data: ContactmomentContactVerzoek;
+  klantUrl?: string;
+}): Omit<ContactverzoekData, "contactmoment"> {
+  const now = new Date();
+  const registratiedatum = now.toISOString();
+  const digitaleAdressen = [] as DigitaalAdres[];
+  if (data.emailadres) {
+    digitaleAdressen.push({
+      adres: data.emailadres,
+      omschrijving: "e-mailadres",
+      soortDigitaalAdres: "e-mailadres",
+    });
+  }
+  if (data.telefoonnummer1) {
+    digitaleAdressen.push({
+      adres: data.telefoonnummer1,
+      omschrijving: "telefoonnummer",
+      soortDigitaalAdres: "telefoonnummer",
+    });
+  }
+  if (data.telefoonnummer2) {
+    digitaleAdressen.push({
+      adres: data.telefoonnummer2,
+      omschrijving: data.omschrijvingTelefoonnummer2 || "telefoonnummer",
+      soortDigitaalAdres: "telefoonnummer",
+    });
+  }
+
+  function formatVraagAntwoordForToelichting(vraagAntwoord: Vraag[]): string {
+    return vraagAntwoord
+      .map((va) => {
+        if (isInputVraag(va)) {
+          return `${va.description}: ${va.input}`;
+        } else if (isTextareaVraag(va)) {
+          return `${va.description}: ${va.textarea}`;
+        } else if (isDropdownVraag(va)) {
+          return `${va.description}: ${va.selectedDropdown}`;
+        } else if (isCheckboxVraag(va)) {
+          const selectedOptions = va.options
+            .filter((_, index) => va.selectedCheckbox[index])
+            .join(", ");
+          return `${va.description}: ${selectedOptions}`;
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  const vragenToelichting =
+    data.contactVerzoekVragenSet &&
+    data.contactVerzoekVragenSet.vraagAntwoord &&
+    data.contactVerzoekVragenSet.vraagAntwoord.length
+      ? formatVraagAntwoordForToelichting(
+          data.contactVerzoekVragenSet.vraagAntwoord,
+        )
+      : "";
+
+  let verantwoordelijkheAfdeling = "";
+  if (data.groep) {
+    verantwoordelijkheAfdeling = data.groep.naam;
+  } else if (data.afdeling) {
+    verantwoordelijkheAfdeling = data.afdeling.naam;
+  } else if (data.organisatorischeEenheidVanMedewerker) {
+    verantwoordelijkheAfdeling =
+      data.organisatorischeEenheidVanMedewerker.naam.split(": ")[1] || "";
+  }
+
+  // groep
+  let actor = null;
+
+  if (data.typeActor == typeActorOptions.groep) {
+    if (data.medewerker) {
+      //voor een medewerker van een groep
+      actor = {
+        naam: data.medewerker.achternaam || "",
+        soortActor: "medewerker",
+        identificatie: data.medewerker?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
+        naamOrganisatorischeEenheid: data.groep?.naam || "",
+        identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
+      };
+    } else {
+      //alleen een groep. geen medewerker geselecteerd
+      actor = {
+        naam: data.groep?.naam || "",
+        soortActor: "organisatorische eenheid",
+        identificatie: data.groep?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
+      };
+    }
+  }
+  if (data.typeActor == typeActorOptions.afdeling) {
+    console.log("data.medewerker", data.medewerker);
+    if (data.medewerker) {
+      //voor een medewerker van een afdeling
+      actor = {
+        naam: data.medewerker.achternaam || "",
+        soortActor: "medewerker",
+        identificatie: data.medewerker?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
+        naamOrganisatorischeEenheid: data.afdeling?.naam || "",
+        identificatieOrganisatorischeEenheid:
+          data.afdeling?.identificatie || "",
+      };
+    } else {
+      //alleen een afdeling. geen medewerker geselecteerd
+      actor = {
+        naam: data.afdeling?.naam || "",
+        soortActor: "organisatorische eenheid",
+        identificatie: data.afdeling?.identificatie || "",
+        typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
+      };
+    }
+  }
+  if (data.typeActor == typeActorOptions.medewerker) {
+    actor = {
+      naam: data.medewerker?.achternaam || "",
+      soortActor: "medewerker",
+      identificatie: data.medewerker?.identificatie || "",
+      typeOrganisatorischeEenheid:
+        data.organisatorischeEenheidVanMedewerker?.naam.split(": ")[0] ==
+        "afdeling"
+          ? TypeOrganisatorischeEenheid.Afdeling
+          : TypeOrganisatorischeEenheid.Groep,
+      naamOrganisatorischeEenheid:
+        data.organisatorischeEenheidVanMedewerker?.naam.split(": ")[1] || "",
+      identificatieOrganisatorischeEenheid:
+        data.organisatorischeEenheidVanMedewerker?.identificatie || "",
+    };
+  }
+
+  if (actor === null) {
+    throw new Error("actor kan niet bepaald worden");
+  }
+
+  return {
+    verantwoordelijkeAfdeling: verantwoordelijkheAfdeling,
+    status: "te verwerken",
+    registratiedatum,
+    toelichting:
+      data.interneToelichting +
+      (vragenToelichting ? "\n\n" + vragenToelichting : ""),
+    actor: actor,
+    betrokkene: {
+      rol: "klant",
+      klant: klantUrl,
+      persoonsnaam: {
+        voornaam: data.voornaam,
+        voorvoegselAchternaam: data.voorvoegselAchternaam,
+        achternaam: data.achternaam,
+      },
+      organisatie: data.organisatie,
+      digitaleAdressen,
+    },
+  };
 }

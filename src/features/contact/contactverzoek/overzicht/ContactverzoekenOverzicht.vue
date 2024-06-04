@@ -89,7 +89,7 @@ import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
-import type { Contactverzoek } from "../types";
+import type { Contactverzoek } from "./types";
 
 defineProps<{
   contactverzoeken: Contactverzoek[];
