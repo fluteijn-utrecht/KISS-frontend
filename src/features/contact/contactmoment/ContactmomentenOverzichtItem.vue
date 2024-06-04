@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ContactmomentViewModel } from "../shared/types";
+import type { ContactmomentViewModel } from "@/features/shared/types";
 import { fullName } from "@/helpers/string";
 import { useContactmomentDetails } from "./service";
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";

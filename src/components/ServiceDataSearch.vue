@@ -3,13 +3,14 @@
     <search-combobox
       v-bind="$attrs"
       :id="id"
-      :required="required"
-      :disabled="disabled"
+      :required="required ? true : false"
+      :disabled="disabled ? true : false"
       :placeholder="placeholder"
       :model-value="searchText"
       @update:model-value="updateModelValue"
-      :list-items="datalistItems"
+      :list-items="datalistItems.data"
       :exact-match="true"
+      :loading="datalistItems.state === 'loading'"
     />
   </div>
 </template>

@@ -83,6 +83,7 @@ export const ServiceResult = {
       success: false,
       loading: true,
       submitted: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as ServiceData<any>;
   },
   error(error: Error) {
@@ -93,6 +94,7 @@ export const ServiceResult = {
       success: false,
       loading: false,
       submitted: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as ServiceData<any>;
   },
   init() {
@@ -103,11 +105,12 @@ export const ServiceResult = {
       success: false,
       loading: false,
       submitted: false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as ServiceData<any>;
   },
 
   fromPromise<T = unknown>(
-    promise: Promise<NotUndefined<T>>
+    promise: Promise<NotUndefined<T>>,
   ): ServiceData<NotUndefined<T>> {
     const result = reactive(ServiceResult.loading());
 
@@ -118,7 +121,7 @@ export const ServiceResult = {
       .catch((e) => {
         Object.assign(
           result,
-          ServiceResult.error(e instanceof Error ? e : new Error(e))
+          ServiceResult.error(e instanceof Error ? e : new Error(e)),
         );
       });
 
@@ -126,7 +129,7 @@ export const ServiceResult = {
   },
 
   fromSubmitter<TIn, TOut>(
-    submitter: (params: TIn) => Promise<TOut>
+    submitter: (params: TIn) => Promise<TOut>,
   ): Submitter<TIn, TOut> {
     const result = reactive({
       ...ServiceResult.init(),
@@ -143,7 +146,7 @@ export const ServiceResult = {
           .catch((e) => {
             Object.assign(
               result,
-              ServiceResult.error(e instanceof Error ? e : new Error(e))
+              ServiceResult.error(e instanceof Error ? e : new Error(e)),
             );
             throw e;
           });
@@ -160,18 +163,19 @@ export const ServiceResult = {
   fromFetcher<T>(
     url: string | (() => string),
     fetcher: (url: string) => Promise<NotUndefined<T>>,
-    config?: FetcherConfig<T>
+    config?: FetcherConfig<T>,
   ): ServiceData<NotUndefined<T>> & { refresh: () => Promise<void> } {
     const getUrl = typeof url === "string" ? () => url : url;
     const getRequestUniqueId = config?.getUniqueId || getUrl;
     const fetcherWithoutParameters = () => fetcher(getUrl());
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error, mutate } = useSWRV<NotUndefined<T>, any>(
       getRequestUniqueId,
       fetcherWithoutParameters,
       {
         refreshInterval: config?.poll ? refreshInterval : undefined,
-      }
+      },
     );
 
     if (data.value === undefined && config?.initialData !== undefined) {
@@ -213,7 +217,7 @@ export const ServiceResult = {
 
 export function mapServiceData<TIn, TOut>(
   input: ServiceData<TIn>,
-  mapper: (i: TIn) => TOut
+  mapper: (i: TIn) => TOut,
 ): ServiceData<TOut> {
   const result = computed(() =>
     !input.success
@@ -221,7 +225,7 @@ export function mapServiceData<TIn, TOut>(
       : {
           ...input,
           data: mapper(input.data),
-        }
+        },
   );
   return toReactive(result);
 }

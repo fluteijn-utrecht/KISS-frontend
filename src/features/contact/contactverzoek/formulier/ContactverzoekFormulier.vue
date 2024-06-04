@@ -7,133 +7,115 @@
       <label>
         <input
           type="radio"
-          value="afdeling"
+          :value="typeActorOptions.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.selectedOption"
+          v-model="form.typeActor"
+          @change="onTypeActorSelected"
         />
         Afdeling
       </label>
       <label>
         <input
           type="radio"
-          value="groep"
+          :value="typeActorOptions.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.selectedOption"
+          v-model="form.typeActor"
+          @change="onTypeActorSelected"
         />
         Groep
       </label>
       <label>
         <input
           type="radio"
-          value="medewerker"
+          :value="typeActorOptions.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
-          v-model="form.selectedOption"
+          v-model="form.typeActor"
+          @change="onTypeActorSelected"
         />
         Medewerker
       </label>
     </form-fieldset>
+    <label
+      v-if="form.typeActor === typeActorOptions.afdeling"
+      class="utrecht-form-label"
+    >
+      <span class="required">Afdeling</span>
+      <afdelingen-search
+        v-model="form.afdeling"
+        :exact-match="true"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een afdeling"
+        @update:model-value="onUpdateAfdeling"
+      />
+    </label>
 
-    <!-- Afdeling -->
-    <template v-if="form.selectedOption === 'afdeling'">
-      <label class="utrecht-form-label">
-        <span class="required">Afdeling</span>
-        <service-data-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          :required="true"
-          v-model="form.afdeling"
-          placeholder="Zoek een afdeling"
-          @update:model-value="onUpdateAfdeling"
-          :get-data="useAfdelingen"
-          :map-value="(x) => x?.naam"
-          @keydown.enter="setEnterPressed"
-          :map-description="(x) => x?.identificatie"
-        />
-      </label>
+    <label
+      v-if="form.typeActor === typeActorOptions.groep"
+      class="utrecht-form-label"
+    >
+      <span class="required">Groep</span>
+      <groepen-search
+        v-model="form.groep"
+        :exact-match="true"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een groep"
+        @update:model-value="onUpdateGroep"
+      />
+    </label>
+    <label
+      :class="[
+        'utrecht-form-label',
+        {
+          disabled:
+            (form.typeActor == typeActorOptions.afdeling &&
+              !form.afdeling?.id) ||
+            (form.typeActor == typeActorOptions.groep && !form.groep?.id),
+        },
+      ]"
+    >
+      <span class="">Medewerker</span>
+      <medewerker-search
+        class="utrecht-textbox utrecht-textbox--html-input"
+        v-model="medewerker"
+        :filter-field="medewerkerFilterField"
+        :filter-value="
+          form.typeActor === typeActorOptions.afdeling
+            ? form.afdeling?.naam
+            : form.groep?.naam
+        "
+        @update:model-value="onUpdateMedewerker"
+        :required="false"
+        :isDisabled="
+          (form.typeActor == typeActorOptions.afdeling && !form.afdeling?.id) ||
+          (form.typeActor == typeActorOptions.groep && !form.groep?.id)
+        "
+        :placeholder="
+          form.typeActor === typeActorOptions.medewerker
+            ? 'Zoek een medewerker'
+            : 'Kies eerst een afdeling of groep'
+        "
+      />
+    </label>
 
-      <label :class="['utrecht-form-label', { disabled: !form.afdeling?.id }]">
-        <span class="">Medewerker binnen afdeling</span>
-        <medewerker-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          v-model="form.afdelingMedewerker"
-          :filter-field="'Smoelenboek.afdelingen.afdelingnaam'"
-          :filter-value="form.afdeling?.naam"
-          @update:model-value="setActive"
-          :required="!form.afdeling?.id"
-          :isDisabled="!form.afdeling?.id"
-          :placeholder="
-            form.afdeling?.id
-              ? 'Zoek een medewerker'
-              : 'Kies eerst een afdeling'
-          "
-        />
-      </label>
-    </template>
-
-    <!-- Groep -->
-    <template v-if="form.selectedOption === 'groep'">
-      <label class="utrecht-form-label">
-        <span class="required">Groep</span>
-        <service-data-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          :required="true"
-          v-model="form.groep"
-          placeholder="Zoek een groep"
-          @update:model-value="setActive"
-          :get-data="useGroepen"
-          :map-value="(x) => x?.naam"
-          :map-description="(x) => x?.identificatie"
-          ref="groepSearchRef"
-        />
-      </label>
-
-      <label :class="['utrecht-form-label', { disabled: !form.groep?.id }]">
-        <span class="">Medewerker binnen groep</span>
-        <medewerker-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          v-model="form.groepMedewerker"
-          :filter-field="'Smoelenboek.groepen.groepsnaam'"
-          :filter-value="form.groep?.naam"
-          @update:model-value="setActive"
-          :required="!form.groep?.id"
-          :isDisabled="!form.groep?.id"
-          :placeholder="
-            form.groep?.id ? 'Zoek een medewerker' : 'Kies eerst een groep'
-          "
-        />
-      </label>
-    </template>
-
-    <!-- Medewerker -->
-    <template v-if="form.selectedOption === 'medewerker'">
-      <label class="utrecht-form-label">
-        <span class="required">Medewerker</span>
-        <medewerker-search
-          class="utrecht-textbox utrecht-textbox--html-input"
-          required
-          v-model="form.medewerker"
-          @update:model-value="setActive"
-        />
-      </label>
-
-      <div>
-        <label for="groep" class="utrecht-form-label">
-          <span class="required">Afdeling / groep </span>
-          <select
-            id="groep"
-            class="utrecht-textbox utrecht-textbox--html-input"
-            v-model="form.mederwerkerGroepAfdeling"
-          >
-            <option
-              v-for="item in afdelingenGroepen"
-              :value="item"
-              :key="item.id"
-            >
-              {{ item.naam }}
-            </option>
-          </select>
-        </label>
-      </div>
-    </template>
+    <label
+      v-if="form.typeActor === typeActorOptions.medewerker && medewerker"
+      for="groep"
+      class="utrecht-form-label"
+    >
+      <span class="required">Afdeling / groep </span>
+      <select
+        id="groep"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        v-model="form.organisatorischeEenheidVanMedewerker"
+        required="true"
+      >
+        <option v-for="item in afdelingenGroepen" :value="item" :key="item.id">
+          {{ item.naam }}
+        </option>
+      </select>
+    </label>
 
     <label class="utrecht-form-label notitieveld">
       <span class="required">Interne toelichting voor medewerker</span>
@@ -144,7 +126,7 @@
         class="utrecht-textarea utrecht-textarea--html-textarea"
         rows="5"
         @input="setActive"
-      />
+      ></textarea>
     </label>
 
     <form-fieldset>
@@ -306,32 +288,32 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import MedewerkerSearch from "@/features/contact/contactverzoek/formulier/MedewerkerSearch.vue";
-import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
+import MedewerkerSearch from "./components/MedewerkerSearch.vue";
+import type {
+  ContactVerzoekMedewerker,
+  ContactmomentContactVerzoek,
+} from "@/stores/contactmoment";
+
+import { typeActorOptions } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
-
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
-import { whenever } from "@vueuse/core";
-import { nextTick } from "vue";
+import { useVragenSets } from "./service";
 import {
-  useVragenSets,
   isInputVraag,
   isTextareaVraag,
   isDropdownVraag,
   isCheckboxVraag,
-  useAfdelingenGroepen,
-} from "./service";
-
-import { useAfdelingen } from "@/composables/afdelingen";
-import { useGroepen } from "@/composables/groepen";
-import ContactverzoekOnderwerpen from "./ContactverzoekOnderwerpen.vue";
-import { computed } from "vue";
+} from "@/features/contact/components/service";
+import ContactverzoekOnderwerpen from "./components/ContactverzoekOnderwerpen.vue";
+import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
+import GroepenSearch from "./components/GroepenSearch.vue";
+import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
+import { fetchGroepen } from "./components/groepen";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -339,19 +321,17 @@ const props = defineProps<{
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
+const medewerker = ref<ContactVerzoekMedewerker>();
+const medewerkerFilterField = ref<string>();
+
+// update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
   () => props.modelValue,
   (v) => {
     form.value = v;
+    medewerker.value = form.value.medewerker;
   },
   { immediate: true },
-);
-
-watch(
-  () => form.value.afdeling,
-  () => {
-    setOnderwerp();
-  },
 );
 
 const setActive = () => {
@@ -361,44 +341,141 @@ const setActive = () => {
 const onUpdateAfdeling = () => {
   form.value.contactVerzoekVragenSet = undefined;
   form.value.vragenSetChanged = false;
+  console.log("erase medewerker ua");
+  medewerker.value = undefined;
   setActive();
+};
+
+const onUpdateGroep = () => {
+  console.log("erase medewerker ug");
+  medewerker.value = undefined;
+  setActive();
+};
+
+const onUpdateMedewerker = () => {
+  form.value.medewerker = medewerker.value;
+  setActive();
+};
+
+const onTypeActorSelected = () => {
+  medewerkerFilterField.value =
+    form.value.typeActor === typeActorOptions.afdeling
+      ? "Smoelenboek.afdelingen.afdelingnaam"
+      : form.value.typeActor === typeActorOptions.groep
+      ? "Smoelenboek.groepen.groepsnaam"
+      : "";
+  console.log("erase medewerker");
+  medewerker.value = undefined;
 };
 
 const telEl = ref<HTMLInputElement>();
 const vragenSets = useVragenSets();
 
-const setOnderwerp = () => {
-  setActive();
+/////////////////////////////////////////////////////////
+
+const afdelingenGroepen = ref();
+
+const refreshAllAfdelingen = async () => {
+  const organisatorischeEenheid = await fetchAfdelingen(undefined, false);
+  if (organisatorischeEenheid.page) {
+    const items = organisatorischeEenheid.page.map(
+      (item: { id: any; identificatie: any; naam: string }) => ({
+        id: item.id,
+        identificatie: item.identificatie,
+        naam: "Afdeling: " + item.naam,
+      }),
+    );
+    afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+  }
 };
 
-const afdelingenGroepen = computed(() => {
-  const afdelingenArray =
-    form.value.medewerker?.afdelingen?.map(
-      (afdeling) => afdeling.afdelingnaam,
-    ) || [];
-  const groepenArray =
-    form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [];
-
-  const data = useAfdelingenGroepen(afdelingenArray, groepenArray);
-
-  return data;
-});
-
-const groepSearchRef = ref();
-
-const enterPressed = ref(false);
-const setEnterPressed = () => {
-  enterPressed.value = true;
+const refreshAllGroepen = async () => {
+  const organisatorischeEenheid = await fetchGroepen(undefined, false);
+  if (organisatorischeEenheid.page) {
+    const items = organisatorischeEenheid.page.map((item) => ({
+      id: item.id,
+      identificatie: item.identificatie,
+      naam: "Groep: " + item.naam,
+    }));
+    afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+  }
 };
 
-// focus groep search element whenever it appears on the page (so when you select a Afdeling that has Groepen)
-whenever(groepSearchRef, (v) => {
-  if (!enterPressed.value) return;
-  enterPressed.value = false;
-  nextTick(() => {
-    (v.$el as HTMLElement)?.getElementsByTagName("input")?.[0]?.focus();
-  });
-});
+const refreshAfdelingen = async (namen: string[]) => {
+  for (const naam of namen) {
+    const organisatorischeEenheid = await fetchAfdelingen(naam, false);
+
+    if (organisatorischeEenheid.page) {
+      const items = organisatorischeEenheid.page
+        .filter((x: { naam: string }) => x.naam === naam)
+        .map((item: { id: any; identificatie: any; naam: string }) => ({
+          id: item.id,
+          identificatie: item.identificatie,
+          naam: "Afdeling: " + item.naam,
+        }));
+
+      afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+    }
+  }
+};
+
+const refreshGroepen = async (namen: string[]) => {
+  for (const naam of namen) {
+    const organisatorischeEenheid = await fetchGroepen(naam, false);
+
+    if (organisatorischeEenheid.page) {
+      const items = organisatorischeEenheid.page
+        .filter((x) => x.naam === naam)
+        .map((item) => ({
+          id: item.id,
+          identificatie: item.identificatie,
+          naam: "Groep: " + item.naam,
+        }));
+
+      afdelingenGroepen.value = afdelingenGroepen.value.concat(items);
+    }
+  }
+};
+
+watch(
+  [
+    () => form.value.medewerker?.afdelingen,
+    () => form.value.medewerker?.groepen,
+  ],
+  async () => {
+    //als er een andere medewerker geselecteerd wordt en zodoende de lijsten met
+    //afdelingen of groepen van de geselecteerde medewerker wijzigen,
+    afdelingenGroepen.value = [];
+
+    //als er geen afdelingen en geen groepen zijn, toon dan alle afdelingen en groepen
+    //de koppeling is niet perfect, dan kan de kcm zelf een keuze maken uit de complete lijst
+    if (
+      !form.value.medewerker?.afdelingen?.length &&
+      !form.value.medewerker?.groepen?.length
+    ) {
+      await refreshAllAfdelingen();
+      await refreshAllGroepen();
+      return;
+    }
+
+    if (form.value.medewerker?.afdelingen) {
+      await refreshAfdelingen(
+        form.value.medewerker?.afdelingen.map(
+          (afdeling) => afdeling.afdelingnaam,
+        ) || [],
+      );
+    }
+
+    if (form.value.medewerker?.groepen) {
+      await refreshGroepen(
+        form.value.medewerker?.groepen?.map((groep) => groep.groepsnaam) || [],
+      );
+    }
+  },
+  { immediate: true },
+);
+
+//////////////////////////////////////////////////////
 
 watch(
   [
@@ -416,18 +493,22 @@ watch(
   },
 );
 
+//als de afdeling wijzigt, dan moet de medewerker gereset worden
 watch(
   () => form.value.afdeling,
-  () => {
-    form.value.afdelingMedewerker = undefined;
+  (n, o) => {
+    if (n != o) {
+      form.value.medewerker = undefined;
+    }
     setActive();
   },
 );
 
+//als de groep wijzigt, moet de medewerker reset worden
 watch(
   () => form.value.groep,
   () => {
-    form.value.groepMedewerker = undefined;
+    form.value.medewerker = undefined;
     setActive();
   },
 );
