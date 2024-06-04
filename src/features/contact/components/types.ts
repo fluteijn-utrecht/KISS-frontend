@@ -69,7 +69,6 @@ export type ContactverzoekData = {
 
 export type NewContactverzoek = {
   record: {
-    typeVersion: number;
     startAt: string;
     data: ContactverzoekData;
   };
