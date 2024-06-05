@@ -21,7 +21,7 @@ import { toRelativeProxyUrl } from "@/helpers/url";
 
 import { formatIsoDate } from "@/helpers/date";
 import {
-  typeActorOptions,
+  ActorType,
   type ContactmomentContactVerzoek,
 } from "@/stores/contactmoment";
 
@@ -349,7 +349,7 @@ export function mapContactverzoekData({
   // groep
   let actor = null;
 
-  if (data.typeActor == typeActorOptions.groep) {
+  if (data.typeActor == ActorType.groep) {
     if (data.medewerker) {
       //voor een medewerker van een groep
       actor = {
@@ -370,7 +370,7 @@ export function mapContactverzoekData({
       };
     }
   }
-  if (data.typeActor == typeActorOptions.afdeling) {
+  if (data.typeActor == ActorType.afdeling) {
     if (data.medewerker) {
       //voor een medewerker van een afdeling
       actor = {
@@ -392,7 +392,7 @@ export function mapContactverzoekData({
       };
     }
   }
-  if (data.typeActor == typeActorOptions.medewerker) {
+  if (data.typeActor == ActorType.medewerker) {
     actor = {
       naam: data.medewerker?.achternaam || "",
       soortActor: "medewerker",

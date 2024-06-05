@@ -53,7 +53,7 @@ export default {
 };
 </script>
 
-<script lang="ts" setup generic="T extends DatalistItem">
+<script lang="ts" setup>
 import { computed } from "vue";
 import { ref, watch } from "vue";
 import { nanoid } from "nanoid";
@@ -67,7 +67,7 @@ export type DatalistItem = {
 
 const props = defineProps<{
   modelValue: string | undefined;
-  listItems: T[];
+  listItems: DatalistItem[];
   exactMatch: boolean;
   required: boolean;
   disabled: boolean;
@@ -83,8 +83,6 @@ const listboxId = nanoid();
 
 const minIndex = computed(() => (props.exactMatch ? 0 : -1));
 const activeIndex = ref(minIndex.value);
-
-//const workingList = ref<DatalistItem[]>([]);
 
 function nextIndex() {
   if (
@@ -115,10 +113,7 @@ function setMinIndex() {
 }
 
 function selectItem(focusNext = false) {
-  // setTimeout(() => {
   showList.value = false;
-  // }, 100);
-
   const item = props.listItems[activeIndex.value];
   if (item) {
     emit("update:modelValue", item.value);
@@ -126,10 +121,10 @@ function selectItem(focusNext = false) {
   if (focusNext && inputRef.value) {
     focusNextFormItem(inputRef.value);
   } else {
-    // forceclosed.value = true;
-    // setTimeout(() => {
-    //   inputRef.value?.focus?.();
-    // });
+    setTimeout(() => {
+      inputRef.value?.focus?.();
+      showList.value = false;
+    }, 100);
   }
 }
 
@@ -140,7 +135,6 @@ const ulref = ref();
 
 function onInput(e: Event) {
   showList.value = true;
-  //  forceclosed.value = false;
   if (!(e.currentTarget instanceof HTMLInputElement)) return;
   emit("update:modelValue", e.currentTarget.value);
 }
@@ -154,8 +148,6 @@ function onBlur() {
 }
 
 const isScrolling = ref(false);
-
-//const forceclosed = ref(false);
 
 const showList = ref<boolean>(false);
 
@@ -194,16 +186,10 @@ watch([inputRef, validity], ([r, v]) => {
 watch(
   () => props.listItems,
   (r) => {
-    // if (r.loading) return;
-    // if (!r.success) {
-    //   workingList.value = [];
-    //   return;
-    // }
     activeIndex.value = Math.max(
       minIndex.value,
       Math.min(activeIndex.value, props.listItems.length - 1),
     );
-    // workingList.value = r.data;
   },
   { immediate: true, deep: true },
 );

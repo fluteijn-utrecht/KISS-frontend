@@ -7,7 +7,7 @@
       <label>
         <input
           type="radio"
-          :value="typeActorOptions.afdeling"
+          :value="ActorType.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
           @change="onTypeActorSelected"
@@ -17,7 +17,7 @@
       <label>
         <input
           type="radio"
-          :value="typeActorOptions.groep"
+          :value="ActorType.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
           @change="onTypeActorSelected"
@@ -27,7 +27,7 @@
       <label>
         <input
           type="radio"
-          :value="typeActorOptions.medewerker"
+          :value="ActorType.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
           @change="onTypeActorSelected"
@@ -36,7 +36,7 @@
       </label>
     </form-fieldset>
     <label
-      v-if="form.typeActor === typeActorOptions.afdeling"
+      v-if="form.typeActor === ActorType.afdeling"
       class="utrecht-form-label"
     >
       <span class="required">Afdeling</span>
@@ -51,7 +51,7 @@
     </label>
 
     <label
-      v-if="form.typeActor === typeActorOptions.groep"
+      v-if="form.typeActor === ActorType.groep"
       class="utrecht-form-label"
     >
       <span class="required">Groep</span>
@@ -69,9 +69,9 @@
         'utrecht-form-label',
         {
           disabled:
-            (form.typeActor == typeActorOptions.afdeling &&
+            (form.typeActor == ActorType.afdeling &&
               !form.afdeling?.id) ||
-            (form.typeActor == typeActorOptions.groep && !form.groep?.id),
+            (form.typeActor == ActorType.groep && !form.groep?.id),
         },
       ]"
     >
@@ -81,18 +81,18 @@
         v-model="medewerker"
         :filter-field="medewerkerFilterField"
         :filter-value="
-          form.typeActor === typeActorOptions.afdeling
+          form.typeActor === ActorType.afdeling
             ? form.afdeling?.naam
             : form.groep?.naam
         "
         @update:model-value="onUpdateMedewerker"
         :required="false"
         :isDisabled="
-          (form.typeActor == typeActorOptions.afdeling && !form.afdeling?.id) ||
-          (form.typeActor == typeActorOptions.groep && !form.groep?.id)
+          (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
+          (form.typeActor == ActorType.groep && !form.groep?.id)
         "
         :placeholder="
-          form.typeActor === typeActorOptions.medewerker
+          form.typeActor === ActorType.medewerker
             ? 'Zoek een medewerker'
             : 'Kies eerst een afdeling of groep'
         "
@@ -100,7 +100,7 @@
     </label>
 
     <label
-      v-if="form.typeActor === typeActorOptions.medewerker && medewerker"
+      v-if="form.typeActor === ActorType.medewerker && medewerker"
       for="groep"
       class="utrecht-form-label"
     >
@@ -294,7 +294,7 @@ import type {
   ContactmomentContactVerzoek,
 } from "@/stores/contactmoment";
 
-import { typeActorOptions } from "@/stores/contactmoment";
+import { ActorType } from "@/stores/contactmoment";
 import { ref } from "vue";
 import { watch } from "vue";
 import {
@@ -341,13 +341,11 @@ const setActive = () => {
 const onUpdateAfdeling = () => {
   form.value.contactVerzoekVragenSet = undefined;
   form.value.vragenSetChanged = false;
-  console.log("erase medewerker ua");
   medewerker.value = undefined;
   setActive();
 };
 
 const onUpdateGroep = () => {
-  console.log("erase medewerker ug");
   medewerker.value = undefined;
   setActive();
 };
@@ -359,12 +357,11 @@ const onUpdateMedewerker = () => {
 
 const onTypeActorSelected = () => {
   medewerkerFilterField.value =
-    form.value.typeActor === typeActorOptions.afdeling
+    form.value.typeActor === ActorType.afdeling
       ? "Smoelenboek.afdelingen.afdelingnaam"
-      : form.value.typeActor === typeActorOptions.groep
+      : form.value.typeActor === ActorType.groep
       ? "Smoelenboek.groepen.groepsnaam"
       : "";
-  console.log("erase medewerker");
   medewerker.value = undefined;
 };
 
