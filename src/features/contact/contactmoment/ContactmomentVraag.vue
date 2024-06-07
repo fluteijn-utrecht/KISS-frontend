@@ -20,7 +20,7 @@
 <script lang="ts" setup>
 import { type Bron, type Vraag } from "@/stores/contactmoment";
 import { onMounted, ref, computed } from "vue";
-import type { Kennisartikel } from "../search/types";
+import type { Kennisartikel } from "@/features/search/types";
 const vraagOptions = ref<Bron[]>([]);
 const props = defineProps<{
   modelValue: Bron | undefined;

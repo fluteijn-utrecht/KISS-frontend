@@ -72,7 +72,7 @@ import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import {
   ContactmomentenOverzicht,
   useContactmomentenByObjectUrl,
-} from "@/features/contactmoment";
+} from "@/features/contact/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";

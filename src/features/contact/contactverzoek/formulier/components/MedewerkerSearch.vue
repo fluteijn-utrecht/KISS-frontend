@@ -5,11 +5,12 @@
       :placeholder="placeholder"
       :model-value="searchText"
       @update:model-value="updateModelValue"
-      :result="result"
-      :list-items="datalistItems"
+      :list-items="result"
       :exact-match="true"
       :required="required"
       :disabled="isDisabled"
+      ref="searchCombo"
+      :loading="isLoading"
     />
   </div>
 </template>
@@ -22,11 +23,10 @@ export default {
 
 <script lang="ts" setup>
 import { debouncedRef } from "@vueuse/core";
-import { computed, ref, watch } from "vue";
-import { useFilteredSearch } from "./service";
-import type { SearchResult } from "./types";
+import { ref, watch } from "vue";
+import { searchMedewerkers } from "@/features/search/service";
 import SearchCombobox from "@/components/SearchCombobox.vue";
-import { mapServiceData } from "@/services";
+
 import type { PropType } from "vue";
 
 type DatalistItem = {
@@ -36,6 +36,7 @@ type DatalistItem = {
 
 const props = defineProps({
   modelValue: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type: Object as PropType<Record<string, any> | undefined>,
   },
   id: {
@@ -60,39 +61,26 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: 'Zoek een medewerker' 
-  }
+    default: "Zoek een medewerker",
+  },
 });
-
-function mapDatalistItem(
-  x: SearchResult,
-): DatalistItem & { obj: Record<string, any> } {
-  const functie = x?.jsonObject?.functie || x?.jsonObject?.function;
-  const department =
-    x?.jsonObject?.afdelingen?.[0]?.afdelingnaam || x?.jsonObject?.department;
-
-  const werk = [functie, department].filter(Boolean).join(" bij ");
-  return {
-    obj: x.jsonObject,
-    value: x.title,
-    description: werk,
-  };
-}
 
 const emit = defineEmits(["update:modelValue"]);
 
 const searchText = ref("");
 const debouncedSearchText = debouncedRef(searchText, 300);
 
-function updateModelValue(v: any) {
+function updateModelValue(v: string) {
   searchText.value = v;
-  if (result.success) {
-    const match = result.data.page.find((x) => x?.title === v);
+  if (!isLoading.value) {
+    const match = result.value.find((x: { value: string }) => x?.value === v);
+
     emit(
       "update:modelValue",
       match && {
-        ...match.jsonObject,
-        title: match.title,
+        ...match,
+        title: match.value,
+        achternaam: match.value,
       },
     );
   }
@@ -106,26 +94,28 @@ watch(
   { immediate: true },
 );
 
-const filteredSearchParams = computed(() => {
-  return {
-    filterField: props.filterField,
-    filterValue: props.filterValue,
-    search: debouncedSearchText.value,
-  };
-});
-
-const result = useFilteredSearch(filteredSearchParams);
-const datalistItems = mapServiceData(result, (paginated) =>
-  paginated.page.map(mapDatalistItem),
-);
+const result = ref<DatalistItem[]>([]);
+const isLoading = ref<boolean>(false);
 
 watch(
-  [() => props.filterField, () => props.filterValue],
-  () => {
-    result.refresh();
+  [
+    () => props.filterField,
+    () => props.filterValue,
+    () => debouncedSearchText.value,
+  ],
+  async () => {
+    isLoading.value = true;
+    try {
+      result.value = await searchMedewerkers({
+        search: debouncedSearchText.value,
+        filterField: props.filterField,
+        filterValue: props.filterValue,
+      });
+    } finally {
+      isLoading.value = false;
+    }
   },
 );
-
 </script>
 
 <style lang="scss" scoped>

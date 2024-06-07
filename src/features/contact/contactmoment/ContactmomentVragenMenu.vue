@@ -3,36 +3,44 @@
     :dialog="dialog"
     message="Let op, je hebt het contactverzoek niet afgerond. Als je deze vraag verlaat, wordt het contactverzoek niet verstuurd."
   />
-  <menu class="vragen-menu" v-if="vragen">
-    <li v-for="(vraag, idx) in vragen" :key="idx">
-      <utrecht-button
-        appearance="subtle-button"
-        class="icon-only"
-        type="button"
-        :disabled="vraag.isCurrent"
-        :title="vraag.isCurrent ? 'Huidige vraag' : `Ga naar vraag ${idx + 1}`"
-        @click="vraag.switchVraag"
-      >
-        {{ idx + 1 }}
-      </utrecht-button>
-    </li>
-    <li>
-      <utrecht-button
-        appearance="subtle-button"
-        class="icon-after plus new-question icon-only"
-        type="button"
-        title="Nieuwe vraag"
-        @click="startNieuweVraag"
-      ></utrecht-button>
-    </li>
-  </menu>
+  <div>
+    <utrecht-heading :level="3">Vragen</utrecht-heading>
+    <menu class="vragen-menu" v-if="vragen">
+      <li v-for="(vraag, idx) in vragen" :key="idx">
+        <utrecht-button
+          appearance="subtle-button"
+          class="icon-only"
+          type="button"
+          :disabled="vraag.isCurrent"
+          :title="
+            vraag.isCurrent ? 'Huidige vraag' : `Ga naar vraag ${idx + 1}`
+          "
+          @click="vraag.switchVraag"
+        >
+          {{ idx + 1 }}
+        </utrecht-button>
+      </li>
+      <li>
+        <utrecht-button
+          appearance="subtle-button"
+          class="icon-after plus new-question icon-only"
+          type="button"
+          title="Nieuwe vraag"
+          @click="startNieuweVraag"
+        ></utrecht-button>
+      </li>
+    </menu>
+  </div>
 </template>
 <script lang="ts" setup>
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import { nextTick, computed } from "vue";
-import { Button as UtrechtButton } from "@utrecht/component-library-vue";
+import {
+  Button as UtrechtButton,
+  Heading as UtrechtHeading,
+} from "@utrecht/component-library-vue";
 
 const contactmomentStore = useContactmomentStore();
 const dialog = useConfirmDialog();
@@ -59,6 +67,13 @@ async function startNieuweVraag() {
 </script>
 
 <style lang="scss" scoped>
+div {
+  display: flex;
+  gap: var(--spacing-default);
+  margin-block-start: var(--spacing-large);
+  align-items: baseline;
+}
+
 .vragen-menu {
   display: flex;
   flex-wrap: wrap;

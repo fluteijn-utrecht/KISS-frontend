@@ -19,13 +19,12 @@
     @keydown.up.prevent="previousIndex"
     @keydown.enter="selectItem(true)"
     @mouseenter="setMinIndex"
+    @focus="onFocus"
+    @blur="onBlur"
   />
-  <simple-spinner
-    v-if="!matchingResult && listItems.loading"
-    class="spinner small"
-  />
+  <simple-spinner v-if="loading" class="spinner small" />
   <ul
-    v-if="showList"
+    v-if="!loading && listItems.length && showList"
     class="utrecht-textbox"
     role="listbox"
     :id="listboxId"
@@ -34,7 +33,7 @@
     @mousedown="selectItem()"
   >
     <li
-      v-for="(r, i) in workingList"
+      v-for="(r, i) in listItems"
       :key="i"
       @mouseover="handleHover(i)"
       :class="{ active: i === activeIndex }"
@@ -56,11 +55,9 @@ export default {
 
 <script lang="ts" setup>
 import { computed } from "vue";
-import { useFocus } from "@vueuse/core";
-import { ref, watch, type PropType } from "vue";
+import { ref, watch } from "vue";
 import { nanoid } from "nanoid";
 import { focusNextFormItem } from "@/helpers/html";
-import type { ServiceData } from "@/services";
 import SimpleSpinner from "./SimpleSpinner.vue";
 
 export type DatalistItem = {
@@ -68,48 +65,30 @@ export type DatalistItem = {
   description?: string;
 };
 
-const props = defineProps({
-  modelValue: {
-    type: String,
-    default: undefined,
-  },
-  id: {
-    type: String,
-    default: undefined,
-  },
-  required: {
-    type: Boolean,
-    default: false,
-  },
-  listItems: {
-    type: Object as PropType<ServiceData<DatalistItem[]>>,
-    required: true,
-  },
-  exactMatch: {
-    type: Boolean,
-    default: false,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-});
+const props = defineProps<{
+  modelValue: string | undefined;
+  listItems: DatalistItem[];
+  exactMatch: boolean;
+  required: boolean;
+  disabled: boolean;
+  loading: boolean;
+  placeholder?: string;
+  id?: string;
+}>();
 
 const generatedLabelId = nanoid();
-const inputId = computed(() => props.id || generatedLabelId);
+const inputId = computed(() => generatedLabelId);
 const labelId = nanoid();
 const listboxId = nanoid();
 
 const minIndex = computed(() => (props.exactMatch ? 0 : -1));
 const activeIndex = ref(minIndex.value);
 
-const workingList = ref<DatalistItem[]>([]);
-
 function nextIndex() {
   if (
     showList.value &&
-    activeIndex.value < workingList.value.length - 1 &&
-    workingList.value.length
+    activeIndex.value < props.listItems.length - 1 &&
+    props.listItems.length
   ) {
     activeIndex.value += 1;
   } else {
@@ -119,12 +98,12 @@ function nextIndex() {
 }
 
 function previousIndex() {
-  if (!showList.value || !workingList.value.length) {
+  if (!showList.value || !props.listItems.length) {
     activeIndex.value = minIndex.value;
   } else if (activeIndex.value > minIndex.value) {
     activeIndex.value -= 1;
   } else {
-    activeIndex.value = workingList.value.length - 1;
+    activeIndex.value = props.listItems.length - 1;
   }
   scrollIntoView();
 }
@@ -134,17 +113,18 @@ function setMinIndex() {
 }
 
 function selectItem(focusNext = false) {
-  const item = workingList.value[activeIndex.value];
+  showList.value = false;
+  const item = props.listItems[activeIndex.value];
   if (item) {
     emit("update:modelValue", item.value);
   }
   if (focusNext && inputRef.value) {
     focusNextFormItem(inputRef.value);
   } else {
-    forceclosed.value = true;
     setTimeout(() => {
       inputRef.value?.focus?.();
-    });
+      showList.value = false;
+    }, 100);
   }
 }
 
@@ -154,34 +134,40 @@ const inputRef = ref<HTMLInputElement>();
 const ulref = ref();
 
 function onInput(e: Event) {
-  forceclosed.value = false;
+  showList.value = true;
   if (!(e.currentTarget instanceof HTMLInputElement)) return;
   emit("update:modelValue", e.currentTarget.value);
 }
 
+function onFocus() {
+  showList.value = !showList.value;
+}
+
+function onBlur() {
+  showList.value = false;
+}
+
 const isScrolling = ref(false);
 
-const hasFocus = useFocus(inputRef);
-const forceclosed = ref(false);
+const showList = ref<boolean>(false);
 
-const showList = computed(
-  () =>
-    !props.disabled &&
-    !forceclosed.value &&
-    !!workingList.value.length &&
-    hasFocus.focused.value,
+watch(
+  () => props.listItems,
+  (r) => {
+    activeIndex.value = Math.max(
+      minIndex.value,
+      Math.min(activeIndex.value, r.length - 1),
+    );
+  },
 );
 
-watch(workingList.value, (r) => {
-  activeIndex.value = Math.max(
-    minIndex.value,
-    Math.min(activeIndex.value, r.length - 1),
-  );
-});
-
 const matchingResult = computed(() => {
-  if (workingList.value.some((x) => x.value === props.modelValue))
+  if (
+    Array.isArray(props.listItems) &&
+    props.listItems.some((x) => x.value === props.modelValue)
+  ) {
     return props.modelValue;
+  }
   return "";
 });
 
@@ -200,16 +186,10 @@ watch([inputRef, validity], ([r, v]) => {
 watch(
   () => props.listItems,
   (r) => {
-    if (r.loading) return;
-    if (!r.success) {
-      workingList.value = [];
-      return;
-    }
     activeIndex.value = Math.max(
       minIndex.value,
-      Math.min(activeIndex.value, r.data.length - 1),
+      Math.min(activeIndex.value, props.listItems.length - 1),
     );
-    workingList.value = r.data;
   },
   { immediate: true, deep: true },
 );

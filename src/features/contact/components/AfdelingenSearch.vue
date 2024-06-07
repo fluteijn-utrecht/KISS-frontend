@@ -11,7 +11,10 @@
 
 <script setup lang="ts">
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
-import { useAfdelingen, type Afdeling } from "@/composables/afdelingen";
+import {
+  useAfdelingen,
+  type Afdeling,
+} from "@/features/contact/components/afdelingen";
 defineProps<{ modelValue: Afdeling | undefined }>();
 defineEmits<{ "update:modelValue": [Afdeling | undefined] }>();
 </script>

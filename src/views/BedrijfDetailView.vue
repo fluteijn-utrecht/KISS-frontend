@@ -73,7 +73,7 @@
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { ContactmomentenOverzicht } from "@/features/contactmoment";
+import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import {
   useBedrijfByIdentifier,
   HandelsregisterGegevens,
@@ -81,18 +81,18 @@ import {
   useKlantById,
 } from "@/features/klant";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
+import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import {
   useZakenByKlantBedrijfIdentifier,
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
-import { useContactverzoekenByKlantId } from "@/features/contactverzoek/overzicht/service";
-import ContactverzoekenOverzicht from "@/features/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
-import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
+import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
+import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
-import ContactmomentDetailsContext from "@/features/contactmoment/ContactmomentDetailsContext.vue";
+import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
 import type { BedrijfIdentifier } from "@/features/klant/bedrijf/types";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);

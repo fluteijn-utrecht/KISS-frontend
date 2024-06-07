@@ -17,7 +17,6 @@
       >
         <div class="contactmoment-header">
           <current-contactmoment-info />
-          <utrecht-heading :level="3">Vragen</utrecht-heading>
           <contactmoment-vragen-menu />
         </div>
         <div class="notitie-tabs">
@@ -68,9 +67,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ContactverzoekFormulier } from "@/features/contactverzoek/formulier";
+import ContactverzoekFormulier from "@/features/contact/contactverzoek/formulier/ContactverzoekFormulier.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import ContactmomentVragenMenu from "@/features/contactmoment/ContactmomentVragenMenu.vue";
+import ContactmomentVragenMenu from "@/features/contact/contactmoment/ContactmomentVragenMenu.vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
 import { watch } from "vue";
@@ -80,7 +79,7 @@ import {
   ContactmomentFinisher,
   CurrentContactmomentInfo,
   ContactmomentSwitcher,
-} from "@/features/contactmoment";
+} from "@/features/contact/contactmoment";
 import { TabList, TabListItem } from "@/components/tabs";
 
 enum NotitieTabs {

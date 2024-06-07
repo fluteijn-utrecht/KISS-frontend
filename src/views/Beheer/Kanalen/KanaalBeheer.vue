@@ -127,7 +127,6 @@ async function create() {
 
 onMounted(async () => {
   loading.value = true;
-  console.log;
   try {
     if (props.id) {
       //load link

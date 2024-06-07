@@ -17,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
-import ContactmomentDetailsContext from "@/features/contactmoment/ContactmomentDetailsContext.vue";
-import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
-import ContactverzoekenZoeker from "@/features/contactverzoek/overzicht/ContactverzoekenZoeker.vue";
+import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
+import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
+import ContactverzoekenZoeker from "@/features/contact/contactverzoek/overzicht/ContactverzoekenZoeker.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 </script>
