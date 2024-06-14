@@ -398,8 +398,9 @@ export function mapContactverzoekData({
       soortActor: "medewerker",
       identificatie: data.medewerker?.identificatie || "",
       typeOrganisatorischeEenheid:
-        data.organisatorischeEenheidVanMedewerker?.naam.split(": ")[0] ==
-        "afdeling"
+        data.organisatorischeEenheidVanMedewerker?.naam
+          ?.split(": ")[0]
+          ?.toLowerCase() === "afdeling"
           ? TypeOrganisatorischeEenheid.Afdeling
           : TypeOrganisatorischeEenheid.Groep,
       naamOrganisatorischeEenheid:
