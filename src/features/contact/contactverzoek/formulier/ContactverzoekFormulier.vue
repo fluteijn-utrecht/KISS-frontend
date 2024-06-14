@@ -50,10 +50,7 @@
       />
     </label>
 
-    <label
-      v-if="form.typeActor === ActorType.groep"
-      class="utrecht-form-label"
-    >
+    <label v-if="form.typeActor === ActorType.groep" class="utrecht-form-label">
       <span class="required">Groep</span>
       <groepen-search
         v-model="form.groep"
@@ -69,8 +66,7 @@
         'utrecht-form-label',
         {
           disabled:
-            (form.typeActor == ActorType.afdeling &&
-              !form.afdeling?.id) ||
+            (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
             (form.typeActor == ActorType.groep && !form.groep?.id),
         },
       ]"
@@ -130,69 +126,71 @@
     </label>
 
     <form-fieldset>
-      <service-data-wrapper :data="vragenSets" class="container">
-        <template #success="{ data }">
-          <!-- Dropdown for selecting Onderwerp -->
-          <contactverzoek-onderwerpen
-            :vragenSets="data"
-            :afdelingId="form?.afdeling?.id"
-            :prefill="!form.vragenSetChanged"
-            v-model:modelValue="form.contactVerzoekVragenSet"
-            @change="form.vragenSetChanged = true"
-          />
+      <div class="container">
+        <service-data-wrapper :data="vragenSets">
+          <template #success="{ data }">
+            <!-- Dropdown for selecting Onderwerp -->
+            <contactverzoek-onderwerpen
+              :vragenSets="data"
+              :afdelingId="form?.afdeling?.id"
+              :prefill="!form.vragenSetChanged"
+              v-model:modelValue="form.contactVerzoekVragenSet"
+              @change="form.vragenSetChanged = true"
+            />
 
-          <!-- Dynamic fields based on selected Onderwerp -->
-          <template v-if="form.contactVerzoekVragenSet">
-            <template
-              v-for="(item, index) in form.contactVerzoekVragenSet
-                .vraagAntwoord"
-              :key="index"
-            >
-              <label class="utrecht-form-label">
-                <span>{{ item.description }}</span>
-                <input
-                  v-if="isInputVraag(item)"
-                  class="utrecht-textbox utrecht-textbox--html-input"
-                  type="text"
-                  v-model="item.input"
-                  @input="setActive"
-                />
-                <textarea
-                  v-if="isTextareaVraag(item)"
-                  class="utrecht-textarea"
-                  v-model="item.textarea"
-                  @input="setActive"
-                ></textarea>
-                <select
-                  v-if="isDropdownVraag(item)"
-                  class="utrecht-select"
-                  v-model="item.selectedDropdown"
-                  @input="setActive"
-                >
-                  <option v-for="option in item.options" :key="option">
-                    {{ option }}
-                  </option>
-                </select>
-                <div v-if="isCheckboxVraag(item)">
-                  <label
-                    class="utrecht-checkbox-button"
-                    v-for="(option, optionIndex) in item.options"
-                    :key="option"
+            <!-- Dynamic fields based on selected Onderwerp -->
+            <template v-if="form.contactVerzoekVragenSet">
+              <template
+                v-for="(item, index) in form.contactVerzoekVragenSet
+                  .vraagAntwoord"
+                :key="index"
+              >
+                <label class="utrecht-form-label">
+                  <span>{{ item.description }}</span>
+                  <input
+                    v-if="isInputVraag(item)"
+                    class="utrecht-textbox utrecht-textbox--html-input"
+                    type="text"
+                    v-model="item.input"
+                    @input="setActive"
+                  />
+                  <textarea
+                    v-if="isTextareaVraag(item)"
+                    class="utrecht-textarea"
+                    v-model="item.textarea"
+                    @input="setActive"
+                  ></textarea>
+                  <select
+                    v-if="isDropdownVraag(item)"
+                    class="utrecht-select"
+                    v-model="item.selectedDropdown"
+                    @input="setActive"
                   >
-                    <input
+                    <option v-for="option in item.options" :key="option">
+                      {{ option }}
+                    </option>
+                  </select>
+                  <div v-if="isCheckboxVraag(item)">
+                    <label
                       class="utrecht-checkbox-button"
-                      type="checkbox"
-                      :value="option"
-                      v-model="item.selectedCheckbox[optionIndex]"
-                    />
-                    {{ option }}
-                  </label>
-                </div>
-              </label>
+                      v-for="(option, optionIndex) in item.options"
+                      :key="option"
+                    >
+                      <input
+                        class="utrecht-checkbox-button"
+                        type="checkbox"
+                        :value="option"
+                        v-model="item.selectedCheckbox[optionIndex]"
+                      />
+                      {{ option }}
+                    </label>
+                  </div>
+                </label>
+              </template>
             </template>
           </template>
-        </template>
-      </service-data-wrapper>
+        </service-data-wrapper>
+      </div>
     </form-fieldset>
 
     <form-fieldset>
