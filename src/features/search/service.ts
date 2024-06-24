@@ -10,7 +10,7 @@ import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
 import { computed, watch } from "vue";
 
-function mapResult(obj: any): SearchResult {
+export function mapResult(obj: any): SearchResult {
   const source = obj?._source?.object_bron ?? "Website";
   const id = obj?._id;
 
@@ -120,20 +120,7 @@ export function useGlobalSearch(
     };
   }
 
-  //refactoring suggestion. alleen zoeken als de zoekparameter gewijzigd is
-  // //in get uniwueid:  if (x.value === false) return "";
-  // const x = ref<boolean>(false);
-  // watch(
-  //   () => parameters.value.search,
-  //   (newvalue, old) => {
-  //     console.log(old, newvalue);
-  //     if (old != newvalue) {
-  //       x.value = true;
-  //     }
-  //   },
-  // );
-
-  function getUniqueId() {  
+  function getUniqueId() {
     if (!parameters.value.search) return "";
     const payload = getPayload();
     const url = getUrl();
@@ -264,91 +251,168 @@ export function useSources() {
   return ServiceResult.fromFetcher(getUrl, fetcher);
 }
 
-export function useFilteredSearch(parameters: 
-  Ref<{ 
+//
+
+export type DatalistItem = {
+  value: string;
+  description: string;
+};
+
+export function searchMedewerkers(parameters: any): Promise<DatalistItem[]> {
+  function mapToDataListItem(obj: any): any {
+    const functie = obj?._source.Smoelenboek.functie || obj.function;
+    const department =
+      obj?._source.Smoelenboek.afdelingen?.[0]?.afdelingnaam ||
+      obj?._source.Smoelenboek.department;
+
+    const werk = [functie, department].filter(Boolean).join(" bij ");
+    return {
+      value: obj?._source.title,
+      description: werk,
+
+      identificatie: obj?._source?.Smoelenboek?.identificatie,
+      afdelingen: obj?._source?.Smoelenboek?.afdelingen,
+      groepen: obj?._source?.Smoelenboek?.groepen,
+    };
+  }
+
+  const getPayload = () => {
+    const { search, filterField, filterValue } = parameters;
+
+    const searchQuery = search
+      ? {
+          simple_query_string: {
+            query: search,
+          },
+        }
+      : {
+          match_all: {},
+        };
+
+    const filterMatchQuery =
+      filterField && filterValue
+        ? {
+            match: {
+              [`${filterField}.enum`]: filterValue,
+            },
+          }
+        : null;
+
+    const query = {
+      from: 0,
+      size: 30,
+      sort: [{ "Smoelenboek.achternaam.enum": { order: "asc" } }],
+      query: {
+        bool: {
+          must: [searchQuery, filterMatchQuery].filter(Boolean),
+        },
+      },
+    };
+
+    return JSON.stringify(query);
+  };
+
+  return fetchLoggedIn(`${globalSearchBaseUri}/search-smoelenboek/_search`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: getPayload(),
+  })
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r: any) => {
+      const {
+        hits: { hits },
+      } = r ?? {};
+
+      return Array.isArray(hits) ? hits.map(mapToDataListItem) : [];
+    });
+}
+
+//weg
+export function useFilteredSearch(
+  parameters: Ref<{
     search?: string;
     page?: number;
     filterField?: string;
-    filterValue?: string 
-  }>) {
+    filterValue?: string;
+  }>,
+) {
   const getUrl = () => `${globalSearchBaseUri}/search-smoelenboek/_search`;
-  
+
   const getPayload = () => {
-      const 
-      { 
-        search,
-        page = 1,
-        filterField,
-        filterValue 
-      } = parameters.value;
-      const from = (page - 1) * pageSize;
+    const { search, page = 1, filterField, filterValue } = parameters.value;
+    const from = (page - 1) * pageSize;
 
-      const searchQuery = search ? {
-        simple_query_string: {
-          query: search
+    const searchQuery = search
+      ? {
+          simple_query_string: {
+            query: search,
+          },
         }
-      } : {
-        match_all: {}
-      };
+      : {
+          match_all: {},
+        };
 
-      const filterMatchQuery = filterField && filterValue ? {
-        match: {
-          [`${filterField}.enum`]: filterValue
-        }
-      } : null;
-
-      const query = {
-        from,
-        size: pageSize,
-        sort: [
-          { "Smoelenboek.achternaam.enum": { "order": "asc" } }
-        ],
-        query: {
-          bool: {
-            must: [
-              searchQuery,
-              filterMatchQuery
-            ].filter(Boolean) 
+    const filterMatchQuery =
+      filterField && filterValue
+        ? {
+            match: {
+              [`${filterField}.enum`]: filterValue,
+            },
           }
-        }
-      };
+        : null;
 
-      return JSON.stringify(query);
+    const query = {
+      from,
+      size: pageSize,
+      sort: [{ "Smoelenboek.achternaam.enum": { order: "asc" } }],
+      query: {
+        bool: {
+          must: [searchQuery, filterMatchQuery].filter(Boolean),
+        },
+      },
+    };
+
+    return JSON.stringify(query);
   };
 
-  async function fetcher(url: string): Promise<Paginated<SearchResult> & { suggestions: string[] }> {
-      const r = await fetchLoggedIn(url, {
-          method: "POST",
-          headers: {
-              "content-type": "application/json",
-          },
-          body: getPayload(),
-      });
-      if (!r.ok) throw new Error();
-      const json = await r.json();
-      const {
-          hits: { total, hits },
-      } = json ?? {};
-      const totalPages = Math.ceil((total?.value || 0) / pageSize);
-      const page = Array.isArray(hits) ? hits.map(mapResult) : [];
-      
-      return {
-          page,
-          pageSize,
-          pageNumber: parameters.value.page || 1,
-          totalPages,
-          suggestions: mapSuggestions(json),
-      };
+  async function fetcher(
+    url: string,
+  ): Promise<Paginated<SearchResult> & { suggestions: string[] }> {
+    const r = await fetchLoggedIn(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: getPayload(),
+    });
+    if (!r.ok) throw new Error();
+    const json = await r.json();
+    const {
+      hits: { total, hits },
+    } = json ?? {};
+    const totalPages = Math.ceil((total?.value || 0) / pageSize);
+    const page = Array.isArray(hits) ? hits.map(mapResult) : [];
+
+    return {
+      page,
+      pageSize,
+      pageNumber: parameters.value.page || 1,
+      totalPages,
+      suggestions: mapSuggestions(json),
+    };
   }
 
   const searchService = ServiceResult.fromFetcher(getUrl, fetcher);
 
   watch(
-      () => parameters.value?.search,
-      () => {
-          searchService.refresh()
-      },
-      { immediate: true },
+    () => parameters.value?.search,
+    () => {
+      searchService.refresh();
+    },
+    { immediate: true },
   );
 
   return searchService;

@@ -26,6 +26,7 @@ const getAfdelingenSearchUrl = (
   return "/api/afdelingen/api/v2/objects?" + searchParams;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapOrganisatie = (x: any) =>
   ({
     ...x.record.data,
@@ -38,8 +39,10 @@ const afdelingenFetcher = (url: string): Promise<PaginatedResult<Afdeling>> =>
     .then(parseJson)
     .then((json) => parsePagination(json, mapOrganisatie));
 
-export const fetchAfdelingen = (search: string, exactMatch: boolean) =>
-  afdelingenFetcher(getAfdelingenSearchUrl(search, exactMatch));
+export const fetchAfdelingen = (
+  search: string | undefined,
+  exactMatch: boolean,
+) => afdelingenFetcher(getAfdelingenSearchUrl(search, exactMatch));
 
 export function useAfdelingen(search: () => string | undefined) {
   const getUrl = () => getAfdelingenSearchUrl(search(), false);

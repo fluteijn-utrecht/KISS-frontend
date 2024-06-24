@@ -76,23 +76,23 @@
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { ContactmomentenOverzicht } from "@/features/contactmoment";
+import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import {
   KlantDetails,
   useKlantById,
   BrpGegevens,
   usePersoonByBsn,
 } from "@/features/klant";
-import { useContactmomentenByKlantId } from "@/features/contactmoment/service";
+import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import { useContactverzoekenByKlantId } from "@/features/contactverzoek/overzicht/service";
-import ContactverzoekenOverzicht from "@/features/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
-import ContactmomentPreview from "@/features/contactmoment/ContactmomentPreview.vue";
+import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
+import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
+import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import ContactmomentDetailsContext from "@/features/contactmoment/ContactmomentDetailsContext.vue";
+import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
 
 const activeTab = ref("");
 
