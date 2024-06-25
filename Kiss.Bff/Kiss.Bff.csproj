@@ -33,6 +33,5 @@
 
   <ItemGroup>
     <Folder Include="certificates\" />
-    <Folder Include="Intern\Data\SeedData\" />
   </ItemGroup>
 </Project>
