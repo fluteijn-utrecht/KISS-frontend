@@ -141,7 +141,7 @@ try
         if (db.Database.IsRelational())
         {
             await db.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
-            var isDemo = builder.Configuration.GetValue<bool>("IsDemo");
+            var isDemo = builder.Configuration.GetValue<bool>("IsDemo"); 
             if (isDemo)
             {
                 SeedDatabase(db);
