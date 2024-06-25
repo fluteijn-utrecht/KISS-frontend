@@ -1,7 +1,6 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
-using Kiss.Bff.Intern.Data;
 using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
@@ -58,8 +57,6 @@ namespace Kiss.Bff.Beheer.Data
                 k.Property(p => p.Naam).IsRequired();
 
             });
-            
-
         }
 
         public DbSet<Bericht> Berichten { get; set; } = null!;

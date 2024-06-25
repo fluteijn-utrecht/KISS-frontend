@@ -118,5 +118,3 @@ strategy:
     maxSurge: 1
 
 cronjobs: []
-
-IsDemo: false
