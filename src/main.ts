@@ -3,7 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
 import { useIntersectionObserver } from "@vueuse/core";
-
+import CKEditor from "@ckeditor/ckeditor5-vue";
 // warning if closing tab or refreshing
 if (import.meta.env.PROD) {
   addEventListener(
@@ -43,4 +43,4 @@ app.directive("focus", {
   },
 });
 
-app.mount("#app");
+app.use(CKEditor).mount("#app");
