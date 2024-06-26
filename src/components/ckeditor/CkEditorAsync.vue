@@ -1,13 +1,15 @@
 <template>
-  <Ckeditor :editor="x" v-model="modelValue" v-bind="$attrs" />
+  <ckeditor
+    :editor="ClassicEditor"
+    :config="config"
+    v-model="modelValue"
+    v-bind="$attrs"
+  />
 </template>
 
 <script setup lang="ts">
-import _Ckeditor from "@ckeditor/ckeditor5-vue";
+import type { EditorConfig } from "./ckeditor-exports";
 import { computed } from "vue";
-//import { CustomEditor } from "./custom-editor";
-
-//import { ClassicEditor } from 'ckeditor5';
 
 const props = defineProps<{ modelValue?: string }>();
 const emit = defineEmits<{ (e: "update:modelValue", v?: string): void }>();
@@ -16,11 +18,27 @@ const modelValue = computed({
   set: (val) => emit("update:modelValue", val),
 });
 
-const x = {
-  create: (...args: any) =>
-    import("./custom-editor").then((r) => r.default as any),
-};
+// we import these asynchronously so the code gets split into a seperate file.
+// we don't directly import from ckeditor5 because otherwise we can't tree shake, resulting in a bigger bundle
+const { ClassicEditor, Ckeditor, ...plugins } = await import(
+  "./ckeditor-exports"
+);
 
-//const CustomEditor = await import("./custom-editor").then((r) => r.default);
-const Ckeditor = _Ckeditor.component;
+const config: EditorConfig = {
+  plugins: Object.values(plugins),
+  toolbar: [
+    "heading",
+    "|",
+    "bold",
+    "italic",
+    "link",
+    "bulletedList",
+    "numberedList",
+    "blockQuote",
+    "undo",
+    "redo",
+  ],
+};
 </script>
+
+<style src="ckeditor5/ckeditor5.css"></style>
