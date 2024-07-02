@@ -18,8 +18,8 @@ const modelValue = computed({
   set: (val) => emit("update:modelValue", val),
 });
 
-// we import these asynchronously so the code gets split into a seperate file.
-// we don't directly import from ckeditor5 because otherwise we can't tree shake, resulting in a bigger bundle
+// we don't want to import directly from ckeditor
+// see ./ckeditor-exports for an explanation of this workaround
 const { ClassicEditor, Ckeditor, ...plugins } = await import(
   "./ckeditor-exports"
 );
