@@ -293,8 +293,7 @@ import type {
 } from "@/stores/contactmoment";
 
 import { ActorType } from "@/stores/contactmoment";
-import { ref } from "vue";
-import { watch } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -320,7 +319,16 @@ const props = defineProps<{
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
 const medewerker = ref<ContactVerzoekMedewerker>();
-const medewerkerFilterField = ref<string>();
+const medewerkerFilterField = computed(() => {
+  switch (form.value.typeActor) {
+    case ActorType.afdeling:
+      return "Smoelenboek.afdelingen.afdelingnaam";
+    case ActorType.groep:
+      return "Smoelenboek.groepen.groepsnaam";
+    default:
+      return "";
+  }
+});
 
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
@@ -354,12 +362,6 @@ const onUpdateMedewerker = () => {
 };
 
 const onTypeActorSelected = () => {
-  medewerkerFilterField.value =
-    form.value.typeActor === ActorType.afdeling
-      ? "Smoelenboek.afdelingen.afdelingnaam"
-      : form.value.typeActor === ActorType.groep
-      ? "Smoelenboek.groepen.groepsnaam"
-      : "";
   medewerker.value = undefined;
 };
 
