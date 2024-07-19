@@ -283,11 +283,10 @@ export function searchMedewerkers(parameters: any): Promise<DatalistItem[]> {
       ? {
           simple_query_string: {
             query: search,
+            default_operator: "and",
           },
         }
-      : {
-          match_all: {},
-        };
+      : null;
 
     const filterMatchQuery =
       filterField && filterValue
