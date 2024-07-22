@@ -75,7 +75,13 @@
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
         v-model="medewerker"
-        :filter-field="medewerkerFilterField"
+        :filter-field="
+          form.typeActor == ActorType.afdeling
+            ? 'Smoelenboek.afdelingen.afdelingnaam'
+            : form.typeActor === ActorType.groep
+              ? 'Smoelenboek.groepen.groepsnaam'
+              : ''
+        "
         :filter-value="
           form.typeActor === ActorType.afdeling
             ? form.afdeling?.naam
@@ -293,8 +299,7 @@ import type {
 } from "@/stores/contactmoment";
 
 import { ActorType } from "@/stores/contactmoment";
-import { ref } from "vue";
-import { watch } from "vue";
+import { ref, watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -320,7 +325,6 @@ const props = defineProps<{
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
 const medewerker = ref<ContactVerzoekMedewerker>();
-const medewerkerFilterField = ref<string>();
 
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
@@ -354,12 +358,6 @@ const onUpdateMedewerker = () => {
 };
 
 const onTypeActorSelected = () => {
-  medewerkerFilterField.value =
-    form.value.typeActor === ActorType.afdeling
-      ? "Smoelenboek.afdelingen.afdelingnaam"
-      : form.value.typeActor === ActorType.groep
-      ? "Smoelenboek.groepen.groepsnaam"
-      : "";
   medewerker.value = undefined;
 };
 
