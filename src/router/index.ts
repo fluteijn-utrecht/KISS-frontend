@@ -131,7 +131,7 @@ const router = createRouter({
     {
       path: "/zaken/:zaakId",
       name: "zaakDetail",
-      props: true,
+      props: ({ query = {}, params = {} }) => ({ ...query, ...params }),
       component: ZaakDetailView,
       beforeEnter: guardContactMoment,
       meta: { showNav: true, showNotitie: true, showSearch: true },

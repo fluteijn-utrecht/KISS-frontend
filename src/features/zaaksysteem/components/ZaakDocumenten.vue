@@ -22,10 +22,9 @@
           </td>
           <td>
             <a
-              :href="document.downloadUrl"
-              target="_blank"
-              :download="document.bestandsnaam || document.titel"
-              >> Downloaden</a
+              :href="document.url + '/download?versie=1'"
+              @click.prevent="download(document)"
+              >{{ "> Downloaden" }}</a
             >
           </td>
         </tr>
@@ -37,14 +36,35 @@
 </template>
 
 <script setup lang="ts">
-import type { ZaakDetails } from "./../types";
+import type { ZaakDetails, ZaakDocument } from "./../types";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { formatDateOnly } from "@/helpers/date";
 import { formatBytes } from "@/helpers/formatBytes";
+import { fetchLoggedIn, throwIfNotOk } from "@/services";
 
-defineProps<{
+const props = defineProps<{
   zaak: ZaakDetails;
 }>();
+
+async function download(doc: ZaakDocument) {
+  const url = doc.url + "/download?versie=1";
+  const blob = await fetchLoggedIn(url, {
+    headers: {
+      ZaaksysteemId: props.zaak.zaaksysteemId || "",
+    },
+  })
+    .then(throwIfNotOk)
+    .then((r) => r.blob());
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.style.display = "none";
+  a.href = objectUrl;
+  a.download = doc.bestandsnaam || doc.titel;
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(objectUrl);
+  a.remove();
+}
 </script>
 
 <style scoped lang="scss">

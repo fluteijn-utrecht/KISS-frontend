@@ -64,17 +64,22 @@ const zoekOpZaak = () => {
   store.value.currentSearch = store.value.searchField;
 };
 
-const singleZaakId = computed(() =>
-  zaken.success && zaken.data.page.length === 1
-    ? zaken.data.page[0].id
-    : undefined
-);
+const singleZaakUrl = computed(() => {
+  if (zaken.success && zaken.data.page.length === 1) {
+    const zaak = zaken.data.page[0];
+    const zaaksysteemId = zaak.zaaksysteemId
+      ? encodeURIComponent(zaak.zaaksysteemId)
+      : "";
+    return `/zaken/${zaak.id}?zaaksysteemId=${zaaksysteemId}`;
+  }
+  return "";
+});
 
 const router = useRouter();
 
-watch(singleZaakId, (newId, oldId) => {
+watch(singleZaakUrl, (newId, oldId) => {
   if (newId && newId !== oldId) {
-    router.push(`/zaken/${newId}`);
+    router.push(newId);
   }
 });
 </script>

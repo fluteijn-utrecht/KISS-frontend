@@ -5,32 +5,50 @@ import {
   throwIfNotOk,
 } from "@/services";
 import type { ZaakDetails } from "./types";
-import { computed } from "vue";
+import { computed, type Ref } from "vue";
 
-export const useZaaksysteemDeeplinkConfig = () =>
-  ServiceResult.fromFetcher("/api/zaaksysteem/deeplinkconfig", (u) =>
-    fetchLoggedIn(u)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((r) =>
-        typeof r?.baseUrl === "string" &&
-        typeof r?.idProperty === "string" &&
-        r.baseUrl &&
-        r.idProperty
-          ? (r as {
-              baseUrl: string;
-              idProperty: string;
-            })
-          : null,
-      ),
+const useZaaksysteemDeeplinkConfig = (
+  zaaksysteemId: Ref<string | undefined>,
+) => {
+  const url = "/api/zaaksysteem/deeplinkconfig";
+  const getUniqueId = () => {
+    const id = zaaksysteemId.value || "";
+    return id && url + id;
+  };
+  return ServiceResult.fromFetcher(
+    url,
+    (u) =>
+      fetchLoggedIn(u, {
+        headers: {
+          ZaaksysteemId: zaaksysteemId.value || "",
+        },
+      })
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) =>
+          typeof r?.baseUrl === "string" &&
+          typeof r?.idProperty === "string" &&
+          r.baseUrl &&
+          r.idProperty
+            ? (r as {
+                baseUrl: string;
+                idProperty: string;
+              })
+            : null,
+        ),
+    {
+      getUniqueId,
+    },
   );
+};
 
 export function useZaaksysteemDeeplink(getZaak: () => ZaakDetails | undefined) {
-  const config = useZaaksysteemDeeplinkConfig();
+  const zaak = computed(getZaak);
+  const zaaksysteemId = computed(() => zaak.value?.zaaksysteemId);
+  const config = useZaaksysteemDeeplinkConfig(zaaksysteemId);
   return computed(() => {
     if (!config.success || !config.data) return null;
-    const zaak = getZaak();
-    const property = (zaak as any)?.[config.data.idProperty];
+    const property = (zaak.value as any)?.[config.data.idProperty];
     if (!property) return null;
     return config.data.baseUrl + property;
   });
