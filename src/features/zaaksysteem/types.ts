@@ -19,6 +19,7 @@ export type ZaakDetails = {
   url: string;
   documenten?: ZaakDocument[];
   omschrijving: string;
+  zaaksysteemId?: string;
 };
 
 export interface ZaakPreview {
@@ -35,7 +36,7 @@ export interface ZaakDocument {
   creatiedatum: Date;
   vertrouwelijkheidaanduiding: string;
   formaat: string;
-  downloadUrl: string;
+  url: string;
 }
 
 export type ZaakType = {

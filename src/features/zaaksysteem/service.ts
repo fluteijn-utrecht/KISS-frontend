@@ -4,7 +4,6 @@ import {
   ServiceResult,
   throwIfNotOk,
   type PaginatedResult,
-  parseJson,
 } from "@/services";
 import type {
   Medewerker,
@@ -33,6 +32,7 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
       "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
       bsn.value,
     );
+    url.searchParams.set("ordering", "-startdatum");
     return url.toString();
   };
 
@@ -44,17 +44,28 @@ export const useZakenPreviewByUrl = (url: Ref<string>) => {
     return toRelativeProxyUrl(url.value, zakenProxyRoot) ?? "";
   };
 
-  const fetchPreview = (url: string): Promise<any> =>
-    fetchLoggedIn(url)
+  const getZaaksysteemId = () => {
+    const u = url.value;
+    if (!u) return "";
+    const parsed = new URL(u);
+    parsed.pathname = "";
+    return parsed.toString();
+  };
+
+  const fetchPreview = (u: string) =>
+    fetchLoggedIn(u, {
+      headers: {
+        ZaaksysteemId: getZaaksysteemId(),
+      },
+    })
       .then(throwIfNotOk)
       .then((x) => x.json())
       .then((json) => mapZaakDetailsPreview(json));
 
+  const getUniqueId = () => url.value && `${url.value}_preview`;
+
   return ServiceResult.fromFetcher(getUrl, fetchPreview, {
-    getUniqueId() {
-      const url = getUrl();
-      return url && `${url}_preview`;
-    },
+    getUniqueId,
   });
 };
 
@@ -66,16 +77,30 @@ export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
-const singleZaakFetcher = function fetcher(url: string): Promise<ZaakDetails> {
-  return fetchLoggedIn(url)
+const singleZaakFetcher = function fetcher(
+  url: string,
+  zaaksysteemId?: string,
+): Promise<ZaakDetails> {
+  return fetchLoggedIn(url, {
+    headers: zaaksysteemId
+      ? {
+          ZaaksysteemId: zaaksysteemId,
+        }
+      : undefined,
+  })
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then(mapZaakDetails);
 };
 
-export const useZaakById = (id: Ref<string>) => {
+export const useZaakById = (
+  id: Ref<string>,
+  zaaksysteemId: Ref<string | undefined>,
+) => {
   const getUrl = () => getZaakUrl(id.value);
-  return ServiceResult.fromFetcher(getUrl, singleZaakFetcher);
+  return ServiceResult.fromFetcher(getUrl, (u) =>
+    singleZaakFetcher(u, zaaksysteemId.value),
+  );
 };
 
 type ZaakBedrijfIdentifier =
@@ -93,45 +118,24 @@ export const useZakenByKlantBedrijfIdentifier = (
     const searchParam = getId();
     if (!searchParam) return "";
     const url = new URL(location.href);
-    url.pathname = zaaksysteemBaseUri + "/rollen";
+    url.pathname = zaaksysteemBaseUri + "/zaken";
+    url.searchParams.set("ordering", "-startdatum");
 
     if ("vestigingsnummer" in searchParam) {
       url.searchParams.set(
-        "betrokkeneIdentificatie__vestiging__vestigingsNummer",
+        "rol__betrokkeneIdentificatie__vestiging__vestigingsNummer",
         searchParam.vestigingsnummer,
       );
     } else if ("nietNatuurlijkPersoonIdentifier" in searchParam) {
       url.searchParams.set(
-        "betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId",
+        "rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId",
         searchParam.nietNatuurlijkPersoonIdentifier,
       );
     }
     return url.toString();
   };
 
-  const fetcher = (url: string) =>
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((r) =>
-        parsePagination(r, async (x) => {
-          const split = (x as RolType)?.zaak?.split("/");
-          if (!Array.isArray(split) || !split.length) {
-            throw new Error(
-              "kan url van zaak niet ophalen obv rol: " + x &&
-                JSON.stringify(x),
-            );
-          }
-          const id = split[split.length - 1];
-          const url = getZaakUrl(id);
-
-          const result = await singleZaakFetcher(url);
-          mutate(url, result);
-          return result;
-        }),
-      );
-
-  return ServiceResult.fromFetcher(getUrl, fetcher);
+  return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
 const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
@@ -178,13 +182,18 @@ const getNamePerRoltype = (rollen: Array<RolType> | null, roleNaam: string) => {
   return ONBEKEND;
 };
 
-const getStatus = async (statusUrl: string) => {
+const getStatus = async (statusUrl: string, zaaksysteemId: string) => {
   const statusId = statusUrl?.split("/")?.pop();
 
   if (!statusId) return "";
 
   const statusType = await fetchLoggedIn(
     `${zaaksysteemBaseUri}/statussen/${statusId}`,
+    {
+      headers: {
+        ZaaksysteemId: zaaksysteemId,
+      },
+    },
   )
     .then(throwIfNotOk)
     .then((x) => x.json())
@@ -196,7 +205,11 @@ const getStatus = async (statusUrl: string) => {
 
   const statusTypeUrl = `/api/zaken/catalogi/api/v1/statustypen/${statusTypeUuid}`;
 
-  const statusOmschrijving = await fetchLoggedIn(statusTypeUrl)
+  const statusOmschrijving = await fetchLoggedIn(statusTypeUrl, {
+    headers: {
+      ZaaksysteemId: zaaksysteemId,
+    },
+  })
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => json.omschrijving);
@@ -206,9 +219,15 @@ const getStatus = async (statusUrl: string) => {
 
 const getDocumenten = async (
   zaakurl: string,
+  zaaksysteemId: string,
 ): Promise<Array<ZaakDocument | null>> => {
   const infoObjecten = await fetchLoggedIn(
     `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`,
+    {
+      headers: {
+        ZaaksysteemId: zaaksysteemId,
+      },
+    },
   )
     .then(throwIfNotOk)
     .then((x) => x.json());
@@ -218,7 +237,11 @@ const getDocumenten = async (
       const id = item.informatieobject.split("/").pop();
 
       const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
-      return fetchLoggedIn(docUrl)
+      return fetchLoggedIn(docUrl, {
+        headers: {
+          ZaaksysteemId: zaaksysteemId,
+        },
+      })
         .then(throwIfNotOk) //todo 404 afvanengen?
         .then((x) => x.json())
         .then((x) => mapDocument(x, docUrl));
@@ -230,7 +253,10 @@ const getDocumenten = async (
   return [];
 };
 
-const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
+const getRollen = async (
+  zaakurl: string,
+  zaaksysteemId: string,
+): Promise<Array<RolType>> => {
   // rollen is een gepagineerd resultaat. we verwachten maar twee rollen.
   // het lijkt extreem onwaarschijnlijk dat er meer dan 1 pagina met rollen zal zijn.
   // we kijken dus (voorlopig) alleen naar de eerste pagina
@@ -240,7 +266,11 @@ const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
   const rollenUrl = `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`;
 
   const getPage = async (url: string) => {
-    const page = await fetchLoggedIn(url)
+    const page = await fetchLoggedIn(url, {
+      headers: {
+        ZaaksysteemId: zaaksysteemId,
+      },
+    })
       .then(throwIfNotOk)
       .then((x) => x.json())
       .then((json) => parsePagination(json, async (x: any) => x as RolType));
@@ -258,11 +288,18 @@ const getRollen = async (zaakurl: string): Promise<Array<RolType>> => {
   return rollen;
 };
 
-const getZaakType = (zaaktype: string): Promise<ZaakType> => {
+const getZaakType = (
+  zaaktype: string,
+  zaaksysteemId: string,
+): Promise<ZaakType> => {
   const zaaktypeid = zaaktype.split("/").pop();
   const url = `/api/zaken/catalogi/api/v1/zaaktypen/${zaaktypeid}`;
 
-  return fetchLoggedIn(url)
+  return fetchLoggedIn(url, {
+    headers: {
+      ZaaksysteemId: zaaksysteemId,
+    },
+  })
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => {
@@ -276,7 +313,7 @@ const getZaakUrl = (id: string) => {
 };
 
 const mapZaakDetails = async (zaak: any) => {
-  const zaakzaaktype = await getZaakType(zaak.zaaktype);
+  const zaakzaaktype = await getZaakType(zaak.zaaktype, zaak.zaaksysteemId);
 
   const startdatum = zaak.startdatum ? new Date(zaak.startdatum) : undefined;
 
@@ -311,9 +348,9 @@ const mapZaakDetails = async (zaak: any) => {
   //     })
   //     .toJSDate();
 
-  const documenten = await getDocumenten(zaak.url);
+  const documenten = await getDocumenten(zaak.url, zaak.zaaksysteemId);
 
-  const rollen = await getRollen(zaak.url);
+  const rollen = await getRollen(zaak.url, zaak.zaaksysteemId);
 
   const id = zaak.url.split("/").pop();
 
@@ -323,7 +360,7 @@ const mapZaakDetails = async (zaak: any) => {
     zaaktype: zaakzaaktype.id,
     zaaktypeLabel: zaakzaaktype.onderwerp,
     zaaktypeOmschrijving: zaakzaaktype.omschrijving,
-    status: await getStatus(zaak.status),
+    status: await getStatus(zaak.status, zaak.zaaksysteemId),
     behandelaar: getNamePerRoltype(rollen, "behandelaar"),
     aanvrager: getNamePerRoltype(rollen, "initiator"),
     startdatum,
@@ -338,12 +375,12 @@ const mapZaakDetails = async (zaak: any) => {
 };
 
 const mapZaakDetailsPreview = async (zaak: any) => {
-  const zaakzaaktype = await getZaakType(zaak.zaaktype);
+  const zaakzaaktype = await getZaakType(zaak.zaaktype, zaak.zaaksysteemId);
 
   return {
     identificatie: zaak.identificatie,
     zaaktypeLabel: zaakzaaktype.onderwerp,
-    status: await getStatus(zaak.status),
+    status: await getStatus(zaak.status, zaak.zaaksysteemId),
   } as ZaakPreview;
 };
 
@@ -382,7 +419,7 @@ export async function updateToelichting(
     throw new Error(`Expected to update toelichting: ${res.status.toString()}`);
 }
 
-const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
+const mapDocument = (rawDocumenten: any, url: string): ZaakDocument | null => {
   if (!rawDocumenten) return null;
 
   const doc = {
@@ -393,7 +430,7 @@ const mapDocument = (rawDocumenten: any, xx: string): ZaakDocument | null => {
     creatiedatum: new Date(rawDocumenten.creatiedatum),
     vertrouwelijkheidaanduiding: rawDocumenten.vertrouwelijkheidaanduiding,
     formaat: rawDocumenten.formaat,
-    downloadUrl: xx + "/download?versie=1",
+    url,
   };
   return doc;
 };
