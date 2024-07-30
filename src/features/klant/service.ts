@@ -18,6 +18,13 @@ import {
 } from "./types";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier } from "./bedrijf/types";
+import { klantinteractieClient } from "./klantinteractie-client";
+import {
+  SoortPartijEnum,
+  type ExpandPartij,
+  type Partij,
+  type PartijIdentificator,
+} from "@/../generated/klantinteracties";
 
 type QueryParam = [string, string][];
 
@@ -146,10 +153,56 @@ function fetchKlantById(url: string) {
   return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
 }
 
+function mapPartijToKlant(
+  partij: ExpandPartij,
+  identificatoren: PartijIdentificator[],
+): Klant {
+  const getAdres = (type: string) =>
+    partij._expand?.digitaleAdressen?.find(
+      (x) => x.adres && x.soortDigitaalAdres === type,
+    )?.adres;
+
+  const getId = (type: string) =>
+    identificatoren.find(
+      (x) =>
+        x.partijIdentificator?.objectId &&
+        x.partijIdentificator?.codeSoortObjectId == type,
+    )?.partijIdentificator?.objectId;
+
+  return {
+    _typeOfKlant: "klant",
+    klantnummer: partij.nummer || "",
+    id: partij.uuid,
+    url: partij.url,
+    telefoonnummer: getAdres("telefoonnummer"),
+    emailadres: getAdres("emailadres"),
+    bsn: getId("Burgerservicenummer"),
+    // bedrijfsnaam?: string;
+    vestigingsnummer: getId("Vestigingsnummer"),
+    nietNatuurlijkPersoonIdentifier: getId("nnnpId"),
+  };
+}
+
 export function useKlantById(id: Ref<string>) {
   return ServiceResult.fromFetcher(
-    () => getKlantIdUrl(id.value),
-    fetchKlantById,
+    () => id.value,
+    (id) =>
+      klantinteractieClient.partijen
+        .partijenRetrieve(id, [
+          "betrokkenen",
+          "betrokkenen.hadKlantcontact",
+          "categorieRelaties",
+          "digitaleAdressen",
+        ])
+        .then(async (partij) => {
+          const promises = partij.partijIdentificatoren.map(({ uuid }) =>
+            klantinteractieClient.partijIdentificatoren.partijIdentificatorenRetrieve(
+              uuid,
+            ),
+          );
+          const identificatoren = await Promise.all(promises);
+          return mapPartijToKlant(partij, identificatoren);
+        }),
   );
 }
 
@@ -223,6 +276,50 @@ export function useUpdateContactGegevens() {
   return ServiceResult.fromSubmitter(updateContactgegevens);
 }
 
+const getSingleKlantByBsn = (bsn: string) =>
+  klantinteractieClient.partijen
+    .partijenList(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      bsn,
+      "persoon",
+    )
+    .then(
+      ({ results, ...rest }) =>
+        ({
+          page: results,
+          ...rest,
+        }) as PaginatedResult<Partij>,
+    )
+    .then(enforceOneOrZero)
+    .then(async (partij) => {
+      if (!partij) return partij;
+      const promises = partij.partijIdentificatoren.map(({ uuid }) =>
+        klantinteractieClient.partijIdentificatoren.partijIdentificatorenRetrieve(
+          uuid,
+        ),
+      );
+      const identificatoren = await Promise.all(promises);
+      return mapPartijToKlant(partij, identificatoren);
+    });
+
 export async function ensureKlantForBsn(
   {
     bsn,
@@ -236,7 +333,7 @@ export async function ensureKlantForBsn(
 
   if (!bsnUrl || !singleBsnId) throw new Error();
 
-  const first = await searchSingleKlant(bsnUrl);
+  const first = await getSingleKlantByBsn(bsn);
 
   if (first) {
     mutate(singleBsnId, first);
@@ -245,21 +342,42 @@ export async function ensureKlantForBsn(
     return first;
   }
 
-  const response = await fetchLoggedIn(klantRootUrl, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      bronorganisatie,
-      klantnummer: nanoid(8),
-      subjectIdentificatie: { inpBsn: bsn },
-      subjectType: KlantType.Persoon,
-    }),
+  const partij = await klantinteractieClient.partijen.partijenCreate({
+    url: "",
+    uuid: "",
+    digitaleAdressen: [],
+    betrokkenen: [],
+    categorieRelaties: [],
+    voorkeursDigitaalAdres: null,
+    vertegenwoordigden: [],
+    rekeningnummers: [],
+    partijIdentificatoren: [],
+    voorkeursRekeningnummer: null,
+    soortPartij: SoortPartijEnum.PERSOON,
+    indicatieGeheimhouding: false,
+    indicatieActief: true,
   });
 
-  if (!response.ok) throw new Error();
+  const identificator =
+    await klantinteractieClient.partijIdentificatoren.partijIdentificatorenCreate(
+      {
+        uuid: "",
+        url: "",
+        identificeerdePartij: {
+          url: partij.url,
+          uuid: partij.uuid,
+        },
+        partijIdentificator: {
+          objectId: bsn,
+          codeRegister: "BRP",
+          codeSoortObjectId: "Burgerservicenummer",
+          codeObjecttype: "INGESCHREVEN NATUURLIJK PERSOON",
+        },
+      },
+    );
 
-  const json = await response.json();
-  const newKlant = mapKlant(json);
+  const newKlant = mapPartijToKlant(partij, [identificator]);
+
   const idUrl = getKlantIdUrl(newKlant.id);
 
   mutate(idUrl, newKlant);
