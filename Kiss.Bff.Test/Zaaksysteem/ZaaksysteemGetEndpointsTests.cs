@@ -56,7 +56,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_ordering_parameter_is_used_for_sorting()
+        public async Task Get_endpoint_uses_ordering_parameter_for_sorting_ascending()
         {
             var result = await RunHappyFlowTest("http://example.com", "my-path", "my-column", @"{""results"": [
                 {""my-column"": 2}, {""my-column"": 1}, {""my-column"": 3}
@@ -73,7 +73,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_ordering_parameter_is_used_for_sorting_descending()
+        public async Task Get_endpoint_uses_ordering_parameter_for_sorting_descending()
         {
             var result = await RunHappyFlowTest("http://example.com", "my-path", "-my-column", @"{""results"": [
                 {""my-column"": 2}, {""my-column"": 1}, {""my-column"": 3}
@@ -90,14 +90,14 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_bad_request_multiple()
+        public async Task Get_endpoint_correctly_proxies_400_status_code_for_lists()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path";
 
-            handler.Expect($"{baseUrl.AsSpan().TrimEnd('/')}/{path.AsSpan().TrimStart('/')}")
+            handler.Expect($"{baseUrl}/{path}")
                 .Respond(HttpStatusCode.BadRequest);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
@@ -112,14 +112,14 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_bad_request_single()
+        public async Task Get_endpoint_correctly_proxies_400_status_code_for_single_result()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path/" + Guid.NewGuid();
 
-            handler.Expect($"{baseUrl.AsSpan().TrimEnd('/')}/{path.AsSpan().TrimStart('/')}")
+            handler.Expect($"{baseUrl}/{path}")
                 .Respond(HttpStatusCode.BadRequest);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
@@ -134,14 +134,14 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_not_json_single()
+        public async Task Get_endpoint_correctly_proxies_non_json_for_single_result()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path/" + Guid.NewGuid();
 
-            handler.Expect($"{baseUrl.AsSpan().TrimEnd('/')}/{path.AsSpan().TrimStart('/')}")
+            handler.Expect($"{baseUrl}/{path}")
                 .Respond("text/html", "<p>Hello world</p>");
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
@@ -156,7 +156,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_no_connection_single()
+        public async Task Get_endpoint_correctly_proxies_unreachable_host_for_single_result()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
@@ -176,7 +176,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_no_connection_multiple()
+        public async Task Get_endpoint_correctly_proxies_unreachable_host_for_lists()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
@@ -196,7 +196,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_no_config_single()
+        public async Task Get_endpoint_correctly_handles_missing_config_for_single_result()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
@@ -214,7 +214,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_no_config_multiple()
+        public async Task Get_endpoint_correctly_handles_missing_config_for_lists()
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
@@ -232,7 +232,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Test_pagination_mismatch()
+        public async Task Get_endpoint_correctly_handles_pagination_mismatch()
         {
             var config1 = new ZaaksysteemConfig("http://example1.com", "ClientId", "Secret of at least X characters", null, null);
             var config2 = new ZaaksysteemConfig("http://example2.com", "ClientId", "Secret of at least X characters", null, null);
@@ -262,7 +262,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         {
             var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
             var handler = new MockHttpMessageHandler();
-            handler.Expect($"{baseUrl.AsSpan().TrimEnd('/')}/{path.AsSpan().TrimStart('/')}")
+            handler.Expect($"{baseUrl}/{path}")
                 .Respond("application/json", responseBody);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
