@@ -2862,22 +2862,6 @@ components:
       required:
       - url
       - uuid
-    BetrokkeneForeignkey:
-      type: object
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unieke (technische) identificatiecode van de betrokkene bij
-            klantcontact.
-        url:
-          type: string
-          format: uri
-          readOnly: true
-          description: De unieke URL van deze betrokkene binnen deze API.
-      required:
-      - url
-      - uuid
     Bezoekadres:
       type: object
       description: |-
@@ -3231,26 +3215,26 @@ components:
             description: Display details of the linked resources requested in the
               `expand` parameter
             properties:
-              had_betrokkenen:
+              hadBetrokkenen:
                 type: array
                 items:
                   '#/components/schemas/Betrokkene'
                 readOnly: true
                 description: Persoon of organisatie die betrokken was bij een klantcontact.
-              leidde_tot_interne_taken:
+              leiddeTotInterneTaken:
                 type: array
                 items:
                   '#/components/schemas/InterneTaak'
                 readOnly: true
                 description: Klantcontact dat leidde tot een interne taak.
-              ging_over_onderwerpobjecten:
+              gingOverOnderwerpobjecten:
                 type: array
                 items:
                   '#/components/schemas/Onderwerpobject'
                 readOnly: true
                 description: Onderwerpobject dat tijdens een klantcontact aan de orde
                   was.
-              omvatte_bijlagen:
+              omvatteBijlagen:
                 type: array
                 items:
                   '#/components/schemas/Bijlage'
@@ -3281,7 +3265,7 @@ components:
                   $ref: '#/components/schemas/Betrokkene'
                 readOnly: true
                 description: Betrokkene bij klantcontact die een partij was.
-              categorie_relaties:
+              categorieRelaties:
                 type: array
                 items:
                   '#/components/schemas/CategorieRelatie'
@@ -3399,7 +3383,7 @@ components:
         hadBetrokkenen:
           type: array
           items:
-            $ref: '#/components/schemas/BetrokkeneForeignkey'
+            $ref: '#/components/schemas/BetrokkeneForeignKey'
           readOnly: true
           description: Persoon of organisatie die betrokken was bij een klantcontact.
         leiddeTotInterneTaken:
@@ -4596,7 +4580,7 @@ components:
         hadBetrokkenen:
           type: array
           items:
-            $ref: '#/components/schemas/BetrokkeneForeignkey'
+            $ref: '#/components/schemas/BetrokkeneForeignKey'
           readOnly: true
           description: Persoon of organisatie die betrokken was bij een klantcontact.
         leiddeTotInterneTaken:

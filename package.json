@@ -2,8 +2,8 @@
   "name": "kiss-frontend",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "build": "npm run typecheck && vite build",
+    "dev": "npm run openapi && vite",
+    "build": "npm run openapi && npm run typecheck && vite build",
     "preview": "vite preview --port 5050",
     "test:unit": "vitest --environment jsdom --coverage",
     "test:unitci": "vitest run --environment jsdom",
