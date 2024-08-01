@@ -21,11 +21,12 @@
             {{ document.vertrouwelijkheidaanduiding }}
           </td>
           <td>
-            <a
-              :href="document.url + '/download?versie=1'"
+            <utrecht-button
               @click.prevent="download(document)"
-              >{{ "> Downloaden" }}</a
+              appearance="secondary-action-button"
             >
+              Downloaden
+            </utrecht-button>
           </td>
         </tr>
       </tbody>
@@ -41,11 +42,16 @@ import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { formatDateOnly } from "@/helpers/date";
 import { formatBytes } from "@/helpers/formatBytes";
 import { fetchLoggedIn, throwIfNotOk } from "@/services";
+import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 
 const props = defineProps<{
   zaak: ZaakDetails;
 }>();
 
+// bij het implementeren van meerdere zaaksystemen is gekozen om de zaaksysteemid mee te geven in de header
+// zodat de requests en querystrings verder zo min mogelijk afwijken van de api standaard
+// dit betekent dat we het downloaden van documenten op een omslachtige manier moeten doen,
+// omdat je in een gewone link geen header mee kan geven.
 async function download(doc: ZaakDocument) {
   const url = doc.url + "/download?versie=1";
   const blob = await fetchLoggedIn(url, {
