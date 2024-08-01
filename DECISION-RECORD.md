@@ -1,10 +1,10 @@
 ## Meerdere zaaksystemen
-- Vanwege grote hoeveelheid endpoints in de ZGW standaard handelen we het bevragen van meerdere zaaksystemen zoveel mogelijk centraal en generiek af
-- Voor lijsten van entiteiten voegen we de respons van alle zaaksystemen samen en sorteren het resultaat
-  - Als er meerdere zaaksystemen bevraagd worden voor lijsten van entiteiten, en er een zaaksysteem niet benaderbaar is of een onverwacht antwoord geeft:
-    - loggen we dit
-    - negeren we dit in de respons naar de frontend
-- Waar mogelijk willen we alleen zoeken in het betreffende zaaksysteem waar een resultaat verwacht kan worden.
-  - Dit doen we door per zaak mee te geven uit welk zaaksysteem deze komt
-  - Deze informatie sturen we in vervolgcalls door in een header: `ZaaksysteemId`
-  - Dit doen we om irrelevante foutmeldingen te voorkomen
+
+**Soms weten we niet in welk zaaksysteem een bepaald gegeven te vinden is en bevragen we alle zaaksystemen tegelijk. wat te doen als zaaksysteem A een error geeft en zaaksysteem B een succes response?**
+We kiezen ervoor de error te negeren en de response van B te tonen.
+Helemaal niets tonen als een van de systemen een error retourneert lijkt ons in dit geval storender dan de mogelijke verwarring die kan ontstaan door dat het tonen van potentieel incomplete data.
+Wel loggen we de error.
+
+**Soms weten we wel al in welk zaaksysteem een bepaald gegeven te vinden is. Hoe geven we deze informatie mee vanuit de frontend naar de backend?**
+We kiezen ervoor een header mee te sturen.
+Dit omdat het weinig impact heeft op het verzoek zoals dat naar het zaaksysteem wordt doorgegeven.
