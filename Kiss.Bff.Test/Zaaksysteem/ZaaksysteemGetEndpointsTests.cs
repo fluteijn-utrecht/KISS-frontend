@@ -210,7 +210,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
-            Assert.AreEqual(400, statusCodeResult.StatusCode);
+            Assert.AreEqual(500, statusCodeResult.StatusCode);
         }
 
         [TestMethod]
@@ -228,7 +228,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
-            Assert.AreEqual(400, statusCodeResult.StatusCode);
+            Assert.AreEqual(500, statusCodeResult.StatusCode);
         }
 
         [TestMethod]

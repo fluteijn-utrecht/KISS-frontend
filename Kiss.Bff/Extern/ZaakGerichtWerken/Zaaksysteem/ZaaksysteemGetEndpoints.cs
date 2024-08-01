@@ -126,8 +126,10 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             if (!allArePaginated
                 && !noneArePaginated)
             {
+                const string Message = "Verschillen in paginering tussen zaaksystemen";
+                _logger.LogError(Message);
                 return Problem(
-                    title: "Verschillen in paginering tussen zaaksystemen",
+                    title: Message,
                     statusCode: 502
                 );
             }
@@ -212,17 +214,29 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             return client;
         }
 
-        private IActionResult GeenZaaksysteemBeschikbaarError() => Problem(
-            title: "Configuratieprobleem",
-            detail: "Er is geen enkel zaaksysteem bereikbaar",
-            statusCode: 502
-        );
+        private IActionResult GeenZaaksysteemBeschikbaarError()
+        {
+            const string Message = "Er is geen enkel zaaksysteem bereikbaar";
+            _logger.LogError(Message);
 
-        private IActionResult GeenZaaksysteemGeconfigureerdError() => Problem(
-            title: "Configuratieprobleem",
-            detail: "Er is geen zaaksysteem geconfigureerd",
-            statusCode: 400
-        );
+            return Problem(
+                title: "Configuratieprobleem",
+                detail: Message,
+                statusCode: 502
+            );
+        }
+
+        private IActionResult GeenZaaksysteemGeconfigureerdError()
+        {
+            const string Message = "Er is geen zaaksysteem geconfigureerd";
+            _logger.LogError(Message);
+
+            return Problem(
+                title: "Configuratieprobleem",
+                detail: Message,
+                statusCode: 500
+            );
+        }
 
         private class CopyResponseMessageResult : IStatusCodeActionResult
         {

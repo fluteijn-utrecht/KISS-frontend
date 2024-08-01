@@ -7,10 +7,12 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
     public class DownloadDocument : ControllerBase
     {
         private readonly IEnumerable<ZaaksysteemConfig> _configs;
+        private readonly ILogger<DownloadDocument> _logger;
 
-        public DownloadDocument(IEnumerable<ZaaksysteemConfig> configs)
+        public DownloadDocument(IEnumerable<ZaaksysteemConfig> configs, ILogger<DownloadDocument> logger)
         {
             _configs = configs;
+            _logger = logger;
         }
 
         [HttpGet("api/documenten/documenten/api/v1/enkelvoudiginformatieobjecten/{id:guid}/download")]
@@ -19,10 +21,11 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             var config = _configs.FilterByZaakSysteemId(zaaksysteemId).SingleOrDefault();
             if (config == null)
             {
+                _logger.LogError("Geen zaaksysteem gevonden voor ZaaksysteemId {ZaaksysteemId}", zaaksysteemId);
                 return Problem(
                     title: "Configuratieprobleem",
-                    detail: "Stuur een ZaaksysteemId mee waarvoor in KISS een Zaaksysteem is geconfigureerd",
-                    statusCode: 400
+                    detail: "Geen zaaksysteem gevonden voor ZaaksysteemId " + zaaksysteemId,
+                    statusCode: 500
                 );
             }
 

@@ -9,10 +9,12 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
     public class GetZaaksysteemDeeplinkConfig : ControllerBase
     {
         private readonly IEnumerable<ZaaksysteemConfig> _configs;
+        private readonly ILogger<GetZaaksysteemDeeplinkConfig> _logger;
 
-        public GetZaaksysteemDeeplinkConfig(IEnumerable<ZaaksysteemConfig> configs)
+        public GetZaaksysteemDeeplinkConfig(IEnumerable<ZaaksysteemConfig> configs, ILogger<GetZaaksysteemDeeplinkConfig> logger)
         {
             _configs = configs;
+            _logger = logger;
         }
 
         [HttpGet("api/zaaksysteem/deeplinkconfig")]
@@ -23,11 +25,13 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             if (string.IsNullOrWhiteSpace(config?.DeeplinkBaseUrl)
                 || string.IsNullOrWhiteSpace(config?.DeeplinkProperty))
             {
+                _logger.LogError("Geen deeplink base url en property gevonden voor ZaaksysteemId {ZaaksysteemId}", zaaksysteemId);
                 return Problem(
                     title: "Configuratieprobleem",
-                    detail: "Stuur een ZaaksysteemId mee waarvoor in KISS een deeplinkUrl en een deeplinkPropery is geconfigureerd",
-                    statusCode: 400
+                    detail: "Geen deeplink base url en property gevonden voor ZaaksysteemId " + zaaksysteemId,
+                    statusCode: 500
                 );
+
             }
 
             var result = new ZaaksysteemDeeplinkConfig(

@@ -2,6 +2,8 @@
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Kiss.Bff.Test.Zaaksysteem
 {
@@ -17,7 +19,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
             var config = new ZaaksysteemConfig(baseUrl, "", "", deeplinkUrl, idProperty);
 
-            var sut = new GetZaaksysteemDeeplinkConfig(new[] { config });
+            var sut = new GetZaaksysteemDeeplinkConfig(new[] { config }, Mock.Of<ILogger<GetZaaksysteemDeeplinkConfig>>());
             var result = sut.Get(baseUrl);
 
             Assert.IsInstanceOfType(result, typeof(ObjectResult));
@@ -29,12 +31,12 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public void Get_config_returns_400_if_config_is_missing()
+        public void Get_config_returns_500_if_config_is_missing()
         {
-            var sut = new GetZaaksysteemDeeplinkConfig(Enumerable.Empty<ZaaksysteemConfig>());
+            var sut = new GetZaaksysteemDeeplinkConfig(Enumerable.Empty<ZaaksysteemConfig>(), Mock.Of<ILogger<GetZaaksysteemDeeplinkConfig>>());
             var result = sut.Get("");
             Assert.IsInstanceOfType<ObjectResult>(result, out var objectResult);
-            Assert.AreEqual(400, objectResult.StatusCode);
+            Assert.AreEqual(500, objectResult.StatusCode);
             Assert.IsInstanceOfType<ProblemDetails>(objectResult.Value, out var problemDetails);
             Assert.AreEqual("Configuratieprobleem", problemDetails.Title);
         }
