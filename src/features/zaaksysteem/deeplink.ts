@@ -12,7 +12,7 @@ const useZaaksysteemDeeplinkConfig = (
   zaaksysteemId: Ref<string | undefined>,
 ) => {
   const url = "/api/zaaksysteem/deeplinkconfig";
-  const getUniqueId = () => {
+  const getCacheKey = () => {
     const id = zaaksysteemId.value || "";
     return id && url + id;
   };
@@ -38,7 +38,7 @@ const useZaaksysteemDeeplinkConfig = (
             : null,
         ),
     {
-      getUniqueId,
+      getUniqueId: getCacheKey,
     },
   );
 };
