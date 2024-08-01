@@ -23,7 +23,7 @@
       >
     </header>
 
-    <tab-list v-model="activeTab">
+    <tab-list v-model="activeTab" v-if="zaaksysteemId">
       <tab-list-item label="Algemeen">
         <zaak-algemeen :zaak="zaak.data" />
       </tab-list-item>
@@ -31,7 +31,7 @@
         label="Documenten"
         :disabled="!zaak.data.documenten?.length"
       >
-        <zaak-documenten :zaak="zaak.data" />
+        <zaak-documenten :zaak="zaak.data" :zaaksysteemId="zaaksysteemId" />
       </tab-list-item>
       <tab-list-data-item
         label="Contactmomenten"

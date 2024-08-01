@@ -1,7 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.Json.Nodes;
-using Kiss.Bff.ZaakGerichtWerken;
 
 namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared
 {
@@ -36,12 +34,6 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared
             headers.Add("Content-Crs", DefaultCrs);
             headers.Add("Accept-Crs", DefaultCrs); //voorlopig eignelijk niet nodig. wordt pas relevant wanneer we geografische coordinaten gaan opvragen
 
-        }
-
-        public static JsonNode AddZaaksysteemId(this JsonNode node, string? zaaksysteemId)
-        {
-            node["zaaksysteemId"] = zaaksysteemId;
-            return node;
         }
 
         private static IEnumerable<ZaaksysteemConfig> GetZaakSysteemConfigs(IConfiguration configuration)
