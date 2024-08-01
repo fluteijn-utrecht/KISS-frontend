@@ -1,12 +1,7 @@
-import {
-  ServiceResult,
-  fetchLoggedIn,
-  parseJson,
-  throwIfNotOk,
-} from "@/services";
+import { ServiceResult, parseJson, throwIfNotOk } from "@/services";
 import type { ZaakDetails } from "./types";
 import { computed, type Ref } from "vue";
-import { getZaaksysteemHeader } from "./service";
+import { fetchWithZaaksysteemId } from "./service";
 
 const useZaaksysteemDeeplinkConfig = (
   zaaksysteemId: Ref<string | undefined>,
@@ -19,11 +14,7 @@ const useZaaksysteemDeeplinkConfig = (
   return ServiceResult.fromFetcher(
     url,
     (u) =>
-      fetchLoggedIn(u, {
-        headers: {
-          ...getZaaksysteemHeader(zaaksysteemId.value || ""),
-        },
-      })
+      fetchWithZaaksysteemId(zaaksysteemId.value, u)
         .then(throwIfNotOk)
         .then(parseJson)
         .then((r) =>

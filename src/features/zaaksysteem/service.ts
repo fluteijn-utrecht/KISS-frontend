@@ -2,6 +2,7 @@ import {
   fetchLoggedIn,
   parsePagination,
   ServiceResult,
+  setHeader,
   throwIfNotOk,
   type PaginatedResult,
 } from "@/services";
@@ -53,11 +54,7 @@ export const useZakenPreviewByUrl = (url: Ref<string>) => {
   };
 
   const fetchPreview = (u: string) =>
-    fetchLoggedIn(u, {
-      headers: {
-        ...getZaaksysteemHeader(getZaaksysteemId()),
-      },
-    })
+    fetchWithZaaksysteemId(getZaaksysteemId(), u)
       .then(throwIfNotOk)
       .then((x) => x.json())
       .then((json) => mapZaakDetailsPreview(json));
@@ -81,13 +78,7 @@ const singleZaakFetcher = function fetcher(
   url: string,
   zaaksysteemId?: string,
 ): Promise<ZaakDetails> {
-  return fetchLoggedIn(url, {
-    headers: zaaksysteemId
-      ? {
-          ...getZaaksysteemHeader(zaaksysteemId),
-        }
-      : undefined,
-  })
+  return fetchWithZaaksysteemId(zaaksysteemId, url)
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then(mapZaakDetails);
@@ -187,13 +178,9 @@ const getStatus = async (statusUrl: string, zaaksysteemId: string) => {
 
   if (!statusId) return "";
 
-  const statusType = await fetchLoggedIn(
+  const statusType = await fetchWithZaaksysteemId(
+    zaaksysteemId,
     `${zaaksysteemBaseUri}/statussen/${statusId}`,
-    {
-      headers: {
-        ...getZaaksysteemHeader(zaaksysteemId),
-      },
-    },
   )
     .then(throwIfNotOk)
     .then((x) => x.json())
@@ -205,11 +192,10 @@ const getStatus = async (statusUrl: string, zaaksysteemId: string) => {
 
   const statusTypeUrl = `/api/zaken/catalogi/api/v1/statustypen/${statusTypeUuid}`;
 
-  const statusOmschrijving = await fetchLoggedIn(statusTypeUrl, {
-    headers: {
-      ...getZaaksysteemHeader(zaaksysteemId),
-    },
-  })
+  const statusOmschrijving = await fetchWithZaaksysteemId(
+    zaaksysteemId,
+    statusTypeUrl,
+  )
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => json.omschrijving);
@@ -221,13 +207,9 @@ const getDocumenten = async (
   zaakurl: string,
   zaaksysteemId: string,
 ): Promise<Array<ZaakDocument | null>> => {
-  const infoObjecten = await fetchLoggedIn(
+  const infoObjecten = await fetchWithZaaksysteemId(
+    zaaksysteemId,
     `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`,
-    {
-      headers: {
-        ...getZaaksysteemHeader(zaaksysteemId),
-      },
-    },
   )
     .then(throwIfNotOk)
     .then((x) => x.json());
@@ -237,11 +219,7 @@ const getDocumenten = async (
       const id = item.informatieobject.split("/").pop();
 
       const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
-      return fetchLoggedIn(docUrl, {
-        headers: {
-          ...getZaaksysteemHeader(zaaksysteemId),
-        },
-      })
+      return fetchWithZaaksysteemId(zaaksysteemId, docUrl)
         .then(throwIfNotOk) //todo 404 afvanengen?
         .then((x) => x.json())
         .then((x) => mapDocument(x, docUrl));
@@ -266,11 +244,7 @@ const getRollen = async (
   const rollenUrl = `${zaaksysteemBaseUri}/rollen?zaak=${zaakurl}`;
 
   const getPage = async (url: string) => {
-    const page = await fetchLoggedIn(url, {
-      headers: {
-        ...getZaaksysteemHeader(zaaksysteemId),
-      },
-    })
+    const page = await fetchWithZaaksysteemId(zaaksysteemId, url)
       .then(throwIfNotOk)
       .then((x) => x.json())
       .then((json) => parsePagination(json, async (x: any) => x as RolType));
@@ -295,11 +269,7 @@ const getZaakType = (
   const zaaktypeid = zaaktype.split("/").pop();
   const url = `/api/zaken/catalogi/api/v1/zaaktypen/${zaaktypeid}`;
 
-  return fetchLoggedIn(url, {
-    headers: {
-      ...getZaaksysteemHeader(zaaksysteemId),
-    },
-  })
+  return fetchWithZaaksysteemId(zaaksysteemId, url)
     .then(throwIfNotOk)
     .then((x) => x.json())
     .then((json) => {
@@ -435,8 +405,13 @@ const mapDocument = (rawDocumenten: any, url: string): ZaakDocument | null => {
   return doc;
 };
 
-export function getZaaksysteemHeader(zaaksysteemId: string) {
-  return {
-    ZaaksysteemId: zaaksysteemId,
-  };
+export function fetchWithZaaksysteemId(
+  zaaksysteemId: string | undefined,
+  url: string,
+  request: RequestInit = {},
+) {
+  if (zaaksysteemId) {
+    setHeader(request, "ZaaksysteemId", zaaksysteemId);
+  }
+  return fetchLoggedIn(url, request);
 }

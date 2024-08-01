@@ -25,7 +25,7 @@ export function handleLogin() {
   waitForLogin.resolve();
 }
 
-function setHeader(init: RequestInit, key: string, value: string) {
+export function setHeader(init: RequestInit, key: string, value: string) {
   if (!init.headers) {
     init.headers = {};
   }
