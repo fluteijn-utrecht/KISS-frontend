@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Kiss.Bff.ZaakGerichtWerken
+namespace Kiss.Bff
 {
 
     public static class ZgwTokenExtensions

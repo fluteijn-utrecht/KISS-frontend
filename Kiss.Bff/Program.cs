@@ -6,7 +6,7 @@ using Kiss.Bff.Config;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Kiss.Bff.Groepen;
 using Kiss.Bff.InterneTaak;
-using Kiss.Bff.ZaakGerichtWerken;
+using Kiss.Bff;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
 using Microsoft.AspNetCore.DataProtection;
