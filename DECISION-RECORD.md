@@ -7,4 +7,4 @@ Wel loggen we de error.
 
 **Soms weten we wel al in welk zaaksysteem een bepaald gegeven te vinden is. Hoe geven we deze informatie mee vanuit de frontend naar de backend?**
 We kiezen ervoor een header mee te sturen.
-Dit omdat het weinig impact heeft op het verzoek zoals dat naar het zaaksysteem wordt doorgegeven.
+Dit omdat het weinig impact heeft op het verzoek zoals dat naar het zaaksysteem wordt doorgegeven, omdat er dan geen onnodige verzoeken naar zaakystemen gedaan hoeven te worden, en omdat we dan zeker weten dat eventuele foutmeldingen relevant zijn.
