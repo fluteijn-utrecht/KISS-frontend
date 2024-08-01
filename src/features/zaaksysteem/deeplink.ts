@@ -6,6 +6,7 @@ import {
 } from "@/services";
 import type { ZaakDetails } from "./types";
 import { computed, type Ref } from "vue";
+import { getZaaksysteemHeader } from "./service";
 
 const useZaaksysteemDeeplinkConfig = (
   zaaksysteemId: Ref<string | undefined>,
@@ -20,7 +21,7 @@ const useZaaksysteemDeeplinkConfig = (
     (u) =>
       fetchLoggedIn(u, {
         headers: {
-          ZaaksysteemId: zaaksysteemId.value || "",
+          ...getZaaksysteemHeader(zaaksysteemId.value || ""),
         },
       })
         .then(throwIfNotOk)

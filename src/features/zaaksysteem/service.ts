@@ -55,7 +55,7 @@ export const useZakenPreviewByUrl = (url: Ref<string>) => {
   const fetchPreview = (u: string) =>
     fetchLoggedIn(u, {
       headers: {
-        ZaaksysteemId: getZaaksysteemId(),
+        ...getZaaksysteemHeader(getZaaksysteemId()),
       },
     })
       .then(throwIfNotOk)
@@ -84,7 +84,7 @@ const singleZaakFetcher = function fetcher(
   return fetchLoggedIn(url, {
     headers: zaaksysteemId
       ? {
-          ZaaksysteemId: zaaksysteemId,
+          ...getZaaksysteemHeader(zaaksysteemId),
         }
       : undefined,
   })
@@ -191,7 +191,7 @@ const getStatus = async (statusUrl: string, zaaksysteemId: string) => {
     `${zaaksysteemBaseUri}/statussen/${statusId}`,
     {
       headers: {
-        ZaaksysteemId: zaaksysteemId,
+        ...getZaaksysteemHeader(zaaksysteemId),
       },
     },
   )
@@ -207,7 +207,7 @@ const getStatus = async (statusUrl: string, zaaksysteemId: string) => {
 
   const statusOmschrijving = await fetchLoggedIn(statusTypeUrl, {
     headers: {
-      ZaaksysteemId: zaaksysteemId,
+      ...getZaaksysteemHeader(zaaksysteemId),
     },
   })
     .then(throwIfNotOk)
@@ -225,7 +225,7 @@ const getDocumenten = async (
     `${zaaksysteemBaseUri}/zaakinformatieobjecten?zaak=${zaakurl}`,
     {
       headers: {
-        ZaaksysteemId: zaaksysteemId,
+        ...getZaaksysteemHeader(zaaksysteemId),
       },
     },
   )
@@ -239,7 +239,7 @@ const getDocumenten = async (
       const docUrl = `${documentenBaseUri}/enkelvoudiginformatieobjecten/${id}`;
       return fetchLoggedIn(docUrl, {
         headers: {
-          ZaaksysteemId: zaaksysteemId,
+          ...getZaaksysteemHeader(zaaksysteemId),
         },
       })
         .then(throwIfNotOk) //todo 404 afvanengen?
@@ -268,7 +268,7 @@ const getRollen = async (
   const getPage = async (url: string) => {
     const page = await fetchLoggedIn(url, {
       headers: {
-        ZaaksysteemId: zaaksysteemId,
+        ...getZaaksysteemHeader(zaaksysteemId),
       },
     })
       .then(throwIfNotOk)
@@ -297,7 +297,7 @@ const getZaakType = (
 
   return fetchLoggedIn(url, {
     headers: {
-      ZaaksysteemId: zaaksysteemId,
+      ...getZaaksysteemHeader(zaaksysteemId),
     },
   })
     .then(throwIfNotOk)
@@ -434,3 +434,9 @@ const mapDocument = (rawDocumenten: any, url: string): ZaakDocument | null => {
   };
   return doc;
 };
+
+export function getZaaksysteemHeader(zaaksysteemId: string) {
+  return {
+    ZaaksysteemId: zaaksysteemId,
+  };
+}
