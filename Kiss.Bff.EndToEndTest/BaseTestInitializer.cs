@@ -32,10 +32,6 @@ namespace PlaywrightTests
                 var totpSecret = GetRequiredConfig(Configuration, "TestSettings:TEST_TOTP_SECRET");
                 var isHeadless = GetRequiredConfig(Configuration, "TestSettings:TEST_HEADLESS");
 
-                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(totpSecret))
-                {
-                    throw new InvalidOperationException("One or more required settings are missing from appsettings.json");
-                }
 
                 Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
                 Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
