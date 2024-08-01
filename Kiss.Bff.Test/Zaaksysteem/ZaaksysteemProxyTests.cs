@@ -1,7 +1,5 @@
-﻿using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json.Nodes;
-using IdentityModel;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +12,10 @@ using RichardSzalay.MockHttp;
 namespace Kiss.Bff.Test.Zaaksysteem
 {
     [TestClass]
-    public class ZaaksysteemGetEndpointsTests
+    public class ZaaksysteemProxyTests
     {
         [TestMethod]
-        public async Task Get_endpoint_sets_zaaksysteemId_for_root_level_array_response()
+        public async Task ZaaksysteemProxy_sets_zaaksysteemId_for_root_level_array_response()
         {
             var result = await RunHappyFlowTest("http://example.com", "my-path", default, "[{}]");
 
@@ -30,7 +28,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_sets_zaaksysteemId_for_paginated_response()
+        public async Task ZaaksysteemProxy_sets_zaaksysteemId_for_paginated_response()
         {
             var result = await RunHappyFlowTest("http://example.com", "my-path", default, "{\"results\": [{}]}");
 
@@ -44,7 +42,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_sets_zaaksysteemId_for_single_response()
+        public async Task ZaaksysteemProxy_sets_zaaksysteemId_for_single_response()
         {
             var id = Guid.NewGuid();
             var result = await RunHappyFlowTest("http://example.com", id.ToString(), default, "{}");
@@ -56,7 +54,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_uses_ordering_parameter_for_sorting_ascending()
+        public async Task ZaaksysteemProxy_uses_ordering_parameter_for_sorting_ascending()
         {
             var result = await RunHappyFlowTest("http://example.com", "my-path", "my-column", @"{""results"": [
                 {""my-column"": 2}, {""my-column"": 1}, {""my-column"": 3}
@@ -73,7 +71,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_uses_ordering_parameter_for_sorting_descending()
+        public async Task ZaaksysteemProxy_uses_ordering_parameter_for_sorting_descending()
         {
             var result = await RunHappyFlowTest("http://example.com", "my-path", "-my-column", @"{""results"": [
                 {""my-column"": 2}, {""my-column"": 1}, {""my-column"": 3}
@@ -90,9 +88,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_proxies_400_status_code_for_lists()
+        public async Task ZaaksysteemProxy_correctly_proxies_400_status_code_for_lists()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path";
@@ -104,7 +102,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
 
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config }, clientFactory, logger);
+            var sut = new ZaaksysteemProxy(new[] { config }, clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -112,9 +110,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_proxies_400_status_code_for_single_result()
+        public async Task ZaaksysteemProxy_correctly_proxies_400_status_code_for_single_result()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path/" + Guid.NewGuid();
@@ -126,7 +124,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
 
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config }, clientFactory, logger);
+            var sut = new ZaaksysteemProxy(new[] { config }, clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -134,9 +132,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_proxies_non_json_for_single_result()
+        public async Task ZaaksysteemProxy_correctly_proxies_non_json_for_single_result()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path/" + Guid.NewGuid();
@@ -148,7 +146,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
 
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config }, clientFactory, logger);
+            var sut = new ZaaksysteemProxy(new[] { config }, clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -156,9 +154,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_proxies_unreachable_host_for_single_result()
+        public async Task ZaaksysteemProxy_correctly_proxies_unreachable_host_for_single_result()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path/" + Guid.NewGuid();
@@ -168,7 +166,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
 
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config }, clientFactory, logger);
+            var sut = new ZaaksysteemProxy(new[] { config }, clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -176,9 +174,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_proxies_unreachable_host_for_lists()
+        public async Task ZaaksysteemProxy_correctly_proxies_unreachable_host_for_lists()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var baseUrl = "http://example.com";
             var path = "my-path";
@@ -188,7 +186,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
 
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config }, clientFactory, logger);
+            var sut = new ZaaksysteemProxy(new[] { config }, clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -196,9 +194,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_handles_missing_config_for_single_result()
+        public async Task ZaaksysteemProxy_correctly_handles_missing_config_for_single_result()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var path = "my-path/" + Guid.NewGuid();
 
@@ -206,7 +204,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
 
 
-            var sut = new ZaaksysteemGetEndpoints(Enumerable.Empty<ZaaksysteemConfig>(), clientFactory, logger);
+            var sut = new ZaaksysteemProxy(Enumerable.Empty<ZaaksysteemConfig>(), clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -214,9 +212,9 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_handles_missing_config_for_lists()
+        public async Task ZaaksysteemProxy_correctly_handles_missing_config_for_lists()
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             var path = "my-path";
 
@@ -224,7 +222,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
 
 
-            var sut = new ZaaksysteemGetEndpoints(Enumerable.Empty<ZaaksysteemConfig>(), clientFactory, logger);
+            var sut = new ZaaksysteemProxy(Enumerable.Empty<ZaaksysteemConfig>(), clientFactory, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -232,18 +230,18 @@ namespace Kiss.Bff.Test.Zaaksysteem
         }
 
         [TestMethod]
-        public async Task Get_endpoint_correctly_handles_pagination_mismatch()
+        public async Task ZaaksysteemProxy_correctly_handles_pagination_mismatch()
         {
             var config1 = new ZaaksysteemConfig("http://example1.com", "ClientId", "Secret of at least X characters", null, null);
             var config2 = new ZaaksysteemConfig("http://example2.com", "ClientId", "Secret of at least X characters", null, null);
             var path = "my-path";
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
-            
+
             // root level array
             handler.Expect($"{config1.BaseUrl}/{path}")
                 .Respond("application/json", "[{}]");
-            
+
             // gepagineerd
             handler.Expect($"{config2.BaseUrl}/{path}")
                 .Respond("application/json", "{\"results\": [{}]}");
@@ -251,7 +249,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var clientFactoryMock = new Mock<IHttpClientFactory>();
             clientFactoryMock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler));
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config1, config2 }, clientFactoryMock.Object, logger);
+            var sut = new ZaaksysteemProxy(new[] { config1, config2 }, clientFactoryMock.Object, logger);
 
             var result = await sut.Get(path, null, Enumerable.Empty<string>(), default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
@@ -260,7 +258,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
         private static async Task<IActionResult> RunHappyFlowTest(string baseUrl, string path, StringValues ordering, string responseBody)
         {
-            var logger = Mock.Of<ILogger<ZaaksysteemGetEndpoints>>();
+            var logger = Mock.Of<ILogger<ZaaksysteemProxy>>();
             var handler = new MockHttpMessageHandler();
             handler.Expect($"{baseUrl}/{path}")
                 .Respond("application/json", responseBody);
@@ -269,7 +267,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
 
 
-            var sut = new ZaaksysteemGetEndpoints(new[] { config }, clientFactory, logger);
+            var sut = new ZaaksysteemProxy(new[] { config }, clientFactory, logger);
 
             var result = await sut.Get(path, null, ordering, default);
 

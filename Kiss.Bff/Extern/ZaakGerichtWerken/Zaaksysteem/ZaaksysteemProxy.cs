@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
 {
     [ApiController]
-    public class ZaaksysteemGetEndpoints : ControllerBase
+    public class ZaaksysteemProxy : ControllerBase
     {
         private readonly IEnumerable<ZaaksysteemConfig> _configs;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<ZaaksysteemGetEndpoints> _logger;
+        private readonly ILogger<ZaaksysteemProxy> _logger;
 
-        public ZaaksysteemGetEndpoints(
+        public ZaaksysteemProxy(
             IEnumerable<ZaaksysteemConfig> zakenProxyConfigs,
             IHttpClientFactory httpClientFactory,
-            ILogger<ZaaksysteemGetEndpoints> logger)
+            ILogger<ZaaksysteemProxy> logger)
         {
             _configs = zakenProxyConfigs;
             _httpClientFactory = httpClientFactory;
