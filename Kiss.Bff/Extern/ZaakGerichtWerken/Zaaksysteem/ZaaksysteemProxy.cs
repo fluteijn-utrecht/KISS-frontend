@@ -17,6 +17,13 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             _logger = logger;
         }
 
+        /// <summary>
+        /// Wordt gebruikt voor het proxien van alle zaaksysteem calls waarbij we al weten in welk zaaksysteem de gegevens zitten
+        /// gebruik wanneer de bron niet bekend is een custom functie volgens het stramien van Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.GetZaken
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="zaaksysteemId"></param>
+        /// <returns></returns>
         [HttpGet("api/zaken/{**path}")]
         [HttpGet("api/documenten/{**path}")]
         public IActionResult Get(

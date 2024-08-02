@@ -23,6 +23,18 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             _logger = logger;
         }
 
+
+        /// <summary>
+        /// Als onbekend is in welk zaaksysteeem de gevraagde gegevens gevonden kunnen worden, zoeken we in alle systemen.
+        /// We halen maar 1 resultaatpagina op per bron, aangezien we 0 of 1 record verwachten.
+        /// De resultaten van de verschilllende systemen worden samengevoegd en gesorteerd.
+        /// Er wordt niet ontdubbeld
+        /// Wanneer bekend is in welk zaaksysteem de gegevens te vinden zijn, kunnen we een eenvoudig proxy mechanisme hanteren. zie Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.ZaaksysteemProxy
+        /// </summary>
+        /// <param name="version"></param>
+        /// <param name="ordering"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         [HttpGet("api/zaken/zaken/api/{version}/zaken")]
         public async Task<IActionResult> Get([FromRoute] string version, [FromQuery(Name = "ordering")] IEnumerable<string> ordering, CancellationToken token)
         {
