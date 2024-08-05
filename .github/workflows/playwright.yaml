@@ -1,0 +1,27 @@
+name: Playwright Tests
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  pull_request:
+    branches: [ main, master ]
+    paths: ['Kiss.Bff.EndToEndTest']
+  workflow_dispatch:
+  
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Kiss.Bff.EndToEndTest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - run: dotnet build
+    - name: Ensure browsers are installed
+      run: pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+    - name: Run your tests
+      run: dotnet test
