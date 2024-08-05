@@ -4,9 +4,9 @@ on:
     - cron: '0 23 * * *'
   pull_request:
     branches: [ main, master ]
-    paths: ['Kiss.Bff.EndToEndTest']
+    paths: ['Kiss.Bff.EndToEndTest/**']
   workflow_dispatch:
-  
+
 jobs:
   test:
     timeout-minutes: 60
