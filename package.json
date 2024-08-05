@@ -8,7 +8,7 @@
     "test:unit": "vitest --environment jsdom --coverage",
     "test:unitci": "vitest run --environment jsdom",
     "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-    "openapi": "openapi --input ./openapi-spec/klantinteracties.yaml --output ./generated/klantinteracties --name KlantinteractieClient",
+    "openapi": "openapi --input ./openapi-spec/klantinteracties.yaml --output ./generated/klantinteracties --name KlantinteractieClient --useOptions --useUnionTypes",
     "lint": "npm run lint:es && npm run lint:style -- -f github",
     "lint:es": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore",
     "lint:fix": "npm run lint:format && npm run lint:es -- --fix && npm run lint:style -- --fix",
