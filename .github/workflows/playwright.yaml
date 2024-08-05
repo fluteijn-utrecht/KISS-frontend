@@ -30,3 +30,9 @@ jobs:
         'TestSettings:TEST_PASSWORD': ${{ secrets.PLAYWRIGHT_PASSWORD }}
         'TestSettings:TEST_TOTP_SECRET': ${{ secrets.PLAYWRIGHT_TOTP_SECRET }}
         'TestSettings:TEST_BASE_URL': ${{ secrets.PLAYWRIGHT_BASE_URL }}
+    - name: Upload test artifacts
+      if: ${{ failure() && steps.e2e.conclusion == 'failure' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-traces
+        path: bin/Debug/net8.0/playwright-traces

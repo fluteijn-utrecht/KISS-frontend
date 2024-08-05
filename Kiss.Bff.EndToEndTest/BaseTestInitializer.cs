@@ -20,8 +20,29 @@ namespace PlaywrightTests
             var baseUrl = GetRequiredConfig(configuration, "TestSettings:TEST_BASE_URL");
             var uri = new Uri(baseUrl);
 
+            await Context.Tracing.StartAsync(new()
+            {
+                Title = $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}",
+                Screenshots = true,
+                Snapshots = true,
+                Sources = true
+            });
+
             var loginHelper = new AzureAdLoginHelper(Page, uri, username, password, totpSecret);
             await loginHelper.LoginAsync();
+        }
+
+        [TestCleanup]
+        public async Task TestCleanup()
+        {
+            await Context.Tracing.StopAsync(new()
+            {
+                Path = Path.Combine(
+                    Environment.CurrentDirectory,
+                    "playwright-traces",
+                    $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}.zip"
+                )
+            });
         }
 
         private string GetRequiredConfig(IConfiguration configuration, string key)
