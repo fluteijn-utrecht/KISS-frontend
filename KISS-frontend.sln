@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CodeCoverage.runsettings = CodeCoverage.runsettings
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kiss.Bff.EndToEndTest", "Kiss.Bff.EndToEndTest\Kiss.Bff.EndToEndTest.csproj", "{D2EF3BA8-432E-42CE-AE01-04903D2F63FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{DEB9BEF6-DC5E-42AD-B13E-7B969C619F65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEB9BEF6-DC5E-42AD-B13E-7B969C619F65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEB9BEF6-DC5E-42AD-B13E-7B969C619F65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2EF3BA8-432E-42CE-AE01-04903D2F63FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2EF3BA8-432E-42CE-AE01-04903D2F63FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2EF3BA8-432E-42CE-AE01-04903D2F63FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2EF3BA8-432E-42CE-AE01-04903D2F63FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
