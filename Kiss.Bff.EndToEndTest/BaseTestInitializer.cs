@@ -17,7 +17,6 @@ namespace PlaywrightTests
             var username = GetRequiredConfig(configuration, "TestSettings:TEST_USERNAME");
             var password = GetRequiredConfig(configuration, "TestSettings:TEST_PASSWORD");
             var totpSecret = GetRequiredConfig(configuration, "TestSettings:TEST_TOTP_SECRET");
-            var isHeadless = GetRequiredConfig(configuration, "TestSettings:TEST_HEADLESS");
             var baseUrl = GetRequiredConfig(configuration, "TestSettings:TEST_BASE_URL");
             var uri = new Uri(baseUrl);
 
