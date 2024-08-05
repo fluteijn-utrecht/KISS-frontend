@@ -7,8 +7,7 @@
         [TestMethod]
         public async Task DummyTest()
         {
-            var isEditor = await Page.IsVisibleAsync("a[href='/beheer']");
-            Assert.IsTrue(isEditor, "User does not have editor role.");
+            await Expect(Page.Locator("a[href='/beheer']")).ToBeVisibleAsync();
         }
     }
 }

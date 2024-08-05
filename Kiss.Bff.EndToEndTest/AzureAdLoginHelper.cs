@@ -1,20 +1,20 @@
 ﻿using Microsoft.Playwright;
 using OtpNet;
-using System;
-using System.Threading.Tasks;
 
 namespace PlaywrightTests
 {
     public class AzureAdLoginHelper
     {
         private readonly IPage _page;
+        private readonly Uri _baseUrl;
         private readonly string _username;
         private readonly string _password;
         private readonly string _totpSecret;
 
-        public AzureAdLoginHelper(IPage page, string username, string password, string totpSecret)
+        public AzureAdLoginHelper(IPage page, Uri baseUrl, string username, string password, string totpSecret)
         {
             _page = page;
+            _baseUrl = baseUrl;
             _username = username;
             _password = password;
             _totpSecret = totpSecret;
@@ -22,7 +22,7 @@ namespace PlaywrightTests
 
         public async Task LoginAsync()
         {
-            await _page.GotoAsync("https://dev.kiss-demo.nl/");
+            await _page.GotoAsync(_baseUrl.ToString());
 
             await _page.FillAsync("input[name='loginfmt']", _username);
             await _page.ClickAsync("input[type='submit']");
@@ -33,7 +33,7 @@ namespace PlaywrightTests
 
             await Handle2FAAsync();
 
-            await _page.WaitForURLAsync("https://dev.kiss-demo.nl/**");
+            await _page.WaitForURLAsync($"{_baseUrl}**");
         }
 
         private async Task Handle2FAAsync()
@@ -43,7 +43,7 @@ namespace PlaywrightTests
 
             // Generate TOTP code
             var totp = new Totp(Base32Encoding.ToBytes(_totpSecret));
-            string totpCode = totp.ComputeTotp();
+            var totpCode = totp.ComputeTotp();
 
             // Check for "Enter Manually" link and click if present
             var enterManuallyLink = await _page.QuerySelectorAsync("a:has-text('Ik kan mijn Microsoft Authenticator-app op dit moment niet gebruiken')");
@@ -57,18 +57,17 @@ namespace PlaywrightTests
             await _page.ClickAsync("input[type='submit']");
 
             // Wait for potential "Stay signed in?" prompt
-            var staySignedInPromptSelector = "input[value='Nee']";
-            await Task.Delay(2000);
-            var staySignedInButton = await _page.QuerySelectorAsync(staySignedInPromptSelector);
+            var declineStaySignedInButton = _page.GetByText("Nee").Or(_page.GetByText("No"));
+            var homePageSelector = _page.GetByText("Nieuw contactmoment");
 
-            // Handle the prompt if present
-            if (staySignedInButton != null)
+            // we will either get a decline button, or we will go back to the home page
+            await declineStaySignedInButton.Or(homePageSelector).WaitForAsync();
+
+            // check if the decline button is visible, if so, click it
+            if (await declineStaySignedInButton.IsVisibleAsync())
             {
-                await staySignedInButton.ClickAsync();
+                await declineStaySignedInButton.ClickAsync();
             }
-
-            // Wait for navigation or some confirmation that the login is successful
-            await _page.WaitForNavigationAsync(new() { Timeout = 30000 });
         }
 
     }

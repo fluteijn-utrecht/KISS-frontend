@@ -1,67 +1,28 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Playwright;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
 
 
 namespace PlaywrightTests
 {
     [TestClass]
-    public class BaseTestInitializer
+    public class BaseTestInitializer : PageTest
     {
-        protected IPlaywright Playwright;
-        protected IBrowser Browser;
-        protected IBrowserContext Context;
-        protected IPage Page;
-        protected IPage FrontendPage;
-        protected AzureAdLoginHelper LoginHelper;
-        protected IConfiguration Configuration;
-
         [TestInitialize]
         public virtual async Task TestInitialize()
         {
-            try
-            {
-                Configuration = new ConfigurationBuilder()
-                    .AddUserSecrets<BaseTestInitializer>()
-                    .AddEnvironmentVariables()      
-                    .Build();
+            var configuration = new ConfigurationBuilder()
+                 .AddUserSecrets<BaseTestInitializer>()
+                 .AddEnvironmentVariables()
+                 .Build();
 
-                var username = GetRequiredConfig(Configuration, "TestSettings:TEST_USERNAME");
-                var password = GetRequiredConfig(Configuration, "TestSettings:TEST_PASSWORD");
-                var totpSecret = GetRequiredConfig(Configuration, "TestSettings:TEST_TOTP_SECRET");
-                var isHeadless = GetRequiredConfig(Configuration, "TestSettings:TEST_HEADLESS");
+            var username = GetRequiredConfig(configuration, "TestSettings:TEST_USERNAME");
+            var password = GetRequiredConfig(configuration, "TestSettings:TEST_PASSWORD");
+            var totpSecret = GetRequiredConfig(configuration, "TestSettings:TEST_TOTP_SECRET");
+            var isHeadless = GetRequiredConfig(configuration, "TestSettings:TEST_HEADLESS");
+            var baseUrl = GetRequiredConfig(configuration, "TestSettings:TEST_BASE_URL");
+            var uri = new Uri(baseUrl);
 
-
-                Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
-                Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
-                {
-                    Headless = bool.Parse(isHeadless)
-                });
-                Context = await Browser.NewContextAsync();
-                Page = await Context.NewPageAsync();
-                LoginHelper = new AzureAdLoginHelper(Page, username, password, totpSecret);
-
-                await LoginHelper.LoginAsync();
-            }
-            catch
-            {
-                throw;
-            }
-           
-        }
-
-        [TestCleanup]
-        public virtual async Task TestCleanup()
-        {
-            await Context.CloseAsync();
-            await Browser.CloseAsync();
-            Playwright?.Dispose();
-        }
-
-        protected virtual async Task<IPage> OpenNewPageAsync()
-        {
-            return await Context.NewPageAsync();
+            var loginHelper = new AzureAdLoginHelper(Page, uri, username, password, totpSecret);
+            await loginHelper.LoginAsync();
         }
 
         private string GetRequiredConfig(IConfiguration configuration, string key)
