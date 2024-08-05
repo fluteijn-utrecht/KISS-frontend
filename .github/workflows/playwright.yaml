@@ -28,7 +28,7 @@ jobs:
       run: dotnet test
       env:
         'TestSettings:TEST_USERNAME': ${{ secrets.PLAYWRIGHT_USERNAME }}
-        'TestSettings:TEST_PASSWORD': ${{ secrets.PLAYWRIGHT_PASSWORD }}
+        'TestSettings:TEST_PASSWORD': '${{ secrets.PLAYWRIGHT_PASSWORD }}'
         'TestSettings:TEST_TOTP_SECRET': ${{ secrets.PLAYWRIGHT_TOTP_SECRET }}
         'TestSettings:TEST_BASE_URL': ${{ secrets.PLAYWRIGHT_BASE_URL }}
     - name: Upload test artifacts
