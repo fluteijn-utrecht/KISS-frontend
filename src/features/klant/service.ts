@@ -63,6 +63,7 @@ type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
 };
 
 const klantRootUrl = new URL(document.location.href);
+klantRootUrl.search = "";
 klantRootUrl.pathname = klantenBaseUrl;
 
 function getKlantSearchUrl<K extends KlantSearchField>(
