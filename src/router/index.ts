@@ -131,7 +131,9 @@ const router = createRouter({
     {
       path: "/zaken/:zaakId",
       name: "zaakDetail",
-      props: true,
+      // als je props op true zet, worden alleen de path parameters als props meegegeven aan de component
+      // op deze manier geldt dit ook voor de query parameters.
+      props: ({ query = {}, params = {} }) => ({ ...query, ...params }),
       component: ZaakDetailView,
       beforeEnter: guardContactMoment,
       meta: { showNav: true, showNotitie: true, showSearch: true },

@@ -3,12 +3,12 @@ using Kiss.Bff.Afdelingen;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Config;
+using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Kiss.Bff.Groepen;
 using Kiss.Bff.InterneTaak;
-using Kiss.Bff.ZaakGerichtWerken;
+using Kiss.Bff;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
-using Kiss.Bff.Zaken;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -59,11 +59,9 @@ try
     builder.Services.AddKissProxy();
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
-
     builder.Services.AddZgwTokenProvider(builder.Configuration["ZAKEN_API_KEY"], builder.Configuration["ZAKEN_API_CLIENT_ID"]);
-    builder.Services.AddZaken(builder.Configuration["ZAKEN_BASE_URL"]);
-    builder.Services.AddDocumenten(builder.Configuration["ZAKEN_BASE_URL"]);
 
+    builder.Services.AddZaaksystemen(builder.Configuration);
 
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
     builder.Services.AddDbContext<BeheerDbContext>(o => o.UseNpgsql(connStr));

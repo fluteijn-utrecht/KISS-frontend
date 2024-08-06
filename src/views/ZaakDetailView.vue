@@ -15,22 +15,15 @@
         >Zaak {{ zaak.data.identificatie }}</utrecht-heading
       >
       <a
-        v-if="
-          deeplinkConfig.success &&
-          deeplinkConfig.data &&
-          (zaak.data as any)[deeplinkConfig.data.idProperty]
-        "
-        :href="
-          deeplinkConfig.data.baseUrl +
-          (zaak.data as any)[deeplinkConfig.data.idProperty]
-        "
+        v-if="deeplink"
+        :href="deeplink"
         target="_blank"
         rel="noopener noreferrer"
         >Open in zaaksysteem</a
       >
     </header>
 
-    <tab-list v-model="activeTab">
+    <tab-list v-model="activeTab" v-if="zaaksysteemId">
       <tab-list-item label="Algemeen">
         <zaak-algemeen :zaak="zaak.data" />
       </tab-list-item>
@@ -38,7 +31,7 @@
         label="Documenten"
         :disabled="!zaak.data.documenten?.length"
       >
-        <zaak-documenten :zaak="zaak.data" />
+        <zaak-documenten :zaak="zaak.data" :zaaksysteemId="zaaksysteemId" />
       </tab-list-item>
       <tab-list-data-item
         label="Contactmomenten"
@@ -76,11 +69,14 @@ import {
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import { useZaaksysteemDeeplinkConfig } from "@/features/zaaksysteem/deeplink";
+import { useZaaksysteemDeeplink } from "@/features/zaaksysteem/deeplink";
 
-const props = defineProps<{ zaakId: string }>();
+const props = defineProps<{ zaakId: string; zaaksysteemId?: string }>();
 const contactmomentStore = useContactmomentStore();
-const zaak = useZaakById(computed(() => props.zaakId));
+const zaak = useZaakById(
+  computed(() => props.zaakId),
+  computed(() => props.zaaksysteemId),
+);
 const zaakUrl = computed(() =>
   zaak.success && zaak.data.self ? zaak.data.self : "",
 );
@@ -89,7 +85,9 @@ const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
 const activeTab = ref("");
 
-const deeplinkConfig = useZaaksysteemDeeplinkConfig();
+const deeplink = useZaaksysteemDeeplink(() =>
+  zaak.success ? zaak.data : undefined,
+);
 
 watch(
   () => zaak.success && zaak.data,
