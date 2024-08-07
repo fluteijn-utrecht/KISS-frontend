@@ -26,8 +26,6 @@ type FieldParams = {
   telefoonnummer: string;
 };
 
-const klantenBaseUrl = "/api/klanten/api/v1/klanten";
-
 export function createKlantQuery<K extends KlantSearchField>(
   args: KlantSearch<K>,
 ): KlantSearch<K> {
@@ -62,9 +60,7 @@ type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
   subjectType?: KlantType;
 };
 
-const klantRootUrl = new URL(document.location.href);
-klantRootUrl.search = "";
-klantRootUrl.pathname = klantenBaseUrl;
+const klantRootUrl = `${document.location.origin}/api/klanten/api/v1/klanten`;
 
 function getKlantSearchUrl<K extends KlantSearchField>(
   search: KlantSearch<K> | undefined,
