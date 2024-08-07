@@ -71,7 +71,7 @@ import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
 import { useZaaksysteemDeeplink } from "@/features/zaaksysteem/deeplink";
 
-const props = defineProps<{ zaakId: string; zaaksysteemId?: string }>();
+const props = defineProps<{ zaakId: string; zaaksysteemId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(
   computed(() => props.zaakId),
