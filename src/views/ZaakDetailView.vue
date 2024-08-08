@@ -31,7 +31,7 @@
         label="Documenten"
         :disabled="!zaak.data.documenten?.length"
       >
-        <zaak-documenten :zaak="zaak.data" :zaaksysteemId="zaaksysteemId" />
+        <zaak-documenten :zaak="zaak.data" />
       </tab-list-item>
       <tab-list-data-item
         label="Contactmomenten"
@@ -85,9 +85,8 @@ const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
 const activeTab = ref("");
 
-const deeplink = useZaaksysteemDeeplink(
-  () => (zaak.success ? zaak.data : undefined),
-  () => props.zaaksysteemId,
+const deeplink = useZaaksysteemDeeplink(() =>
+  zaak.success ? zaak.data : undefined,
 );
 
 watch(
