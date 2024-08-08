@@ -54,7 +54,7 @@ const props = defineProps<{
 // dit betekent dat we het downloaden van documenten op een omslachtige manier moeten doen,
 // omdat je in een gewone link geen header mee kan geven.
 async function download(doc: ZaakDocument) {
-  const url = doc.url + "/download?versie=1";
+  const url = doc.url + "/download";
   const blob = await fetchWithZaaksysteemId(props.zaaksysteemId, url)
     .then(throwIfNotOk)
     .then((r) => r.blob());
