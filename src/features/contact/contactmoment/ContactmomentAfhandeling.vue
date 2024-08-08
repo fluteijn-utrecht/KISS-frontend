@@ -92,6 +92,11 @@
           <utrecht-heading :level="3">{{
             vraag.zaken.length > 1 ? "Gerelateerde zaken" : "Gerelateerde zaak"
           }}</utrecht-heading>
+          <application-message
+            class="error-message"
+            message="Let op, zaken koppelen aan een contactmoment is stuk tot PC-316 is uitgevoerd"
+            message-type="error"
+          />
           <ul>
             <li v-for="record in vraag.zaken" :key="record.zaak.id">
               <label>
