@@ -1,5 +1,6 @@
 import {
   fetchLoggedIn,
+  parseJson,
   parsePagination,
   ServiceResult,
   setHeader,
@@ -423,4 +424,34 @@ export function fetchWithZaaksysteemId(
     setHeader(request, "ZaaksysteemId", zaaksysteemId);
   }
   return fetchLoggedIn(url, request);
+}
+
+export function useZaaksysteemDeeplinkConfig(getZaaksysteemId: () => string) {
+  const url = "/api/zaaksysteem/deeplinkconfig";
+  const getCacheKey = () => {
+    const zaaksysteemId = getZaaksysteemId();
+    return zaaksysteemId && url + zaaksysteemId;
+  };
+
+  return ServiceResult.fromFetcher(
+    url,
+    (u) =>
+      fetchWithZaaksysteemId(getZaaksysteemId(), u)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) =>
+          typeof r?.baseUrl === "string" &&
+          typeof r?.idProperty === "string" &&
+          r.baseUrl &&
+          r.idProperty
+            ? (r as {
+                baseUrl: string;
+                idProperty: string;
+              })
+            : null,
+        ),
+    {
+      getUniqueId: getCacheKey,
+    },
+  );
 }
