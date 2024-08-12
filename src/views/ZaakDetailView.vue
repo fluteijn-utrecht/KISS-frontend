@@ -14,13 +14,7 @@
       <utrecht-heading :level="1"
         >Zaak {{ zaak.data.identificatie }}</utrecht-heading
       >
-      <a
-        v-if="deeplink"
-        :href="deeplink"
-        target="_blank"
-        rel="noopener noreferrer"
-        >Open in zaaksysteem</a
-      >
+      <zaak-deeplink :zaak="zaak.data" />
     </header>
 
     <tab-list v-model="activeTab" v-if="zaaksysteemId">
@@ -31,7 +25,7 @@
         label="Documenten"
         :disabled="!zaak.data.documenten?.length"
       >
-        <zaak-documenten :zaak="zaak.data" :zaaksysteemId="zaaksysteemId" />
+        <zaak-documenten :zaak="zaak.data" />
       </tab-list-item>
       <tab-list-data-item
         label="Contactmomenten"
@@ -67,11 +61,11 @@ import {
   useContactmomentenByObjectUrl,
 } from "@/features/contact/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import ZaakDeeplink from "@/features/zaaksysteem/components/ZaakDeeplink.vue";
 import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import { useZaaksysteemDeeplink } from "@/features/zaaksysteem/deeplink";
 
-const props = defineProps<{ zaakId: string; zaaksysteemId?: string }>();
+const props = defineProps<{ zaakId: string; zaaksysteemId: string }>();
 const contactmomentStore = useContactmomentStore();
 const zaak = useZaakById(
   computed(() => props.zaakId),
@@ -84,10 +78,6 @@ const zaakUrl = computed(() =>
 const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
 const activeTab = ref("");
-
-const deeplink = useZaaksysteemDeeplink(() =>
-  zaak.success ? zaak.data : undefined,
-);
 
 watch(
   () => zaak.success && zaak.data,
