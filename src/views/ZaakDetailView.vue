@@ -85,9 +85,8 @@ const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
 
 const activeTab = ref("");
 
-const deeplink = useZaaksysteemDeeplink(
-  () => (zaak.success ? zaak.data : undefined),
-  () => props.zaaksysteemId,
+const deeplink = useZaaksysteemDeeplink(() =>
+  zaak.success ? zaak.data : undefined,
 );
 
 watch(
