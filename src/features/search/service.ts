@@ -17,7 +17,7 @@ export function mapResult(obj: any): SearchResult {
   const title = obj?._source?.headings?.[0] ?? obj?._source?.title;
   const content = obj?._source?.body_content;
   const url = parseValidUrl(obj?._source?.url);
-  const documentUrl = new URL(location.href);
+  const documentUrl = new URL(location.origin);
   // documentUrl.pathname = searchUrl;
   documentUrl.searchParams.set("query", id);
 
@@ -41,7 +41,7 @@ const getSearchUrl = (query: string, sources: Source[]) => {
   if (!query) return "";
   const uniqueIndices = [...new Set(sources.map((x) => x.index))];
 
-  const url = new URL(location.href);
+  const url = new URL(location.origin);
   url.pathname = `${globalSearchBaseUri}/${uniqueIndices
     .sort((a, b) => a.localeCompare(b))
     .join(",")}/_search`;
