@@ -8,7 +8,6 @@ import {
 import type { Ref } from "vue";
 import type { Contactverzoek } from "./types";
 
-
 type SearchParameters = {
   query: string;
 };
@@ -16,7 +15,7 @@ type SearchParameters = {
 function getSearchUrl({ query = "" }: SearchParameters) {
   if (!query) return "";
 
-  const url = new URL("/api/internetaak/api/v2/objects", location.href);
+  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
   url.searchParams.set("ordering", "-record__data__registratiedatum"); //todo: is dit de correcte orderning?
   url.searchParams.set("pageSize", "10");
 
@@ -73,7 +72,7 @@ export function useContactverzoekenByKlantId(
 ) {
   function getUrl() {
     if (!id.value) return "";
-    const url = new URL("/api/internetaak/api/v2/objects", location.href);
+    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
     url.searchParams.set("ordering", "-record__data__registratiedatum");
     url.searchParams.set("pageSize", "10");
     url.searchParams.set("page", page.value.toString());

@@ -28,7 +28,7 @@ const zakenProxyRoot = "/api/zaken";
 export const useZakenByBsn = (bsn: Ref<string>) => {
   const getUrl = () => {
     if (!bsn.value) return "";
-    const url = new URL(location.href);
+    const url = new URL(location.origin);
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set(
       "rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn",
@@ -121,7 +121,7 @@ export const useZakenByKlantBedrijfIdentifier = (
   const getUrl = () => {
     const searchParam = getId();
     if (!searchParam) return "";
-    const url = new URL(location.href);
+    const url = new URL(location.origin);
     url.pathname = zaaksysteemBaseUri + "/zaken";
     url.searchParams.set("ordering", "-startdatum");
 
