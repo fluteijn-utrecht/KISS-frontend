@@ -3,18 +3,19 @@ import type { ZaakDetails } from "./types";
 import { computed } from "vue";
 import { fetchWithZaaksysteemId } from "./service";
 
-const useZaaksysteemDeeplinkConfig = (
-  zaaksysteemId: () => string | undefined,
-) => {
+export function useZaaksysteemDeeplink(getZaak: () => ZaakDetails | undefined) {
   const url = "/api/zaaksysteem/deeplinkconfig";
+  const getZaaksysteemId = () => getZaak()?.zaaksysteemId || "";
+
   const getCacheKey = () => {
-    const id = zaaksysteemId() || "";
-    return id && url + id;
+    const zaaksysteemId = getZaaksysteemId();
+    return zaaksysteemId && url + zaaksysteemId;
   };
-  return ServiceResult.fromFetcher(
+
+  const config = ServiceResult.fromFetcher(
     url,
     (u) =>
-      fetchWithZaaksysteemId(zaaksysteemId(), u)
+      fetchWithZaaksysteemId(getZaaksysteemId(), u)
         .then(throwIfNotOk)
         .then(parseJson)
         .then((r) =>
@@ -32,13 +33,7 @@ const useZaaksysteemDeeplinkConfig = (
       getUniqueId: getCacheKey,
     },
   );
-};
 
-export function useZaaksysteemDeeplink(
-  getZaak: () => ZaakDetails | undefined,
-  getZaaksysteemId: () => string | undefined,
-) {
-  const config = useZaaksysteemDeeplinkConfig(getZaaksysteemId);
   return computed(() => {
     if (!config.success || !config.data) return null;
     const property = (getZaak() as any)?.[config.data.idProperty];
