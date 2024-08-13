@@ -10,11 +10,7 @@ import {
 import { mutate } from "swrv";
 import type { Ref } from "vue";
 
-import {
-  type UpdateContactgegevensParams,
-  type Klant,
-  KlantType,
-} from "./types";
+import { type Klant, KlantType } from "./types";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier } from "./bedrijf/types";
 
@@ -162,66 +158,22 @@ function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
     });
 }
 
-function getKlantIdUrl(id?: string) {
-  if (!id) return "";
-  const url = new URL(`${klantRootUrl}/${id}`);
-  return url.toString();
-}
+const getKlantIdUrl = (uuid: string) =>
+  uuid &&
+  `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`;
 
 const searchSingleKlant = (url: string) =>
   searchKlanten(url).then(enforceOneOrZero);
 
-function fetchKlantById(url: string) {
-  return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
-}
-
 export function useKlantById(id: Ref<string>) {
   return ServiceResult.fromFetcher(
     () => getKlantIdUrl(id.value),
-    fetchKlantById,
+    (url) =>
+      fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then(mapPartijToKlant),
   );
-}
-
-const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {
-  if (subjectType === KlantType.Persoon)
-    return subjectIdentificatie || { inpBsn: "" };
-
-  const { handelsnaam, ...rest } = subjectIdentificatie ?? {};
-  if (Array.isArray(handelsnaam) && handelsnaam.length)
-    return subjectIdentificatie;
-  return rest;
-};
-
-function updateContactgegevens({
-  id,
-  telefoonnummer,
-  emailadres,
-}: UpdateContactgegevensParams): Promise<UpdateContactgegevensParams> {
-  const endpoint = klantRootUrl + "/" + id;
-  return fetchLoggedIn(endpoint)
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((klant) =>
-      fetchLoggedIn(endpoint, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...klant,
-          subjectIdentificatie: getValidIdentificatie(klant),
-          telefoonnummer,
-          emailadres,
-        }),
-      }),
-    )
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then(({ telefoonnummer, emailadres }) => ({
-      id,
-      telefoonnummer,
-      emailadres,
-    }));
 }
 
 export function useSearchKlanten<K extends KlantSearchField>({
@@ -236,10 +188,6 @@ export function useSearchKlanten<K extends KlantSearchField>({
       page.value,
     );
   return ServiceResult.fromFetcher(getUrl, searchKlanten);
-}
-
-export function useUpdateContactGegevens() {
-  return ServiceResult.fromSubmitter(updateContactgegevens);
 }
 
 export async function ensureKlantForBsn({ bsn }: { bsn: string }) {

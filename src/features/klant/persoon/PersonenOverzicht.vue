@@ -49,7 +49,6 @@
 <script lang="ts" setup>
 import DutchDate from "@/components/DutchDate.vue";
 import type { Persoon } from "./types";
-import { useOrganisatieIds } from "@/stores/user";
 import type { Klant } from "../types";
 import { ensureKlantForBsn } from "../service";
 import { useRouter } from "vue-router";
