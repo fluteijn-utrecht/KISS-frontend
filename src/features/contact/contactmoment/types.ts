@@ -52,7 +52,8 @@ export interface ContactmomentObject {
 
 export interface ZaakContactmoment {
   contactmoment: string;
-  zaak: string;
+  url: string;
+  zaaksysteemId: string;
 }
 
 export interface ContactverzoekDetail {
