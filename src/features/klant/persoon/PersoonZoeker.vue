@@ -180,18 +180,26 @@ const personen = useSearchPersonen({
   query: computed(() => store.value.persoonSearchQuery),
 });
 
-const singleBsn = computed(() => {
+const singlePersoon = computed(() => {
   if (personen.success && personen.data.length === 1) {
-    const first = personen.data[0];
-    return first?.bsn;
+    return personen.data[0];
   }
   return undefined;
 });
 
 const router = useRouter();
-watch(singleBsn, async (bsn, oldBsn) => {
-  if (bsn && bsn !== oldBsn) {
-    const { id } = await ensureKlantForBsn({ bsn });
+watch(singlePersoon, async (newPersoon, oldPersoon) => {
+  if (newPersoon?.bsn && newPersoon.bsn !== oldPersoon?.bsn) {
+    const { id } = await ensureKlantForBsn({
+      bsn: newPersoon.bsn,
+      partijIdentificatie: {
+        contactnaam: {
+          voornaam: newPersoon.voornaam,
+          voorvoegselAchternaam: newPersoon.voorvoegselAchternaam,
+          achternaam: newPersoon.achternaam,
+        },
+      },
+    });
     await router.push(`/personen/${id}`);
   }
 });
