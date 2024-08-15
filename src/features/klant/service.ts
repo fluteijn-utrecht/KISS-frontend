@@ -52,13 +52,31 @@ const identificatorTypes = {
   // },
 } as const satisfies Record<string, IdentificatorType>;
 
-const partijTypes = {
+type Contactnaam = {
+  voornaam: string;
+  voorvoegselAchternaam?: string;
+  achternaam: string;
+};
+
+type PartijTypes = {
+  persoon: {
+    contactnaam: Contactnaam;
+  };
+  organisatie: {
+    naam: string;
+  };
+  contactpersoon: {
+    contactnaam: Contactnaam;
+  };
+};
+
+type PartijType = keyof PartijTypes;
+
+const partijTypes: { [k in PartijType]: k } = {
   persoon: "persoon",
   organisatie: "organisatie",
   contactpersoon: "contactpersoon",
-} as const;
-
-type PartijType = (typeof partijTypes)[keyof typeof partijTypes];
+};
 
 const digitaalAdresTypes = {
   email: "e-mailadres",
@@ -190,7 +208,13 @@ export function useSearchKlanten<K extends KlantSearchField>({
   return ServiceResult.fromFetcher(getUrl, searchKlanten);
 }
 
-export async function ensureKlantForBsn({ bsn }: { bsn: string }) {
+export async function ensureKlantForBsn({
+  bsn,
+  partijIdentificatie,
+}: {
+  bsn: string;
+  partijIdentificatie: PartijTypes["persoon"];
+}) {
   if (!bsn) throw new Error();
 
   const klant =
@@ -199,7 +223,12 @@ export async function ensureKlantForBsn({ bsn }: { bsn: string }) {
       identificatorTypes.persoon,
       bsn,
     )) ??
-    (await createKlant(partijTypes.persoon, identificatorTypes.persoon, bsn));
+    (await createKlant(
+      partijTypes.persoon,
+      partijIdentificatie,
+      identificatorTypes.persoon,
+      bsn,
+    ));
 
   const idUrl = getKlantIdUrl(klant.id);
   mutate(idUrl, klant);
@@ -343,9 +372,9 @@ const getSingleKlantByIdentificator = (
       "/partijen?" +
       new URLSearchParams({
         soortPartij,
-        partijIdentificatorCodeSoortObjectId:
+        partijIdentificator__codeSoortObjectId:
           identificatorType.codeSoortObjectId,
-        partijIdentificatorObjectId: objectId,
+        partijIdentificator__objectId: objectId,
         expand: "digitaleAdressen",
       }),
   )
@@ -389,9 +418,25 @@ async function mapPartijToKlant(partij: Partij): Promise<Klant> {
   };
 }
 
-const createPartij = (partij: { soortPartij: PartijType }): Promise<Partij> =>
+const createPartij = <K extends PartijType>(
+  soortPartij: K,
+  partijIdentificatie: PartijTypes[K],
+): Promise<Partij> =>
   fetchLoggedIn(klantinteractiesBaseUrl + "/partijen", {
-    body: JSON.stringify(partij),
+    body: JSON.stringify({
+      digitaleAdressen: [],
+      betrokkenen: [],
+      categorieRelaties: [],
+      voorkeursDigitaalAdres: null,
+      vertegenwoordigden: [],
+      rekeningnummers: [],
+      voorkeursRekeningnummer: null,
+      indicatieGeheimhouding: false,
+      indicatieActief: true,
+      soortPartij,
+      partijIdentificatie,
+    }),
+    method: "POST",
     headers: {
       "content-type": "application/json",
     },
@@ -410,6 +455,7 @@ const createPartijIdentificator = (body: {
 }) =>
   fetchLoggedIn(klantinteractiesBaseUrl + "/partij-identificatoren", {
     body: JSON.stringify(body),
+    method: "POST",
     headers: {
       "content-type": "application/json",
     },
@@ -422,12 +468,13 @@ const getPartijIdentificator = (uuid: string) =>
     .then(throwIfNotOk)
     .then(parseJson);
 
-const createKlant = (
-  soortPartij: PartijType,
+const createKlant = <K extends PartijType>(
+  soortPartij: K,
+  partijIdentificatie: PartijTypes[K],
   identificatorType: IdentificatorType,
   objectId: string,
 ) =>
-  createPartij({ soortPartij }).then((partij) =>
+  createPartij(soortPartij, partijIdentificatie).then((partij) =>
     createPartijIdentificator({
       identificeerdePartij: {
         url: partij.url,
