@@ -137,13 +137,11 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
 };
 
 const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
-const zaken = useZakenByKlantBedrijfIdentifier(() =>
-  !bedrijf.success || !bedrijf.data?.kvkNummer
-    ? undefined
-    : bedrijf.data.vestigingsnummer
-      ? { vestigingsnummer: bedrijf.data.vestigingsnummer }
-      : bedrijf.data.rsin
-        ? { rsin: bedrijf.data.rsin, kvkNummer: bedrijf.data.kvkNummer }
-        : undefined,
-);
+const zaken = useZakenByKlantBedrijfIdentifier(() => {
+  if (!bedrijf.success || !bedrijf.data?.kvkNummer) return undefined;
+  if (bedrijf.data.vestigingsnummer)
+    return { vestigingsnummer: bedrijf.data.vestigingsnummer };
+  if (bedrijf.data.rsin)
+    return { rsin: bedrijf.data.rsin, kvkNummer: bedrijf.data.kvkNummer };
+});
 </script>
