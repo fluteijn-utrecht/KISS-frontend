@@ -1,16 +1,6 @@
 import { ServiceResult, enforceOneOrZero } from "@/services";
-import {
-  searchBedrijvenInHandelsRegister,
-  preferredNietNatuurlijkPersoonIdentifierPromise,
-  type NietNatuurlijkPersoonIdentifierValue,
-} from "./shared/shared";
+import { searchBedrijvenInHandelsRegister } from "./shared/shared";
 import type { BedrijfIdentifier } from "../types";
-
-let identifier: NietNatuurlijkPersoonIdentifierValue | undefined;
-
-preferredNietNatuurlijkPersoonIdentifierPromise.then((r) => {
-  identifier = r.nietNatuurlijkPersoonIdentifier;
-});
 
 const zoekenUrl = "/api/kvk/v2/zoeken";
 
@@ -38,11 +28,7 @@ export const useBedrijfByIdentifier = (
 const getUrlVoorGetBedrijfById = (
   bedrijfsZoekParamter: BedrijfIdentifier | undefined,
 ) => {
-  if (
-    !identifier ||
-    !bedrijfsZoekParamter ||
-    typeof bedrijfsZoekParamter != "object"
-  ) {
+  if (!bedrijfsZoekParamter || typeof bedrijfsZoekParamter != "object") {
     return "";
   }
 
@@ -60,6 +46,11 @@ const getUrlVoorGetBedrijfById = (
     "nietNatuurlijkPersoonIdentifier" in bedrijfsZoekParamter &&
     bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier
   ) {
+    // TIJDELIJK. netter maken bij OK2 bedrijf stories
+    const identifier =
+      bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier.length === 9
+        ? "rsin"
+        : "kvkNummer";
     searchParams.set(
       identifier,
       bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier,

@@ -17,7 +17,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
             var deeplinkUrl = Guid.NewGuid().ToString();
             var idProperty = Guid.NewGuid().ToString();
 
-            var config = new ZaaksysteemConfig(baseUrl, "", "", deeplinkUrl, idProperty);
+            var config = new ZaaksysteemConfig(baseUrl, "", "", deeplinkUrl, idProperty, null);
 
             var sut = new GetZaaksysteemDeeplinkConfig(new[] { config }, Mock.Of<ILogger<GetZaaksysteemDeeplinkConfig>>());
             var result = sut.Get(baseUrl);

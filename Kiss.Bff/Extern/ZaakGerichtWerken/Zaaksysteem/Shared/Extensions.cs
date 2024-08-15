@@ -43,7 +43,7 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared
                 && configuration["ZAKEN_API_CLIENT_ID"] is string clientId
                 && configuration["ZAKEN_API_KEY"] is string apiKey)
             {
-                yield return new(baseUrl, clientId, apiKey, configuration["ZAAKSYSTEEM_DEEPLINK_URL"], configuration["ZAAKSYSTEEM_DEEPLINK_PROPERTY"]);
+                yield return new(baseUrl, clientId, apiKey, configuration["ZAAKSYSTEEM_DEEPLINK_URL"], configuration["ZAAKSYSTEEM_DEEPLINK_PROPERTY"], configuration["NIETNATUURLIJKPERSOONIDENTIFIER"]);
             }
 
             // multiple zaaksystemen
@@ -58,7 +58,8 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared
                 {
                     var deeplinkUrl = item.GetValueOrDefault("DEEPLINK_URL");
                     var deeplinkProperty = item.GetValueOrDefault("DEEPLINK_PROPERTY");
-                    yield return new(itemBaseUrl, itemClientId, itemApiKey, deeplinkUrl, deeplinkProperty);
+                    var nnpId = item.GetValueOrDefault("NIETNATUURLIJKPERSOONIDENTIFIER");
+                    yield return new(itemBaseUrl, itemClientId, itemApiKey, deeplinkUrl, deeplinkProperty, nnpId);
                 }
             }
         }

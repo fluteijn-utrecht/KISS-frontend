@@ -126,14 +126,18 @@ export const koppelObject = (data: ContactmomentObject) =>
     body: JSON.stringify(data),
   }).then(throwIfNotOk);
 
-export const koppelZaakContactmoment = (data: ZaakContactmoment) =>
+export const koppelZaakContactmoment = ({
+  zaaksysteemId,
+  url,
+  contactmoment,
+}: ZaakContactmoment) =>
   fetchLoggedIn(zaakcontactmomentUrl, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ zaaksysteemId, url, contactmoment }),
   }).then(throwIfNotOk);
 
 export function koppelKlant({

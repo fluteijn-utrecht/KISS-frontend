@@ -489,7 +489,7 @@ const zakenToevoegenAanContactmoment = async (
         try {
           await koppelZaakContactmoment({
             contactmoment: contactmomentId,
-            zaak: zaak.self,
+            ...zaak,
           });
         } catch (e) {
           try {
@@ -499,7 +499,7 @@ const zakenToevoegenAanContactmoment = async (
             );
             await koppelZaakContactmoment({
               contactmoment: contactmomentId,
-              zaak: zaak.self,
+              ...zaak,
             });
           } catch (e) {
             try {
@@ -509,7 +509,7 @@ const zakenToevoegenAanContactmoment = async (
               );
               await koppelZaakContactmoment({
                 contactmoment: contactmomentId,
-                zaak: zaak.self,
+                ...zaak,
               });
             } catch (e) {
               console.log(
