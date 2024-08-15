@@ -46,6 +46,7 @@ const getUrlVoorGetBedrijfById = (
     "nietNatuurlijkPersoonIdentifier" in bedrijfsZoekParamter &&
     bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier
   ) {
+    // TIJDELIJK. netter maken bij OK2 bedrijf stories
     const identifier =
       bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier.length === 9
         ? "rsin"

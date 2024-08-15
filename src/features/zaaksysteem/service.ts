@@ -132,6 +132,8 @@ export const useZakenByKlantBedrijfIdentifier = (
         searchParam.vestigingsnummer,
       );
     } else if ("rsin" in searchParam) {
+      // LET OP: deze query parameters zijn custom voor KISS. op de backend wordt per zaaksysteem gekozen uit rsin of kvkNummer.
+      // Deze wordt vervolgens in rol__betrokkeneIdentificatie__vestiging__vestigingsNummer gezet.
       url.searchParams.set("rsin", searchParam.rsin);
       url.searchParams.set("kvkNummer", searchParam.kvkNummer);
     } else return "";
