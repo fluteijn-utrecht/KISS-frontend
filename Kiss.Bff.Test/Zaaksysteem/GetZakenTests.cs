@@ -74,12 +74,12 @@ namespace Kiss.Bff.Test.Zaaksysteem
                 .Respond(HttpStatusCode.BadRequest);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
 
-            var result = await sut.Get(version, Enumerable.Empty<string>(), default);
+            var result = await sut.Get(version, Enumerable.Empty<string>(), null, null, default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
             Assert.AreEqual(400, statusCodeResult.StatusCode);
         }
@@ -94,12 +94,12 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
 
-            var result = await sut.Get(version, Enumerable.Empty<string>(), default);
+            var result = await sut.Get(version, Enumerable.Empty<string>(), null, null, default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
             Assert.AreEqual(502, statusCodeResult.StatusCode);
         }
@@ -117,9 +117,59 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
             var sut = new GetZaken(Enumerable.Empty<ZaaksysteemConfig>(), clientFactory, logger);
 
-            var result = await sut.Get(version, Enumerable.Empty<string>(), default);
+            var result = await sut.Get(version, Enumerable.Empty<string>(), null, null, default);
             Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
             Assert.AreEqual(500, statusCodeResult.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task GetZaken_with_kvknummer_and_rsin_queries_by_rsin_by_default()
+        {
+            var logger = Mock.Of<ILogger<GetZaken>>();
+            var handler = new MockHttpMessageHandler();
+            var baseUrl = "http://example.com";
+            var version = "my-version";
+            var rsin = "12345";
+            var kvkNummer = "54321";
+
+            handler.Expect($"{baseUrl}/zaken/api/{version}/zaken?rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId={rsin}")
+                .Respond("application/json", "{\"results\": []}");
+            var httpClient = new HttpClient(handler);
+            var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
+
+
+            var sut = new GetZaken(new[] { config }, clientFactory, logger);
+
+            var result = await sut.Get(version, Enumerable.Empty<string>(), kvkNummer, rsin, default);
+            Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
+            Assert.AreEqual(200, statusCodeResult.StatusCode);
+            handler.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        public async Task GetZaken_with_kvknummer_and_rsin_queries_by_kvknummer_if_specified_in_config()
+        {
+            var logger = Mock.Of<ILogger<GetZaken>>();
+            var handler = new MockHttpMessageHandler();
+            var baseUrl = "http://example.com";
+            var version = "my-version";
+            var rsin = "12345";
+            var kvkNummer = "54321";
+
+            handler.Expect($"{baseUrl}/zaken/api/{version}/zaken?rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId={kvkNummer}")
+                .Respond("application/json", "{\"results\": []}");
+            var httpClient = new HttpClient(handler);
+            var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, "kvkNummer");
+
+
+            var sut = new GetZaken(new[] { config }, clientFactory, logger);
+
+            var result = await sut.Get(version, Enumerable.Empty<string>(), kvkNummer, rsin, default);
+            Assert.IsInstanceOfType<IStatusCodeActionResult>(result, out var statusCodeResult);
+            Assert.AreEqual(200, statusCodeResult.StatusCode);
+            handler.VerifyNoOutstandingExpectation();
         }
 
         private static async Task<IActionResult> RunHappyFlowTest(string baseUrl, StringValues ordering, string responseBody)
@@ -131,12 +181,12 @@ namespace Kiss.Bff.Test.Zaaksysteem
                 .Respond("application/json", responseBody);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
 
-            var result = await sut.Get(Version, ordering, default);
+            var result = await sut.Get(Version, ordering, null, null, default);
 
             return result;
         }

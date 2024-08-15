@@ -136,7 +136,14 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     };
 };
 
-const zaken = useZakenByKlantBedrijfIdentifier(getBedrijfIdentifier);
-
 const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
+const zaken = useZakenByKlantBedrijfIdentifier(() =>
+  !bedrijf.success || !bedrijf.data?.kvkNummer
+    ? undefined
+    : bedrijf.data.vestigingsnummer
+      ? { vestigingsnummer: bedrijf.data.vestigingsnummer }
+      : bedrijf.data.rsin
+        ? { rsin: bedrijf.data.rsin, kvkNummer: bedrijf.data.kvkNummer }
+        : undefined,
+);
 </script>

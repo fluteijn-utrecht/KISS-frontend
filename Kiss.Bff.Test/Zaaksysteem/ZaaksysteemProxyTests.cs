@@ -14,7 +14,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
         {
             var baseUrl = "http://example.com";
             var key = "een sleutel van minimaal 16 karakters";
-            var config = new ZaaksysteemConfig(baseUrl, "", key, null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "", key, null, null, null);
             var sut = new ZaaksysteemProxy(new[] { config }, Mock.Of<ILogger<ZaaksysteemProxy>>());
 
             var id = Guid.NewGuid();

@@ -3,12 +3,16 @@ using System.Text.Json.Nodes;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Primitives;
 
 namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
 {
     [ApiController]
     public class GetZaken : ControllerBase
     {
+        const string KvkNummer = "kvkNummer";
+        const string Rsin = "rsin";
+
         private readonly IEnumerable<ZaaksysteemConfig> _configs;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<GetZaken> _logger;
@@ -36,9 +40,14 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
         /// <param name="token"></param>
         /// <returns></returns>
         [HttpGet("api/zaken/zaken/api/{version}/zaken")]
-        public async Task<IActionResult> Get([FromRoute] string version, [FromQuery(Name = "ordering")] IEnumerable<string> ordering, CancellationToken token)
+        public async Task<IActionResult> Get(
+            [FromRoute] string version,
+            [FromQuery(Name = "ordering")] IEnumerable<string> ordering,
+            [FromQuery(Name = KvkNummer)] string? kvkNummer,
+            [FromQuery(Name = Rsin)] string? rsin,
+            CancellationToken token)
         {
-            var messages = await SendRequestToZaaksystemen($"zaken/api/{version}/zaken", token);
+            var messages = await SendRequestToZaaksystemen($"zaken/api/{version}/zaken", kvkNummer, rsin, token);
 
             if (messages.Length == 0)
             {
@@ -120,15 +129,33 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             return Ok(result);
         }
 
-        private Task<(Uri? BaseAddress, HttpResponseMessage? Message)[]> SendRequestToZaaksystemen(string path, CancellationToken token)
+        private Task<(Uri? BaseAddress, HttpResponseMessage? Message)[]> SendRequestToZaaksystemen(string path, string? kvkNummer, string? rsin, CancellationToken token)
         {
             var tasks = _configs
-                .Select(CreateClient)
-                .Select(async (client) =>
+                .Select(async (config) =>
                 {
+                    var client = CreateClient(config);
                     try
                     {
-                        var message = await client.GetAsync($"{path}{Request?.QueryString}", HttpCompletionOption.ResponseHeadersRead, token);
+                        var queryString = Request?.QueryString.ToString();
+                        
+                        if (!string.IsNullOrWhiteSpace(kvkNummer) && !string.IsNullOrWhiteSpace(rsin))
+                        {
+                            var identifier = config.NietNatuurlijkPersoonIdentifier == "kvkNummer"
+                                ? kvkNummer
+                                : rsin;
+
+                            var queryParametersExcludingRsinAndKvk = Request?.Query?
+                                .Where(x => x.Key != KvkNummer && x.Key != Rsin) 
+                                ?? Enumerable.Empty<KeyValuePair<string, StringValues>>();
+
+                            var dict = queryParametersExcludingRsinAndKvk
+                                .Append(new("rol__betrokkeneIdentificatie__nietNatuurlijkPersoon__innNnpId", identifier))
+                                .SelectMany(x=> x.Value.Select(v => $"{x.Key}={x.Value}"));
+
+                            queryString = $"?{string.Join('&', dict)}";
+                        }
+                        var message = await client.GetAsync($"{path}{queryString}", HttpCompletionOption.ResponseHeadersRead, token);
                         Response?.RegisterForDispose(message);
                         return (client.BaseAddress, Message: (HttpResponseMessage?)message);
                     }

@@ -5,6 +5,7 @@ export interface Bedrijf {
   kvkNummer: string;
   type: string;
   vestigingsnummer?: string;
+  rsin?: string;
   bedrijfsnaam: string;
   postcode?: string;
   huisnummer?: string;
