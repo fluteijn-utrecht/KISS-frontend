@@ -10,8 +10,7 @@ import {
 import { mutate } from "swrv";
 import type { Ref } from "vue";
 
-import { type Klant, KlantType } from "./types";
-import { nanoid } from "nanoid";
+import { type Klant } from "./types";
 import type { BedrijfIdentifier } from "./bedrijf/types";
 
 const klantinteractiesBaseUrl = "/api/klantinteracties/api/v1";
@@ -39,17 +38,21 @@ const identificatorTypes: Record<string, IdentificatorType> = {
     codeSoortObjectId: "bsn",
     codeObjecttype: "inp",
   },
-  // TODO in PC-341
-  // vestiging: {
-  //   codeRegister: "KVK",
-  //   codeSoortObjectId: "Vestigingsnummer",
-  //   codeObjecttype: "Vestiging",
-  // },
-  // nietNatuurlijkPersoon: {
-  //   codeRegister: "KVK",
-  //   codeSoortObjectId: "InnNnpId",
-  //   codeObjecttype: "INGESCHREVEN NIET-NATUURLIJK PERSOON",
-  // },
+  vestiging: {
+    codeRegister: "hr",
+    codeSoortObjectId: "vtn",
+    codeObjecttype: "vst",
+  },
+  nietNatuurlijkPersoonRsin: {
+    codeRegister: "hr",
+    codeSoortObjectId: "rsin",
+    codeObjecttype: "innp",
+  },
+  nietNatuurlijkPersoonKvkNummer: {
+    codeRegister: "hr",
+    codeSoortObjectId: "kvkNummer",
+    codeObjecttype: "innp",
+  },
 };
 
 type Contactnaam = {
@@ -66,7 +69,7 @@ type PersoonIdentificatie = {
   contactnaam: Contactnaam;
 };
 
-enum PartijTypes {
+export enum PartijTypes {
   persoon = "persoon",
   organisatie = "organisatie",
   contactpersoon = "contactpersoon",
@@ -87,92 +90,28 @@ type CreateKlantParameters =
   | CreateOrganisatieParameters;
 
 const digitaalAdresTypes = {
-  email: "e-mailadres",
-  telefoonnummer: "telefoonnummer",
+  email: "email",
+  telefoonnummer: "telnr",
 } as const;
 
-type QueryParam = [string, string][];
+export type KlantSearchField = "email" | "telefoonnummer";
 
-type FieldParams = {
-  email: string;
-  telefoonnummer: string;
+export type KlantSearch = {
+  field: KlantSearchField;
+  query: string;
 };
 
-export function createKlantQuery<K extends KlantSearchField>(
-  args: KlantSearch<K>,
-): KlantSearch<K> {
-  return args;
-}
-
-export type KlantSearchField = keyof FieldParams;
-
-type QueryDictionary = {
-  [K in KlantSearchField]: (search: FieldParams[K]) => QueryParam;
-};
-
-const queryDictionary: QueryDictionary = {
-  email: (search) => [["emailadres", search]],
-  telefoonnummer: (search) => [["telefoonnummer", search]],
-};
-
-export type KlantSearch<K extends KlantSearchField> = {
-  field: K;
-  query: FieldParams[K];
-};
-
-function getQueryParams<K extends KlantSearchField>(params: KlantSearch<K>) {
-  return queryDictionary[params.field](params.query) as ReturnType<
-    QueryDictionary[K]
-  >;
-}
-
-type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
-  query: Ref<KlantSearch<K> | undefined>;
+type KlantSearchParameters = {
+  query: Ref<KlantSearch | undefined>;
   page: Ref<number | undefined>;
-  subjectType?: KlantType;
+  subjectType: PartijTypes;
 };
 
-const klantRootUrl = `${document.location.origin}/api/klanten/api/v1/klanten`;
-
-function getKlantSearchUrl<K extends KlantSearchField>(
-  search: KlantSearch<K> | undefined,
-  subjectType: KlantType,
-  page: number | undefined,
-) {
-  if (!search?.query) return "";
-
-  const url = new URL(klantRootUrl);
-  url.searchParams.set("page", page?.toString() ?? "1");
-  url.searchParams.append("subjectType", subjectType);
-
-  getQueryParams(search).forEach((tuple) => {
-    url.searchParams.set(...tuple);
-  });
-
-  return url.toString();
-}
-
-function mapKlant(obj: any): Klant {
-  const { subjectIdentificatie, url } = obj ?? {};
-  const { inpBsn, vestigingsNummer, innNnpId } = subjectIdentificatie ?? {};
-  const urlSplit: string[] = url?.split("/") ?? [];
-
-  return {
-    ...obj,
-    id: urlSplit[urlSplit.length - 1],
-    _typeOfKlant: "klant",
-    bsn: inpBsn,
-    vestigingsnummer: vestigingsNummer,
-    url: url,
-    nietNatuurlijkPersoonIdentifier: innNnpId,
-  };
-}
-
-function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
+function fetchKlantenOverview(url: string): Promise<PaginatedResult<Klant>> {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((j) => parsePagination(j, mapKlant));
+    .then((r) => parsePagination(r, (x) => mapPartijToKlant(x as Partij)));
 }
 
 const getKlantIdUrl = (uuid: string) =>
@@ -180,31 +119,58 @@ const getKlantIdUrl = (uuid: string) =>
   `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`;
 
 const searchSingleKlant = (url: string) =>
-  searchKlanten(url).then(enforceOneOrZero);
+  fetchKlantenOverview(url).then(enforceOneOrZero);
+
+const fetchSingleKlant = (url: string) =>
+  fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapPartijToKlant);
 
 export function useKlantById(id: Ref<string>) {
   return ServiceResult.fromFetcher(
     () => getKlantIdUrl(id.value),
-    (url) =>
-      fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then(mapPartijToKlant),
+    fetchSingleKlant,
   );
 }
 
-export function useSearchKlanten<K extends KlantSearchField>({
+export function useSearchKlanten({
   query,
   page,
   subjectType,
-}: KlantSearchParameters<K>) {
-  const getUrl = () =>
-    getKlantSearchUrl(
-      query.value,
-      subjectType ?? KlantType.Persoon,
-      page.value,
+}: KlantSearchParameters) {
+  function getUrl() {
+    if (!query.value?.query) return "";
+
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", page?.toString() ?? "1");
+    searchParams.append("verstrektDoorPartij__soortPartij", subjectType);
+    searchParams.append("adres__icontains", query.value.query);
+
+    searchParams.append(
+      "soortDigitaalAdres",
+      query.value.field === "telefoonnummer"
+        ? digitaalAdresTypes.telefoonnummer
+        : digitaalAdresTypes.email,
     );
-  return ServiceResult.fromFetcher(getUrl, searchKlanten);
+
+    return klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
+  }
+  const fetcher = (url: string) =>
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((x) =>
+        parsePagination(
+          x,
+          ({ verstrektDoorPartij__uuid }: any) =>
+            verstrektDoorPartij__uuid as string,
+        ),
+      )
+      .then(async (r) => ({
+        page: await Promise.all(
+          [...new Set(r.page)].map((u) => fetchSingleKlant(getKlantIdUrl(u))),
+        ),
+      }));
+
+  return ServiceResult.fromFetcher(getUrl, fetcher);
 }
 
 export async function ensureKlantForBsn({
@@ -217,13 +183,14 @@ export async function ensureKlantForBsn({
   if (!bsn) throw new Error();
   const soortPartij = PartijTypes.persoon;
   const identificatorType = identificatorTypes.persoon;
+  const url = getUrlForSingleKlantByIdentificator(
+    soortPartij,
+    identificatorType,
+    bsn,
+  );
 
   const klant =
-    (await getSingleKlantByIdentificator(
-      soortPartij,
-      identificatorType,
-      bsn,
-    )) ??
+    (await searchSingleKlant(url)) ??
     (await createKlant(
       { partijIdentificatie, soortPartij },
       identificatorType,
@@ -232,156 +199,129 @@ export async function ensureKlantForBsn({
 
   const idUrl = getKlantIdUrl(klant.id);
   mutate(idUrl, klant);
+  mutate(url, klant);
 
   return klant;
 }
 
-const getUrlVoorGetKlantById = (
+const getUrlForSingleKlantByBedrijfIdentifier = (
   bedrijfSearchParameter: BedrijfIdentifier | undefined,
 ) => {
   if (!bedrijfSearchParameter) {
     return "";
   }
 
+  const soortPartij = PartijTypes.organisatie;
+
   if (
     "vestigingsnummer" in bedrijfSearchParameter &&
     bedrijfSearchParameter.vestigingsnummer
-  ) {
-    const url = new URL(klantRootUrl);
-    url.searchParams.set(
-      "subjectVestiging__vestigingsNummer",
+  )
+    return getUrlForSingleKlantByIdentificator(
+      soortPartij,
+      identificatorTypes.vestiging,
       bedrijfSearchParameter.vestigingsnummer,
     );
-    url.searchParams.set("subjectType", KlantType.Bedrijf);
-    return url.toString();
-  }
 
-  if (
-    "nietNatuurlijkPersoonIdentifier" in bedrijfSearchParameter &&
-    bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier
-  ) {
-    const url = new URL(klantRootUrl);
-    url.searchParams.set(
-      "subjectNietNatuurlijkPersoon__innNnpId",
-      bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier,
+  if ("rsin" in bedrijfSearchParameter && bedrijfSearchParameter.rsin) {
+    return getUrlForSingleKlantByIdentificator(
+      soortPartij,
+      identificatorTypes.nietNatuurlijkPersoonRsin,
+      bedrijfSearchParameter.rsin,
     );
-    url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
-    return url.toString();
   }
 
   return "";
 };
 
-export const useKlantByIdentifier = (
+export const useKlantByBedrijfIdentifier = (
   getId: () => BedrijfIdentifier | undefined,
 ) => {
-  const getUrl = () => getUrlVoorGetKlantById(getId());
-
-  const getUniqueId = () => {
-    const url = getUrl();
-    return url && url + "_single";
-  };
-
-  return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
-    getUniqueId,
-  });
+  const getUrl = () => getUrlForSingleKlantByBedrijfIdentifier(getId());
+  return ServiceResult.fromFetcher(getUrl, searchSingleKlant);
 };
 
 //maak een klant aan in het klanten register als die nog niet bestaat
 //bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan
-export async function ensureKlantForBedrijfIdentifier(
-  {
-    bedrijfsnaam,
-    identifier,
-  }: {
-    bedrijfsnaam: string;
-    identifier: BedrijfIdentifier;
-  },
-  bronorganisatie: string,
-) {
-  const url = getUrlVoorGetKlantById(identifier);
-  const uniqueId = url && url + "_single";
+export async function ensureKlantForBedrijfIdentifier({
+  identifier,
+  partijIdentificatie,
+}: {
+  identifier: BedrijfIdentifier;
+  partijIdentificatie: OrganisatieIdentificatie;
+}) {
+  const bedrijfIdentifierUrl =
+    getUrlForSingleKlantByBedrijfIdentifier(identifier);
 
-  if (!url || !uniqueId) throw new Error();
+  if (!bedrijfIdentifierUrl) throw new Error();
 
-  const first = await searchSingleKlant(url);
+  const klant =
+    (await searchSingleKlant(bedrijfIdentifierUrl)) ??
+    (await createBedrijfKlant(identifier, partijIdentificatie));
 
-  if (first) {
-    mutate(uniqueId, first);
-    const idUrl = getKlantIdUrl(first.id);
-    mutate(idUrl, first);
-    return first;
-  }
-
-  let subjectType: KlantType | null = null;
-  let subjectIdentificatie = {};
-  //afhankelijk van het type 'bedrijf' slaan we andere gegevens op
-  if ("vestigingsnummer" in identifier && identifier.vestigingsnummer) {
-    subjectType = KlantType.Bedrijf;
-    subjectIdentificatie = { vestigingsNummer: identifier.vestigingsnummer };
-  } else if (
-    "nietNatuurlijkPersoonIdentifier" in identifier &&
-    identifier.nietNatuurlijkPersoonIdentifier
+  if (
+    "kvkNummer" in identifier &&
+    identifier.kvkNummer &&
+    klant.kvkNummer &&
+    klant.kvkNummer !== identifier.kvkNummer
   ) {
-    //als we niet te maken hebben met een vestiging
-    //dan gebruiken we afhankelijk van de mogelijkheden van de gerbuite registers
-    subjectType = KlantType.NietNatuurlijkPersoon;
-    subjectIdentificatie = {
-      innNnpId: identifier.nietNatuurlijkPersoonIdentifier,
-    };
+    throw new Error();
   }
 
-  if (!subjectType || !subjectIdentificatie) {
-    throw new Error("Kan geen klant aanmaken zonder identificatie");
-  }
+  const idUrl = getKlantIdUrl(klant.id);
+  mutate(idUrl, klant);
 
-  const response = await fetchLoggedIn(klantRootUrl, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      bronorganisatie,
-      // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: nanoid(8),
-      subjectIdentificatie: subjectIdentificatie,
-      subjectType: subjectType, ///
-      bedrijfsnaam,
-    }),
-  });
-
-  if (!response.ok) throw new Error();
-
-  const json = await response.json();
-  const newKlant = mapKlant(json);
-  const idUrl = getKlantIdUrl(newKlant.id);
-
-  mutate(idUrl, newKlant);
-  mutate(uniqueId, newKlant);
-
-  return newKlant;
+  return klant;
 }
 
-const getSingleKlantByIdentificator = (
+const getUrlForSingleKlantByIdentificator = (
   soortPartij: PartijTypes,
   identificatorType: IdentificatorType,
   objectId: string,
 ) =>
-  fetchLoggedIn(
-    klantinteractiesBaseUrl +
-      "/partijen?" +
-      new URLSearchParams({
-        soortPartij,
-        partijIdentificator__codeSoortObjectId:
-          identificatorType.codeSoortObjectId,
-        partijIdentificator__objectId: objectId,
-        expand: "digitaleAdressen",
-      }),
-  )
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((r) => parsePagination(r, (x) => mapPartijToKlant(x as Partij)))
-    .then(enforceOneOrZero);
+  klantinteractiesBaseUrl +
+  "/partijen?" +
+  new URLSearchParams({
+    soortPartij,
+    partijIdentificator__codeSoortObjectId: identificatorType.codeSoortObjectId,
+    partijIdentificator__objectId: objectId,
+    expand: "digitaleAdressen",
+  });
+
+async function createBedrijfKlant(
+  identifier: BedrijfIdentifier,
+  partijIdentificatie: OrganisatieIdentificatie,
+) {
+  const soortPartij = PartijTypes.organisatie;
+  if ("vestigingsnummer" in identifier) {
+    return createKlant(
+      { partijIdentificatie, soortPartij },
+      identificatorTypes.vestiging,
+      identifier.vestigingsnummer,
+    );
+  }
+
+  const klant = await createKlant(
+    { partijIdentificatie, soortPartij },
+    identificatorTypes.nietNatuurlijkPersoonRsin,
+    identifier.rsin,
+  );
+
+  if (identifier.kvkNummer) {
+    await createPartijIdentificator({
+      identificeerdePartij: {
+        url: klant.url,
+        uuid: klant.id,
+      },
+      partijIdentificator: {
+        ...identificatorTypes.nietNatuurlijkPersoonKvkNummer,
+        objectId: identifier.kvkNummer,
+      },
+    });
+  }
+
+  return klant;
+}
 
 async function mapPartijToKlant(
   partij: Partij,
@@ -414,12 +354,11 @@ async function mapPartijToKlant(
     telefoonnummer: getDigitaalAdres(digitaalAdresTypes.telefoonnummer),
     emailadres: getDigitaalAdres(digitaalAdresTypes.email),
     bsn: getIdentificator(identificatorTypes.persoon),
-    // TODO in PC-341
-    // vestigingsnummer: getIdentificator(identificatorTypes.vestiging),
-    // TODO in PC-341
-    // nietNatuurlijkPersoonIdentifier: getIdentificator(
-    //   identificatorTypes.nietNatuurlijkPersoon,
-    // ),
+    vestigingsnummer: getIdentificator(identificatorTypes.vestiging),
+    kvkNummer: getIdentificator(
+      identificatorTypes.nietNatuurlijkPersoonKvkNummer,
+    ),
+    rsin: getIdentificator(identificatorTypes.nietNatuurlijkPersoonRsin),
   };
 }
 
@@ -435,6 +374,7 @@ const createPartij = ({
       voorkeursDigitaalAdres: null,
       vertegenwoordigden: [],
       rekeningnummers: [],
+      partijIdentificatoren: [],
       voorkeursRekeningnummer: null,
       indicatieGeheimhouding: false,
       indicatieActief: true,

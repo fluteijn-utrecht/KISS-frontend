@@ -1,5 +1,5 @@
 import type { Klant } from "../../types";
-import { useKlantByIdentifier } from "../../service";
+import { useKlantByBedrijfIdentifier } from "../../service";
 import { combineEnrichers } from "@/services";
 import { useBedrijfByIdentifier } from "../service/use-bedrijf-by-identifier";
 import type { Bedrijf, BedrijfIdentifier } from "../types";
@@ -17,15 +17,15 @@ function getSharedIdentifier(
     return { vestigingsnummer: klantofbedrijf.vestigingsnummer };
   }
 
-  if (klantofbedrijf.nietNatuurlijkPersoonIdentifier) {
+  if (klantofbedrijf.rsin) {
     return {
-      nietNatuurlijkPersoonIdentifier: klantofbedrijf.nietNatuurlijkPersoonIdentifier,
+      rsin: klantofbedrijf.rsin,
     };
   }
 }
 
 export const useEnrichedBedrijf = combineEnrichers(
-  useKlantByIdentifier,
+  useKlantByBedrijfIdentifier,
   useBedrijfByIdentifier,
   getSharedIdentifier, //een functie die de property waarmee je het bijbehorende object in de andere bron gaat zoeken
   isKlant,

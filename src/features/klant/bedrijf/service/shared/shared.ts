@@ -43,11 +43,8 @@ const parseKvkPagination = async ({
   totaal,
   resultaten,
 }: KvkPagination): Promise<Paginated<Bedrijf>> => {
-  const config = await preferredNietNatuurlijkPersoonIdentifierPromise;
   return {
-    page: await Promise.all(
-      resultaten.map((x) => mapHandelsRegister(x, config)),
-    ),
+    page: await Promise.all(resultaten.map((x) => mapHandelsRegister(x))),
     pageNumber: pagina,
     totalRecords: totaal,
     pageSize: resultatenPerPagina,
@@ -62,10 +59,7 @@ type KvkPagination = {
   resultaten: any[];
 };
 
-async function mapHandelsRegister(
-  json: any,
-  identifier: PreferredNietNatuurlijkPersoonIdentifier,
-): Promise<Bedrijf> {
+async function mapHandelsRegister(json: any): Promise<Bedrijf> {
   const { vestigingsnummer, kvkNummer, naam, adres, type } = json ?? {};
 
   const { binnenlandsAdres, buitenlandsAdres } = adres ?? {};
@@ -105,19 +99,7 @@ async function mapHandelsRegister(
     ...(naamgeving ?? {}),
   };
 
-  // vanuit de configuratie wordt bepaald welk gegeven gebruikt wordt
-  // om KvK gegevens van niet natuurlijke personen te koppelen aan bedrijven in
-  // het klantregeiser (bijvoorbeeld OpenKlant of de e-Suite)
-  // dit veld kan bijvoorbeeld een rsin of een kvknummer bevatten
-  // nb. dit veld wordt via de klnaten API gecommuniceerd in het veld innNnpId bij een subjectNietNatuurlijkPersoon,
-  // de waarde kan dus zowel een kvknummer of een rsin bevatten
-  const nietNatuurlijkPersoonIdentifier =
-    merged[identifier.nietNatuurlijkPersoonIdentifier];
-
-  return {
-    ...merged,
-    nietNatuurlijkPersoonIdentifier: nietNatuurlijkPersoonIdentifier,
-  };
+  return merged;
 }
 
 ////
@@ -191,22 +173,3 @@ const hasFoutCode = (body: unknown, code: string) => {
   }
   return false;
 };
-
-export const preferredNietNatuurlijkPersoonIdentifierPromise = fetchLoggedIn(
-  "/api/GetNietNatuurlijkPersoonIdentifier",
-)
-  .then(throwIfNotOk)
-  .then((r) => r.json())
-  .then((r: PreferredNietNatuurlijkPersoonIdentifier) => r);
-
-export type NietNatuurlijkPersoonIdentifierValue =
-  (typeof NietNatuurlijkPersoonIdentifiers)[keyof typeof NietNatuurlijkPersoonIdentifiers];
-
-export type PreferredNietNatuurlijkPersoonIdentifier = {
-  nietNatuurlijkPersoonIdentifier: NietNatuurlijkPersoonIdentifierValue;
-};
-
-export const NietNatuurlijkPersoonIdentifiers = {
-  rsin: "rsin",
-  kvkNummer: "kvkNummer",
-} as const;

@@ -5,7 +5,6 @@ import { computed, reactive } from "vue";
 import { useRouter } from "vue-router";
 import type { Bedrijf as Bedrijf, EnrichedBedrijf } from "../types";
 import { useEnrichedBedrijf } from "./bedrijf-enricher";
-import { useOrganisatieIds } from "@/stores/user";
 import type { Klant } from "../../types";
 import { ensureKlantForBedrijfIdentifier } from "../../service";
 
@@ -31,7 +30,6 @@ function mapLink(klant: Klant | null, naam: string | null) {
 }
 
 const router = useRouter();
-const organisatieIds = useOrganisatieIds();
 
 const klantBedrijfsnaam = mapServiceData(
   klantData,
@@ -64,10 +62,6 @@ const create = async () => {
   //voor overige bedrijven het vestigingsnummer
   if (!bedrijfIdentificatie.value) throw new Error();
 
-  const bedrijfsnaam = handelsBedrijfsnaam.success
-    ? handelsBedrijfsnaam.data
-    : "";
-
   let identifier;
 
   if (!handelsregisterData.success) return;
@@ -76,24 +70,23 @@ const create = async () => {
     identifier = {
       vestigingsnummer: handelsregisterData.data.vestigingsnummer,
     };
-  } else if (handelsregisterData.data?.nietNatuurlijkPersoonIdentifier) {
+  } else if (handelsregisterData.data?.rsin) {
     identifier = {
-      nietNatuurlijkPersoonIdentifier:
-        handelsregisterData.data.nietNatuurlijkPersoonIdentifier,
+      rsin: handelsregisterData.data.rsin,
+      kvkNummer: handelsregisterData.data.kvkNummer,
     };
   }
 
-  if (!identifier) {
+  if (!identifier || !handelsregisterData.data) {
     return;
   }
 
-  const newKlant = await ensureKlantForBedrijfIdentifier(
-    {
-      identifier,
-      bedrijfsnaam,
+  const newKlant = await ensureKlantForBedrijfIdentifier({
+    identifier,
+    partijIdentificatie: {
+      naam: handelsregisterData.data.bedrijfsnaam,
     },
-    organisatieIds.value[0] || "",
-  );
+  });
 
   const url = getKlantUrl(newKlant);
   router.push(url);

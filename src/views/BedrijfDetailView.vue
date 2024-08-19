@@ -1,11 +1,7 @@
 <template>
   <back-link />
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
-  <application-message
-    messageType="error"
-    message="Deze pagina werkt tijdelijk niet, totdat story PC-341 is uitgevoerd"
-  />
-  <!-- <tab-list v-model="currentTab">
+  <tab-list v-model="currentTab">
     <tab-list-data-item
       label="Contactgegevens"
       :data="klant"
@@ -69,11 +65,10 @@
         </contactverzoeken-overzicht>
       </template>
     </tab-list-data-item>
-  </tab-list> -->
+  </tab-list>
 </template>
 
 <script setup lang="ts">
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
@@ -104,17 +99,6 @@ const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
-watch(
-  () => klant.success && klant.data,
-  (k) => {
-    if (!k) return;
-    contactmomentStore.setKlant({
-      ...k,
-      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
-    });
-  },
-  { immediate: true },
-);
 
 const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
@@ -129,10 +113,10 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     return {
       vestigingsnummer: klant.data.vestigingsnummer,
     };
-  if (klant.data.nietNatuurlijkPersoonIdentifier)
+  if (klant.data.rsin)
     return {
-      nietNatuurlijkPersoonIdentifier:
-        klant.data.nietNatuurlijkPersoonIdentifier,
+      rsin: klant.data.rsin,
+      kvkNummer: klant.data.kvkNummer,
     };
 };
 
@@ -144,4 +128,17 @@ const zaken = useZakenByKlantBedrijfIdentifier(() => {
   if (bedrijf.data.rsin)
     return { rsin: bedrijf.data.rsin, kvkNummer: bedrijf.data.kvkNummer };
 });
+
+watch(
+  [() => klant.success && klant.data, () => bedrijf.success && bedrijf.data],
+  ([k, b]) => {
+    if (!k) return;
+    contactmomentStore.setKlant({
+      ...k,
+      ...b,
+      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
+    });
+  },
+  { immediate: true },
+);
 </script>

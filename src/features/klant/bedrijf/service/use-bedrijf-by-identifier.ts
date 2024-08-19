@@ -42,19 +42,8 @@ const getUrlVoorGetBedrijfById = (
     return `${zoekenUrl}?${searchParams}`;
   }
 
-  if (
-    "nietNatuurlijkPersoonIdentifier" in bedrijfsZoekParamter &&
-    bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier
-  ) {
-    // TIJDELIJK. netter maken bij OK2 bedrijf stories
-    const identifier =
-      bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier.length === 9
-        ? "rsin"
-        : "kvkNummer";
-    searchParams.set(
-      identifier,
-      bedrijfsZoekParamter.nietNatuurlijkPersoonIdentifier,
-    );
+  if ("rsin" in bedrijfsZoekParamter && bedrijfsZoekParamter.rsin) {
+    searchParams.set("rsin", bedrijfsZoekParamter.rsin);
     searchParams.set("type", "rechtspersoon");
     return `${zoekenUrl}?${searchParams}`;
   }

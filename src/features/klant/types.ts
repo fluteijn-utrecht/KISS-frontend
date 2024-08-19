@@ -7,16 +7,7 @@ export interface Klant {
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
-  url?: string;
-  nietNatuurlijkPersoonIdentifier?: string;
-}
-
-export enum KlantType {
-  Persoon = "natuurlijk_persoon",
-  Bedrijf = "vestiging",
-  NietNatuurlijkPersoon = "niet_natuurlijk_persoon",
-}
-
-export interface Contactverzoek {
-  contactmoment: string;
+  rsin?: string;
+  kvkNummer?: string;
+  url: string;
 }

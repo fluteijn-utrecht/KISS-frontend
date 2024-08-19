@@ -28,9 +28,9 @@
     <simple-spinner v-if="klanten.loading" />
     <template v-if="klanten.success">
       <bedrijven-overzicht :records="klanten.data.page">
-        <template #caption>
+        <!-- <template #caption>
           <SearchResultsCaption :results="klanten.data" />
-        </template>
+        </template> -->
       </bedrijven-overzicht>
     </template>
     <application-message
@@ -79,12 +79,11 @@ import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
 import type { SearchCategories, BedrijfQuery } from "./types";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import {
-  createKlantQuery,
+  PartijTypes,
   useSearchKlanten,
   type KlantSearch,
   type KlantSearchField,
 } from "../service";
-import { KlantType } from "../types";
 import { useRouter } from "vue-router";
 import { FriendlyError } from "@/services";
 import { bedrijfQuery } from "./service/bedrijf-query";
@@ -104,7 +103,7 @@ const state = ensureState({
       currentSearch: "",
       field: "handelsnaam" as SearchFields,
       query: undefined as BedrijfQuery | undefined,
-      klantSearchQuery: undefined as KlantSearch<KlantSearchField> | undefined,
+      klantSearchQuery: undefined as KlantSearch | undefined,
       page: 1,
     };
   },
@@ -147,10 +146,10 @@ const currentKlantQuery = computed(() => {
   const { currentSearch, field } = state.value;
 
   if (field === "telefoonnummer" || field === "email")
-    return createKlantQuery({
+    return {
       field,
       query: currentSearch,
-    });
+    };
 
   return undefined;
 });
@@ -167,7 +166,7 @@ watch(
 const klanten = useSearchKlanten({
   query: computed(() => state.value.klantSearchQuery),
   page: computed(() => state.value.page),
-  subjectType: KlantType.Bedrijf,
+  subjectType: PartijTypes.organisatie,
 });
 
 const handleSearch = () => {
