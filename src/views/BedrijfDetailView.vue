@@ -135,7 +135,7 @@ watch(
     if (!k) return;
     contactmomentStore.setKlant({
       ...k,
-      ...b,
+      ...(b || {}),
       hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
     });
   },
