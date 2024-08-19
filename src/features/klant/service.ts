@@ -400,7 +400,7 @@ async function mapPartijToKlant(
     )?.adres;
 
   const getIdentificator = (type: { codeSoortObjectId: string }) =>
-    identificatoren.find(
+    identificatoren?.find(
       (x) =>
         x?.partijIdentificator?.objectId &&
         x?.partijIdentificator?.codeSoortObjectId == type.codeSoortObjectId,
