@@ -59,10 +59,22 @@ const router = useRouter();
 
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
-const create = async (record: Persoon) => {
-  if (!record.bsn) throw new Error();
+const create = async ({
+  bsn,
+  voornaam,
+  voorvoegselAchternaam,
+  achternaam,
+}: Persoon) => {
+  if (!bsn) throw new Error();
   const newKlant = await ensureKlantForBsn({
-    bsn: record.bsn,
+    bsn,
+    partijIdentificatie: {
+      contactnaam: {
+        voornaam,
+        voorvoegselAchternaam,
+        achternaam,
+      },
+    },
   });
   const url = getKlantUrl(newKlant);
   router.push(url);
