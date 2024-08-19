@@ -6,7 +6,7 @@ import { useRouter } from "vue-router";
 import type { Bedrijf as Bedrijf, EnrichedBedrijf } from "../types";
 import { useEnrichedBedrijf } from "./bedrijf-enricher";
 import type { Klant } from "../../types";
-import { ensureKlantForBedrijfIdentifier } from "../../service";
+import { ensureKlantForBedrijfIdentifier } from "../service/ensure-klant-for-bedrijf-identifier";
 
 const props = defineProps<{ record: Bedrijf | Klant }>();
 const [bedrijfIdentificatie, klantData, handelsregisterData] =
@@ -82,10 +82,8 @@ const create = async () => {
   }
 
   const newKlant = await ensureKlantForBedrijfIdentifier({
-    identifier,
-    partijIdentificatie: {
-      naam: handelsregisterData.data.bedrijfsnaam,
-    },
+    ...identifier,
+    naam: handelsregisterData.data.bedrijfsnaam,
   });
 
   const url = getKlantUrl(newKlant);

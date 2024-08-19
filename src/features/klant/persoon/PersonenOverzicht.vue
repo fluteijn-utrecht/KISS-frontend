@@ -50,8 +50,8 @@
 import DutchDate from "@/components/DutchDate.vue";
 import type { Persoon } from "./types";
 import type { Klant } from "../types";
-import { ensureKlantForBsn } from "../service";
 import { useRouter } from "vue-router";
+import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
 
 defineProps<{ records: Persoon[] }>();
 
@@ -68,12 +68,10 @@ const create = async ({
   if (!bsn) throw new Error();
   const newKlant = await ensureKlantForBsn({
     bsn,
-    partijIdentificatie: {
-      contactnaam: {
-        voornaam,
-        voorvoegselAchternaam,
-        achternaam,
-      },
+    contactnaam: {
+      voornaam,
+      voorvoegselAchternaam,
+      achternaam,
     },
   });
   const url = getKlantUrl(newKlant);

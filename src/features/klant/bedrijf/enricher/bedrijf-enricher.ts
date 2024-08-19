@@ -1,5 +1,5 @@
 import type { Klant } from "../../types";
-import { useKlantByBedrijfIdentifier } from "../../service";
+import { useKlantByBedrijfIdentifier } from "../service/use-klant-by-bedrijf-identifier";
 import { combineEnrichers } from "@/services";
 import { useBedrijfByIdentifier } from "../service/use-bedrijf-by-identifier";
 import type { Bedrijf, BedrijfIdentifier } from "../types";

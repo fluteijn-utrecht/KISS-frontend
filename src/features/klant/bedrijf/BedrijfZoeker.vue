@@ -24,10 +24,12 @@
     </fieldset>
   </form>
 
-  <section class="search-section" v-if="state.klantSearchQuery?.query">
+  <section class="search-section" v-if="state.klantSearchQuery">
     <simple-spinner v-if="klanten.loading" />
     <template v-if="klanten.success">
-      <bedrijven-overzicht :records="klanten.data.page">
+      <bedrijven-overzicht :records="klanten.data">
+        <!-- We kunnen niet pagineren omdat we via digitale adressen zoeken -->
+        <!-- We hebben dus ook niks om in de caption te tonen  -->
         <!-- <template #caption>
           <SearchResultsCaption :results="klanten.data" />
         </template> -->
@@ -76,25 +78,20 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
-import type { SearchCategories, BedrijfQuery } from "./types";
+import type { BedrijfQuery } from "./types";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
-import {
-  PartijTypes,
-  useSearchKlanten,
-  type KlantSearch,
-  type KlantSearchField,
-} from "../service";
 import { useRouter } from "vue-router";
 import { FriendlyError } from "@/services";
 import { bedrijfQuery } from "./service/bedrijf-query";
-type SearchFields = KlantSearchField | SearchCategories;
-const labels: { [key in SearchFields]: string } = {
+import { useSearchBedrijfKlantenByDigitaalAdres } from "./service/use-search-bedrijf-klant-by-digitaal-adres";
+const labels = {
   handelsnaam: "Bedrijfsnaam",
   kvkNummer: "KVK-nummer",
   postcodeHuisnummer: "Postcode + Huisnummer",
   email: "E-mailadres",
   telefoonnummer: "Telefoonnummer",
-};
+} as const;
+type SearchFields = keyof typeof labels;
 
 const state = ensureState({
   stateId: "BedrijfZoeker",
@@ -103,7 +100,10 @@ const state = ensureState({
       currentSearch: "",
       field: "handelsnaam" as SearchFields,
       query: undefined as BedrijfQuery | undefined,
-      klantSearchQuery: undefined as KlantSearch | undefined,
+      klantSearchQuery: undefined as
+        | { email: string }
+        | { telefoonnummer: string }
+        | undefined,
       page: 1,
     };
   },
@@ -145,10 +145,14 @@ const currentBedrijfQuery = computed(() => {
 const currentKlantQuery = computed(() => {
   const { currentSearch, field } = state.value;
 
-  if (field === "telefoonnummer" || field === "email")
+  if (field === "telefoonnummer")
     return {
-      field,
-      query: currentSearch,
+      telefoonnummer: currentSearch,
+    };
+
+  if (field === "email")
+    return {
+      email: currentSearch,
     };
 
   return undefined;
@@ -163,11 +167,9 @@ watch(
   { immediate: true },
 );
 
-const klanten = useSearchKlanten({
-  query: computed(() => state.value.klantSearchQuery),
-  page: computed(() => state.value.page),
-  subjectType: PartijTypes.organisatie,
-});
+const klanten = useSearchBedrijfKlantenByDigitaalAdres(
+  () => state.value.klantSearchQuery,
+);
 
 const handleSearch = () => {
   state.value.klantSearchQuery = currentKlantQuery.value;
@@ -187,8 +189,8 @@ const navigate = (val: number) => {
 };
 
 const singleKlantId = computed(() => {
-  if (klanten.success && klanten.data.page.length === 1) {
-    const first = klanten.data.page[0];
+  if (klanten.success && klanten.data.length === 1) {
+    const first = klanten.data[0];
     if (first?._typeOfKlant === "klant") {
       return first.id;
     }

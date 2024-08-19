@@ -10,4 +10,4 @@ export { default as KlantDetails } from "./KlantDetails.vue";
 
 export { usePersoonByBsn } from "./persoon/service";
 export { useBedrijfByIdentifier as useBedrijfByIdentifier } from "./bedrijf/service/use-bedrijf-by-identifier";
-export { useKlantById } from "./service";
+export { useKlantById } from "./use-klant-by-id";

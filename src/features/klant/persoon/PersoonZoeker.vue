@@ -118,8 +118,8 @@ import {
   type PersoonSearchField,
 } from "./service";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
-import { ensureKlantForBsn } from "../service";
 import { FriendlyError } from "@/services";
+import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
 
 const store = ensureState({
   stateId: "klant-zoeker",
@@ -192,12 +192,10 @@ watch(singlePersoon, async (newPersoon, oldPersoon) => {
   if (newPersoon?.bsn && newPersoon.bsn !== oldPersoon?.bsn) {
     const { id } = await ensureKlantForBsn({
       bsn: newPersoon.bsn,
-      partijIdentificatie: {
-        contactnaam: {
-          voornaam: newPersoon.voornaam,
-          voorvoegselAchternaam: newPersoon.voorvoegselAchternaam,
-          achternaam: newPersoon.achternaam,
-        },
+      contactnaam: {
+        voornaam: newPersoon.voornaam,
+        voorvoegselAchternaam: newPersoon.voorvoegselAchternaam,
+        achternaam: newPersoon.achternaam,
       },
     });
     await router.push(`/personen/${id}`);
