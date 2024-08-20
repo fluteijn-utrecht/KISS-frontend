@@ -128,13 +128,13 @@ const zaken = useZakenByKlantBedrijfIdentifier(() => {
 });
 
 watch(
-  [() => klant.success && klant.data, () => bedrijf.success && bedrijf.data],
-  ([k, b]) => {
+  () => klant.success && klant.data,
+  (k) => {
     if (!k) return;
     contactmomentStore.setKlant({
       ...k,
-      ...(b || {}),
-      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
+      hasContactInformation:
+        !!k.emailadressen.length || !!k.telefoonnummers.length,
     });
   },
   { immediate: true },

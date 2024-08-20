@@ -6,10 +6,22 @@
       </utrecht-heading>
     </header>
     <dl>
-      <dt>E-mailadres</dt>
-      <dd>{{ klant.emailadres }}</dd>
-      <dt>Telefoonnummer</dt>
-      <dd>{{ klant.telefoonnummer }}</dd>
+      <dt>E-mailadressen</dt>
+      <dd>
+        <ul v-if="klant.emailadressen.length">
+          <li v-for="(email, idx) in klant.emailadressen" :key="idx">
+            {{ email }}
+          </li>
+        </ul>
+      </dd>
+      <dt>Telefoonnummers</dt>
+      <dd>
+        <ul v-if="klant.telefoonnummers.length">
+          <li v-for="(telefoon, idx) in klant.telefoonnummers" :key="idx">
+            {{ telefoon }}
+          </li>
+        </ul>
+      </dd>
     </dl>
   </article>
 </template>

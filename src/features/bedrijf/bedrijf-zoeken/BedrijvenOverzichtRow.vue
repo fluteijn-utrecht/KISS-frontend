@@ -21,11 +21,15 @@
     </td>
     <td class="wrap">
       <div class="skeleton" v-if="klant.loading" />
-      <template v-if="klant.success">{{ klant.data?.emailadres }}</template>
+      <template v-if="klant.success">{{
+        klant.data?.emailadressen?.join(", ")
+      }}</template>
     </td>
     <td class="wrap">
       <div class="skeleton" v-if="klant.loading" />
-      <template v-if="klant.success">{{ klant.data?.telefoonnummer }}</template>
+      <template v-if="klant.success">{{
+        klant.data?.telefoonnummers.join(", ")
+      }}</template>
     </td>
     <td>
       <div class="skeleton" v-if="klant.loading || bedrijf.loading" />

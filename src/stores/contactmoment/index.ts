@@ -101,8 +101,8 @@ export type ContactmomentKlant = {
   voorvoegselAchternaam?: string;
   achternaam?: string;
   bedrijfsnaam?: string;
-  telefoonnummer?: string;
-  emailadres?: string;
+  telefoonnummers: string[];
+  emailadressen: string[];
   hasContactInformation: boolean;
   url?: string;
 };
@@ -198,8 +198,8 @@ function mapKlantToContactverzoek(
     contactverzoek.achternaam = klant.achternaam;
     contactverzoek.voornaam = klant.voornaam;
     contactverzoek.voorvoegselAchternaam = klant.voorvoegselAchternaam;
-    contactverzoek.telefoonnummer1 = klant.telefoonnummer;
-    contactverzoek.emailadres = klant.emailadres;
+    contactverzoek.telefoonnummer1 = klant.telefoonnummers.find(Boolean);
+    contactverzoek.emailadres = klant.emailadressen.find(Boolean);
     contactverzoek.organisatie = klant.bedrijfsnaam;
   }
 }

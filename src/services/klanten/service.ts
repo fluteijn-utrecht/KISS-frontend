@@ -260,10 +260,10 @@ async function mapPartijToKlant(
     identificatoren = await Promise.all(promises);
   }
 
-  const getDigitaalAdres = (type: string) =>
-    partij._expand?.digitaleAdressen?.find(
-      (x) => x.adres && x.soortDigitaalAdres === type,
-    )?.adres;
+  const getDigitaalAdressen = (type: DigitaalAdresTypes) =>
+    partij._expand?.digitaleAdressen
+      ?.filter((x) => x.adres && x.soortDigitaalAdres === type)
+      .map((x) => x.adres || "") || [];
 
   const getIdentificator = (type: { codeSoortObjectId: string }) =>
     identificatoren?.find(
@@ -279,8 +279,8 @@ async function mapPartijToKlant(
     url: partij.url,
     bedrijfsnaam: partij.identificatie?.naam,
     ...(partij.identificatie?.contactnaam || {}),
-    telefoonnummer: getDigitaalAdres(DigitaalAdresTypes.telefoonnummer),
-    emailadres: getDigitaalAdres(DigitaalAdresTypes.email),
+    telefoonnummers: getDigitaalAdressen(DigitaalAdresTypes.telefoonnummer),
+    emailadressen: getDigitaalAdressen(DigitaalAdresTypes.email),
     bsn: getIdentificator(identificatorTypes.persoon),
     vestigingsnummer: getIdentificator(identificatorTypes.vestiging),
     kvkNummer: getIdentificator(
@@ -303,7 +303,7 @@ export function searchKlantenByDigitaalAdres(
         partijType: PartijTypes;
       },
 ) {
-  let key, value;
+  let key: DigitaalAdresTypes, value: string;
 
   if ("telefoonnummer" in query) {
     key = DigitaalAdresTypes.telefoonnummer;
@@ -345,11 +345,11 @@ export function searchKlantenByDigitaalAdres(
           if (!isBedrijf) return false;
           const matchesEmail =
             key === DigitaalAdresTypes.email &&
-            klant.emailadres?.includes(value);
+            klant.emailadressen.some((adres) => adres.includes(value));
           const matchesTelefoon =
             key === DigitaalAdresTypes.telefoonnummer &&
-            klant.telefoonnummer?.includes(DigitaalAdresTypes.telefoonnummer);
-          return !!matchesEmail || !!matchesTelefoon;
+            klant.telefoonnummers.some((adres) => adres.includes(value));
+          return matchesEmail || matchesTelefoon;
         }),
       )
   );

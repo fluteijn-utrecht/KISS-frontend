@@ -1,7 +1,3 @@
-import type { Klant } from "@/services/klanten/types";
-
-export type NieuweKlant = Pick<Klant, "telefoonnummer" | "emailadres">;
-
 export interface Medewerker {
   id: string;
   voornaam: string;

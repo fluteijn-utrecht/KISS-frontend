@@ -2,8 +2,8 @@ export interface Klant {
   _typeOfKlant: "klant";
   id: string;
   klantnummer: string;
-  telefoonnummer?: string;
-  emailadres?: string;
+  telefoonnummers: string[];
+  emailadressen: string[];
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
