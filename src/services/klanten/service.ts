@@ -312,19 +312,37 @@ export function searchKlantenByDigitaalAdres(
 
   const url = klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
 
-  return fetchLoggedIn(url)
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then(
-      ({
-        results,
-      }: {
-        results: { verstrektDoorPartij: { uuid: string } }[];
-      }) => {
-        const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
-        const uniquePartijIds = [...new Set(partijIds)];
-        const promises = uniquePartijIds.map(fetchKlantById);
-        return Promise.all(promises);
-      },
-    );
+  return (
+    fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then(
+        ({
+          results,
+        }: {
+          results: { verstrektDoorPartij: { uuid: string } }[];
+        }) => {
+          const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
+          const uniquePartijIds = [...new Set(partijIds)];
+          const promises = uniquePartijIds.map(fetchKlantById);
+          return Promise.all(promises);
+        },
+      )
+      // TIJDELIJK: de filters werken nog niet in OpenKlant 2.1, dat komt in een nieuwe release
+      // daarom filteren we hier handmatig
+      .then((klanten) =>
+        klanten.filter((klant) => {
+          const isBedrijf =
+            !!klant.kvkNummer || !!klant.vestigingsnummer || !!klant.rsin;
+          if (!isBedrijf) return false;
+          const matchesEmail =
+            key === DigitaalAdresTypes.email &&
+            klant.emailadres?.includes(value);
+          const matchesTelefoon =
+            key === DigitaalAdresTypes.telefoonnummer &&
+            klant.telefoonnummer?.includes(DigitaalAdresTypes.telefoonnummer);
+          return !!matchesEmail || !!matchesTelefoon;
+        }),
+      )
+  );
 }

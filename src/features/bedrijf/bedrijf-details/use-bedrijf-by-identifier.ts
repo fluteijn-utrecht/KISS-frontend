@@ -17,10 +17,14 @@ export const useBedrijfByIdentifier = (
   const fetcher = () => {
     const id = getId();
     if (!id) {
-      throw new Error("Dit wordt hierboven al afgehandeld");
+      throw new Error(
+        "Dit scenario kan niet voorkomen, wordt al afgehandeld door getCacheKey",
+      );
     }
     return searchBedrijvenInHandelsRegister(id).then(enforceOneOrZero);
   };
 
-  return ServiceResult.fromFetcher(getCacheKey, fetcher);
+  return ServiceResult.fromFetcher("", fetcher, {
+    getUniqueId: getCacheKey,
+  });
 };

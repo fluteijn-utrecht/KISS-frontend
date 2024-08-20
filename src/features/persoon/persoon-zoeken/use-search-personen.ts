@@ -11,10 +11,14 @@ export function useSearchPersonen(getQuery: () => PersoonQuery | undefined) {
   const fetcher = () => {
     const query = getQuery();
     if (!query) {
-      throw new Error("dit wordt hierboven al afgehandeld");
+      throw new Error(
+        "Dit scenario kan niet voorkomen, wordt al afgehandeld door getCacheKey",
+      );
     }
     return searchPersonen(query);
   };
 
-  return ServiceResult.fromFetcher(getCacheKey, fetcher);
+  return ServiceResult.fromFetcher("", fetcher, {
+    getUniqueId: getCacheKey,
+  });
 }

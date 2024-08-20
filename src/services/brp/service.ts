@@ -88,7 +88,7 @@ export const searchPersonen = (query: PersoonQuery) => {
   let request, sorter: Compare<Persoon>;
   if ("bsn" in query) {
     request = {
-      burgerservicenummer: query.bsn,
+      burgerservicenummer: [query.bsn],
       type: "RaadpleegMetBurgerservicenummer",
       fields: [...minimalFields, "geboorte.land", "geboorte.plaats"],
     };

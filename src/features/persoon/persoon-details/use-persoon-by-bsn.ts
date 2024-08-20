@@ -3,10 +3,13 @@ import { searchPersonen } from "@/services/brp";
 
 export function usePersoonByBsn(getBsn: () => string | undefined) {
   const getCacheKey = () => {
-    const bsn = getBsn() || "";
-    return bsn && "persoon" + bsn;
+    const bsn = getBsn();
+    return bsn ? "persoon" + bsn : "";
   };
-  return ServiceResult.fromFetcher(getCacheKey, (bsn) =>
-    searchPersonen({ bsn }).then(enforceOneOrZero),
-  );
+  const fetcher = (bsn: string) => {
+    return searchPersonen({ bsn }).then(enforceOneOrZero);
+  };
+  return ServiceResult.fromFetcher(() => getBsn() || "", fetcher, {
+    getUniqueId: getCacheKey,
+  });
 }
