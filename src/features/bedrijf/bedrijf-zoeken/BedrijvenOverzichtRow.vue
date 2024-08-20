@@ -52,8 +52,8 @@
 </template>
 <script lang="ts" setup>
 import { computed } from "vue";
-import type { Klant } from "../../../services/klanten/types";
-import { useBedrijfByIdentifier } from "../bedrijf-details/use-bedrijf-by-identifier";
+import type { Klant } from "@/services/klanten/types";
+import { useBedrijfByIdentifier } from "../use-bedrijf-by-identifier";
 import { useKlantByBedrijfIdentifier } from "./use-klant-by-bedrijf-identifier";
 import { mutate } from "swrv";
 import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";

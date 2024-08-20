@@ -77,7 +77,7 @@ import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
-import { KlantDetails, useKlantById } from "@/features/klant";
+import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
