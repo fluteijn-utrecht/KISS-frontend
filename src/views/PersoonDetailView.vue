@@ -124,14 +124,14 @@ const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
 
 watch(
-  () => klant.success && klant.data,
-  (k) => {
+  [() => klant.success && klant.data, () => persoon.success && persoon.data],
+  ([k, p]) => {
     if (!k) return;
     contactmomentStore.setKlant({
       ...k,
-      hasContactInformation: !!k.emailadressen || !!k.telefoonnummers,
+      ...p,
+      hasContactInformation: !!k.emailadressen.length || !!k.telefoonnummers.length,
     });
   },
   { immediate: true },
-);
 </script>
