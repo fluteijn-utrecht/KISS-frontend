@@ -74,7 +74,10 @@
   <section class="search-section" v-if="store.persoonSearchQuery">
     <simple-spinner v-if="personen.loading" />
     <template v-if="personen.success">
-      <personen-overzicht :records="personen.data">
+      <personen-overzicht
+        :records="personen.data"
+        :navigate-on-single-result="navigateOnSingleResult"
+      >
         <template #caption>
           <SearchResultsCaption :results="personen.data" />
         </template>
@@ -93,11 +96,10 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, computed } from "vue";
+import { ref } from "vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
 import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
-import { useRouter } from "vue-router";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import {
   parseBsn,
@@ -114,7 +116,6 @@ import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 import { FriendlyError } from "@/services";
 
 import type { PersoonQuery } from "@/services/brp";
-import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
 import { useSearchPersonen } from "./use-search-personen";
 import PersonenOverzicht from "./PersonenOverzicht.vue";
 
@@ -144,6 +145,7 @@ const zoekOpGeboortedatum = () => {
         geboortedatum: store.value.geboortedatum.validated,
       },
     };
+    navigateOnSingleResult.value = true;
   }
 };
 
@@ -157,6 +159,7 @@ const zoekOpPostcode = () => {
         huisletter: store.value.huisletter.validated,
       },
     };
+    navigateOnSingleResult.value = true;
   }
 };
 
@@ -165,32 +168,13 @@ const zoekOpBsn = () => {
     store.value.persoonSearchQuery = {
       bsn: store.value.bsn.validated,
     };
+    navigateOnSingleResult.value = true;
   }
 };
 
 const personen = useSearchPersonen(() => store.value.persoonSearchQuery);
 
-const singlePersoon = computed(() => {
-  if (personen.success && personen.data.length === 1) {
-    return personen.data[0];
-  }
-  return undefined;
-});
-
-const router = useRouter();
-watch(singlePersoon, async (newPersoon, oldPersoon) => {
-  if (newPersoon?.bsn && newPersoon.bsn !== oldPersoon?.bsn) {
-    const { id } = await ensureKlantForBsn({
-      bsn: newPersoon.bsn,
-      contactnaam: {
-        voornaam: newPersoon.voornaam,
-        voorvoegselAchternaam: newPersoon.voorvoegselAchternaam,
-        achternaam: newPersoon.achternaam,
-      },
-    });
-    await router.push(`/personen/${id}`);
-  }
-});
+const navigateOnSingleResult = ref(false);
 </script>
 
 <style lang="scss" scoped>

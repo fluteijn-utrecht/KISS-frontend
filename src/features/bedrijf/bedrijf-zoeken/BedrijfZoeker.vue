@@ -28,16 +28,15 @@
     <simple-spinner v-if="bedrijven.loading" />
     <template v-if="bedrijven.success">
       <bedrijven-overzicht
-        :records="
-          'page' in bedrijven.data ? bedrijven.data.page : bedrijven.data
-        "
+        :records="bedrijven.data.page"
+        :navigate-on-single-result="navigateOnSingleResult"
       >
-        <template #caption v-if="'page' in bedrijven.data">
+        <template #caption v-if="'pageNumber' in bedrijven.data">
           <SearchResultsCaption :results="bedrijven.data" />
         </template>
       </bedrijven-overzicht>
       <pagination
-        v-if="'page' in bedrijven.data"
+        v-if="'pageNumber' in bedrijven.data"
         class="pagination"
         :pagination="bedrijven.data"
         @navigate="navigate"
@@ -70,7 +69,6 @@ import Pagination from "@/nl-design-system/components/Pagination.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
-import { useRouter } from "vue-router";
 import { FriendlyError } from "@/services";
 
 const labels = {
@@ -134,6 +132,8 @@ const currentQuery = computed<SearchOptions | { error: Error }>(() => {
   } as SearchOptions;
 });
 
+const navigateOnSingleResult = ref(false);
+
 watch(
   [currentQuery, inputRef],
   ([query, input]) => {
@@ -150,6 +150,7 @@ const handleSearch = () => {
   if (!query || "error" in query) return;
   state.value.query = query;
   state.value.page = 1;
+  navigateOnSingleResult.value = true;
 };
 
 const bedrijven = useSearchBedrijven(() => state.value.query);
@@ -157,26 +158,6 @@ const bedrijven = useSearchBedrijven(() => state.value.query);
 const navigate = (val: number) => {
   state.value.page = val;
 };
-
-const singleKlantId = computed(() => {
-  if (
-    bedrijven.success &&
-    "length" in bedrijven.data &&
-    bedrijven.data.length === 1
-  ) {
-    const first = bedrijven.data[0];
-    if (first?._typeOfKlant === "klant") return first.id;
-  }
-  return undefined;
-});
-
-const router = useRouter();
-
-watch(singleKlantId, (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    router.push(`/bedrijven/${newId}`);
-  }
-});
 </script>
 
 <style scoped lang="scss">

@@ -19,5 +19,7 @@ export const useKlantByBedrijfIdentifier = (
     }
     return findKlantByIdentifier(id);
   };
-  return ServiceResult.fromFetcher(getCacheKey, findKlant);
+  return ServiceResult.fromFetcher("", findKlant, {
+    getUniqueId: getCacheKey,
+  });
 };

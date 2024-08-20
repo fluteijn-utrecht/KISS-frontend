@@ -16,8 +16,9 @@
       <tbody>
         <bedrijven-overzicht-row
           v-for="(record, idx) in records"
-          :item="record"
           :key="idx"
+          :item="record"
+          :auto-navigate="navigateOnSingleResult && records.length === 1"
         />
       </tbody>
     </template>
@@ -29,5 +30,8 @@ import type { Bedrijf } from "@/services/kvk";
 import BedrijvenOverzichtRow from "./BedrijvenOverzichtRow.vue";
 import type { Klant } from "@/services/klanten";
 
-defineProps<{ records: Array<Bedrijf | Klant> }>();
+defineProps<{
+  records: Array<Bedrijf | Klant>;
+  navigateOnSingleResult?: boolean;
+}>();
 </script>

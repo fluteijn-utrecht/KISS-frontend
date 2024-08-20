@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Persoon } from "../../../services/brp/types";
+import type { Persoon } from "@/services/brp";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import DutchDate from "@/components/DutchDate.vue";
 

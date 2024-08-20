@@ -1,6 +1,5 @@
 import { ServiceResult } from "@/services";
-import { searchPersonen } from "@/services/brp/service";
-import type { PersoonQuery } from "@/services/brp/types";
+import { searchPersonen, type PersoonQuery } from "@/services/brp";
 
 export function useSearchPersonen(getQuery: () => PersoonQuery | undefined) {
   const getCacheKey = () => {

@@ -11,7 +11,7 @@
       <template v-if="bedrijf.success">{{ bedrijf.data?.type }}</template>
     </td>
     <td>
-      {{ item.kvkNummer }}
+      {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
     </td>
     <td>
       <div class="skeleton" v-if="bedrijf.loading" />
@@ -33,33 +33,32 @@
     </td>
     <td>
       <div class="skeleton" v-if="klant.loading || bedrijf.loading" />
-      <template v-if="klant.success">
-        <router-link
-          v-if="klant.data"
-          :title="`Details ${naam}`"
-          :to="getKlantUrl(klant.data)"
-          @click="setCache(klant.data)"
-        />
-        <button
-          type="button"
-          title="Aanmaken"
-          v-else-if="parameterForEnsureKlant"
-          @click="create(parameterForEnsureKlant)"
-        />
-      </template>
+      <router-link
+        v-if="klant.data"
+        :title="`Details ${naam}`"
+        :to="getKlantUrl(klant.data)"
+        @click="setCache(klant.data, bedrijf.data)"
+      />
+      <button
+        v-else-if="parameterForEnsureKlant"
+        type="button"
+        title="Aanmaken"
+        @click="navigate(parameterForEnsureKlant)"
+      />
     </td>
   </tr>
 </template>
 <script lang="ts" setup>
-import { computed } from "vue";
-import type { Klant } from "@/services/klanten/types";
+import { computed, watchEffect } from "vue";
+import type { Klant } from "@/services/klanten";
 import { useBedrijfByIdentifier } from "../use-bedrijf-by-identifier";
 import { useKlantByBedrijfIdentifier } from "./use-klant-by-bedrijf-identifier";
-import { mutate } from "swrv";
 import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
+import { useRouter } from "vue-router";
+import { mutate } from "swrv";
 import { ensureKlantForBedrijfIdentifier } from "./ensure-klant-for-bedrijf-identifier";
 
-const props = defineProps<{ item: Bedrijf | Klant }>();
+const props = defineProps<{ item: Bedrijf | Klant; autoNavigate?: boolean }>();
 
 const matchingBedrijf = useBedrijfByIdentifier(() => {
   // we hebben al een bedrijf, we hoeven die niet meer op te zoeken
@@ -101,51 +100,50 @@ const klant = computed(() =>
     : { ...matchingKlant },
 );
 
-const naam = computed(() =>
-  props.item._typeOfKlant === "bedrijf"
-    ? props.item.bedrijfsnaam
-    : matchingBedrijf.success && matchingBedrijf.data?.bedrijfsnaam
-      ? matchingBedrijf.data.bedrijfsnaam
-      : props.item.bedrijfsnaam,
+const naam = computed(
+  () =>
+    bedrijf.value.data?.bedrijfsnaam || klant.value.data?.bedrijfsnaam || "",
 );
 
-const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
-
-const setCache = (klant: Klant) => {
-  mutate(klant.id, klant);
-  const bedrijfId =
-    bedrijf.value.data?.vestigingsnummer || bedrijf.value.data?.rsin;
-  if (bedrijfId) {
-    mutate("bedrijf" + bedrijfId, bedrijf.value.data);
-  }
-};
-
 const parameterForEnsureKlant = computed(() => {
-  if (!bedrijf.value?.data?.bedrijfsnaam) return undefined;
-  const {
-    bedrijfsnaam: naam,
-    vestigingsnummer,
-    rsin,
-    kvkNummer,
-  } = bedrijf.value.data;
-  if (vestigingsnummer)
-    return {
-      vestigingsnummer,
-      naam,
-    };
-  if (rsin)
-    return {
-      rsin,
-      kvkNummer,
-      naam,
-    };
+  if (bedrijf.value.data?.rsin || bedrijf.value.data?.vestigingsnummer)
+    return bedrijf.value.data as Bedrijf & BedrijfIdentifier;
   return undefined;
 });
 
-async function create(parameter: BedrijfIdentifier & { naam: string }) {
-  const klant = await ensureKlantForBedrijfIdentifier(parameter);
-  setCache(klant);
+const router = useRouter();
+
+const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
+
+const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
+  mutate(klant.id, klant);
+  const bedrijfId = bedrijf?.vestigingsnummer || bedrijf?.rsin;
+  if (bedrijfId) {
+    mutate("bedrijf" + bedrijfId, bedrijf);
+  }
+};
+
+async function navigate(bedrijf: Bedrijf & BedrijfIdentifier) {
+  const newKlant =
+    klant.value.data ||
+    (await ensureKlantForBedrijfIdentifier({
+      ...bedrijf,
+      naam: bedrijf.bedrijfsnaam,
+    }));
+  setCache(newKlant, bedrijf);
+  const url = getKlantUrl(newKlant);
+  await router.push(url);
 }
+
+watchEffect(async () => {
+  if (
+    props.autoNavigate &&
+    klant.value.success &&
+    parameterForEnsureKlant.value
+  ) {
+    navigate(parameterForEnsureKlant.value);
+  }
+});
 </script>
 
 <style scoped lang="scss">

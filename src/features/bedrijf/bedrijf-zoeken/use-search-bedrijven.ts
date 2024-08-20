@@ -32,10 +32,12 @@ export function useSearchBedrijven(
       return searchKlantenByDigitaalAdres({
         ...query,
         partijType: PartijTypes.organisatie,
-      });
+      }).then((r) => ({
+        page: r,
+      }));
     return searchBedrijvenInHandelsRegister(query);
   };
-  return ServiceResult.fromFetcher<Klant[] | Paginated<Bedrijf>>(
+  return ServiceResult.fromFetcher<{ page: Klant[] } | Paginated<Bedrijf>>(
     getCacheKey,
     fetcher,
   );

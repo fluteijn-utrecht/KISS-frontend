@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Bedrijf } from "@/services/kvk/types";
+import type { Bedrijf } from "@/services/kvk";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 
 defineProps<{ bedrijf: Bedrijf }>();

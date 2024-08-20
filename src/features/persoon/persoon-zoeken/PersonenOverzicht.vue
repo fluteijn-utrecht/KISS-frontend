@@ -38,7 +38,7 @@
           </td>
 
           <td>
-            <button type="button" title="Details" @click="create(record)" />
+            <button type="button" title="Details" @click="navigate(record)" />
           </td>
         </tr>
       </tbody>
@@ -48,19 +48,23 @@
 
 <script lang="ts" setup>
 import DutchDate from "@/components/DutchDate.vue";
-import type { Persoon } from "../../../services/brp/types";
-import type { Klant } from "../../../services/klanten/types";
+import type { Persoon } from "@/services/brp";
+import type { Klant } from "@/services/klanten";
 import { useRouter } from "vue-router";
 import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
 import { mutate } from "swrv";
+import { watchEffect } from "vue";
 
-defineProps<{ records: Persoon[] }>();
+const props = defineProps<{
+  records: Persoon[];
+  navigateOnSingleResult?: boolean;
+}>();
 
 const router = useRouter();
 
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
-const create = async (persoon: Persoon) => {
+const navigate = async (persoon: Persoon) => {
   const { bsn, voornaam, voorvoegselAchternaam, achternaam } = persoon;
   if (!bsn) throw new Error();
   const klant = await ensureKlantForBsn({
@@ -71,9 +75,15 @@ const create = async (persoon: Persoon) => {
       achternaam,
     },
   });
-  mutate("persoon" + bsn, persoon);
-  mutate(klant.id, klant);
+  await mutate("persoon" + bsn, persoon);
+  await mutate(klant.id, klant);
   const url = getKlantUrl(klant);
-  router.push(url);
+  await router.push(url);
 };
+
+watchEffect(async () => {
+  if (props.navigateOnSingleResult && props.records.length === 1) {
+    await navigate(props.records[0]);
+  }
+});
 </script>
