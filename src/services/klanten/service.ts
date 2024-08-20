@@ -60,6 +60,10 @@ type Partij = {
   nummer?: string;
   uuid: string;
   url: string;
+  identificatie: {
+    contactnaam?: Contactnaam;
+    naam?: string;
+  };
   partijIdentificatoren: { uuid: string }[];
   _expand?: {
     digitaleAdressen?: { adres?: string; soortDigitaalAdres?: string }[];
@@ -268,11 +272,13 @@ async function mapPartijToKlant(
         x?.partijIdentificator?.codeSoortObjectId == type.codeSoortObjectId,
     )?.partijIdentificator?.objectId;
 
-  return {
-    _typeOfKlant: "klant",
+  const ret: Klant = {
+    _typeOfKlant: "klant" as const,
     klantnummer: partij.nummer || "",
     id: partij.uuid,
     url: partij.url,
+    bedrijfsnaam: partij.identificatie?.naam,
+    ...(partij.identificatie?.contactnaam || {}),
     telefoonnummer: getDigitaalAdres(DigitaalAdresTypes.telefoonnummer),
     emailadres: getDigitaalAdres(DigitaalAdresTypes.email),
     bsn: getIdentificator(identificatorTypes.persoon),
@@ -282,6 +288,8 @@ async function mapPartijToKlant(
     ),
     rsin: getIdentificator(identificatorTypes.nietNatuurlijkPersoonRsin),
   };
+
+  return ret;
 }
 
 export function searchKlantenByDigitaalAdres(
