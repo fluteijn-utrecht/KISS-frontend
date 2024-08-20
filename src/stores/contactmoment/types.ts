@@ -1,4 +1,4 @@
-import type { Klant } from "@/features/klant/types";
+import type { Klant } from "@/services/klanten/types";
 
 export type NieuweKlant = Pick<Klant, "telefoonnummer" | "emailadres">;
 

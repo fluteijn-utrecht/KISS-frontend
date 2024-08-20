@@ -77,12 +77,7 @@ import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
-import {
-  KlantDetails,
-  useKlantById,
-  BrpGegevens,
-  usePersoonByBsn,
-} from "@/features/klant";
+import { KlantDetails, useKlantById } from "@/features/klant";
 import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
@@ -93,6 +88,10 @@ import ContactmomentPreview from "@/features/contact/contactmoment/Contactmoment
 import { TabList, TabListDataItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
+import {
+  usePersoonByBsn,
+  BrpGegevens,
+} from "@/features/persoon/persoon-details";
 
 const activeTab = ref("");
 

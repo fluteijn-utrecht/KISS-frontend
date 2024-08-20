@@ -73,12 +73,7 @@ import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
-import {
-  useBedrijfByIdentifier,
-  HandelsregisterGegevens,
-  KlantDetails,
-  useKlantById,
-} from "@/features/klant";
+import { KlantDetails, useKlantById } from "@/features/klant";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import {
@@ -92,7 +87,10 @@ import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzic
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
-import type { BedrijfIdentifier } from "@/features/klant/bedrijf/types";
+import {
+  useBedrijfByIdentifier,
+  HandelsregisterGegevens,
+} from "@/features/bedrijf/bedrijf-details";
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -107,7 +105,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
 );
 const contactmomenten = useContactmomentenByKlantId(klantUrl);
 
-const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
+const getBedrijfIdentifier = () => {
   if (!klant.success || !klant.data) return undefined;
   if (klant.data.vestigingsnummer)
     return {

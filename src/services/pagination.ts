@@ -19,11 +19,13 @@ export function defaultPagination<T>(page: T[]): Paginated<T> {
 }
 
 export function enforceOneOrZero<T>(
-  paginated: Paginated<NonNullable<T>> | PaginatedResult<NonNullable<T>>
+  paginated:
+    | Paginated<NonNullable<T>>
+    | PaginatedResult<NonNullable<T>>
+    | NonNullable<T>[],
 ): T | null {
-  if (paginated.page.length === 0) return null;
-  if (paginated.page.length === 1) return paginated.page[0];
-  throw new Error(
-    "expected a single result, instead found " + paginated.page.length
-  );
+  const page = Array.isArray(paginated) ? paginated : paginated.page;
+  if (page.length === 0) return null;
+  if (page.length === 1) return page[0];
+  throw new Error("expected a single result, instead found " + page.length);
 }
