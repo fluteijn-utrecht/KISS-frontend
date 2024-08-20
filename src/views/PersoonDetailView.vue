@@ -130,8 +130,10 @@ watch(
     contactmomentStore.setKlant({
       ...k,
       ...p,
-      hasContactInformation: !!k.emailadressen.length || !!k.telefoonnummers.length,
+      hasContactInformation:
+        !!k.emailadressen.length || !!k.telefoonnummers.length,
     });
   },
   { immediate: true },
+);
 </script>
