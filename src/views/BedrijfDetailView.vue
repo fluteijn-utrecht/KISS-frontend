@@ -89,6 +89,7 @@ import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
+import type { BedrijfIdentifier } from "@/services/kvk";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
@@ -116,7 +117,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
 );
 const contactmomenten = useContactmomentenByKlantId(klantUrl);
 
-const getBedrijfIdentifier = () => {
+const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;
   if (klant.data.vestigingsnummer)
     return {
