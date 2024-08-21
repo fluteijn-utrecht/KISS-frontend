@@ -1,11 +1,7 @@
 <template>
   <back-link />
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
-  <application-message
-    messageType="error"
-    message="Deze pagina werkt tijdelijk niet, totdat story PC-341 is uitgevoerd"
-  />
-  <!-- <tab-list v-model="currentTab">
+  <tab-list v-model="currentTab">
     <tab-list-data-item
       label="Contactgegevens"
       :data="klant"
@@ -69,21 +65,15 @@
         </contactverzoeken-overzicht>
       </template>
     </tab-list-data-item>
-  </tab-list> -->
+  </tab-list>
 </template>
 
 <script setup lang="ts">
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
-import {
-  useBedrijfByIdentifier,
-  HandelsregisterGegevens,
-  KlantDetails,
-  useKlantById,
-} from "@/features/klant";
+import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import {
@@ -97,7 +87,10 @@ import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzic
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
-import type { BedrijfIdentifier } from "@/features/klant/bedrijf/types";
+import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
+import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
+import type { BedrijfIdentifier } from "@/services/kvk";
+
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
@@ -110,7 +103,8 @@ watch(
     if (!k) return;
     contactmomentStore.setKlant({
       ...k,
-      hasContactInformation: !!k.emailadres || !!k.telefoonnummer,
+      hasContactInformation:
+        !!k.emailadressen.length || !!k.telefoonnummers.length,
     });
   },
   { immediate: true },
@@ -129,10 +123,10 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     return {
       vestigingsnummer: klant.data.vestigingsnummer,
     };
-  if (klant.data.nietNatuurlijkPersoonIdentifier)
+  if (klant.data.rsin)
     return {
-      nietNatuurlijkPersoonIdentifier:
-        klant.data.nietNatuurlijkPersoonIdentifier,
+      rsin: klant.data.rsin,
+      kvkNummer: klant.data.kvkNummer,
     };
 };
 

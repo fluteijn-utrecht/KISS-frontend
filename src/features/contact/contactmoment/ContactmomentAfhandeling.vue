@@ -74,7 +74,10 @@
                   }}</span
                 >
                 <span v-else>{{
-                  [record.klant.emailadres, record.klant.telefoonnummer]
+                  [
+                    ...record.klant.emailadressen,
+                    ...record.klant.telefoonnummers,
+                  ]
                     .filter((x) => x)
                     .join(", ")
                 }}</span>
