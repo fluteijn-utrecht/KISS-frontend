@@ -11,13 +11,12 @@ import {
   type BedrijfSearchOptions,
 } from "@/services/kvk";
 
-export function useSearchBedrijven(
-  getArgs: () =>
-    | BedrijfSearchOptions
-    | { email: string }
-    | { telefoonnummer: string }
-    | undefined,
-) {
+export type BedrijvenQuery =
+  | BedrijfSearchOptions
+  | { email: string }
+  | { telefoonnummer: string };
+
+export function useSearchBedrijven(getArgs: () => BedrijvenQuery | undefined) {
   const getCacheKey = () => {
     const query = getArgs();
     return query ? "searchBedrijven" + JSON.stringify(query) : "";

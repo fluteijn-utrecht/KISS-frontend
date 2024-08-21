@@ -55,14 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import {
-  parseKvkNummer,
-  parsePostcodeHuisnummer,
-  type PostcodeHuisnummer,
-} from "@/helpers/validation";
+import { parseKvkNummer, parsePostcodeHuisnummer } from "@/helpers/validation";
 import { ensureState } from "@/stores/create-store";
 import { computed, ref, watch } from "vue";
-import { useSearchBedrijven } from "./use-search-bedrijven";
+import {
+  useSearchBedrijven,
+  type BedrijvenQuery,
+} from "./use-search-bedrijven";
 
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import Pagination from "@/nl-design-system/components/Pagination.vue";
@@ -71,20 +70,15 @@ import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { FriendlyError } from "@/services";
 
-const labels = {
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+
+const labels: { [key in KeysOfUnion<BedrijvenQuery>]: string } = {
   handelsnaam: "Bedrijfsnaam",
   kvkNummer: "KVK-nummer",
   postcodeHuisnummer: "Postcode + Huisnummer",
   email: "E-mailadres",
   telefoonnummer: "Telefoonnummer",
-} as const;
-
-type SearchOptions =
-  | { email: string }
-  | { telefoonnummer: string }
-  | { handelsnaam: string }
-  | { kvkNummer: string }
-  | { postcodeHuisnummer: PostcodeHuisnummer };
+};
 
 type SearchFields = keyof typeof labels;
 
@@ -94,7 +88,7 @@ const state = ensureState({
     return {
       currentSearch: "",
       field: Object.keys(labels)[0] as SearchFields,
-      query: undefined as SearchOptions | undefined,
+      query: undefined as BedrijvenQuery | undefined,
       page: 1,
     };
   },
@@ -102,7 +96,7 @@ const state = ensureState({
 
 const inputRef = ref();
 
-const currentQuery = computed<SearchOptions | { error: Error }>(() => {
+const currentQuery = computed<BedrijvenQuery | { error: Error }>(() => {
   const { currentSearch, field } = state.value;
 
   if (field === "postcodeHuisnummer") {
@@ -129,7 +123,7 @@ const currentQuery = computed<SearchOptions | { error: Error }>(() => {
 
   return {
     [field]: currentSearch,
-  } as SearchOptions;
+  } as BedrijvenQuery;
 });
 
 const navigateOnSingleResult = ref(false);
