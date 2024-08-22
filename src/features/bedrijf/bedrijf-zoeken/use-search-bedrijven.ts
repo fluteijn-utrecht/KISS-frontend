@@ -16,17 +16,27 @@ export type BedrijvenQuery =
   | { email: string }
   | { telefoonnummer: string };
 
-export function useSearchBedrijven(getArgs: () => BedrijvenQuery | undefined) {
+export function useSearchBedrijven(
+  getArgs: () =>
+    | {
+        query: BedrijvenQuery;
+        page: number;
+      }
+    | undefined,
+) {
   const getCacheKey = () => {
-    const query = getArgs();
-    return query ? "searchBedrijven" + JSON.stringify(query) : "";
+    const args = getArgs();
+    return args ? "searchBedrijven" + JSON.stringify(args) : "";
   };
 
   const fetcher = () => {
-    const query = getArgs();
-    if (!query) {
+    const args = getArgs();
+    if (!args) {
       throw new Error("query wordt hierboven al gecheckt");
     }
+
+    const { page, query } = args;
+
     if ("email" in query || "telefoonnummer" in query)
       return searchKlantenByDigitaalAdres({
         ...query,
@@ -34,7 +44,8 @@ export function useSearchBedrijven(getArgs: () => BedrijvenQuery | undefined) {
       }).then((r) => ({
         page: r,
       }));
-    return searchBedrijvenInHandelsRegister(query);
+
+    return searchBedrijvenInHandelsRegister(query, page);
   };
   return ServiceResult.fromFetcher<{ page: Klant[] } | Paginated<Bedrijf>>(
     getCacheKey,
