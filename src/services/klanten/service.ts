@@ -60,7 +60,7 @@ type Partij = {
   nummer?: string;
   uuid: string;
   url: string;
-  identificatie: {
+  partijIdentificatie: {
     contactnaam?: Contactnaam;
     naam?: string;
   };
@@ -277,8 +277,8 @@ async function mapPartijToKlant(
     klantnummer: partij.nummer || "",
     id: partij.uuid,
     url: partij.url,
-    bedrijfsnaam: partij.identificatie?.naam,
-    ...(partij.identificatie?.contactnaam || {}),
+    bedrijfsnaam: partij.partijIdentificatie?.naam,
+    ...(partij.partijIdentificatie?.contactnaam || {}),
     telefoonnummers: getDigitaalAdressen(DigitaalAdresTypes.telefoonnummer),
     emailadressen: getDigitaalAdressen(DigitaalAdresTypes.email),
     bsn: getIdentificator(identificatorTypes.persoon),
