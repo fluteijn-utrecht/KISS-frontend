@@ -4,6 +4,8 @@ import { findKlantByIdentifier, createKlant } from "@/services/klanten";
 //maak een klant aan in het klanten register als die nog niet bestaat
 //bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan
 export const ensureKlantForBedrijfIdentifier = async (
-  parameters: BedrijfIdentifier & { naam: string },
+  identifier: BedrijfIdentifier,
+  naam: string,
 ) =>
-  (await findKlantByIdentifier(parameters)) ?? (await createKlant(parameters));
+  (await findKlantByIdentifier(identifier)) ??
+  (await createKlant({ ...identifier, naam }));
