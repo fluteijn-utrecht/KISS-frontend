@@ -145,8 +145,7 @@ export async function createKlant(
         naam: string;
       },
 ) {
-  let partijIdentificatie, partijIdentificator, soortPartij;
-
+  let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
   if ("bsn" in parameters) {
     soortPartij = PartijTypes.persoon;
     partijIdentificatie = { contactnaam: parameters.contactnaam };
@@ -157,17 +156,22 @@ export async function createKlant(
   } else {
     soortPartij = PartijTypes.organisatie;
     partijIdentificatie = { naam: parameters.naam };
-    partijIdentificator =
-      "vestigingsnummer" in parameters
-        ? {
-            ...identificatorTypes.vestiging,
-            objectId: parameters.vestigingsnummer,
-          }
-        : {
-            ...identificatorTypes.nietNatuurlijkPersoonRsin,
-            objectId: parameters.rsin,
-          };
+    if ("vestigingsnummer" in parameters && parameters.vestigingsnummer) {
+      partijIdentificator = {
+        ...identificatorTypes.vestiging,
+        objectId: parameters.vestigingsnummer,
+      };
+    } else if ("rsin" in parameters && parameters.rsin) {
+      partijIdentificator = {
+        ...identificatorTypes.nietNatuurlijkPersoonRsin,
+        objectId: parameters.rsin,
+      };
+      kvkNummer = parameters.kvkNummer;
+    }
   }
+
+  if (!partijIdentificator) throw new Error("");
+
   const partij = await createPartij(partijIdentificatie, soortPartij);
 
   const identificators = [
@@ -180,7 +184,7 @@ export async function createKlant(
     }),
   ];
 
-  if ("kvkNummer" in parameters && parameters.kvkNummer) {
+  if (kvkNummer) {
     const kvkIdentificator = await createPartijIdentificator({
       identificeerdePartij: {
         url: partij.url,
@@ -188,7 +192,7 @@ export async function createKlant(
       },
       partijIdentificator: {
         ...identificatorTypes.nietNatuurlijkPersoonKvkNummer,
-        objectId: parameters.kvkNummer,
+        objectId: kvkNummer,
       },
     });
     identificators.push(kvkIdentificator);
