@@ -41,12 +41,12 @@ export const identificatorTypes = {
   nietNatuurlijkPersoonRsin: {
     codeRegister: "hr",
     codeSoortObjectId: "rsin",
-    codeObjecttype: "innp",
+    codeObjecttype: "nnp",
   },
   nietNatuurlijkPersoonKvkNummer: {
     codeRegister: "hr",
-    codeSoortObjectId: "kvkNummer",
-    codeObjecttype: "innp",
+    codeSoortObjectId: "kvk",
+    codeObjecttype: "nnp",
   },
 } satisfies Record<string, IdentificatorType>;
 
