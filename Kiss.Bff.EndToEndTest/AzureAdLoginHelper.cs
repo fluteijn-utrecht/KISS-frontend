@@ -54,7 +54,10 @@ namespace PlaywrightTests
 
             // Fill in the TOTP code
             await _page.FillAsync("input[name='otc']", totpCode);
-            await _page.ClickAsync("input[type='submit']");
+            var verifyButton = _page.GetByRole(AriaRole.Button, new() { Name = "Verifiëren" })
+                .Or(_page.GetByRole(AriaRole.Button, new() { Name = "Verify" }));
+
+            await verifyButton.ClickAsync();
 
             // Wait for potential "Stay signed in?" prompt
             var declineStaySignedInButton = _page.GetByText("Nee").Or(_page.GetByText("No"));
