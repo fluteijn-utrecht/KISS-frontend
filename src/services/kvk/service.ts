@@ -27,7 +27,8 @@ export function searchBedrijvenInHandelsRegister(
 
   if ("vestigingsnummer" in query && query.vestigingsnummer) {
     searchParams.set("vestigingsnummer", query.vestigingsnummer);
-    searchParams.set("type", "hoofdvestiging,nevenvestiging");
+    searchParams.set("type", "hoofdvestiging");
+    searchParams.append("type", "nevenvestiging");
   } else if ("rsin" in query && query.rsin) {
     searchParams.set("rsin", query.rsin);
     searchParams.set("type", "rechtspersoon");
