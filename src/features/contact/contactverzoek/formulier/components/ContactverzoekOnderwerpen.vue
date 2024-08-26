@@ -87,4 +87,3 @@ const setOnderwerp = () => {
   emit("change");
 };
 </script>
-../../../components/types
