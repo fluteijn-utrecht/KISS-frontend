@@ -51,28 +51,35 @@ namespace PlaywrightTests
         public async Task TestSkillsFilteringAsync()
         {
             // Example: Test filtering by skill
-            await Page.ClickAsync("summary:has-text('Filter op categorie')");
-            await Page.CheckAsync("input[name='Algemeen']");
-            await Page.CheckAsync("input[name='Belastingen']");
+            var categorieFilterSection = Page.Locator("details").Filter(new() { HasText = "Filter op categorie" });
+            await Expect(categorieFilterSection).ToBeVisibleAsync();
+            await categorieFilterSection.Locator("summary").ClickAsync();
+            var algemeenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Algemeen" });
+            var belastingenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Belastingen" });
+            
+            await algemeenCheckbox.CheckAsync();
+            await belastingenCheckbox.CheckAsync();
 
             // Verify results are filtered
-            var articles = Page.Locator("article");
-            int resultCount = await articles.CountAsync();
+            var articles = Page.GetByRole(AriaRole.Article);
+            await Expect(articles.First).ToBeVisibleAsync();
+            
+            var resultCount = await articles.CountAsync();
+
             Assert.IsTrue(resultCount > 0, "Expected to find articles after filtering by skills.");
 
             // Loop through each article and verify it contains at least one of the selected skills
-            for (int i = 0; i < resultCount; i++)
+            for (var i = 0; i < resultCount; i++)
             {
                 var article = articles.Nth(i);
-                bool hasAlgemeenSkill = await article.Locator("small.category-Algemeen").IsVisibleAsync();
-                bool hasBelastingenSkill = await article.Locator("small.category-Belastingen").IsVisibleAsync();
-
-                Assert.IsTrue(hasAlgemeenSkill || hasBelastingenSkill, $"Article {i + 1} does not contain the expected skills.");
+                var algemeenSkill = article.Locator("small.category-Algemeen");
+                var belastingenSkill = article.Locator("small.category-Belastingen");
+                await Expect(algemeenSkill.Or(belastingenSkill).First).ToBeVisibleAsync();
             }
 
             // Reset filters
-            await Page.UncheckAsync("input[name='Algemeen']");
-            await Page.UncheckAsync("input[name='Belastingen']");
+            await algemeenCheckbox.UncheckAsync();
+            await belastingenCheckbox.UncheckAsync();
         }
 
         // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
