@@ -5,14 +5,6 @@ namespace PlaywrightTests
     [TestClass]
     public class NIeuwsEnWerkInstructies : BaseTestInitializer
     {
-        // dummy test to ensure that the base class functions properly from github actions
-        [TestMethod]
-        public async Task DummyTest()
-        {
-            await Expect(Page.Locator("a[href='/beheer']")).ToBeVisibleAsync();
-        }
-
-
         [TestMethod]
         public async Task Paginering()
         {
