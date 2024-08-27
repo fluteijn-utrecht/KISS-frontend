@@ -14,7 +14,7 @@ namespace PlaywrightTests
             .AddEnvironmentVariables()
             .Build();
 
-        private static UniqueOtpHelper s_uniqueOtpHelper = new(GetRequiredConfig("TestSettings:TEST_TOTP_SECRET"));
+        private static readonly UniqueOtpHelper s_uniqueOtpHelper = new(GetRequiredConfig("TestSettings:TEST_TOTP_SECRET"));
 
         [TestInitialize]
         public virtual async Task TestInitialize()
