@@ -3,7 +3,7 @@
 namespace PlaywrightTests
 {
     [TestClass]
-    public class GespreksresultatenTests : BaseTestInitializer
+    public class NIeuwsEnWerkInstructies : BaseTestInitializer
     {
         // dummy test to ensure that the base class functions properly from github actions
         [TestMethod]
@@ -14,7 +14,7 @@ namespace PlaywrightTests
 
 
         [TestMethod]
-        public async Task TestPaginationAsync()
+        public async Task Paginering()
         {
             // Locate the 'Nieuws' section
             var nieuwsSection = Page.Locator("section").Filter(new() { HasText = "Nieuws"});
@@ -42,12 +42,11 @@ namespace PlaywrightTests
 
             // Ensure the current page button's aria-label attribute is 'Pagina 2'
             await Expect(page2ButtonWithAriaCurrentPage).ToBeVisibleAsync();
-
         }
 
 
         [TestMethod]
-        public async Task TestSkillsFilteringAsync()
+        public async Task SkillsFiltering()
         {
             // Example: Test filtering by skill
             var categorieFilterSection = Page.Locator("details").Filter(new() { HasText = "Filter op categorie" });
