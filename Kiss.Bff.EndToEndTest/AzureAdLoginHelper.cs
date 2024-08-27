@@ -5,24 +5,23 @@ namespace PlaywrightTests
 {
     public class AzureAdLoginHelper
     {
+        private const int MaxTries = 9;
         private readonly IPage _page;
-        private readonly Uri _baseUrl;
         private readonly string _username;
         private readonly string _password;
-        private readonly string _totpSecret;
+        private readonly Totp _totp;
 
-        public AzureAdLoginHelper(IPage page, Uri baseUrl, string username, string password, string totpSecret)
+        public AzureAdLoginHelper(IPage page, string username, string password, string totpSecret)
         {
             _page = page;
-            _baseUrl = baseUrl;
             _username = username;
             _password = password;
-            _totpSecret = totpSecret;
+            _totp = new Totp(Base32Encoding.ToBytes(totpSecret));
         }
 
         public async Task LoginAsync()
         {
-            await _page.GotoAsync(_baseUrl.ToString());
+            await _page.GotoAsync("/");
 
             await _page.FillAsync("input[name='loginfmt']", _username);
             await _page.ClickAsync("input[type='submit']");
@@ -32,8 +31,6 @@ namespace PlaywrightTests
             await _page.ClickAsync("input[type='submit']");
 
             await Handle2FAAsync();
-
-            await _page.WaitForURLAsync($"{_baseUrl}**");
         }
 
         private async Task Handle2FAAsync()
@@ -41,37 +38,62 @@ namespace PlaywrightTests
             // Wait for the TOTP input field to appear
             await _page.WaitForSelectorAsync("input[name='otc']", new() { Timeout = 30000 });
 
-            // Generate TOTP code
-            var totp = new Totp(Base32Encoding.ToBytes(_totpSecret));
-            var totpCode = totp.ComputeTotp();
 
             // Check for "Enter Manually" link and click if present
-            var enterManuallyLink = await _page.QuerySelectorAsync("a:has-text('Ik kan mijn Microsoft Authenticator-app op dit moment niet gebruiken')");
-            if (enterManuallyLink != null)
+            var enterManuallyLink = _page.GetByRole(AriaRole.Link, new() { Name = "Microsoft Authenticator" });
+
+            if (await enterManuallyLink.IsVisibleAsync())
             {
                 await enterManuallyLink.ClickAsync();
             }
 
-            // Fill in the TOTP code
-            await _page.FillAsync("input[name='otc']", totpCode);
             var verifyButton = _page.GetByRole(AriaRole.Button, new() { Name = "Verifiëren" })
                 .Or(_page.GetByRole(AriaRole.Button, new() { Name = "Verify" }));
 
-            await verifyButton.ClickAsync();
-
-            // Wait for potential "Stay signed in?" prompt
             var declineStaySignedInButton = _page.GetByText("Nee").Or(_page.GetByText("No"));
-            var homePageSelector = _page.GetByText("Nieuw contactmoment");
 
-            // we will either get a decline button, or we will go back to the home page
-            await declineStaySignedInButton.Or(homePageSelector).WaitForAsync();
+            var homePageSelector = _page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" });
 
-            // check if the decline button is visible, if so, click it
-            if (await declineStaySignedInButton.IsVisibleAsync())
+            var totpBoxSelector = _page.GetByRole(AriaRole.Textbox, new() { Name = "Code" });
+
+            for (var attempt = 1; attempt <= MaxTries; attempt++)
             {
-                await declineStaySignedInButton.ClickAsync();
-            }
-        }
+                // we will either get the 2FA code input and the submit button,
+                // or a decline button for staying signed in,
+                // or we will go back to the home page
+                await totpBoxSelector
+                    .Or(verifyButton)
+                    .Or(declineStaySignedInButton)
+                    .Or(homePageSelector)
+                    .First
+                    .WaitForAsync();
 
+                if (await homePageSelector.IsVisibleAsync())
+                {
+                    break;
+                }
+
+                if (await totpBoxSelector.IsVisibleAsync())
+                {
+                    // Generate TOTP code
+                    var totpCode = _totp.ComputeTotp();
+                    // Fill in the TOTP code
+                    await totpBoxSelector.FillAsync(totpCode);
+                }
+
+                if (await verifyButton.IsVisibleAsync())
+                {
+                    await verifyButton.ClickAsync();
+                }
+
+                // check if the decline button for "Stay signed in?" is visible, if so, click it
+                if (await declineStaySignedInButton.IsVisibleAsync())
+                {
+                    await declineStaySignedInButton.ClickAsync();
+                }
+            }
+
+            await homePageSelector.WaitForAsync();
+        }
     }
 }
