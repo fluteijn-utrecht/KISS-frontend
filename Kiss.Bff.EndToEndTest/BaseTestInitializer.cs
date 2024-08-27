@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
+using Microsoft.Testing.Platform.Configurations;
 
 
 namespace PlaywrightTests
@@ -7,19 +8,17 @@ namespace PlaywrightTests
     [TestClass]
     public class BaseTestInitializer : PageTest
     {
+        private static readonly Microsoft.Extensions.Configuration.IConfiguration s_configuration = new ConfigurationBuilder()
+            .AddUserSecrets<BaseTestInitializer>()
+            .AddEnvironmentVariables()
+            .Build();
+
         [TestInitialize]
         public virtual async Task TestInitialize()
         {
-            var configuration = new ConfigurationBuilder()
-                 .AddUserSecrets<BaseTestInitializer>()
-                 .AddEnvironmentVariables()
-                 .Build();
-
-            var username = GetRequiredConfig(configuration, "TestSettings:TEST_USERNAME");
-            var password = GetRequiredConfig(configuration, "TestSettings:TEST_PASSWORD");
-            var totpSecret = GetRequiredConfig(configuration, "TestSettings:TEST_TOTP_SECRET");
-            var baseUrl = GetRequiredConfig(configuration, "TestSettings:TEST_BASE_URL");
-            var uri = new Uri(baseUrl);
+            var username = GetRequiredConfig("TestSettings:TEST_USERNAME");
+            var password = GetRequiredConfig("TestSettings:TEST_PASSWORD");
+            var totpSecret = GetRequiredConfig("TestSettings:TEST_TOTP_SECRET");
 
             await Context.Tracing.StartAsync(new()
             {
@@ -29,7 +28,7 @@ namespace PlaywrightTests
                 Sources = true
             });
 
-            var loginHelper = new AzureAdLoginHelper(Page, uri, username, password, totpSecret);
+            var loginHelper = new AzureAdLoginHelper(Page, username, password, totpSecret);
             await loginHelper.LoginAsync();
         }
 
@@ -50,9 +49,17 @@ namespace PlaywrightTests
             await Context.Tracing.StopAsync(options);
         }
 
-        private string GetRequiredConfig(IConfiguration configuration, string key)
+        public override BrowserNewContextOptions ContextOptions()
         {
-            var value = configuration[key];
+            return new(base.ContextOptions())
+            {
+                BaseURL = GetRequiredConfig("TestSettings:TEST_BASE_URL")
+            };
+        }
+
+        private static string GetRequiredConfig(string key)
+        {
+            var value = s_configuration[key];
             if (string.IsNullOrEmpty(value))
             {
                 throw new InvalidOperationException($"'{key}' is missing from the configuration");
