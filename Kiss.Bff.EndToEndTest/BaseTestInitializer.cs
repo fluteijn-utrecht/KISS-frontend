@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Kiss.Bff.EndToEndTest;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
 using Microsoft.Testing.Platform.Configurations;
 
@@ -13,12 +14,13 @@ namespace PlaywrightTests
             .AddEnvironmentVariables()
             .Build();
 
+        private static UniqueOtpHelper s_uniqueOtpHelper = new(GetRequiredConfig("TestSettings:TEST_TOTP_SECRET"));
+
         [TestInitialize]
         public virtual async Task TestInitialize()
         {
             var username = GetRequiredConfig("TestSettings:TEST_USERNAME");
             var password = GetRequiredConfig("TestSettings:TEST_PASSWORD");
-            var totpSecret = GetRequiredConfig("TestSettings:TEST_TOTP_SECRET");
 
             await Context.Tracing.StartAsync(new()
             {
@@ -28,7 +30,7 @@ namespace PlaywrightTests
                 Sources = true
             });
 
-            var loginHelper = new AzureAdLoginHelper(Page, username, password, totpSecret);
+            var loginHelper = new AzureAdLoginHelper(Page, username, password, s_uniqueOtpHelper);
             await loginHelper.LoginAsync();
         }
 
