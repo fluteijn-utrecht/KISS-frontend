@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Playwright;
 
 
 namespace PlaywrightTests
@@ -35,14 +36,18 @@ namespace PlaywrightTests
         [TestCleanup]
         public async Task TestCleanup()
         {
-            await Context.Tracing.StopAsync(new()
-            {
-                Path = Path.Combine(
-                    Environment.CurrentDirectory,
-                    "playwright-traces",
-                    $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}.zip"
-                )
-            });
+            var options = TestContext.CurrentTestOutcome != UnitTestOutcome.Passed 
+                ? new TracingStopOptions
+                {
+                    Path = Path.Combine(
+                        Environment.CurrentDirectory,
+                        "playwright-traces",
+                        $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}.zip"
+                    )
+                } 
+                : null;
+
+            await Context.Tracing.StopAsync(options);
         }
 
         private string GetRequiredConfig(IConfiguration configuration, string key)
