@@ -1,9 +1,4 @@
-﻿using Kiss.Bff.EndToEndTest;
-using Microsoft.Playwright;
-using OtpNet;
-using static System.Net.WebRequestMethods;
-
-namespace PlaywrightTests
+﻿namespace Kiss.Bff.EndToEndTest
 {
     public class AzureAdLoginHelper
     {
@@ -47,14 +42,14 @@ namespace PlaywrightTests
             var verifyButton = _page.GetByRole(AriaRole.Button, new() { Name = "Verifiëren" })
                 .Or(_page.GetByRole(AriaRole.Button, new() { Name = "Verify" }));
 
-            var declineStaySignedInButton = _page.GetByRole(AriaRole.Button, new () { Name = "Nee" })
-                .Or(_page.GetByRole(AriaRole.Button, new() { Name = "No"}));
+            var declineStaySignedInButton = _page.GetByRole(AriaRole.Button, new() { Name = "Nee" })
+                .Or(_page.GetByRole(AriaRole.Button, new() { Name = "No" }));
 
             var nieuwContactmomentSelector = _page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" });
 
             var totpBoxSelector = _page.GetByRole(AriaRole.Textbox, new() { Name = "Code" });
 
-            
+
 
             // we will either get the 2FA code input and the submit button,
             // or an option to enter the code manually

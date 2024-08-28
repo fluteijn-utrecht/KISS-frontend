@@ -1,5 +1,4 @@
-﻿
-namespace PlaywrightTests;
+﻿namespace Kiss.Bff.EndToEndTest;
 
 [TestClass]
 public class NieuwsEnWerkInstructies : BaseTestInitializer
@@ -44,14 +43,14 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         await categorieFilterSection.Locator("summary").ClickAsync();
         var algemeenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Algemeen" });
         var belastingenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Belastingen" });
-        
+
         await algemeenCheckbox.CheckAsync();
         await belastingenCheckbox.CheckAsync();
 
         // Verify results are filtered
         var articles = Page.GetByRole(AriaRole.Article);
         await Expect(articles.First).ToBeVisibleAsync();
-        
+
         var resultCount = await articles.CountAsync();
 
         Assert.IsTrue(resultCount > 0, "Expected to find articles after filtering by skills.");
