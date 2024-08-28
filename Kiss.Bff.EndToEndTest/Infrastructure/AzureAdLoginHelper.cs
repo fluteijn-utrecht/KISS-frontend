@@ -20,7 +20,7 @@
             await _page.GotoAsync("/");
 
             var uitloggenLink = _page.GetByRole(AriaRole.Link, new() { Name = "Uitloggen" });
-            var usernameInput = _page.GetByRole(AriaRole.Textbox, new() { Name = "loginfmt" });
+            var usernameInput = _page.Locator("input[name='loginfmt']");
 
             await uitloggenLink.Or(usernameInput).WaitForAsync();
 
