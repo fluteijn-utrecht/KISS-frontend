@@ -19,13 +19,18 @@
         {
             await _page.GotoAsync("/");
 
+            var uitloggenLink = _page.GetByRole(AriaRole.Link, new() { Name = "Uitloggen" });
+            var usernameInput = _page.GetByRole(AriaRole.Textbox, new() { Name = "loginfmt" });
+
+            await uitloggenLink.Or(usernameInput).WaitForAsync();
+
             // we share auth state between tests, so we may already be logged in
-            if (await _page.GetByRole(AriaRole.Link, new() { Name = "Uitloggen" }).IsVisibleAsync())
+            if (await uitloggenLink.IsVisibleAsync())
             {
                 return;
             }
 
-            await _page.FillAsync("input[name='loginfmt']", _username);
+            await usernameInput.FillAsync(_username);
             await _page.ClickAsync("input[type='submit']");
 
             await _page.WaitForSelectorAsync("input[name='passwd']");
