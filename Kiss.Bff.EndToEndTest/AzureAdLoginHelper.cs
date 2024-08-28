@@ -24,6 +24,12 @@ namespace PlaywrightTests
         {
             await _page.GotoAsync("/");
 
+            // we share auth state between tests, so we may already be logged in
+            if (await _page.GetByRole(AriaRole.Link, new() { Name = "Uitloggen" }).IsVisibleAsync())
+            {
+                return;
+            }
+
             await _page.FillAsync("input[name='loginfmt']", _username);
             await _page.ClickAsync("input[type='submit']");
 
@@ -44,9 +50,11 @@ namespace PlaywrightTests
             var declineStaySignedInButton = _page.GetByRole(AriaRole.Button, new () { Name = "Nee" })
                 .Or(_page.GetByRole(AriaRole.Button, new() { Name = "No"}));
 
-            var homePageSelector = _page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" });
+            var nieuwContactmomentSelector = _page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" });
 
             var totpBoxSelector = _page.GetByRole(AriaRole.Textbox, new() { Name = "Code" });
+
+            
 
             // we will either get the 2FA code input and the submit button,
             // or an option to enter the code manually
@@ -66,7 +74,7 @@ namespace PlaywrightTests
 
             // we will now either go back to the home page, or get an option to stay signed in
             await declineStaySignedInButton
-                .Or(homePageSelector)
+                .Or(nieuwContactmomentSelector)
                 .WaitForAsync();
 
             if (await declineStaySignedInButton.IsVisibleAsync())

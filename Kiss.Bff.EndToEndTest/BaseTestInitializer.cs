@@ -1,7 +1,6 @@
 ﻿using Kiss.Bff.EndToEndTest;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
-using Microsoft.Testing.Platform.Configurations;
 
 
 namespace PlaywrightTests
@@ -9,7 +8,9 @@ namespace PlaywrightTests
     [TestClass]
     public class BaseTestInitializer : PageTest
     {
-        private static readonly Microsoft.Extensions.Configuration.IConfiguration s_configuration = new ConfigurationBuilder()
+        private const string StoragePath = "./auth.json";
+
+        private static readonly IConfiguration s_configuration = new ConfigurationBuilder()
             .AddUserSecrets<BaseTestInitializer>()
             .AddEnvironmentVariables()
             .Build();
@@ -32,6 +33,7 @@ namespace PlaywrightTests
 
             var loginHelper = new AzureAdLoginHelper(Page, username, password, s_uniqueOtpHelper);
             await loginHelper.LoginAsync();
+            await Context.StorageStateAsync(new() { Path = StoragePath });
         }
 
         [TestCleanup]
@@ -55,7 +57,9 @@ namespace PlaywrightTests
         {
             return new(base.ContextOptions())
             {
-                BaseURL = GetRequiredConfig("TestSettings:TEST_BASE_URL")
+                BaseURL = GetRequiredConfig("TestSettings:TEST_BASE_URL"),
+                // save auth state so we don't need to log in in every single test
+                StorageStatePath = File.Exists(StoragePath) ? StoragePath : null,
             };
         }
 
