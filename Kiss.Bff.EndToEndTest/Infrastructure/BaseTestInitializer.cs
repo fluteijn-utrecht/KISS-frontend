@@ -1,9 +1,7 @@
-﻿using Kiss.Bff.EndToEndTest;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Playwright;
+﻿using Microsoft.Extensions.Configuration;
 
 
-namespace PlaywrightTests
+namespace Kiss.Bff.EndToEndTest
 {
     [TestClass]
     public class BaseTestInitializer : PageTest
@@ -39,7 +37,7 @@ namespace PlaywrightTests
         [TestCleanup]
         public async Task TestCleanup()
         {
-            var options = TestContext.CurrentTestOutcome != UnitTestOutcome.Passed 
+            var options = TestContext.CurrentTestOutcome != UnitTestOutcome.Passed
                 ? new TracingStopOptions
                 {
                     Path = Path.Combine(
@@ -47,7 +45,7 @@ namespace PlaywrightTests
                         "playwright-traces",
                         $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}.zip"
                     )
-                } 
+                }
                 : null;
 
             await Context.Tracing.StopAsync(options);
