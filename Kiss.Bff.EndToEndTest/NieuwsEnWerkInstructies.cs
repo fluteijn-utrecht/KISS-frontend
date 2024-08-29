@@ -11,6 +11,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
         // Locate the 'Next' page button using the pagination structure
         var nextPageButton = NieuwsSection.Locator("[rel='next']").First;
+
         await Expect(nextPageButton).ToBeVisibleAsync();
 
         // Click the 'Next' page button
@@ -35,7 +36,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
 
     [TestMethod]
-    public async Task Als_ik_filter_op_skills_worden_de_nieuwberichten_hierop_gefilterd()
+    public async Task Als_ik_skill_filters_selecteer_worden_de_nieuwberichten_hierop_gefilterd()
     {
         // Example: Test filtering by skill
         var categorieFilterSection = Page.Locator("details").Filter(new() { HasText = "Filter op categorie" });
@@ -88,6 +89,40 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
         await Expect(heading).ToHaveTextAsync(title);
         await MarkAllNewsItems(false);
+    }
+
+    [TestMethod]
+    public async Task Als_ik_een_belangrijk_bericht_publiceer_komt_deze_bovenaan()
+    {
+        var titel = $"End to end test {Guid.NewGuid()}";
+        var featuredIndicator = Page.Locator(".featured-indicator");
+        var featuredCount = await GetFeaturedCount();
+
+        await CreateBericht(titel, true);
+        
+        try
+        {
+            await Page.GotoAsync("/");
+            var newFeaturedCount = await GetFeaturedCount();
+            Assert.AreEqual(featuredCount + 1, newFeaturedCount, "expected featured count to have increased by one after creating an important message");
+            await Expect(NieuwsSection).ToBeVisibleAsync();
+            var firstArticle = NieuwsSection.GetByRole(AriaRole.Article).First;
+            await Expect(firstArticle).ToContainTextAsync(titel);
+            await Expect(firstArticle).ToContainTextAsync("Belangrijk");
+            await firstArticle.GetByRole(AriaRole.Button, new() { Name = "Markeer als gelezen" }).ClickAsync();
+            await Page.WaitForResponseAsync(x => x.Url.Contains("featuredcount"));
+            newFeaturedCount = await GetFeaturedCount();
+            Assert.AreEqual(featuredCount, newFeaturedCount, "expected featured count to have decreased by one after marking an important message as read");
+        }
+        finally
+        {
+            await DeleteBericht(titel);
+        }
+
+        async Task<int> GetFeaturedCount() => await featuredIndicator.IsVisibleAsync()
+            && int.TryParse(await featuredIndicator.TextContentAsync(), out var c)
+                ? c
+                : 0;
     }
 
     // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
@@ -194,8 +229,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
     private async Task<(string Titel, bool IsBelangrijk)> UpdateLastNotImportantNieuwsberichtInBeheer()
     {
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" }).ClickAsync();
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Nieuws en werkinstructies" }).ClickAsync();
+        await NavigateToNieuwsWerkinstructiesBeheer();
 
         var nieuwsRows = Page.GetByRole(AriaRole.Row)
             .Filter(new()
@@ -211,6 +245,76 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         await Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" }).ClickAsync();
         return (titel, isBelangrijk);
     }
+
+    private async Task NavigateToNieuwsWerkinstructiesBeheer()
+    {
+        var beheerlink = Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" });
+        var berichtenlink = Page.GetByRole(AriaRole.Link, new() { Name = "Nieuws en werkinstructies" });
+
+        await Expect(beheerlink.Or(berichtenlink).First).ToBeVisibleAsync();
+
+        if (await beheerlink.IsVisibleAsync())
+        {
+            await beheerlink.ClickAsync();
+        }
+
+        if (await berichtenlink.GetAttributeAsync("aria-current") != "page")
+        {
+            await berichtenlink.ClickAsync();
+        }
+
+        
+    }
+
+    private async Task CreateBericht(string titel, bool isBelangrijk)
+    {
+        await NavigateToNieuwsWerkinstructiesBeheer();
+        var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
+        await toevoegenLink.ClickAsync();
+        await Page.GetByRole(AriaRole.Radio, new() { Name = "Nieuws" }).CheckAsync();
+        
+        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(titel);
+        // TODO label van inhoud wordt niet geassocieerd met de input
+        // await Page.GetByRole(AriaRole.Textbox, new() { Name = "Inhoud" }).FillAsync(titel);
+        await Page.Locator(".ck-content").WaitForAsync();
+        await Page.Locator("textarea").FillAsync(titel);
+
+        if (isBelangrijk)
+        {
+            await Page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" }).CheckAsync();
+        }
+
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
+        
+        await Expect(toevoegenLink).ToBeVisibleAsync();
+    }
+
+    private async Task DeleteBericht(string titel)
+    {
+        await NavigateToNieuwsWerkinstructiesBeheer();
+        var nieuwsRows = Page.GetByRole(AriaRole.Row)
+            .Filter(new()
+            {
+                Has = Page.GetByRole(AriaRole.Cell, new() { Name = "Nieuws" })
+            })
+            .Filter(new()
+            {
+                Has = Page.GetByRole(AriaRole.Cell, new() { Name = titel, Exact = true })
+            });
+
+        var deleteButton = nieuwsRows.GetByTitle("Verwijder");
+        
+        Page.Dialog += Accept;
+        await deleteButton.ClickAsync();
+        Page.Dialog -= Accept;
+    }
+
+    static async void Accept(object? _, IDialog dialog) => await dialog.AcceptAsync();
 
     private async Task<bool> IsDisabledPage(ILocator locator)
     {
