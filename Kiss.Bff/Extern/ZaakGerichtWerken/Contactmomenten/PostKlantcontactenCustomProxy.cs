@@ -18,7 +18,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
         public PostKlantContactenCustomProxy(IConfiguration configuration, GetMedewerkerIdentificatie getMedewerkerIdentificatie)
         {
-            _klantcontactenDestination = configuration["KLANTCONTACTEN_BASE_URL"];
+            _klantcontactenDestination = configuration["KLANTCONTACTEN_BASE_URL"]; //open klant 2.0
             var token = configuration["KLANTCONTACTEN_API_KEY"];
             _authProvider = new AuthenticationHeaderProvider(token, clientId: string.Empty, clientSecret: string.Empty);
             _getMedewerkerIdentificatie = getMedewerkerIdentificatie;
