@@ -29,6 +29,17 @@ export interface Contactmoment {
   verantwoordelijkeAfdeling?: string;
 }
 
+export interface KlantContact {
+  nummer?: string;
+  kanaal: string;
+  onderwerp: string;
+  inhoud: string;
+  indicatieContactGelukt: boolean;
+  taal: string;
+  vertrouwelijk: boolean;
+  plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
+}
+
 export interface ContactmomentDetails {
   id: string;
   startdatum: string;
@@ -86,4 +97,10 @@ export interface KlantContactmoment {
 export type SaveContactmomentResponseModel = {
   data?: { url: string; gespreksId: string };
   errorMessage?: string;
+};
+
+export type SaveKlantContactResponseModel = {
+  data?: { url: string; };
+  errorMessage?: string; 
+  shouldContinueWithContactmomenten?: boolean;
 };

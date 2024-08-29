@@ -15,6 +15,8 @@ import {
   type ObjectContactmoment,
   type ContactmomentDetails,
   type SaveContactmomentResponseModel,
+  type KlantContact,
+  type SaveKlantContactResponseModel,
 } from "./types";
 import type { ContactmomentViewModel } from "@/features/shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -85,6 +87,41 @@ const postContactmoment = (data: Contactmoment): Promise<Response> => {
     body: JSON.stringify(data),
   });
 };
+
+export const saveKlantContact = async (
+  data: KlantContact,
+): Promise<SaveKlantContactResponseModel> => {
+  const response = await postKlantContact(data);
+  const responseBody = await response.json();
+
+  if (response.ok) {
+    return { data: responseBody };
+  }
+
+  if (response.status === 400 && Array.isArray(responseBody.invalidParams)) {
+    return {
+      errorMessage: responseBody.invalidParams
+        .map((x: { reason: string }) => x.reason)
+        .join(""),
+    };
+  }
+
+  return {
+    errorMessage: "Er is een fout opgetreden bij opslaan van het klantcontact",
+  };
+};
+
+const postKlantContact = (data: KlantContact): Promise<Response> => {
+  return fetchLoggedIn(`/api/postklantcontacten`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+};
+
 export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
 
 export const useGespreksResultaten = () => {
