@@ -1,5 +1,7 @@
 <template>
-  <section-with-heading :level="level" :label="header">
+  <section>
+    <utrecht-heading :level="level">{{ header }}</utrecht-heading>
+
     <paragraph v-if="berichten.state === 'error'">{{
       getErrorMessage(berichten.error)
     }}</paragraph>
@@ -17,7 +19,7 @@
         >
           <werk-bericht
             :bericht="werkInstructie"
-            :level="(level + 1) as any"
+            :level="(level + 1 as any)"
             :show-type="!!search || !!skillIds?.length"
           />
         </li>
@@ -30,7 +32,7 @@
     </template>
 
     <simple-spinner v-else></simple-spinner>
-  </section-with-heading>
+  </section>
 </template>
 
 <script lang="ts" setup>
@@ -42,7 +44,6 @@ import Pagination from "@/nl-design-system/components/Pagination.vue";
 import { useWerkberichten } from "./service";
 import WerkBericht from "./WerkBericht.vue";
 import type { Berichttype } from "./types";
-import SectionWithHeading from "@/components/SectionWithHeading.vue";
 
 const props = defineProps({
   header: {

@@ -142,17 +142,11 @@ const otherLinks = computed(() => {
     result.push(createLink(props.pagination.pageNumber - 2));
   }
   if (previous.value?.isActive) {
-    result.push({
-      ...createLink(props.pagination.pageNumber - 1),
-      rel: previous.value.rel,
-    });
+    result.push(previous.value);
   }
   result.push(createLink(props.pagination.pageNumber));
   if (next.value?.isActive) {
-    result.push({
-      ...createLink(props.pagination.pageNumber + 1),
-      rel: next.value.rel,
-    });
+    result.push(next.value);
   }
   if (props.pagination.pageNumber < props.pagination.totalPages - 2) {
     result.push(createLink(props.pagination.totalPages - 1));
@@ -173,7 +167,7 @@ watch(
       emit("navigate", 1);
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>
 

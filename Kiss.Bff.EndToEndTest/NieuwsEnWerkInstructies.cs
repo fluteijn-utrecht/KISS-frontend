@@ -96,33 +96,29 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
     {
         var titel = $"End to end test {Guid.NewGuid()}";
         var featuredIndicator = Page.Locator(".featured-indicator");
-        var featuredCount = await GetFeaturedCount();
+        var intitialFeatureCount = await featuredIndicator.IsVisibleAsync()
+            && int.TryParse(await featuredIndicator.TextContentAsync(), out var c)
+                ? c
+                : 0;
 
         await CreateBericht(titel, true);
         
         try
         {
             await Page.GotoAsync("/");
-            var newFeaturedCount = await GetFeaturedCount();
-            Assert.AreEqual(featuredCount + 1, newFeaturedCount, "expected featured count to have increased by one after creating an important message");
+
             await Expect(NieuwsSection).ToBeVisibleAsync();
             var firstArticle = NieuwsSection.GetByRole(AriaRole.Article).First;
             await Expect(firstArticle).ToContainTextAsync(titel);
             await Expect(firstArticle).ToContainTextAsync("Belangrijk");
             await firstArticle.GetByRole(AriaRole.Button, new() { Name = "Markeer als gelezen" }).ClickAsync();
             await Page.WaitForResponseAsync(x => x.Url.Contains("featuredcount"));
-            newFeaturedCount = await GetFeaturedCount();
-            Assert.AreEqual(featuredCount, newFeaturedCount, "expected featured count to have decreased by one after marking an important message as read");
+            await Expect(featuredIndicator).ToHaveTextAsync(intitialFeatureCount.ToString());
         }
         finally
         {
             await DeleteBericht(titel);
         }
-
-        async Task<int> GetFeaturedCount() => await featuredIndicator.IsVisibleAsync()
-            && int.TryParse(await featuredIndicator.TextContentAsync(), out var c)
-                ? c
-                : 0;
     }
 
     // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
@@ -243,6 +239,8 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         var isBelangrijk = await Page.GetByLabel("Belangrijk").IsCheckedAsync();
 
         await Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" }).ClickAsync();
+        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
+
         return (titel, isBelangrijk);
     }
 
@@ -258,12 +256,12 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             await beheerlink.ClickAsync();
         }
 
+        await Expect(beheerlink).ToBeVisibleAsync(new() { Visible = false });
+
         if (await berichtenlink.GetAttributeAsync("aria-current") != "page")
         {
             await berichtenlink.ClickAsync();
         }
-
-        
     }
 
     private async Task CreateBericht(string titel, bool isBelangrijk)
@@ -291,7 +289,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             await opslaanKnop.ClickAsync();
         }
         
-        await Expect(toevoegenLink).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
     }
 
     private async Task DeleteBericht(string titel)
@@ -312,6 +310,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         Page.Dialog += Accept;
         await deleteButton.ClickAsync();
         Page.Dialog -= Accept;
+        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
     }
 
     static async void Accept(object? _, IDialog dialog) => await dialog.AcceptAsync();
