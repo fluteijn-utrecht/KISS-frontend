@@ -56,11 +56,20 @@ try
             options.TruncateMedewerkerIdentificatie = truncate;
         }
     });
-      
+
+    builder.Services.AddScoped<IAuthenticationHeaderProvider, AuthenticationHeaderProviderWrapper>(sp =>
+    {
+        var token = sp.GetRequiredService<IConfiguration>()["KLANTCONTACTEN_API_KEY"];
+        var authProvider = new AuthenticationHeaderProvider(token, clientId: string.Empty, clientSecret: string.Empty);
+        return new AuthenticationHeaderProviderWrapper(authProvider);
+    });
+
     builder.Services.AddKissProxy();
     builder.Services.AddKvk(builder.Configuration["KVK_BASE_URL"], builder.Configuration["KVK_API_KEY"]);
     builder.Services.AddHaalCentraal(builder.Configuration["HAAL_CENTRAAL_BASE_URL"], builder.Configuration["HAAL_CENTRAAL_API_KEY"]);
     builder.Services.AddZgwTokenProvider(builder.Configuration["ZAKEN_API_KEY"], builder.Configuration["ZAKEN_API_CLIENT_ID"]);
+
+    builder.Services.AddHttpClient();
 
     builder.Services.AddZaaksystemen(builder.Configuration);
 
