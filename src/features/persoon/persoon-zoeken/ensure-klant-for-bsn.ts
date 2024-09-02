@@ -1,11 +1,4 @@
-import {
-  findKlantByIdentifier,
-  createKlant,
-  type Contactnaam,
-} from "@/services/klanten";
+import { findKlantByIdentifier, createKlant } from "@/services/klanten";
 
-export const ensureKlantForBsn = async (parameters: {
-  bsn: string;
-  contactnaam: Contactnaam;
-}) =>
+export const ensureKlantForBsn = async (parameters: { bsn: string }) =>
   (await findKlantByIdentifier(parameters)) ?? (await createKlant(parameters));

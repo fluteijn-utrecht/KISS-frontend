@@ -43,7 +43,7 @@
         v-else-if="bedrijf.data && bedrijfIdentifier"
         type="button"
         title="Aanmaken"
-        @click="navigate(bedrijf.data, bedrijfIdentifier, naam)"
+        @click="navigate(bedrijf.data, bedrijfIdentifier)"
       />
     </td>
   </tr>
@@ -131,14 +131,9 @@ const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
   }
 };
 
-async function navigate(
-  bedrijf: Bedrijf,
-  identifier: BedrijfIdentifier,
-  naam: string,
-) {
+async function navigate(bedrijf: Bedrijf, identifier: BedrijfIdentifier) {
   const newKlant =
-    klant.value.data ||
-    (await ensureKlantForBedrijfIdentifier(identifier, naam));
+    klant.value.data || (await ensureKlantForBedrijfIdentifier(identifier));
   setCache(newKlant, bedrijf);
   const url = getKlantUrl(newKlant);
   await router.push(url);
@@ -149,10 +144,9 @@ watchEffect(() => {
     props.autoNavigate &&
     klant.value.success &&
     bedrijf.value.data &&
-    bedrijfIdentifier.value &&
-    naam.value
+    bedrijfIdentifier.value
   ) {
-    navigate(bedrijf.value.data, bedrijfIdentifier.value, naam.value);
+    navigate(bedrijf.value.data, bedrijfIdentifier.value);
   }
 });
 </script>

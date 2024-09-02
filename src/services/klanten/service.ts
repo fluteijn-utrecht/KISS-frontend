@@ -133,29 +133,28 @@ export async function createKlant(
   parameters:
     | {
         bsn: string;
-        contactnaam: Contactnaam;
       }
     | {
         vestigingsnummer: string;
-        naam: string;
       }
     | {
         rsin: string;
         kvkNummer?: string;
-        naam: string;
       },
 ) {
   let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
   if ("bsn" in parameters) {
     soortPartij = PartijTypes.persoon;
-    partijIdentificatie = { contactnaam: parameters.contactnaam };
+    // dit is de enige manier om een partij zonder contactnaam aan te maken
+    partijIdentificatie = { contactnaam: null };
     partijIdentificator = {
       ...identificatorTypes.persoon,
       objectId: parameters.bsn,
     };
   } else {
     soortPartij = PartijTypes.organisatie;
-    partijIdentificatie = { naam: parameters.naam };
+    // dit is de enige manier om een partij zonder naam aan te maken
+    partijIdentificatie = { naam: "" };
     if ("vestigingsnummer" in parameters && parameters.vestigingsnummer) {
       partijIdentificator = {
         ...identificatorTypes.vestiging,
@@ -226,7 +225,7 @@ const getPartijIdentificator = (uuid: string) =>
     .then(parseJson);
 
 function createPartij(
-  partijIdentificatie: { naam: string } | { contactnaam: Contactnaam },
+  partijIdentificatie: { naam: string } | { contactnaam: Contactnaam | null },
   soortPartij: PartijTypes,
 ) {
   return fetchLoggedIn(klantinteractiesBaseUrl + "/partijen", {
