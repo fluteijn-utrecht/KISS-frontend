@@ -65,15 +65,10 @@ const router = useRouter();
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
 const navigate = async (persoon: Persoon) => {
-  const { bsn, voornaam, voorvoegselAchternaam, achternaam } = persoon;
+  const { bsn } = persoon;
   if (!bsn) throw new Error();
   const klant = await ensureKlantForBsn({
     bsn,
-    contactnaam: {
-      voornaam,
-      voorvoegselAchternaam,
-      achternaam,
-    },
   });
   await mutate("persoon" + bsn, persoon);
   await mutate(klant.id, klant);
