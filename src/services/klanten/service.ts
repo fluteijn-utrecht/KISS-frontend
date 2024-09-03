@@ -41,12 +41,12 @@ export const identificatorTypes = {
   nietNatuurlijkPersoonRsin: {
     codeRegister: "hr",
     codeSoortObjectId: "rsin",
-    codeObjecttype: "innp",
+    codeObjecttype: "nnp",
   },
   nietNatuurlijkPersoonKvkNummer: {
     codeRegister: "hr",
-    codeSoortObjectId: "kvkNummer",
-    codeObjecttype: "innp",
+    codeSoortObjectId: "kvk",
+    codeObjecttype: "nnp",
   },
 } satisfies Record<string, IdentificatorType>;
 
@@ -60,7 +60,7 @@ type Partij = {
   nummer?: string;
   uuid: string;
   url: string;
-  identificatie: {
+  partijIdentificatie: {
     contactnaam?: Contactnaam;
     naam?: string;
   };
@@ -133,41 +133,44 @@ export async function createKlant(
   parameters:
     | {
         bsn: string;
-        contactnaam: Contactnaam;
       }
     | {
         vestigingsnummer: string;
-        naam: string;
       }
     | {
         rsin: string;
         kvkNummer?: string;
-        naam: string;
       },
 ) {
-  let partijIdentificatie, partijIdentificator, soortPartij;
-
+  let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
   if ("bsn" in parameters) {
     soortPartij = PartijTypes.persoon;
-    partijIdentificatie = { contactnaam: parameters.contactnaam };
+    // dit is de enige manier om een partij zonder contactnaam aan te maken
+    partijIdentificatie = { contactnaam: null };
     partijIdentificator = {
       ...identificatorTypes.persoon,
       objectId: parameters.bsn,
     };
   } else {
     soortPartij = PartijTypes.organisatie;
-    partijIdentificatie = { naam: parameters.naam };
-    partijIdentificator =
-      "vestigingsnummer" in parameters
-        ? {
-            ...identificatorTypes.vestiging,
-            objectId: parameters.vestigingsnummer,
-          }
-        : {
-            ...identificatorTypes.nietNatuurlijkPersoonRsin,
-            objectId: parameters.rsin,
-          };
+    // dit is de enige manier om een partij zonder naam aan te maken
+    partijIdentificatie = { naam: "" };
+    if ("vestigingsnummer" in parameters && parameters.vestigingsnummer) {
+      partijIdentificator = {
+        ...identificatorTypes.vestiging,
+        objectId: parameters.vestigingsnummer,
+      };
+    } else if ("rsin" in parameters && parameters.rsin) {
+      partijIdentificator = {
+        ...identificatorTypes.nietNatuurlijkPersoonRsin,
+        objectId: parameters.rsin,
+      };
+      kvkNummer = parameters.kvkNummer;
+    }
   }
+
+  if (!partijIdentificator) throw new Error("");
+
   const partij = await createPartij(partijIdentificatie, soortPartij);
 
   const identificators = [
@@ -180,7 +183,7 @@ export async function createKlant(
     }),
   ];
 
-  if ("kvkNummer" in parameters && parameters.kvkNummer) {
+  if (kvkNummer) {
     const kvkIdentificator = await createPartijIdentificator({
       identificeerdePartij: {
         url: partij.url,
@@ -188,7 +191,7 @@ export async function createKlant(
       },
       partijIdentificator: {
         ...identificatorTypes.nietNatuurlijkPersoonKvkNummer,
-        objectId: parameters.kvkNummer,
+        objectId: kvkNummer,
       },
     });
     identificators.push(kvkIdentificator);
@@ -222,7 +225,7 @@ const getPartijIdentificator = (uuid: string) =>
     .then(parseJson);
 
 function createPartij(
-  partijIdentificatie: { naam: string } | { contactnaam: Contactnaam },
+  partijIdentificatie: { naam: string } | { contactnaam: Contactnaam | null },
   soortPartij: PartijTypes,
 ) {
   return fetchLoggedIn(klantinteractiesBaseUrl + "/partijen", {
@@ -277,8 +280,8 @@ async function mapPartijToKlant(
     klantnummer: partij.nummer || "",
     id: partij.uuid,
     url: partij.url,
-    bedrijfsnaam: partij.identificatie?.naam,
-    ...(partij.identificatie?.contactnaam || {}),
+    bedrijfsnaam: partij.partijIdentificatie?.naam,
+    ...(partij.partijIdentificatie?.contactnaam || {}),
     telefoonnummers: getDigitaalAdressen(DigitaalAdresTypes.telefoonnummer),
     emailadressen: getDigitaalAdressen(DigitaalAdresTypes.email),
     bsn: getIdentificator(identificatorTypes.persoon),

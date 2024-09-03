@@ -40,10 +40,10 @@
         @click="setCache(klant.data, bedrijf.data)"
       />
       <button
-        v-else-if="parameterForEnsureKlant"
+        v-else-if="bedrijf.data && bedrijfIdentifier"
         type="button"
         title="Aanmaken"
-        @click="navigate(parameterForEnsureKlant)"
+        @click="navigate(bedrijf.data, bedrijfIdentifier)"
       />
     </td>
   </tr>
@@ -105,9 +105,17 @@ const naam = computed(
     bedrijf.value.data?.bedrijfsnaam || klant.value.data?.bedrijfsnaam || "",
 );
 
-const parameterForEnsureKlant = computed(() => {
-  if (bedrijf.value.data?.rsin || bedrijf.value.data?.vestigingsnummer)
-    return bedrijf.value.data as Bedrijf & BedrijfIdentifier;
+const bedrijfIdentifier = computed<BedrijfIdentifier | undefined>(() => {
+  const { rsin, kvkNummer, vestigingsnummer } = bedrijf.value.data ?? {};
+  if (vestigingsnummer)
+    return {
+      vestigingsnummer,
+    };
+  if (rsin)
+    return {
+      rsin,
+      kvkNummer,
+    };
   return undefined;
 });
 
@@ -123,25 +131,22 @@ const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
   }
 };
 
-async function navigate(bedrijf: Bedrijf & BedrijfIdentifier) {
+async function navigate(bedrijf: Bedrijf, identifier: BedrijfIdentifier) {
   const newKlant =
-    klant.value.data ||
-    (await ensureKlantForBedrijfIdentifier({
-      ...bedrijf,
-      naam: bedrijf.bedrijfsnaam,
-    }));
+    klant.value.data || (await ensureKlantForBedrijfIdentifier(identifier));
   setCache(newKlant, bedrijf);
   const url = getKlantUrl(newKlant);
   await router.push(url);
 }
 
-watchEffect(async () => {
+watchEffect(() => {
   if (
     props.autoNavigate &&
     klant.value.success &&
-    parameterForEnsureKlant.value
+    bedrijf.value.data &&
+    bedrijfIdentifier.value
   ) {
-    navigate(parameterForEnsureKlant.value);
+    navigate(bedrijf.value.data, bedrijfIdentifier.value);
   }
 });
 </script>

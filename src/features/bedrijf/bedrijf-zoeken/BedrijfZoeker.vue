@@ -70,9 +70,7 @@ import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { FriendlyError } from "@/services";
 
-type KeysOfUnion<T> = T extends T ? keyof T : never;
-
-const labels: { [key in KeysOfUnion<BedrijvenQuery>]: string } = {
+const labels = {
   handelsnaam: "Bedrijfsnaam",
   kvkNummer: "KVK-nummer",
   postcodeHuisnummer: "Postcode + Huisnummer",
@@ -96,35 +94,55 @@ const state = ensureState({
 
 const inputRef = ref();
 
-const currentQuery = computed<BedrijvenQuery | { error: Error }>(() => {
-  const { currentSearch, field } = state.value;
+const currentQuery = computed<BedrijvenQuery | { error: Error } | undefined>(
+  () => {
+    const { currentSearch, field } = state.value;
 
-  if (field === "postcodeHuisnummer") {
-    const parsed = parsePostcodeHuisnummer(currentSearch);
-    return parsed instanceof Error
-      ? {
-          error: parsed,
-        }
-      : {
-          postcodeHuisnummer: parsed,
-        };
-  }
+    if (!currentSearch) return undefined;
 
-  if (field === "kvkNummer") {
-    const parsed = parseKvkNummer(currentSearch);
-    return parsed instanceof Error
-      ? {
-          error: parsed,
-        }
-      : {
-          kvkNummer: parsed,
-        };
-  }
+    if (field === "postcodeHuisnummer") {
+      const parsed = parsePostcodeHuisnummer(currentSearch);
+      return parsed instanceof Error
+        ? {
+            error: parsed,
+          }
+        : {
+            postcodeHuisnummer: parsed,
+          };
+    }
 
-  return {
-    [field]: currentSearch,
-  } as BedrijvenQuery;
-});
+    if (field === "kvkNummer") {
+      const parsed = parseKvkNummer(currentSearch);
+      return parsed instanceof Error
+        ? {
+            error: parsed,
+          }
+        : {
+            kvkNummer: parsed,
+          };
+    }
+
+    if (field === "handelsnaam") {
+      return {
+        [field]: currentSearch,
+      };
+    }
+
+    if (field === "email") {
+      return {
+        email: currentSearch,
+      };
+    }
+
+    if (field === "telefoonnummer") {
+      return {
+        email: currentSearch,
+      };
+    }
+
+    return undefined;
+  },
+);
 
 const navigateOnSingleResult = ref(false);
 
@@ -147,7 +165,13 @@ const handleSearch = () => {
   navigateOnSingleResult.value = true;
 };
 
-const bedrijven = useSearchBedrijven(() => state.value.query);
+const bedrijven = useSearchBedrijven(
+  () =>
+    state.value.query && {
+      query: state.value.query,
+      page: state.value.page,
+    },
+);
 
 const navigate = (val: number) => {
   state.value.page = val;
