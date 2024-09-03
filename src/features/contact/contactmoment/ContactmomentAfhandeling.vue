@@ -597,10 +597,6 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     const savedKlantContactResult = await saveKlantContact(klantcontact);
 
-    // const klantId = vraag.klanten
-    // .filter((x) => x.shouldStore)
-    // .map((x) => x.klant.id)
-    // .find(Boolean);
     if (savedKlantContactResult.errorMessage || !savedKlantContactResult.data) {
       return savedKlantContactResult;
     }
