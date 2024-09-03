@@ -4,6 +4,7 @@ using System.Text.Json;
 using Kiss.Bff.Afdelingen;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Kiss.Bff.Extern.Klantinteracties;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
@@ -11,17 +12,15 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
     [ApiController]
     public class PostKlantContactenCustomProxy : ControllerBase
     {
-        private readonly string _klantcontactenDestination;
         private readonly GetMedewerkerIdentificatie _getMedewerkerIdentificatie;
-        private readonly IAuthenticationHeaderProvider _authProvider;
         private readonly HttpClient _httpClient;
+        private readonly KlantinteractiesProxyConfig _klantinteractiesProxyConfig;
 
-        public PostKlantContactenCustomProxy(IConfiguration configuration, GetMedewerkerIdentificatie getMedewerkerIdentificatie, IAuthenticationHeaderProvider authProvider, HttpClient httpClient)
+        public PostKlantContactenCustomProxy(GetMedewerkerIdentificatie getMedewerkerIdentificatie, HttpClient httpClient, KlantinteractiesProxyConfig klantinteractiesProxyConfig)
         {
-            _klantcontactenDestination = configuration["KLANTCONTACTEN_BASE_URL"];
-            _authProvider = authProvider;
             _getMedewerkerIdentificatie = getMedewerkerIdentificatie;
             _httpClient = httpClient;
+            _klantinteractiesProxyConfig = klantinteractiesProxyConfig;
         }
 
         [HttpPost("postklantcontacten")]
@@ -35,7 +34,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
             }
 
-            string? actorUuid = await CheckIfActorExists(email);
+            string? actorUuid = await GetActorId(email);
 
             if (actorUuid == null)
             {
@@ -50,29 +49,30 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 actorUuid = actorResponse.RootElement.GetProperty("uuid").GetString();
             }
 
-            var klantcontactUuid = await PostKlantContact(parsedModel);
+            var klantcontact = await PostKlantContact(parsedModel);
+            LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
 
-            return LinkActorWithKlantContact(actorUuid, klantcontactUuid);
+            return Ok(klantcontact);
         }
 
-        public async Task<string> PostKlantContact(JsonObject parsedModel)
+        public async Task<JsonObject> PostKlantContact(JsonObject parsedModel)
         {
-            var url = _klantcontactenDestination.TrimEnd('/') + "/klantinteracties/api/v1/klantcontacten";
+            var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/klantcontacten";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = JsonContent.Create(parsedModel)
             };
 
-            _authProvider.ApplyAuthorizationHeader(request.Headers, User);
+            _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
-            var jsonResponse = JsonDocument.Parse(content);
+            var jsonResponse = JsonNode.Parse(content).AsObject();
 
-            return jsonResponse.RootElement.GetProperty("uuid").GetString();
+            return jsonResponse;
         }
 
         public async Task<IActionResult> PostActoren()
@@ -98,14 +98,14 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
 
-            var url = _klantcontactenDestination.TrimEnd('/') + "/klantinteracties/api/v1/actoren";
-
+            var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/actoren";
+            
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = JsonContent.Create(parsedModel)
             };
 
-            _authProvider.ApplyAuthorizationHeader(request.Headers, User);
+            _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
@@ -115,19 +115,13 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             return Ok(content);
         }
 
-        public async Task<string?> CheckIfActorExists(string email)
+        public async Task<string?> GetActorId(string email)
         {
-            var url = $"{_klantcontactenDestination.TrimEnd('/')}/klantinteracties/api/v1/actoren";
-            var queryParams = new Dictionary<string, string>
-            {
-                { "actoridentificatorObjectId", email }
-            };
+            var url = $"{_klantinteractiesProxyConfig.Destination.TrimEnd('/')}/api/v1/actoren?actoridentificatorObjectId={email}";
 
-            var queryString = string.Join("&", queryParams.Where(kv => !string.IsNullOrEmpty(kv.Value)).Select(kv => $"{kv.Key}={kv.Value}"));
-            var requestUrl = $"{url}?{queryString}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-            _authProvider.ApplyAuthorizationHeader(request.Headers, User);
+            _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
             var response = await _httpClient.SendAsync(request);
 
@@ -147,7 +141,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
         public IActionResult LinkActorWithKlantContact(string actorUuid, string klantcontactUuid)
         {
-            var url = _klantcontactenDestination.TrimEnd('/') + "/klantinteracties/api/v1/actorklantcontacten";
+            var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/actorklantcontacten";
 
             var payload = new JsonObject
             {
@@ -162,7 +156,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                     Content = JsonContent.Create(payload)
                 };
 
-                _authProvider.ApplyAuthorizationHeader(request.Headers, User);
+                _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
                 return request;
             });
@@ -170,25 +164,5 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
     }
 }
 
-    // Interface voor unittests en misschien zoiets lokaal implementeren? 
-    public interface IAuthenticationHeaderProvider
-    {
-        void ApplyAuthorizationHeader(HttpRequestHeaders headers, ClaimsPrincipal user);
-    }
-
-    public class AuthenticationHeaderProviderWrapper : IAuthenticationHeaderProvider
-    {
-        private readonly AuthenticationHeaderProvider _authProvider;
-
-        public AuthenticationHeaderProviderWrapper(AuthenticationHeaderProvider authProvider)
-        {
-            _authProvider = authProvider;
-        }
-
-        public void ApplyAuthorizationHeader(HttpRequestHeaders headers, ClaimsPrincipal user)
-        {
-            _authProvider.ApplyAuthorizationHeader(headers, user);
-        }
-    }
 
 

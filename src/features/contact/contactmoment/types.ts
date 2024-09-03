@@ -94,13 +94,21 @@ export interface KlantContactmoment {
   rol: string;
 }
 
+export type Betrokkenen = {
+  wasPartij: {
+    uuid: string;
+  };
+  hadKlantcontact: {
+    uuid: string;
+  };
+};
+
 export type SaveContactmomentResponseModel = {
   data?: { url: string; gespreksId: string };
   errorMessage?: string;
 };
 
 export type SaveKlantContactResponseModel = {
-  data?: { url: string; };
+  data?: { url: string; uuid: string };
   errorMessage?: string; 
-  shouldContinueWithContactmomenten?: boolean;
 };

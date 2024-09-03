@@ -8,8 +8,13 @@ namespace Kiss.Bff.Extern.Klantinteracties
     public static class KlantinteractiesExtensions
     {
         public static IServiceCollection AddKlantinteracties(this IServiceCollection services,
-            string destination,
-            string secret) => services.AddSingleton<IKissProxyRoute>(new KlantinteractiesProxyConfig(destination, secret));
+       string destination,
+       string secret)
+        {
+            services.AddSingleton(new KlantinteractiesProxyConfig(destination, secret));
+            services.AddSingleton<IKissProxyRoute>(s => s.GetRequiredService<KlantinteractiesProxyConfig>());
+            return services;
+        }
     }
 
     public class KlantinteractiesProxyConfig: IKissProxyRoute
@@ -19,7 +24,7 @@ namespace Kiss.Bff.Extern.Klantinteracties
         public KlantinteractiesProxyConfig(string destination, string secret)
         {
             Destination = destination;
-            _authProvider = new AuthenticationHeaderProvider(secret, "", "");
+            _authProvider = new AuthenticationHeaderProvider(secret, string.Empty, string.Empty);
         }
 
         public string Route => "klantinteracties";
@@ -30,6 +35,11 @@ namespace Kiss.Bff.Extern.Klantinteracties
         {
             _authProvider.ApplyAuthorizationHeader(context.ProxyRequest.Headers, context.HttpContext.User);
             return new();
+        }
+
+        public void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
+        {
+            _authProvider.ApplyAuthorizationHeader(headers, user);
         }
     }
 }

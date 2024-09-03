@@ -49,6 +49,11 @@ const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomente
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
+const klantinteractiesProxyRoot = "/api/klantinteracties";
+const klantinteractiesApiRoot = "/api/v1";
+const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
+const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
+
 const zaaksysteemProxyRoot = `/api/zaken`;
 const zaaksysteemApiRoot = `/zaken/api/v1`;
 const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
@@ -59,22 +64,9 @@ export const saveContactmoment = async (
 ): Promise<SaveContactmomentResponseModel> => {
   const response = await postContactmoment(data);
   const responseBody = await response.json();
-
-  if (response.ok) {
-    return { data: responseBody };
-  }
-
-  if (response.status === 400 && Array.isArray(responseBody.invalidParams)) {
-    return {
-      errorMessage: responseBody.invalidParams
-        .map((x: { reason: string }) => x.reason)
-        .join(""),
-    };
-  }
-
-  return {
-    errorMessage: "Er is een fout opgetreden bij opslaan van het contactmoment",
-  };
+  
+  throwIfNotOk(response);
+  return { data: responseBody };
 };
 
 const postContactmoment = (data: Contactmoment): Promise<Response> => {
@@ -94,21 +86,8 @@ export const saveKlantContact = async (
   const response = await postKlantContact(data);
   const responseBody = await response.json();
 
-  if (response.ok) {
-    return { data: responseBody };
-  }
-
-  if (response.status === 400 && Array.isArray(responseBody.invalidParams)) {
-    return {
-      errorMessage: responseBody.invalidParams
-        .map((x: { reason: string }) => x.reason)
-        .join(""),
-    };
-  }
-
-  return {
-    errorMessage: "Er is een fout opgetreden bij opslaan van het klantcontact",
-  };
+  throwIfNotOk(response);
+  return { data: responseBody };
 };
 
 const postKlantContact = (data: KlantContact): Promise<Response> => {
@@ -193,6 +172,31 @@ export function koppelKlant({
       klant: klantId,
       contactmoment: contactmomentId,
       rol: "gesprekspartner",
+    }),
+  }).then(throwIfNotOk) as Promise<void>;
+}
+
+export function koppelBetrokkenen({
+  partijId,
+  contactmomentId,
+}: {
+  partijId: string;
+  contactmomentId: string;
+}) {
+  return fetchLoggedIn(klantinteractiesBetrokkenen, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      wasPartij: {
+        uuid: partijId,
+      },
+      hadKlantcontact: {
+        uuid: contactmomentId,
+      },
+      rol: "klant",
+      initiator: true
     }),
   }).then(throwIfNotOk) as Promise<void>;
 }

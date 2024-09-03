@@ -169,10 +169,9 @@ namespace Kiss.Bff.Test
             var httpClient = new HttpClient(clientHandlerStub);
 
             _controller = new PostKlantContactenCustomProxy(
-                _configurationMock.Object,
                 _getMedewerkerIdentificatieMock.Object,
-                _authProviderMock.Object,
-                httpClient
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("", "")
             );
 
             _httpContext = new DefaultHttpContext
@@ -230,7 +229,7 @@ namespace Kiss.Bff.Test
             _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
 
             // Act
-            var result = await _controller.CheckIfActorExists("test@example.com");
+            var result = await _controller.GetActorId("test@example.com");
 
             // Assert
             Assert.AreEqual(actorUuid, result);
@@ -261,7 +260,7 @@ namespace Kiss.Bff.Test
             _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
 
             // Act
-            var result = await _controller.CheckIfActorExists("nonexistent@example.com");
+            var result = await _controller.GetActorId("nonexistent@example.com");
 
             // Assert
             Assert.IsNull(result);

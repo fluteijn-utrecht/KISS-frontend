@@ -433,6 +433,7 @@ import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
+  koppelBetrokkenen,
   saveContactmoment,
   koppelObject,
   useGespreksResultaten,
@@ -559,11 +560,23 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
+const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
+  for (const { shouldStore, klant } of vraag.klanten) {
+    if (shouldStore && klant.id) {  
+      await koppelBetrokkenen({
+        partijId: klant.id,
+        contactmomentId: contactmomentId,
+      });
+    }
+  }
+};
+
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
 // Fetch USE_KLANTCONTACTEN environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
   const response = await fetch('/api/environment/use-klantcontacten');
   const { useKlantContacten } = await response.json();
+
   // KlantContacten flow
   if (useKlantContacten) {
     const klantcontact: KlantContact = {
@@ -584,9 +597,15 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     const savedKlantContactResult = await saveKlantContact(klantcontact);
 
+    // const klantId = vraag.klanten
+    // .filter((x) => x.shouldStore)
+    // .map((x) => x.klant.id)
+    // .find(Boolean);
     if (savedKlantContactResult.errorMessage || !savedKlantContactResult.data) {
       return savedKlantContactResult;
     }
+
+    koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
     return savedKlantContactResult;
   }
