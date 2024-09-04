@@ -29,11 +29,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;
 
-            if (parsedModel != null)
-            {
-                parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
-            }
-
             string? actorUuid = await GetActorId(email);
 
             if (actorUuid == null)
@@ -50,7 +45,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             }
 
             var klantcontact = await PostKlantContact(parsedModel);
-            LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
+            await LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
 
             return Ok(klantcontact);
         }
@@ -66,14 +61,14 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
-            var response = await _httpClient.SendAsync(request);
+            using var response = await _httpClient.SendAsync(request);  
             response.EnsureSuccessStatusCode();
 
-            var content = await response.Content.ReadAsStringAsync();
-            var jsonResponse = JsonNode.Parse(content).AsObject();
+            var jsonResponse = await response.Content.ReadFromJsonAsync<JsonObject>();
 
             return jsonResponse;
         }
+
 
         public async Task<IActionResult> PostActoren()
         {
@@ -107,7 +102,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
-            var response = await _httpClient.SendAsync(request);
+            using var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
@@ -123,7 +118,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
-            var response = await _httpClient.SendAsync(request);
+            using var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -139,7 +134,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             return null;
         }
 
-        public IActionResult LinkActorWithKlantContact(string actorUuid, string klantcontactUuid)
+        public async Task<IActionResult> LinkActorWithKlantContact(string actorUuid, string klantcontactUuid)
         {
             var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/actorklantcontacten";
 
@@ -149,18 +144,24 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 ["klantcontact"] = new JsonObject { ["uuid"] = klantcontactUuid }
             };
 
-            return new ProxyResult(() =>
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, url)
-                {
-                    Content = JsonContent.Create(payload)
-                };
+                Content = JsonContent.Create(payload)
+            };
 
-                _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
+            _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
-                return request;
-            });
+            using var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return Ok("Actor successfully linked with KlantContact.");
+            }
+
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            return StatusCode((int)response.StatusCode, errorMessage);
         }
+
     }
 }
 
