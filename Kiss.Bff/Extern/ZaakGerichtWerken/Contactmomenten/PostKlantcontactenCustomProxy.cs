@@ -37,16 +37,22 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
                 if (actorUuid == null)
                 {
-                    return BadRequest();
+                    return BadRequest(new { errorMessage = "Failed to create actor." });
                 }
             }
 
             var klantcontact = await PostKlantContact(parsedModel);
 
-            await LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
+            var linkSuccessful = await LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
+
+            if (!linkSuccessful)
+            {
+                return BadRequest(new { errorMessage = "Failed to link actor with klantcontact." });
+            }
 
             return Ok(klantcontact);
         }
+
 
 
         public async Task<JsonObject> PostKlantContact(JsonObject parsedModel)
@@ -136,7 +142,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             return null;
         }
 
-        public async Task<IActionResult> LinkActorWithKlantContact(string actorUuid, string klantcontactUuid)
+        public async Task<bool> LinkActorWithKlantContact(string actorUuid, string klantcontactUuid)
         {
             var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/actorklantcontacten";
 
@@ -155,15 +161,8 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             using var response = await _httpClient.SendAsync(request);
 
-            if (response.IsSuccessStatusCode)
-            {
-                return Ok("Actor successfully linked with KlantContact.");
-            }
-
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            return StatusCode((int)response.StatusCode, errorMessage);
+            return response.IsSuccessStatusCode;
         }
-
     }
 }
 

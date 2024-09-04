@@ -219,22 +219,17 @@ namespace Kiss.Bff.Test
             };
 
             // Act
-            var result = await _controller.PostActoren();
+            var resultUuid = await _controller.PostActoren();
 
             // Assert
-            var okResult = result as OkObjectResult;
-            Assert.IsNotNull(okResult);
-
-            var jsonResponse = JsonDocument.Parse(okResult.Value.ToString());
-            var returnedUuid = jsonResponse.RootElement.GetProperty("uuid").GetString();
-
-            Assert.AreEqual(actorUuid, returnedUuid);
+            Assert.AreEqual(actorUuid, resultUuid); 
 
             mockHttp.VerifyNoOutstandingExpectation();
         }
 
+
         [TestMethod]
-        public void LinkActorWithKlantContact_ShouldReturnOkResult_WhenLinkedSuccessfully()
+        public async Task LinkActorWithKlantContact_ShouldReturnTrue_WhenLinkedSuccessfully()
         {
             // Arrange
             var actorUuid = "actor-uuid";
@@ -243,19 +238,7 @@ namespace Kiss.Bff.Test
             var mockHttp = new MockHttpMessageHandler();
 
             mockHttp.When(HttpMethod.Post, "https://fakeurl.com/api/v1/actorklantcontacten")
-                .Respond("application/json", $@"
-                {{
-                    ""uuid"": ""link-uuid"",
-                    ""url"": ""http://example.com"",
-                    ""actor"": {{
-                        ""uuid"": ""{actorUuid}"",
-                        ""url"": ""http://example.com""
-                    }},
-                    ""klantcontact"": {{
-                        ""uuid"": ""{klantcontactUuid}"",
-                        ""url"": ""http://example.com""
-                    }}
-                }}");
+                .Respond(HttpStatusCode.OK); // Respond with success status
 
             var httpClient = mockHttp.ToHttpClient();
 
@@ -270,10 +253,43 @@ namespace Kiss.Bff.Test
             };
 
             // Act
-            var result = _controller.LinkActorWithKlantContact(actorUuid, klantcontactUuid);
+            var result = await _controller.LinkActorWithKlantContact(actorUuid, klantcontactUuid);
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(ProxyResult));
+            Assert.IsTrue(result, "Expected LinkActorWithKlantContact to return true on successful link");
+
+            mockHttp.VerifyNoOutstandingExpectation();
+        }
+
+        [TestMethod]
+        public async Task LinkActorWithKlantContact_ShouldReturnFalse_WhenLinkFails()
+        {
+            // Arrange
+            var actorUuid = "actor-uuid";
+            var klantcontactUuid = "klantcontact-uuid";
+
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp.When(HttpMethod.Post, "https://fakeurl.com/api/v1/actorklantcontacten")
+                .Respond(HttpStatusCode.InternalServerError); // Simulate server error
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = _httpContext
+            };
+
+            // Act
+            var result = await _controller.LinkActorWithKlantContact(actorUuid, klantcontactUuid);
+
+            // Assert
+            Assert.IsFalse(result, "Expected LinkActorWithKlantContact to return false on failed link");
 
             mockHttp.VerifyNoOutstandingExpectation();
         }
