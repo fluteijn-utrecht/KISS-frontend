@@ -24,7 +24,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         }
 
         [HttpPost("postklantcontacten")]
-        public async Task<IActionResult> PostKlantContacten([FromBody] JsonObject parsedModel)
+        public async Task<string> PostKlantContacten([FromBody] JsonObject parsedModel)
         {
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;
@@ -36,7 +36,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
                 var postActorResult = await PostActoren();
                 if (!(postActorResult is OkObjectResult okActorResult))
                 {
-                    return postActorResult;
+                    throw new Exception("Failed to create actor");
                 }
 
                 var actorResponseJson = okActorResult.Value?.ToString();
@@ -45,9 +45,10 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             }
 
             var klantcontact = await PostKlantContact(parsedModel);
+
             await LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
 
-            return Ok(klantcontact);
+            return klantcontact["uuid"].ToString();
         }
 
         public async Task<JsonObject> PostKlantContact(JsonObject parsedModel)
@@ -61,7 +62,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, User);
 
-            using var response = await _httpClient.SendAsync(request);  
+            using var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
             var jsonResponse = await response.Content.ReadFromJsonAsync<JsonObject>();
