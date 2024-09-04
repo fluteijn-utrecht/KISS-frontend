@@ -1,6 +1,5 @@
 ﻿using Moq;
 using Microsoft.Extensions.Configuration;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -10,6 +9,7 @@ using RichardSzalay.MockHttp;
 using Kiss.Bff.Afdelingen;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
+using Kiss.Bff.Extern.Klantinteracties;
 
 namespace Kiss.Bff.Test
 {

@@ -4,9 +4,8 @@ using System.Text.Json;
 using Kiss.Bff.Afdelingen;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Kiss.Bff.Extern.Klantinteracties;
 
-namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
+namespace Kiss.Bff.Extern.Klantinteracties
 {
     [Route("api")]
     [ApiController]
@@ -29,7 +28,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;
 
-            string? actorUuid = await GetActorId(email);
+            var actorUuid = await GetActorId(email);
 
             if (actorUuid == null)
             {
