@@ -433,6 +433,7 @@ import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
+  koppelBetrokkene as koppelBetrokkene,
   saveContactmoment,
   koppelObject,
   useGespreksResultaten,
@@ -441,6 +442,8 @@ import {
   CONTACTVERZOEK_GEMAAKT,
   saveContactverzoek,
   mapContactverzoekData,
+  saveKlantContact,
+  type KlantContact,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -557,7 +560,54 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
+const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
+  for (const { shouldStore, klant } of vraag.klanten) {
+    if (shouldStore && klant.id) {  
+      await koppelBetrokkene({
+        partijId: klant.id,
+        contactmomentId: contactmomentId,
+      });
+    }
+  }
+};
+
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
+
+// Fetch USE_KLANTCONTACTEN environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
+  const response = await fetch('/api/environment/use-klantcontacten');
+  const { useKlantContacten } = await response.json();
+
+  // KlantContacten flow
+  if (useKlantContacten) {
+    const klantcontact: KlantContact = {
+      kanaal: vraag.kanaal,
+      onderwerp: vraag.vraag?.title === "anders"
+      ? vraag.specifiekevraag 
+      : vraag.vraag 
+        ? vraag.specifiekevraag 
+          ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
+          : vraag.vraag.title
+        : vraag.specifiekevraag, // fallback als vraag.vraag undefined is
+      inhoud: vraag.notitie,
+      indicatieContactGelukt: true,
+      taal: "nld",
+      vertrouwelijk: false,
+      plaatsgevondenOp: new Date().toISOString()
+    };
+
+    const savedKlantContactResult = await saveKlantContact(klantcontact);
+
+    if (savedKlantContactResult.errorMessage || !savedKlantContactResult.data) {
+      return savedKlantContactResult;
+    }
+
+    koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
+
+    return savedKlantContactResult;
+  }
+  else
+  {
+    // Contactmomenten flow
   const contactmoment: Contactmoment = {
     bronorganisatie: organisatieIds.value[0] || "",
     registratiedatum: new Date().toISOString(), // "2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), // todo check of dit nog het juiste format is. lijkt iso te moeten zijn
@@ -598,7 +648,6 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       klantUrl,
       data: vraag.contactverzoek,
     });
-
     Object.assign(contactmoment, cvData);
   }
 
@@ -629,6 +678,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   await Promise.all(promises);
 
   return savedContactmomentResult;
+}
 };
 
 const navigateToPersonen = () => router.push({ name: "personen" });
@@ -640,13 +690,19 @@ async function submit() {
     if (!contactmomentStore.huidigContactmoment) return;
 
     const { vragen } = contactmomentStore.huidigContactmoment;
+
     const saveVraagResult = await saveVraag(vragen[0]);
 
     if (saveVraagResult.errorMessage) {
       handleSaveVraagError(saveVraagResult.errorMessage);
     } else {
+      // Gespreksid zit niet in savevraagresult als we de klantcontacten flow volgen
+      const gespreksId = (saveVraagResult.data && 'gespreksId' in saveVraagResult.data)
+        ? saveVraagResult.data.gespreksId
+        : undefined;
+
       await handleSaveVraagSuccess(
-        saveVraagResult.data?.gespreksId,
+        gespreksId, 
         vragen.slice(1),
       );
     }
@@ -657,6 +713,7 @@ async function submit() {
     saving.value = false;
   }
 }
+
 const addKennisartikelenToContactmoment = (
   contactmoment: Contactmoment,
   vraag: Vraag,
