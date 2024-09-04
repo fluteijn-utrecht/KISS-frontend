@@ -24,7 +24,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         }
 
         [HttpPost("postklantcontacten")]
-        public async Task<string> PostKlantContacten([FromBody] JsonObject parsedModel)
+        public async Task<IActionResult> PostKlantContacten([FromBody] JsonObject parsedModel)
         {
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;
@@ -33,23 +33,21 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
             if (actorUuid == null)
             {
-                var postActorResult = await PostActoren();
-                if (!(postActorResult is OkObjectResult okActorResult))
-                {
-                    throw new Exception("Failed to create actor");
-                }
+                actorUuid = await PostActoren();
 
-                var actorResponseJson = okActorResult.Value?.ToString();
-                var actorResponse = JsonDocument.Parse(actorResponseJson);
-                actorUuid = actorResponse.RootElement.GetProperty("uuid").GetString();
+                if (actorUuid == null)
+                {
+                    return BadRequest();
+                }
             }
 
             var klantcontact = await PostKlantContact(parsedModel);
 
             await LinkActorWithKlantContact(actorUuid, klantcontact["uuid"].ToString());
 
-            return klantcontact["uuid"].ToString();
+            return Ok(klantcontact);
         }
+
 
         public async Task<JsonObject> PostKlantContact(JsonObject parsedModel)
         {
@@ -71,7 +69,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         }
 
 
-        public async Task<IActionResult> PostActoren()
+        public async Task<string> PostActoren()
         {
             var email = User?.GetEmail();
             var firstName = User?.GetFirstName();
@@ -95,7 +93,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
 
             var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/actoren";
-            
+
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = JsonContent.Create(parsedModel)
@@ -107,8 +105,11 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
+            var jsonResponse = JsonNode.Parse(content);
 
-            return Ok(content);
+            var actorUuid = jsonResponse?["uuid"]?.ToString();
+
+            return actorUuid ?? throw new Exception("Failed to retrieve actor UUID.");
         }
 
         public async Task<string?> GetActorId(string email)
