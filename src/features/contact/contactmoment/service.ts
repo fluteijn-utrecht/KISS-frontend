@@ -176,7 +176,7 @@ export function koppelKlant({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-export function koppelBetrokkenen({
+export function koppelBetrokkene({
   partijId,
   contactmomentId,
 }: {

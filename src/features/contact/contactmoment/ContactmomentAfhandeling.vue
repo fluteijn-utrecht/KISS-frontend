@@ -433,7 +433,7 @@ import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
-  koppelBetrokkenen,
+  koppelBetrokkene as koppelBetrokkene,
   saveContactmoment,
   koppelObject,
   useGespreksResultaten,
@@ -563,7 +563,7 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {  
-      await koppelBetrokkenen({
+      await koppelBetrokkene({
         partijId: klant.id,
         contactmomentId: contactmomentId,
       });
