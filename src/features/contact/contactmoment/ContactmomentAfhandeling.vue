@@ -690,14 +690,19 @@ async function submit() {
     if (!contactmomentStore.huidigContactmoment) return;
 
     const { vragen } = contactmomentStore.huidigContactmoment;
-   
+
     const saveVraagResult = await saveVraag(vragen[0]);
 
     if (saveVraagResult.errorMessage) {
       handleSaveVraagError(saveVraagResult.errorMessage);
     } else {
+      // Gespreksid zit niet in savevraagresult als we de klantcontacten flow volgen
+      const gespreksId = (saveVraagResult.data && 'gespreksId' in saveVraagResult.data)
+        ? saveVraagResult.data.gespreksId
+        : undefined;
+
       await handleSaveVraagSuccess(
-        saveVraagResult.data?.gespreksId,
+        gespreksId, 
         vragen.slice(1),
       );
     }
@@ -708,6 +713,7 @@ async function submit() {
     saving.value = false;
   }
 }
+
 const addKennisartikelenToContactmoment = (
   contactmoment: Contactmoment,
   vraag: Vraag,

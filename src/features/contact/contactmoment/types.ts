@@ -95,7 +95,7 @@ export interface KlantContactmoment {
 }
 
 export type SaveContactmomentResponseModel = {
-  data?: { url: string; gespreksId: string };
+  data?: { url: string; gespreksId?: string };
   errorMessage?: string;
 };
 
