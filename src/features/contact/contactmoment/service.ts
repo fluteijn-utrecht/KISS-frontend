@@ -3,6 +3,7 @@ import {
   ServiceResult,
   parsePagination,
   parseJson,
+  type PaginatedResult,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -53,6 +54,7 @@ const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
+const klantinteractiesKlantcontacten = `${klantinteractiesBaseUrl}/klantcontacten`;
 
 const zaaksysteemProxyRoot = `/api/zaken`;
 const zaaksysteemApiRoot = `/zaken/api/v1`;
@@ -64,7 +66,7 @@ export const saveContactmoment = async (
 ): Promise<SaveContactmomentResponseModel> => {
   const response = await postContactmoment(data);
   const responseBody = await response.json();
-  
+
   throwIfNotOk(response);
   return { data: responseBody };
 };
@@ -196,29 +198,195 @@ export function koppelBetrokkenen({
         uuid: contactmomentId,
       },
       rol: "klant",
-      initiator: true
+      initiator: true,
     }),
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-const fetchContactmomenten = (u: string) =>
+type Ok2BetrokkeneMetKlantContacten = {
+  uuid: string;
+
+  klantContact: KlantContact;
+};
+
+function enrichBetrokkeneWithKlantContact(
+  value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
+): PaginatedResult<any> | PromiseLike<PaginatedResult<any>> {
+  value.page.forEach(async (betrokkene) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
+    const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
+
+    ServiceResult.fromPromise(
+      fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((p) => parsePagination(p, (x) => x as KlantContact))
+        .then((d) => (betrokkene.klantContact = d.page[0])), // er is altijd maar 1 contact bij een betrokkeke! //todo check of [0] bestaat
+    );
+  });
+
+  return value;
+}
+
+function mapToContactmomentViewModel(
+  value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
+) {
+  console.log(123123123, value);
+  const viewmodel = value.page.map((x) => {
+    const contactmomentViewModel: ContactmomentViewModel = {
+      url: "", //todo
+      registratiedatum: x.klantContact.plaatsgevondenOp,
+      medewerker: "", //x.klantContact. .... //todo medewerker opzoeken,
+      kanaal: x.klantContact.kanaal,
+      tekst: x.klantContact.inhoud,
+      objectcontactmomenten: [], //todo vullen (of is dit een aparte story)
+      medewerkerIdentificatie: {
+        identificatie: "",
+        voorletters: "",
+        achternaam: "",
+        voorvoegselAchternaam: "",
+      }, //todo opzoeken en wat is het verschil met het veld 'medewerker' ???
+    };
+
+    return contactmomentViewModel;
+  });
+
+  return viewmodel;
+}
+
+function GetOk2Contactmomenten(partijId: string) {
+  const contactmomentenPage = ServiceResult.fromFetcher(
+    () => {
+      const searchParams = new URLSearchParams();
+      searchParams.set("wasPartij__url", partijId);
+      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+    },
+    (url: string) =>
+      fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((p) =>
+          parsePagination(p, (x) => {
+            const v: ContactmomentViewModel = {
+              url: "",
+              registratiedatum: "",
+              medewerker: "",
+              kanaal: "",
+              tekst: "",
+              objectcontactmomenten: [],
+              medewerkerIdentificatie: {
+                identificatie: "",
+                achternaam: "",
+                voorletters: "",
+                voorvoegselAchternaam: "",
+              },
+            };
+
+            return v;
+          }),
+        ),
+    //.then(enrichBetrokkeneWithKlantContact)
+    //.then(mapToContactmomentViewModel),
+  );
+
+  //const searchParams = new URLSearchParams();
+  //searchParams.set("wasPartij__url", partijId);
+  //// searchParams.set("page", String(page));
+  // const url = `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+
+  // const contactmomentenPage = ServiceResult.fromPromise(
+  //   //(u: string) => {
+
+  //   fetchLoggedIn(url)
+  //     .then(throwIfNotOk)
+  //     .then(parseJson)
+  //     .then((p) =>
+  //       parsePagination(p, (x) => x as Ok2BetrokkeneMetKlantContacten),
+  //     )
+  //     .then(enrichBetrokkeneWithKlantContact)
+  //     .then(mapToContactmomentViewModel),
+  //   // },
+  // );
+
+  //we gingen bij ok 1 uit van een enkele result page?
+  //blijft dat zo?
+
+  return contactmomentenPage;
+}
+
+const fetchOk1Contactmomenten = (u: string) =>
   fetchLoggedIn(u)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
 
-export function useContactmomentenByKlantId(id: Ref<string>) {
-  function getUrl() {
-    if (!id.value) return "";
-    const searchParams = new URLSearchParams();
-    searchParams.set("klant", id.value);
-    searchParams.set("ordering", "-registratiedatum");
-    searchParams.set("expand", "objectcontactmomenten");
-    return `${contactmomentenUrl}?${searchParams.toString()}`;
-  }
+const fetchOk1OfOk2Contactmomenten = (u: string) => {
+  return fetchLoggedIn(u)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
+};
 
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+// function GetOk2Contactmomenten(id: string) {
+//   //haal betrokkeken op obv partij uuid
+//   //haal van alle betrokkeken de klantcontacten op obv betrokkeken url of id.
+
+//   return GetOk2betrokkenenBypartijId(id, 1);
+// }
+
+// function getContactmomentenFromAppropriateSource(
+//   value: boolean,
+// ): boolean | PromiseLike<boolean> {
+//   if (value) {
+//     return GetOk2Contactmomenten(id.value);
+//   } else {
+//     return ServiceResult.fromFetcher(() => {
+//       if (!id.value) return "";
+//       const searchParams = new URLSearchParams();
+//       searchParams.set("klant", id.value);
+//       searchParams.set("ordering", "-registratiedatum");
+//       searchParams.set("expand", "objectcontactmomenten");
+//       return `${contactmomentenUrl}?${searchParams.toString()}`;
+//     }, fetchOk1Contactmomenten);
+//   }
+// }
+
+export function useContactmomentenByKlantId(id: Ref<string>) {
+  return ServiceResult.fromFetcher(
+    () => {
+      //retourneer de url van ok1 OF ok2
+      if (!id.value) return "";
+      const searchParams = new URLSearchParams();
+      searchParams.set("klant", id.value);
+      searchParams.set("ordering", "-registratiedatum");
+      searchParams.set("expand", "objectcontactmomenten");
+      return `${contactmomentenUrl}?${searchParams.toString()}`;
+    },
+    (u: string) => fetchOk1OfOk2Contactmomenten(u),
+  );
 }
+
+//   () => {
+
+//   //  const x = await isOk2DefaultContactenApi()
+
+//       return   fetchOk1Contactmomenten;
+// )}
+
+// if (useKlantInteractiesApi) {
+//   return GetOk2Contactmomenten(id.value);
+// } else {
+//   return ServiceResult.fromFetcher(() => {
+//     if (!id.value) return "";
+//     const searchParams = new URLSearchParams();
+//     searchParams.set("klant", id.value);
+//     searchParams.set("ordering", "-registratiedatum");
+//     searchParams.set("expand", "objectcontactmomenten");
+//     return `${contactmomentenUrl}?${searchParams.toString()}`;
+//   }, fetchOk1Contactmomenten);
+// }
+//}
 
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
@@ -247,7 +415,7 @@ export function useContactmomentenByObjectUrl(url: Ref<string>) {
     return `${contactmomentenUrl}?${params}`;
   };
 
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+  return ServiceResult.fromFetcher(getUrl, fetchOk1Contactmomenten);
 }
 
 export function useContactmomentObject(getUrl: () => string) {
@@ -479,4 +647,13 @@ export function mapContactverzoekData({
       digitaleAdressen,
     },
   };
+}
+
+export async function isOk2DefaultContactenApi() {
+  return false;
+  // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
+  // Fetch USE_KLANTCONTACTEN environment variable, wordt in sommige gevallen vervangen door flow te bepalen op basis van zaken
+  const response = await fetch("/api/environment/use-klantcontacten");
+  const { useKlantContacten } = await response.json();
+  return useKlantContacten as boolean;
 }

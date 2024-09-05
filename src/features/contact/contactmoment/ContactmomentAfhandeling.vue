@@ -444,6 +444,7 @@ import {
   mapContactverzoekData,
   saveKlantContact,
   type KlantContact,
+  isOk2DefaultContactenApi,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -562,7 +563,7 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 
 const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore && klant.id) {  
+    if (shouldStore && klant.id) {
       await koppelBetrokkenen({
         partijId: klant.id,
         contactmomentId: contactmomentId,
@@ -572,27 +573,25 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
-
-// Fetch USE_KLANTCONTACTEN environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
-  const response = await fetch('/api/environment/use-klantcontacten');
-  const { useKlantContacten } = await response.json();
+  const useKlantInteractiesApi = await isOk2DefaultContactenApi();
 
   // KlantContacten flow
-  if (useKlantContacten) {
+  if (useKlantInteractiesApi) {
     const klantcontact: KlantContact = {
       kanaal: vraag.kanaal,
-      onderwerp: vraag.vraag?.title === "anders"
-      ? vraag.specifiekevraag 
-      : vraag.vraag 
-        ? vraag.specifiekevraag 
-          ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
-          : vraag.vraag.title
-        : vraag.specifiekevraag, // fallback als vraag.vraag undefined is
+      onderwerp:
+        vraag.vraag?.title === "anders"
+          ? vraag.specifiekevraag
+          : vraag.vraag
+            ? vraag.specifiekevraag
+              ? `${vraag.vraag.title} - ${vraag.specifiekevraag}`
+              : vraag.vraag.title
+            : vraag.specifiekevraag, // fallback als vraag.vraag undefined is
       inhoud: vraag.notitie,
       indicatieContactGelukt: true,
       taal: "nld",
       vertrouwelijk: false,
-      plaatsgevondenOp: new Date().toISOString()
+      plaatsgevondenOp: new Date().toISOString(),
     };
 
     const savedKlantContactResult = await saveKlantContact(klantcontact);
@@ -604,81 +603,82 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
     return savedKlantContactResult;
-  }
-  else
-  {
+  } else {
     // Contactmomenten flow
-  const contactmoment: Contactmoment = {
-    bronorganisatie: organisatieIds.value[0] || "",
-    registratiedatum: new Date().toISOString(), // "2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), // todo check of dit nog het juiste format is. lijkt iso te moeten zijn
-    kanaal: vraag.kanaal,
-    tekst: vraag.notitie,
-    onderwerpLinks: [],
-    initiatiefnemer: "klant", //enum "gemeente" of "klant"
-    vraag: vraag?.vraag?.title,
-    specifiekevraag: vraag.specifiekevraag || undefined,
-    gespreksresultaat: vraag.gespreksresultaat,
-    verantwoordelijkeAfdeling: vraag.afdeling?.naam,
-    startdatum: vraag.startdatum,
-    // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
-    gespreksId,
-    vorigContactmoment: undefined,
-    voorkeurskanaal: "",
-    voorkeurstaal: "",
-    medewerker: "",
-    einddatum: new Date().toISOString(),
-  };
+    const contactmoment: Contactmoment = {
+      bronorganisatie: organisatieIds.value[0] || "",
+      registratiedatum: new Date().toISOString(), // "2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), // todo check of dit nog het juiste format is. lijkt iso te moeten zijn
+      kanaal: vraag.kanaal,
+      tekst: vraag.notitie,
+      onderwerpLinks: [],
+      initiatiefnemer: "klant", //enum "gemeente" of "klant"
+      vraag: vraag?.vraag?.title,
+      specifiekevraag: vraag.specifiekevraag || undefined,
+      gespreksresultaat: vraag.gespreksresultaat,
+      verantwoordelijkeAfdeling: vraag.afdeling?.naam,
+      startdatum: vraag.startdatum,
+      // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
+      gespreksId,
+      vorigContactmoment: undefined,
+      voorkeurskanaal: "",
+      voorkeurstaal: "",
+      medewerker: "",
+      einddatum: new Date().toISOString(),
+    };
 
-  addKennisartikelenToContactmoment(contactmoment, vraag);
-  addWebsitesToContactmoment(contactmoment, vraag);
-  addMedewerkersToContactmoment(contactmoment, vraag);
-  addNieuwsberichtToContactmoment(contactmoment, vraag);
-  addWerkinstructiesToContactmoment(contactmoment, vraag);
-  addVacToContactmoment(contactmoment, vraag);
+    addKennisartikelenToContactmoment(contactmoment, vraag);
+    addWebsitesToContactmoment(contactmoment, vraag);
+    addMedewerkersToContactmoment(contactmoment, vraag);
+    addNieuwsberichtToContactmoment(contactmoment, vraag);
+    addWerkinstructiesToContactmoment(contactmoment, vraag);
+    addVacToContactmoment(contactmoment, vraag);
 
-  const klantUrl = vraag.klanten
-    .filter((x) => x.shouldStore)
-    .map((x) => x.klant.url)
-    .find(Boolean);
+    const klantUrl = vraag.klanten
+      .filter((x) => x.shouldStore)
+      .map((x) => x.klant.url)
+      .find(Boolean);
 
-  const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
-  let cvData;
-  if (isContactverzoek) {
-    cvData = mapContactverzoekData({
-      klantUrl,
-      data: vraag.contactverzoek,
-    });
-    Object.assign(contactmoment, cvData);
-  }
+    const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
+    let cvData;
+    if (isContactverzoek) {
+      cvData = mapContactverzoekData({
+        klantUrl,
+        data: vraag.contactverzoek,
+      });
+      Object.assign(contactmoment, cvData);
+    }
 
-  const savedContactmomentResult = await saveContactmoment(contactmoment);
+    const savedContactmomentResult = await saveContactmoment(contactmoment);
 
-  if (savedContactmomentResult.errorMessage || !savedContactmomentResult.data) {
+    if (
+      savedContactmomentResult.errorMessage ||
+      !savedContactmomentResult.data
+    ) {
+      return savedContactmomentResult;
+    }
+
+    const savedContactmoment = savedContactmomentResult.data;
+
+    const promises = [
+      writeContactmomentDetails(contactmoment, savedContactmoment.url),
+      zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
+    ];
+
+    if (isContactverzoek && cvData) {
+      promises.push(
+        saveContactverzoek({
+          data: cvData,
+          contactmomentUrl: savedContactmoment.url,
+        }),
+      );
+    }
+
+    promises.push(koppelKlanten(vraag, savedContactmoment.url));
+
+    await Promise.all(promises);
+
     return savedContactmomentResult;
   }
-
-  const savedContactmoment = savedContactmomentResult.data;
-
-  const promises = [
-    writeContactmomentDetails(contactmoment, savedContactmoment.url),
-    zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
-  ];
-
-  if (isContactverzoek && cvData) {
-    promises.push(
-      saveContactverzoek({
-        data: cvData,
-        contactmomentUrl: savedContactmoment.url,
-      }),
-    );
-  }
-
-  promises.push(koppelKlanten(vraag, savedContactmoment.url));
-
-  await Promise.all(promises);
-
-  return savedContactmomentResult;
-}
 };
 
 const navigateToPersonen = () => router.push({ name: "personen" });
@@ -690,7 +690,7 @@ async function submit() {
     if (!contactmomentStore.huidigContactmoment) return;
 
     const { vragen } = contactmomentStore.huidigContactmoment;
-   
+
     const saveVraagResult = await saveVraag(vragen[0]);
 
     if (saveVraagResult.errorMessage) {
