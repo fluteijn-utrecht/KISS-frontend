@@ -13,11 +13,11 @@ namespace Kiss.Bff.Extern.Environment
             _configuration = configuration;
         }
 
-        [HttpGet("use-klantcontacten")]
-        public IActionResult GetUseKlantContacten()
+        [HttpGet("use-klantinteracties")]
+        public IActionResult GetUseKlantIneracties()
         {
-            var useKlantContacten = _configuration["USE_KLANTCONTACTEN"] ?? "false";
-            return Ok(new { useKlantContacten = bool.Parse(useKlantContacten) });
+            var useKlantInteracties = _configuration["USE_KLANTINTERACTIES"] ?? "false";
+            return Ok(new { useKlantInteracties = bool.Parse(useKlantInteracties) });
         }
     }
 }

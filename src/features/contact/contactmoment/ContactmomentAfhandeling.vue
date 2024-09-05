@@ -573,12 +573,12 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
-// Fetch USE_KLANTCONTACTEN environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
-  const response = await fetch('/api/environment/use-klantcontacten');
-  const { useKlantContacten } = await response.json();
+// Fetch USE_KLANTINTERACTIES environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
+  const response = await fetch('/api/environment/use-klantinteracties');
+  const { useKlantInteracties } = await response.json();
 
   // KlantContacten flow
-  if (useKlantContacten) {
+  if (useKlantInteracties) {
     const klantcontact: KlantContact = {
       kanaal: vraag.kanaal,
       onderwerp: vraag.vraag?.title === "anders"
