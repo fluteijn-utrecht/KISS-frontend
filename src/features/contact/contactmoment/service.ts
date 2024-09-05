@@ -209,22 +209,22 @@ type Ok2BetrokkeneMetKlantContacten = {
   klantContact: KlantContact;
 };
 
-function enrichBetrokkeneWithKlantContact(
+async function enrichBetrokkeneWithKlantContact(
   value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
-): PaginatedResult<any> | PromiseLike<PaginatedResult<any>> {
-  value.page.forEach(async (betrokkene) => {
+): Promise<PaginatedResult<Ok2BetrokkeneMetKlantContacten>> {
+  for (const betrokkene of value.page) {
     const searchParams = new URLSearchParams();
     searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
     const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
 
-    ServiceResult.fromPromise(
-      fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((p) => parsePagination(p, (x) => x as KlantContact))
-        .then((d) => (betrokkene.klantContact = d.page[0])), // er is altijd maar 1 contact bij een betrokkeke! //todo check of [0] bestaat
-    );
-  });
+    // ServiceResult.fromPromise(
+    await fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((p) => parsePagination(p, (x) => x as KlantContact))
+      .then((d) => (betrokkene.klantContact = d.page[0])); // er is altijd maar 1 contact bij een betrokkeke! //todo check of [0] bestaat
+    //);
+  }
 
   return value;
 }
@@ -232,17 +232,13 @@ function enrichBetrokkeneWithKlantContact(
 function mapToContactmomentViewModel(
   value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
 ) {
-  //console.log("------ value.page", value.page[0]);
-
   const viewmodel = value.page.map((x) => {
-    // console.log("#########", x);
-
     const contactmomentViewModel: ContactmomentViewModel = {
       url: "", //todo
       registratiedatum: "", //x.klantContact?.plaatsgevondenOp,
       medewerker: "", //x.klantContact. .... //todo medewerker opzoeken,
       kanaal: x.klantContact?.kanaal,
-      tekst: "jabbbbbb", //x.klantContact?.inhoud,
+      tekst: x.klantContact?.inhoud,
       objectcontactmomenten: [], //todo vullen (of is dit een aparte story)
       medewerkerIdentificatie: {
         identificatie: "",
@@ -254,8 +250,6 @@ function mapToContactmomentViewModel(
 
     return contactmomentViewModel;
   });
-
-  //console.log("------", viewmodel);
 
   const paginatedContactenviewmodel: PaginatedResult<ContactmomentViewModel> = {
     next: value.next,
