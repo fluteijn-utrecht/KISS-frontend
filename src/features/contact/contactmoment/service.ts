@@ -232,14 +232,17 @@ function enrichBetrokkeneWithKlantContact(
 function mapToContactmomentViewModel(
   value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
 ) {
-  console.log(123123123, value);
+  //console.log("------ value.page", value.page[0]);
+
   const viewmodel = value.page.map((x) => {
+    // console.log("#########", x);
+
     const contactmomentViewModel: ContactmomentViewModel = {
       url: "", //todo
-      registratiedatum: x.klantContact.plaatsgevondenOp,
+      registratiedatum: "", //x.klantContact?.plaatsgevondenOp,
       medewerker: "", //x.klantContact. .... //todo medewerker opzoeken,
-      kanaal: x.klantContact.kanaal,
-      tekst: x.klantContact.inhoud,
+      kanaal: x.klantContact?.kanaal,
+      tekst: "jabbbbbb", //x.klantContact?.inhoud,
       objectcontactmomenten: [], //todo vullen (of is dit een aparte story)
       medewerkerIdentificatie: {
         identificatie: "",
@@ -252,7 +255,16 @@ function mapToContactmomentViewModel(
     return contactmomentViewModel;
   });
 
-  return viewmodel;
+  //console.log("------", viewmodel);
+
+  const paginatedContactenviewmodel: PaginatedResult<ContactmomentViewModel> = {
+    next: value.next,
+    previous: value.previous,
+    count: value.count,
+    page: viewmodel,
+  };
+
+  return paginatedContactenviewmodel;
 }
 
 function GetOk2Contactmomenten(partijId: string) {
@@ -321,11 +333,45 @@ const fetchOk1Contactmomenten = (u: string) =>
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
 
-const fetchOk1OfOk2Contactmomenten = (u: string) => {
-  return fetchLoggedIn(u)
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
+const fetchOk1OfOk2Contactmomenten = (
+  url: string,
+  gebruikKlantinteractiesApi: boolean,
+) => {
+  if (gebruikKlantinteractiesApi) {
+    return fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((p) =>
+        parsePagination(p, (x) => x as Ok2BetrokkeneMetKlantContacten),
+      )
+      .then(enrichBetrokkeneWithKlantContact)
+      .then(mapToContactmomentViewModel);
+    // .then((p) =>
+    //   parsePagination(p, (x) => {
+    //     const v: ContactmomentViewModel = {
+    //       url: "",
+    //       registratiedatum: "",
+    //       medewerker: "",
+    //       kanaal: "telefoon",
+    //       tekst: "jabajabajaba",
+    //       objectcontactmomenten: [],
+    //       medewerkerIdentificatie: {
+    //         identificatie: "",
+    //         achternaam: "ffffff",
+    //         voorletters: "",
+    //         voorvoegselAchternaam: "",
+    //       },
+    //     };
+
+    //     return v;
+    //   }),
+    // )
+  } else {
+    return fetchLoggedIn(url)
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
+  }
 };
 
 // function GetOk2Contactmomenten(id: string) {
@@ -352,18 +398,27 @@ const fetchOk1OfOk2Contactmomenten = (u: string) => {
 //   }
 // }
 
-export function useContactmomentenByKlantId(id: Ref<string>) {
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  gebruikKlantinteractiesApi: boolean,
+) {
   return ServiceResult.fromFetcher(
     () => {
-      //retourneer de url van ok1 OF ok2
-      if (!id.value) return "";
-      const searchParams = new URLSearchParams();
-      searchParams.set("klant", id.value);
-      searchParams.set("ordering", "-registratiedatum");
-      searchParams.set("expand", "objectcontactmomenten");
-      return `${contactmomentenUrl}?${searchParams.toString()}`;
+      // retourneer de url van ok1 OF ok2
+      if (gebruikKlantinteractiesApi) {
+        const searchParams = new URLSearchParams();
+        searchParams.set("wasPartij__url", id.value);
+        return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+      } else {
+        if (!id.value) return "";
+        const searchParams = new URLSearchParams();
+        searchParams.set("klant", id.value);
+        searchParams.set("ordering", "-registratiedatum");
+        searchParams.set("expand", "objectcontactmomenten");
+        return `${contactmomentenUrl}?${searchParams.toString()}`;
+      }
     },
-    (u: string) => fetchOk1OfOk2Contactmomenten(u),
+    (u: string) => fetchOk1OfOk2Contactmomenten(u, gebruikKlantinteractiesApi),
   );
 }
 
@@ -650,7 +705,6 @@ export function mapContactverzoekData({
 }
 
 export async function isOk2DefaultContactenApi() {
-  return false;
   // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
   // Fetch USE_KLANTCONTACTEN environment variable, wordt in sommige gevallen vervangen door flow te bepalen op basis van zaken
   const response = await fetch("/api/environment/use-klantcontacten");

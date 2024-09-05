@@ -19,7 +19,7 @@
     <tab-list-data-item
       label="Contactmomenten"
       :data="contactmomenten"
-      :disabled="(c) => !c.count"
+      :disabled="(c) => !c"
     >
       <template #success="{ data }">
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
@@ -73,12 +73,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
-import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
+import {
+  isOk2DefaultContactenApi,
+  useContactmomentenByKlantId,
+} from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
@@ -107,9 +110,18 @@ const contactverzoeken = useContactverzoekenByKlantId(
   contactverzoekenPage,
 );
 
+const gebruikKlantIntercatiesApiVoorContactmomenten = ref<boolean>(true);
+
+onMounted(async () => {
+  gebruikKlantIntercatiesApiVoorContactmomenten.value =
+    await isOk2DefaultContactenApi();
+});
+
 // const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl,
+  true,
+  //gebruikKlantIntercatiesApiVoorContactmomenten.value,
   // contactmomentenPage
 );
 
