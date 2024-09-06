@@ -1,3 +1,5 @@
+import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht/types";
+
 export type BetrokkeneMetKlantContact = {
   uuid: string;
   klantContact: ExpandedKlantContactViewmodel;
@@ -36,3 +38,8 @@ export interface ContactmomentViewModel {
   }[];
   medewerkerIdentificatie: MedewerkerIdentificatie;
 }
+
+///////////////////////////////
+
+//todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
+export type ContactverzoekViewmodel = Contactverzoek;

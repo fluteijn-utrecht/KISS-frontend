@@ -45,6 +45,7 @@ import {
   type ContactmomentViewModel,
 } from "@/services/klantinteracties";
 
+//obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;

@@ -120,8 +120,7 @@ onMounted(async () => {
 // const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl,
-  true,
-  //gebruikKlantIntercatiesApiVoorContactmomenten.value,
+  gebruikKlantIntercatiesApiVoorContactmomenten.value,
   // contactmomentenPage
 );
 

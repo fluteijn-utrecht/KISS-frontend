@@ -11,8 +11,8 @@ import type {
   ContactmomentViewModel,
   BetrokkeneMetKlantContact,
   ExpandedKlantContactViewmodel,
+  ContactverzoekViewmodel,
 } from "./types";
-import type { KlantContactPostmodel } from "@/features/contact/contactmoment/types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -55,6 +55,8 @@ function mapToContactmomentViewModel(
 
   return paginatedContactenviewmodel;
 }
+
+//todo: alleen klantcontacten die geen contactverzoek zijn. waar dus geen interne taak aan hangt!!
 
 async function enrichBetrokkeneWithKlantContact(
   value: PaginatedResult<BetrokkeneMetKlantContact>,
@@ -117,4 +119,47 @@ export function useContactmomentenByKlantIdApi(
     },
     (u: string) => fetchContactmomenten(u, gebruikKlantinteractiesApi),
   );
+}
+
+////////////////////////////////////////
+
+export function useContactverzoekenByKlantIdApi(
+  id: Ref<string>,
+  gebruikKlantInteractiesApi: boolean,
+) {
+  function getUrl() {
+    if (gebruikKlantInteractiesApi) {
+      return "...";
+    } else {
+      if (!id.value) return "";
+      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+      url.searchParams.set("ordering", "-record__data__registratiedatum");
+      url.searchParams.set("pageSize", "10");
+      url.searchParams.set("page", page.value.toString());
+      url.searchParams.set(
+        "data_attrs",
+        `betrokkene__klant__exact__${id.value}`,
+      );
+      return url.toString();
+    }
+  }
+
+  const fetchContactverzoeken = (
+    url: string,
+    gebruikKlantinteractiesApi: boolean,
+  ) => {
+    if (gebruikKlantinteractiesApi) {
+      // todo: de de OK2 dingen !!!
+      //zelfde flow als bij ophalen contactmomenten, maar nu juist wel de klantcontacten waar een interene taak aanhangt en die ook ophalen!
+    } else {
+      return fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
+    }
+  };
+
+  return ServiceResult.fromFetcher(getUrl, (u: string) => {
+    return fetchContactverzoeken(u, gebruikKlantInteractiesApi);
+  });
 }
