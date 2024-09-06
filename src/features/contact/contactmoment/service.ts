@@ -3,7 +3,6 @@ import {
   ServiceResult,
   parsePagination,
   parseJson,
-  type PaginatedResult,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -16,10 +15,10 @@ import {
   type ObjectContactmoment,
   type ContactmomentDetails,
   type SaveContactmomentResponseModel,
-  type KlantContact,
+  type KlantContactPostmodel,
   type SaveKlantContactResponseModel,
 } from "./types";
-import type { ContactmomentViewModel } from "@/features/shared/types";
+
 import { toRelativeProxyUrl } from "@/helpers/url";
 
 import { formatIsoDate } from "@/helpers/date";
@@ -41,6 +40,10 @@ import {
   isInputVraag,
   isTextareaVraag,
 } from "../components/service";
+import {
+  useContactmomentenByKlantIdApi,
+  type ContactmomentViewModel,
+} from "@/services/klantinteracties";
 
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
@@ -50,18 +53,15 @@ const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomente
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
-const klantinteractiesProxyRoot = "/api/klantinteracties";
-const klantinteractiesApiRoot = "/api/v1";
-const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
-const klantinteractiesKlantcontacten = `${klantinteractiesBaseUrl}/klantcontacten`;
-const klantinteractiesActorklantcontacten = `${klantinteractiesBaseUrl}/actorklantcontacten`;
-const klantinteractiesactoren = `${klantinteractiesBaseUrl}/actoren`;
-
 const zaaksysteemProxyRoot = `/api/zaken`;
 const zaaksysteemApiRoot = `/zaken/api/v1`;
 const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
 const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
+
+const klantinteractiesProxyRoot = "/api/klantinteracties";
+const klantinteractiesApiRoot = "/api/v1";
+const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
+const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 export const saveContactmoment = async (
   data: Contactmoment,
@@ -85,7 +85,7 @@ const postContactmoment = (data: Contactmoment): Promise<Response> => {
 };
 
 export const saveKlantContact = async (
-  data: KlantContact,
+  data: KlantContactPostmodel,
 ): Promise<SaveKlantContactResponseModel> => {
   const response = await postKlantContact(data);
   const responseBody = await response.json();
@@ -94,7 +94,7 @@ export const saveKlantContact = async (
   return { data: responseBody };
 };
 
-const postKlantContact = (data: KlantContact): Promise<Response> => {
+const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
   return fetchLoggedIn(`/api/postklantcontacten`, {
     method: "POST",
     headers: {
@@ -180,7 +180,7 @@ export function koppelKlant({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-export function koppelBetrokkenen({
+export function koppelBetrokkene({
   partijId,
   contactmomentId,
 }: {
@@ -205,143 +205,30 @@ export function koppelBetrokkenen({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-type KlantContactActor = {
-  naam: "string";
-  actoridentificator: {
-    objectId: "string";
-    codeObjecttype: "string";
-    codeRegister: "string";
-    codeSoortObjectId: "string";
-  };
-};
+// type KlantContactActor = {
+//   naam: "string";
+//   actoridentificator: {
+//     objectId: "string";
+//     codeObjecttype: "string";
+//     codeRegister: "string";
+//     codeSoortObjectId: "string";
+//   };
+// };
 
-type Ok2BetrokkeneMetKlantContacten = {
-  uuid: string;
+// type ActorKlantcontactActor = {
+//   uuid: string;
+//   url: string;
+// };
 
-  klantContact: KlantContact;
-  klantContactActor: KlantContactActor;
-};
+// type ActorKlantcontact = {
+//   actor: ActorKlantcontactActor;
+// };
 
-async function enrichBetrokkeneWithKlantContact(
-  value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
-): Promise<PaginatedResult<Ok2BetrokkeneMetKlantContacten>> {
-  for (const betrokkene of value.page) {
-    const searchParams = new URLSearchParams();
-    searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
-    const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
-    await fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((p) => parsePagination(p, (x) => x as KlantContact))
-      .then((d) => {
-        if (d.page.length) {
-          betrokkene.klantContact = d.page[0]; // er is altijd maar 1 contact bij een betrokkeke!
-        }
-      });
-  }
-  return value;
-}
-
-//todo code naar services/api verhuizen
-
-type ActorKlantcontactActor = {
-  uuid: string;
-  url: string;
-};
-
-type ActorKlantcontact = {
-  actor: ActorKlantcontactActor;
-};
-
-async function enrichKlantContactWithMedewerker(
-  value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
-): Promise<PaginatedResult<Ok2BetrokkeneMetKlantContacten>> {
-  for (const betrokkene of value.page) {
-    const searchParams = new URLSearchParams();
-    searchParams.set("klantcontact__uuid", betrokkene.klantContact.uuid);
-    const url = `${klantinteractiesActorklantcontacten}?${searchParams.toString()}`;
-    await fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((p) => parsePagination(p, (x: any) => x.actor.uuid))
-      .then(async (actorKlantcontacten) => {
-        for (const actorKlantcontactId of actorKlantcontacten.page) {
-          const url = `${klantinteractiesActorklantcontacten}/${actorKlantcontactId}`;
-          await fetchLoggedIn(url)
-            .then(throwIfNotOk)
-            .then(parseJson)
-            .then((actor: any) => {
-              if (actor.soortActor === "medewerker") {
-                // het model dwingt niet af dat er maar 1 medewerker het contactmoment heeft aangemaakt. als het er meer zijn, dan pakken we er willekeurig 1
-
-                betrokkene.klantContactActor = actor;
-              }
-            });
-        }
-      });
-  }
-  return value;
-}
-
-function mapToContactmomentViewModel(
-  value: PaginatedResult<Ok2BetrokkeneMetKlantContacten>,
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  gebruikKlantinteractiesApi: boolean,
 ) {
-  const viewmodel = value.page.map((x) => {
-    const contactmomentViewModel: ContactmomentViewModel = {
-      url: "", //todo
-      registratiedatum: x.klantContact?.plaatsgevondenOp,
-      medewerker: "", //wordt niet gebriokt??,
-      kanaal: x.klantContact?.kanaal,
-      tekst: x.klantContact?.inhoud,
-      objectcontactmomenten: [], //todo vullen (of is dit een aparte story)
-      medewerkerIdentificatie: {
-        identificatie: x.klantContactActor?.actoridentificator?.objectId,
-        voorletters: "",
-        achternaam: x.klantContactActor?.naam,
-        voorvoegselAchternaam: "",
-      }, //todo opzoeken en wat is het verschil met het veld 'medewerker' ???
-    };
-
-    //todo: wat doen we met gespreksresultaat, verantwoordelijkeAfdeling
-    //obecytecontactmomenten(zaken) nog niet?
-    //vraag en specifieke vraag
-
-    //    {
-    //     "url": "https://open-klant.prod.kiss-demo.nl/contactmomenten/api/v1/contactmomenten/4884072e-0224-4c47-aab3-925927395f73",
-    //     "vorigContactmoment": null,
-    //     "volgendContactmoment": null,
-    //     "bronorganisatie": "999990639",
-    //     "registratiedatum": "2024-08-28T09:54:46.276000Z",
-    //     "kanaal": "Telefoon",
-    //     "voorkeurskanaal": "",
-    //     "voorkeurstaal": "",
-    //     "tekst": "",
-    //     "onderwerpLinks": [],
-    //     "initiatiefnemer": "klant",
-    //     "medewerker": "",
-    //     "medewerkerIdentificatie": {
-    //         "identificatie": "R.Leussink@zwolle.nl",
-    //         "achternaam": "Leussink",
-    //         "voorletters": "Raymond",
-    //         "voorvoegselAchternaam": ""
-    //     },
-    //     "klantcontactmomenten": [
-    //         "https://open-klant.prod.kiss-demo.nl/contactmomenten/api/v1/klantcontactmomenten/611a8825-a817-4990-81a6-ccabe2353e04"
-    //     ],
-    //     "objectcontactmomenten": []
-    // },
-
-    return contactmomentViewModel;
-  });
-
-  const paginatedContactenviewmodel: PaginatedResult<ContactmomentViewModel> = {
-    next: value.next,
-    previous: value.previous,
-    count: value.count,
-    page: viewmodel,
-  };
-
-  return paginatedContactenviewmodel;
+  return useContactmomentenByKlantIdApi(id, gebruikKlantinteractiesApi);
 }
 
 const fetchOk1Contactmomenten = (u: string) =>
@@ -349,52 +236,6 @@ const fetchOk1Contactmomenten = (u: string) =>
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-
-const fetchOk1OfOk2Contactmomenten = (
-  url: string,
-  gebruikKlantinteractiesApi: boolean,
-) => {
-  if (gebruikKlantinteractiesApi) {
-    return fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((p) =>
-        parsePagination(p, (x) => x as Ok2BetrokkeneMetKlantContacten),
-      )
-      .then(enrichBetrokkeneWithKlantContact)
-      .then(enrichKlantContactWithMedewerker)
-      .then(mapToContactmomentViewModel);
-  } else {
-    return fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-  }
-};
-
-export function useContactmomentenByKlantId(
-  id: Ref<string>,
-  gebruikKlantinteractiesApi: boolean,
-) {
-  return ServiceResult.fromFetcher(
-    () => {
-      // retourneer de url van ok1 OF ok2
-      if (gebruikKlantinteractiesApi) {
-        const searchParams = new URLSearchParams();
-        searchParams.set("wasPartij__url", id.value);
-        return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
-      } else {
-        if (!id.value) return "";
-        const searchParams = new URLSearchParams();
-        searchParams.set("klant", id.value);
-        searchParams.set("ordering", "-registratiedatum");
-        searchParams.set("expand", "objectcontactmomenten");
-        return `${contactmomentenUrl}?${searchParams.toString()}`;
-      }
-    },
-    (u: string) => fetchOk1OfOk2Contactmomenten(u, gebruikKlantinteractiesApi),
-  );
-}
 
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
@@ -660,7 +501,7 @@ export function mapContactverzoekData({
 export async function isOk2DefaultContactenApi() {
   // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
   // Fetch USE_KLANTCONTACTEN environment variable, wordt in sommige gevallen vervangen door flow te bepalen op basis van zaken
-  const response = await fetch("/api/environment/use-klantcontacten");
-  const { useKlantContacten } = await response.json();
-  return useKlantContacten as boolean;
+  const response = await fetch("/api/environment/use-klantinteracties");
+  const { useKlantInteracties } = await response.json();
+  return useKlantInteracties as boolean;
 }

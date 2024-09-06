@@ -29,8 +29,8 @@ export interface Contactmoment {
   verantwoordelijkeAfdeling?: string;
 }
 
-export interface KlantContact {
-  uuid: string;
+export interface KlantContactPostmodel {
+  uuid?: string;
   nummer?: string;
   kanaal: string;
   onderwerp: string;
@@ -96,7 +96,7 @@ export interface KlantContactmoment {
 }
 
 export type SaveContactmomentResponseModel = {
-  data?: { url: string; gespreksId: string };
+  data?: { url: string; gespreksId?: string };
   errorMessage?: string;
 };
 

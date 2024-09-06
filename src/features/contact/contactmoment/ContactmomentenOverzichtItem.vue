@@ -48,13 +48,13 @@
 </template>
 
 <script setup lang="ts">
-import type { ContactmomentViewModel } from "@/features/shared/types";
 import { fullName } from "@/helpers/string";
 import { useContactmomentDetails } from "./service";
 import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
 import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { computed } from "vue";
+import type { ContactmomentViewModel } from "@/services/klantinteracties/types";
 const props = defineProps<{ contactmoment: ContactmomentViewModel }>();
 
 const registratieDatum = computed(

@@ -1,15 +1,15 @@
 ﻿using Moq;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json.Nodes;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Net;
 using System.Text.Json;
+using RichardSzalay.MockHttp;
+using Kiss.Bff.Afdelingen;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using Kiss.Bff.Extern.Klantinteracties;
 
 namespace Kiss.Bff.Test
 {
@@ -18,7 +18,6 @@ namespace Kiss.Bff.Test
     {
         private Mock<IConfiguration> _configurationMock;
         private Mock<GetMedewerkerIdentificatie> _getMedewerkerIdentificatieMock;
-        private Mock<IAuthenticationHeaderProvider> _authProviderMock;
         private PostKlantContactenCustomProxy _controller;
         private DefaultHttpContext _httpContext;
 
@@ -27,177 +26,29 @@ namespace Kiss.Bff.Test
         {
             _configurationMock = new Mock<IConfiguration>();
             _getMedewerkerIdentificatieMock = new Mock<GetMedewerkerIdentificatie>();
-            _authProviderMock = new Mock<IAuthenticationHeaderProvider>();
 
             _configurationMock.Setup(config => config["KLANTCONTACTEN_BASE_URL"]).Returns("https://fakeurl.com");
-
-            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
-            {
-                var requestUrl = request.RequestUri.ToString();
-                HttpResponseMessage response;
-
-                if (requestUrl.Contains("/actoren") && request.Method == HttpMethod.Post)
-                {
-                    // Mock PostActoren
-                    var jsonResponse = @"
-                    {
-                        ""uuid"": ""095be615-a8ad-4c33-8e9c-c7612fbf6c9f"",
-                        ""url"": ""http://example.com"",
-                        ""naam"": ""string"",
-                        ""soortActor"": ""medewerker"",
-                        ""indicatieActief"": true,
-                        ""actoridentificator"": {
-                            ""objectId"": ""string"",
-                            ""codeObjecttype"": ""string"",
-                            ""codeRegister"": ""string"",
-                            ""codeSoortObjectId"": ""string""
-                        }
-                    }";
-
-                    response = new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.Created,
-                        Content = new StringContent(jsonResponse)
-                    };
-                }
-                else if (requestUrl.Contains("/klantcontacten") && request.Method == HttpMethod.Post)
-                {
-                    // Mock PostKlantContact
-                    var jsonResponse = @"
-                    {
-                        ""uuid"": ""095be615-a8ad-4c33-8e9c-c7612fbf6c9f"",
-                        ""url"": ""http://example.com"",
-                        ""nummer"": ""string"",
-                        ""kanaal"": ""string"",
-                        ""onderwerp"": ""string"",
-                        ""inhoud"": ""string"",
-                        ""indicatieContactGelukt"": true,
-                        ""taal"": ""str"",
-                        ""vertrouwelijk"": true,
-                        ""plaatsgevondenOp"": ""2019-08-24T14:15:22Z""
-                    }";
-
-                    response = new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.Created,
-                        Content = new StringContent(jsonResponse)
-                    };
-                }
-                else if (requestUrl.Contains("/actoren") && request.Method == HttpMethod.Get)
-                {
-                    if (requestUrl.Contains("nonexistent@example.com"))
-                    {
-                        // Mock CheckIfActorExists - Geen Actor gevonden
-                        var jsonResponse = @"
-                        {
-                            ""count"": 0,
-                            ""results"": []
-                        }";
-
-                        response = new HttpResponseMessage
-                        {
-                            StatusCode = HttpStatusCode.OK,
-                            Content = new StringContent(jsonResponse)
-                        };
-                    }
-                    else
-                    {
-                        // Mock CheckIfActorExists - Actor gevonden
-                        var jsonResponse = @"
-                        {
-                            ""count"": 1,
-                            ""results"": [
-                                {
-                                    ""uuid"": ""095be615-a8ad-4c33-8e9c-c7612fbf6c9f"",
-                                    ""url"": ""http://example.com"",
-                                    ""naam"": ""string"",
-                                    ""soortActor"": ""medewerker"",
-                                    ""indicatieActief"": true,
-                                    ""actoridentificator"": {
-                                        ""objectId"": ""string"",
-                                        ""codeObjecttype"": ""string"",
-                                        ""codeRegister"": ""string"",
-                                        ""codeSoortObjectId"": ""string""
-                                    }
-                                }
-                            ]
-                        }";
-
-                        response = new HttpResponseMessage
-                        {
-                            StatusCode = HttpStatusCode.OK,
-                            Content = new StringContent(jsonResponse)
-                        };
-                    }
-                }
-                else if (requestUrl.Contains("/actorklantcontacten") && request.Method == HttpMethod.Post)
-                {
-                    // Mock response LinkActorWithKlantContact
-                    var jsonResponse = @"
-                    {
-                        ""uuid"": ""link-uuid"",
-                        ""url"": ""http://example.com"",
-                        ""actor"": {
-                            ""uuid"": ""095be615-a8ad-4c33-8e9c-c7612fbf6c9f"",
-                            ""url"": ""http://example.com""
-                        },
-                        ""klantcontact"": {
-                            ""uuid"": ""095be615-a8ad-4c33-8e9c-c7612fbf6c9f"",
-                            ""url"": ""http://example.com""
-                        }
-                    }";
-
-                    response = new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.Created,
-                        Content = new StringContent(jsonResponse)
-                    };
-                }
-                else
-                {
-                    // Default response unexpected requests
-                    response = new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.NotFound,
-                        Content = new StringContent("Not Found")
-                    };
-                }
-
-                return Task.FromResult(response);
-            });
-
-            var httpClient = new HttpClient(clientHandlerStub);
-
-            _controller = new PostKlantContactenCustomProxy(
-                _getMedewerkerIdentificatieMock.Object,
-                httpClient,
-                new Extern.Klantinteracties.KlantinteractiesProxyConfig("", "")
-            );
 
             _httpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
                 {
-            new Claim(ClaimTypes.Email, "test@example.com"),
-            new Claim(ClaimTypes.Name, "Test User")
+                    new Claim(ClaimTypes.Email, "test@example.com"),
+                    new Claim(ClaimTypes.Name, "Test User")
                 }))
             };
-
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = _httpContext
-            };
         }
-
 
         [TestMethod]
         public async Task CheckIfActorExists_ShouldReturnActorUuid_WhenActorExists()
         {
             // Arrange
             var actorUuid = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f";
-            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
-            {
-                var jsonResponse = $@"
+
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp.When("https://fakeurl.com/api/v1/actoren?actoridentificatorObjectId=test@example.com")
+                .Respond("application/json", $@"
                 {{
                     ""count"": 1,
                     ""results"": [
@@ -215,84 +66,74 @@ namespace Kiss.Bff.Test
                             }}
                         }}
                     ]
-                }}";
+                }}");
 
-                var response = new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(jsonResponse)
-                };
-                return Task.FromResult(response);
-            });
+            var httpClient = mockHttp.ToHttpClient();
 
-            using var httpClient = new HttpClient(clientHandlerStub);
-            _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = _httpContext
+            };
 
             // Act
             var result = await _controller.GetActorId("test@example.com");
 
             // Assert
             Assert.AreEqual(actorUuid, result);
+
+            mockHttp.VerifyNoOutstandingExpectation();
         }
 
         [TestMethod]
         public async Task CheckIfActorExists_ShouldReturnNull_WhenActorDoesNotExist()
         {
             // Arrange
-            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
-            {
-                // Mock response with no actor found
-                var jsonResponse = @"
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp.When("https://fakeurl.com/api/v1/actoren?actoridentificatorObjectId=nonexistent@example.com")
+                .Respond("application/json", @"
                 {
                     ""count"": 0,
                     ""results"": []
-                }";
+                }");
 
-                var response = new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(jsonResponse)
-                };
-                return Task.FromResult(response);
-            });
+            var httpClient = mockHttp.ToHttpClient();
 
-            using var httpClient = new HttpClient(clientHandlerStub);
-            _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = _httpContext
+            };
 
             // Act
             var result = await _controller.GetActorId("nonexistent@example.com");
 
             // Assert
             Assert.IsNull(result);
-        }
 
+            mockHttp.VerifyNoOutstandingExpectation();
+        }
 
         [TestMethod]
         public async Task PostKlantContact_ShouldReturnKlantContactUuid_WhenSuccessful()
         {
             // Arrange
             var klantContactUuid = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f";
-            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
-            {
-                Assert.AreEqual(HttpMethod.Post, request.Method);
-                Assert.AreEqual("https://fakeurl.com/klantinteracties/api/v1/klantcontacten", request.RequestUri.ToString());
 
-                var expectedContent = JsonContent.Create(new JsonObject
-                {
-                    ["nummer"] = "string",
-                    ["kanaal"] = "string",
-                    ["onderwerp"] = "string",
-                    ["inhoud"] = "string",
-                    ["indicatieContactGelukt"] = true,
-                    ["taal"] = "str",
-                    ["vertrouwelijk"] = true,
-                    ["plaatsgevondenOp"] = "2019-08-24T14:15:22Z"
-                }).ReadAsStringAsync().Result;
+            var mockHttp = new MockHttpMessageHandler();
 
-                var actualContent = request.Content.ReadAsStringAsync().Result;
-                Assert.AreEqual(expectedContent, actualContent);
-
-                var jsonResponse = $@"
+            mockHttp.When(HttpMethod.Post, "https://fakeurl.com/api/v1/klantcontacten")
+                .WithContent(@"{""nummer"":""string"",""kanaal"":""string"",""onderwerp"":""string"",""inhoud"":""string"",""indicatieContactGelukt"":true,""taal"":""str"",""vertrouwelijk"":true,""plaatsgevondenOp"":""2019-08-24T14:15:22Z""}")
+                .Respond("application/json", $@"
                 {{
                     ""uuid"": ""{klantContactUuid}"",
                     ""url"": ""http://example.com"",
@@ -304,17 +145,9 @@ namespace Kiss.Bff.Test
                     ""taal"": ""str"",
                     ""vertrouwelijk"": true,
                     ""plaatsgevondenOp"": ""2019-08-24T14:15:22Z""
-                }}";
+                }}");
 
-                return Task.FromResult(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.Created,
-                    Content = new StringContent(jsonResponse)
-                });
-            });
-
-            using var httpClient = new HttpClient(clientHandlerStub);
-            _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
+            var httpClient = mockHttp.ToHttpClient();
 
             var parsedModel = new JsonObject
             {
@@ -328,12 +161,24 @@ namespace Kiss.Bff.Test
                 ["plaatsgevondenOp"] = "2019-08-24T14:15:22Z"
             };
 
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = _httpContext
+            };
+
             // Act
             var result = await _controller.PostKlantContact(parsedModel);
+            var resultUuid = result?["uuid"]?.ToString(); // Extract uuid as string
 
             // Assert
-            Assert.AreEqual(klantContactUuid, result);
-            _authProviderMock.Verify(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User), Times.Once);
+            Assert.AreEqual(klantContactUuid, resultUuid);
+
+            mockHttp.VerifyNoOutstandingExpectation();
         }
 
 
@@ -342,9 +187,11 @@ namespace Kiss.Bff.Test
         {
             // Arrange
             var actorUuid = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f";
-            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
-            {
-                var jsonResponse = $@"
+
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp.When(HttpMethod.Post, "https://fakeurl.com/api/v1/actoren")
+                .Respond("application/json", $@"
                 {{
                     ""uuid"": ""{actorUuid}"",
                     ""url"": ""http://example.com"",
@@ -353,92 +200,98 @@ namespace Kiss.Bff.Test
                     ""indicatieActief"": true,
                     ""actoridentificator"": {{
                         ""objectId"": ""string"",
-                        ""codeObjecttype"": ""string"",
-                        ""codeRegister"": ""string"",
-                        ""codeSoortObjectId"": ""string""
+                        ""codeObjecttype"": ""mdw"",
+                        ""codeRegister"": ""msei"",
+                        ""codeSoortObjectId"": ""email""
                     }}
-                }}";
+                }}");
 
-                var response = new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.Created,
-                    Content = new StringContent(jsonResponse)
-                };
-                return Task.FromResult(response);
-            });
+            var httpClient = mockHttp.ToHttpClient();
 
-            using var httpClient = new HttpClient(clientHandlerStub);
-            _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = _httpContext
+            };
 
             // Act
-            var result = await _controller.PostActoren();
+            var resultUuid = await _controller.PostActoren();
 
             // Assert
-            var okResult = result as OkObjectResult;
-            Assert.IsNotNull(okResult);
+            Assert.AreEqual(actorUuid, resultUuid); 
 
-            var jsonResponse = JsonDocument.Parse(okResult.Value.ToString());
-            var returnedUuid = jsonResponse.RootElement.GetProperty("uuid").GetString();
-
-            Assert.AreEqual(actorUuid, returnedUuid);
+            mockHttp.VerifyNoOutstandingExpectation();
         }
 
 
         [TestMethod]
-        public void LinkActorWithKlantContact_ShouldReturnOkResult_WhenLinkedSuccessfully()
+        public async Task LinkActorWithKlantContact_ShouldReturnTrue_WhenLinkedSuccessfully()
         {
             // Arrange
             var actorUuid = "actor-uuid";
             var klantcontactUuid = "klantcontact-uuid";
-            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp.When(HttpMethod.Post, "https://fakeurl.com/api/v1/actorklantcontacten")
+                .Respond(HttpStatusCode.OK); // Respond with success status
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
             {
-                var jsonResponse = $@"
-                {{
-                    ""uuid"": ""link-uuid"",
-                    ""url"": ""http://example.com"",
-                    ""actor"": {{
-                        ""uuid"": ""{actorUuid}"",
-                        ""url"": ""http://example.com""
-                    }},
-                    ""klantcontact"": {{
-                        ""uuid"": ""{klantcontactUuid}"",
-                        ""url"": ""http://example.com""
-                    }}
-                }}";
-
-                var response = new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.Created,
-                    Content = new StringContent(jsonResponse)
-                };
-                return Task.FromResult(response);
-            });
-
-            using var httpClient = new HttpClient(clientHandlerStub);
-            _authProviderMock.Setup(a => a.ApplyAuthorizationHeader(It.IsAny<HttpRequestHeaders>(), _httpContext.User));
+                HttpContext = _httpContext
+            };
 
             // Act
-            var result = _controller.LinkActorWithKlantContact(actorUuid, klantcontactUuid);
+            var result = await _controller.LinkActorWithKlantContact(actorUuid, klantcontactUuid);
 
             // Assert
-            Assert.IsInstanceOfType(result, typeof(ProxyResult));
+            Assert.IsTrue(result, "Expected LinkActorWithKlantContact to return true on successful link");
+
+            mockHttp.VerifyNoOutstandingExpectation();
         }
 
-    }
-
-    // Stub voor HttpClient voor mocke responses
-    public class DelegatingHandlerStub : DelegatingHandler
-    {
-        private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handlerFunc;
-
-        public DelegatingHandlerStub(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handlerFunc)
+        [TestMethod]
+        public async Task LinkActorWithKlantContact_ShouldReturnFalse_WhenLinkFails()
         {
-            _handlerFunc = handlerFunc ?? throw new ArgumentNullException(nameof(handlerFunc));
-        }
+            // Arrange
+            var actorUuid = "actor-uuid";
+            var klantcontactUuid = "klantcontact-uuid";
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return _handlerFunc(request, cancellationToken);
+            var mockHttp = new MockHttpMessageHandler();
+
+            mockHttp.When(HttpMethod.Post, "https://fakeurl.com/api/v1/actorklantcontacten")
+                .Respond(HttpStatusCode.InternalServerError); // Simulate server error
+
+            var httpClient = mockHttp.ToHttpClient();
+
+            _controller = new PostKlantContactenCustomProxy(
+                _getMedewerkerIdentificatieMock.Object,
+                httpClient,
+                new Extern.Klantinteracties.KlantinteractiesProxyConfig("https://fakeurl.com", "secret")
+            );
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = _httpContext
+            };
+
+            // Act
+            var result = await _controller.LinkActorWithKlantContact(actorUuid, klantcontactUuid);
+
+            // Assert
+            Assert.IsFalse(result, "Expected LinkActorWithKlantContact to return false on failed link");
+
+            mockHttp.VerifyNoOutstandingExpectation();
         }
     }
 }

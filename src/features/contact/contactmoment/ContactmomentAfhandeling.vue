@@ -433,7 +433,7 @@ import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
-  koppelBetrokkenen,
+  koppelBetrokkene as koppelBetrokkene,
   saveContactmoment,
   koppelObject,
   useGespreksResultaten,
@@ -443,7 +443,7 @@ import {
   saveContactverzoek,
   mapContactverzoekData,
   saveKlantContact,
-  type KlantContact,
+  type KlantContactPostmodel,
   isOk2DefaultContactenApi,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
@@ -563,8 +563,8 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 
 const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore && klant.id) {
-      await koppelBetrokkenen({
+    if (shouldStore && klant.id) {  
+      await koppelBetrokkene({
         partijId: klant.id,
         contactmomentId: contactmomentId,
       });
@@ -577,7 +577,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   // KlantContacten flow
   if (useKlantInteractiesApi) {
-    const klantcontact: KlantContact = {
+    const klantcontact: KlantContactPostmodel = {
       kanaal: vraag.kanaal,
       onderwerp:
         vraag.vraag?.title === "anders"
@@ -696,8 +696,13 @@ async function submit() {
     if (saveVraagResult.errorMessage) {
       handleSaveVraagError(saveVraagResult.errorMessage);
     } else {
+      // Gespreksid zit niet in savevraagresult als we de klantcontacten flow volgen
+      const gespreksId = (saveVraagResult.data && 'gespreksId' in saveVraagResult.data)
+        ? saveVraagResult.data.gespreksId
+        : undefined;
+
       await handleSaveVraagSuccess(
-        saveVraagResult.data?.gespreksId,
+        gespreksId, 
         vragen.slice(1),
       );
     }
@@ -708,6 +713,7 @@ async function submit() {
     saving.value = false;
   }
 }
+
 const addKennisartikelenToContactmoment = (
   contactmoment: Contactmoment,
   vraag: Vraag,
