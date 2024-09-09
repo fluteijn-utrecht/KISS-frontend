@@ -1,4 +1,5 @@
 import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht/types";
+import type { OrganisatorischeEenheid } from "@/features/zaaksysteem/types";
 
 export type BetrokkeneMetKlantContact = {
   uuid: string;
@@ -34,6 +35,15 @@ export type InternetaakApiViewModel = {
   status: string;
   toegewezenOp: string;
   afgehandeldOp: string;
+  actor: ActorApiViewModel;
+};
+
+export type ActorApiViewModel = {
+  uuid: string;
+  url: string;
+  naam: string;
+  soortActor: string;
+  indicatieActief: boolean;
 };
 
 export interface MedewerkerIdentificatie {

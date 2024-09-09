@@ -13,6 +13,7 @@ import type {
   ExpandedKlantContactApiViewmodel,
   ContactverzoekViewmodel,
   InternetaakApiViewModel,
+  ActorApiViewModel,
 } from "./types";
 import { TypeOrganisatorischeEenheid } from "@/features/contact/components/types";
 
@@ -22,6 +23,7 @@ const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesA
 const klantinteractiesKlantcontacten = `${klantinteractiesBaseUrl}/klantcontacten`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 const klantinteractiesInterneTaken = `${klantinteractiesBaseUrl}/internetaken`;
+const klantinteractiesActoren = `${klantinteractiesBaseUrl}/actoren`;
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
@@ -201,17 +203,18 @@ function mapToContactverzoekViewModel(
         startAt: x.klantContact.internetaak.toegewezenOp,
         data: {
           status: x.klantContact.internetaak.status,
-          contactmoment: x.klantContact.url, //todo: klopt dit???
+          contactmoment: x.klantContact.url,
           registratiedatum: x.klantContact.plaatsgevondenOp,
           datumVerwerkt: x.klantContact.internetaak.afgehandeldOp,
           toelichting: x.klantContact.internetaak.toelichting,
           actor: {
-            naam: "",
-            soortActor: "",
+            naam: x.klantContact.internetaak?.actor?.naam,
+            soortActor: x.klantContact.internetaak?.actor?.soortActor,
             identificatie: "",
-            naamOrganisatorischeEenheid: "",
-            typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling, //todo: ???
-            identificatieOrganisatorischeEenheid: "",
+            //todo overige soort specifieke actor velden
+            //naamOrganisatorischeEenheid: "", //todo: ???
+            //typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling, //todo: ???
+            //identificatieOrganisatorischeEenheid: "", //todo: ???
           },
 
           betrokkene: {
@@ -240,6 +243,29 @@ function mapToContactverzoekViewModel(
     };
 
   return paginatedContactenviewmodel;
+}
+
+async function enrichInterneTakenWithActoren(
+  value: PaginatedResult<BetrokkeneWithKlantContact>,
+): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
+  for (const betrokkeneWithKlantcontact of value.page) {
+    const id =
+      betrokkeneWithKlantcontact?.klantContact?.internetaak?.toegewezenAanActor
+        ?.uuid;
+    if (id) {
+      const url = `${klantinteractiesActoren}/${id}`;
+      await fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((d) => {
+          console.log(d);
+
+          betrokkeneWithKlantcontact.klantContact.internetaak.actor =
+            d as ActorApiViewModel; //in de huidige api is er maar 1 actor per interne taak. dat is te weining. maar dat is wat er is op dit moment
+        });
+    }
+  }
+  return value;
 }
 
 export function useContactverzoekenByKlantIdApi(
@@ -276,6 +302,7 @@ export function useContactverzoekenByKlantIdApi(
         .then(enrichBetrokkeneWithKlantContact)
         .then(enrichKlantcontactWithInterneTaak)
         .then(filterOutContactmomenten)
+        .then(enrichInterneTakenWithActoren)
         .then(mapToContactverzoekViewModel);
     } else {
       return fetchLoggedIn(url)
