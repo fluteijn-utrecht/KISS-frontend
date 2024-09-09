@@ -206,25 +206,6 @@ export function koppelBetrokkene({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-// type KlantContactActor = {
-//   naam: "string";
-//   actoridentificator: {
-//     objectId: "string";
-//     codeObjecttype: "string";
-//     codeRegister: "string";
-//     codeSoortObjectId: "string";
-//   };
-// };
-
-// type ActorKlantcontactActor = {
-//   uuid: string;
-//   url: string;
-// };
-
-// type ActorKlantcontact = {
-//   actor: ActorKlantcontactActor;
-// };
-
 export function useContactmomentenByKlantId(
   id: Ref<string>,
   gebruikKlantinteractiesApi: boolean,

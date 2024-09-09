@@ -98,12 +98,13 @@ const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
 
-const contactverzoekenPage = ref(1);
+//const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage,
+  false,
+  //contactverzoekenPage,
 );
-const contactmomenten = useContactmomentenByKlantId(klantUrl);
+const contactmomenten = useContactmomentenByKlantId(klantUrl, false);
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;

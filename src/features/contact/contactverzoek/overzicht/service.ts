@@ -3,10 +3,9 @@ import {
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
-  parsePagination,
 } from "@/services";
 import type { Ref } from "vue";
-import type { Contactverzoek } from "./types";
+
 import { useContactverzoekenByKlantIdApi } from "@/services/klantinteracties/service";
 
 type SearchParameters = {

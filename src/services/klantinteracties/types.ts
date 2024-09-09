@@ -2,10 +2,11 @@ import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht
 
 export type BetrokkeneMetKlantContact = {
   uuid: string;
-  klantContact: ExpandedKlantContactViewmodel;
+  klantContact: ExpandedKlantContactApiViewmodel;
 };
 
-export type ExpandedKlantContactViewmodel = {
+export type ExpandedKlantContactApiViewmodel = {
+  uuid: string;
   url: string;
   plaatsgevondenOp: string;
   kanaal: string;
@@ -17,6 +18,22 @@ export type ExpandedKlantContactViewmodel = {
       objectId: string;
     };
   }>;
+  internetaak: InternetaakApiViewModel;
+};
+
+export type InternetaakApiViewModel = {
+  uuid: string;
+  url: string;
+  nummer: string;
+  gevraagdeHandeling: string;
+  toegewezenAanActor: {
+    uuid: string;
+    url: string;
+  };
+  toelichting: string;
+  status: string;
+  toegewezenOp: string;
+  afgehandeldOp: string;
 };
 
 export interface MedewerkerIdentificatie {

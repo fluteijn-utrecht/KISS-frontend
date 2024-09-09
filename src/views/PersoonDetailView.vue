@@ -104,29 +104,21 @@ const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
-const contactverzoekenPage = ref(1);
+const gebruikKlantInteracatiesApi = ref<boolean>(true);
+
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage,
+  true, //gebruikKlantInteracatiesApi.value,
 );
-
-const gebruikKlantIntercatiesApiVoorContactmomenten = ref<boolean>(true);
 
 onMounted(async () => {
-  gebruikKlantIntercatiesApiVoorContactmomenten.value =
-    await isOk2DefaultContactenApi();
+  gebruikKlantInteracatiesApi.value = await isOk2DefaultContactenApi();
 });
 
-// const contactmomentenPage = ref(1);
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl,
-  gebruikKlantIntercatiesApiVoorContactmomenten.value,
-  // contactmomentenPage
+  gebruikKlantInteracatiesApi.value,
 );
-
-// const onContactmomentenNavigate = (page: number) => {
-//   contactmomentenPage.value = page;
-// };
 
 const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
 const klantBsn = computed(getBsn);
