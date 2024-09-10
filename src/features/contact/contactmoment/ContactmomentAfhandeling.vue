@@ -575,18 +575,42 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const useKlantInteractiesApi = await isOk2DefaultContactenApi();
 
-  // KlantContacten flow
-  if (useKlantInteractiesApi) {
-    const klantcontact: KlantContactPostmodel = {
+// Fetch USE_KLANTINTERACTIES environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
+  const response = await fetch('/api/environment/use-klantinteracties');
+  const { useKlantInteracties } = await response.json();
+
+  // gedeeld contactmoment voor contactmomentdetails
+  const contactmoment: Contactmoment = {
+    bronorganisatie: organisatieIds.value[0] || "",
+    registratiedatum: new Date().toISOString(),
+    kanaal: vraag.kanaal,
+    tekst: vraag.notitie,
+    onderwerpLinks: [],
+    initiatiefnemer: "klant",
+    vraag: vraag?.vraag?.title,
+    specifiekevraag: vraag.specifiekevraag || undefined,
+    gespreksresultaat: vraag.gespreksresultaat || "Onbekend",
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam || undefined,
+    startdatum: vraag.startdatum || new Date().toISOString(),
+    einddatum: new Date().toISOString(),
+    gespreksId,
+    voorkeurskanaal: "",
+    voorkeurstaal: "",
+    medewerker: "",
+    vorigContactmoment: undefined,
+  };
+
+  // Klantcontacten flow
+  if (useKlantInteracties) {
+    const klantcontact: KlantContact = {
       kanaal: vraag.kanaal,
-      onderwerp:
-        vraag.vraag?.title === "anders"
-          ? vraag.specifiekevraag
-          : vraag.vraag
-            ? vraag.specifiekevraag
-              ? `${vraag.vraag.title} - ${vraag.specifiekevraag}`
-              : vraag.vraag.title
-            : vraag.specifiekevraag, // fallback als vraag.vraag undefined is
+      onderwerp: vraag.vraag?.title === "anders"
+        ? vraag.specifiekevraag 
+        : vraag.vraag 
+          ? vraag.specifiekevraag 
+            ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
+            : vraag.vraag.title
+          : vraag.specifiekevraag,
       inhoud: vraag.notitie,
       indicatieContactGelukt: true,
       taal: "nld",
@@ -600,32 +624,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       return savedKlantContactResult;
     }
 
+    await writeContactmomentDetails(contactmoment, savedKlantContactResult.data?.url);
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
     return savedKlantContactResult;
+    
   } else {
+    
     // Contactmomenten flow
-    const contactmoment: Contactmoment = {
-      bronorganisatie: organisatieIds.value[0] || "",
-      registratiedatum: new Date().toISOString(), // "2023-06-07UTC15:15:48" "YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]"getFormattedUtcDate(), // todo check of dit nog het juiste format is. lijkt iso te moeten zijn
-      kanaal: vraag.kanaal,
-      tekst: vraag.notitie,
-      onderwerpLinks: [],
-      initiatiefnemer: "klant", //enum "gemeente" of "klant"
-      vraag: vraag?.vraag?.title,
-      specifiekevraag: vraag.specifiekevraag || undefined,
-      gespreksresultaat: vraag.gespreksresultaat,
-      verantwoordelijkeAfdeling: vraag.afdeling?.naam,
-      startdatum: vraag.startdatum,
-      // overige velden zijn waarschijnlijk obsolete. nog even laten staan. misschien nog deels breuikbaar voor bv contactverzoek
-      gespreksId,
-      vorigContactmoment: undefined,
-      voorkeurskanaal: "",
-      voorkeurstaal: "",
-      medewerker: "",
-      einddatum: new Date().toISOString(),
-    };
-
     addKennisartikelenToContactmoment(contactmoment, vraag);
     addWebsitesToContactmoment(contactmoment, vraag);
     addMedewerkersToContactmoment(contactmoment, vraag);
@@ -650,10 +656,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     const savedContactmomentResult = await saveContactmoment(contactmoment);
 
-    if (
-      savedContactmomentResult.errorMessage ||
-      !savedContactmomentResult.data
-    ) {
+    if (savedContactmomentResult.errorMessage || !savedContactmomentResult.data) {
       return savedContactmomentResult;
     }
 
@@ -669,7 +672,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         saveContactverzoek({
           data: cvData,
           contactmomentUrl: savedContactmoment.url,
-        }),
+        })
       );
     }
 
