@@ -597,9 +597,32 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     const savedKlantContactResult = await saveKlantContact(klantcontact);
 
+  // voor writeContactmomentDetails
+    const contactmoment: Contactmoment = {
+      bronorganisatie: organisatieIds.value[0] || "",
+      registratiedatum: new Date().toISOString(), 
+      kanaal: vraag.kanaal,
+      tekst: vraag.notitie,
+      onderwerpLinks: [], 
+      initiatiefnemer: "klant", 
+      vraag: vraag?.vraag?.title,
+      specifiekevraag: vraag.specifiekevraag || undefined,
+      gespreksresultaat: vraag.gespreksresultaat || "Onbekend", 
+      vorigContactmoment: undefined, 
+      voorkeurskanaal: "",
+      voorkeurstaal: "",
+      medewerker: "", 
+      startdatum: new Date().toISOString(), 
+      einddatum: new Date().toISOString(),
+      gespreksId,
+      verantwoordelijkeAfdeling: vraag.afdeling?.naam || undefined,
+    };
+
     if (savedKlantContactResult.errorMessage || !savedKlantContactResult.data) {
       return savedKlantContactResult;
     }
+    
+    await writeContactmomentDetails(contactmoment, savedKlantContactResult.data?.url);
 
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
