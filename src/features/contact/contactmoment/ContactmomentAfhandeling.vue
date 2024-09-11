@@ -711,7 +711,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       organisatorischeActorUuid = result.organisatorischeActorUuid;
     }
 
-    const savedContactverzoekResult = await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
+    const savedContactverzoekResult = 
+    await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
 
     return savedContactverzoekResult;
     

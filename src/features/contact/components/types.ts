@@ -31,7 +31,6 @@ export interface ContactVerzoekVragenSet {
 export enum TypeOrganisatorischeEenheid {
   Groep = "groep",
   Afdeling = "afdeling",
-  Medewerker = "medewerker"
 }
 
 export type DigitaalAdres = {
