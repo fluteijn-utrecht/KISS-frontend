@@ -17,6 +17,7 @@ import {
   type SaveContactmomentResponseModel,
   type KlantContact,
   type SaveKlantContactResponseModel,
+  type ActorModel
 } from "./types";
 import type { ContactmomentViewModel } from "@/features/shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -53,6 +54,7 @@ const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
+const klantinteractiesActoren= `${klantinteractiesBaseUrl}/actoren`;
 
 const zaaksysteemProxyRoot = `/api/zaken`;
 const zaaksysteemApiRoot = `/zaken/api/v1`;
@@ -317,6 +319,89 @@ export function saveContactverzoek({
   })
     .then(throwIfNotOk)
     .then((r) => r.json() as Promise<{ url: string }>);
+}
+
+export const saveInternetaak = async (
+  data: Contactmoment,
+): Promise<SaveContactmomentResponseModel> => {
+  const response = await postInternetaak(data);
+  const responseBody = await response.json();
+  
+  throwIfNotOk(response);
+  return { data: responseBody };
+};
+
+const postInternetaak = (data: Contactmoment): Promise<Response> => {
+  return fetchLoggedIn(`/api/postinternetaak`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+};
+
+export async function getActorById(identificatie: string): Promise<any> {
+  const url = `${klantinteractiesActoren}?actoridentificatorObjectId=${identificatie}`;
+  const response = await fetchLoggedIn(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  throwIfNotOk(response); 
+  return await response.json(); 
+}
+
+function mapActorType(typeOrganisatorischeEenheid: "medewerker" | "afdeling" | "groep") {
+  switch (typeOrganisatorischeEenheid) {
+    case "medewerker":
+      return { codeObjecttype: "mdw", codeRegister: "obj", codeSoortObjectId: "idf", soortActor: "medewerker" };
+    case "afdeling":
+    case "groep":
+      return { codeObjecttype: "afd", codeRegister: "obj", codeSoortObjectId: "idf", soortActor: "organisatorische_eenheid" };
+    default:
+      throw new Error("verkeerd actor type");
+  }
+}
+
+export async function postActoren({
+  fullName,
+  typeOrganisatorischeEenheid,
+  identificatie,
+}: {
+  fullName: string;
+  typeOrganisatorischeEenheid: "medewerker" | "afdeling" | "groep";
+  identificatie: string;
+}): Promise<string> {
+  const { codeObjecttype, codeRegister, codeSoortObjectId, soortActor } = mapActorType(typeOrganisatorischeEenheid);
+
+  const parsedModel = {
+    naam: fullName,
+    soortActor,
+    indicatieActief: true,
+    actoridentificator: {
+      objectId: identificatie,
+      codeObjecttype,
+      codeRegister,
+      codeSoortObjectId,
+    },
+  };
+
+  const response = await fetchLoggedIn(klantinteractiesActoren, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(parsedModel),
+  });
+
+  throwIfNotOk(response);
+  const jsonResponse = await response.json();
+  return jsonResponse.uuid;
 }
 
 export function mapContactverzoekData({

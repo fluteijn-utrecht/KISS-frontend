@@ -444,6 +444,9 @@ import {
   mapContactverzoekData,
   saveKlantContact,
   type KlantContact,
+  saveInternetaak,
+  getActorById,
+  postActoren,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -456,6 +459,7 @@ import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVraag.vue";
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
+import type { ContactverzoekData } from "../components/types";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -571,23 +575,108 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
+const handleActor = async (actorData: ContactverzoekData["actor"]) => {
+  const {
+    identificatie,
+    naam,
+    typeOrganisatorischeEenheid,
+    naamOrganisatorischeEenheid,
+    identificatieOrganisatorischeEenheid,
+  } = actorData;
+
+    //betekent dat de actor bestaat uit een medewerker EN groep/afdeling
+    if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
+
+    let actor = await getActorById(identificatie);
+
+    if (actor.results.length === 0) {
+
+    const newActorUuid = await postActoren({
+      fullName: naam,
+      typeOrganisatorischeEenheid: "medewerker", 
+      identificatie,
+    });
+
+    actor = { uuid: newActorUuid };
+    } 
+    const organisatorischeActor = await getActorById(identificatieOrganisatorischeEenheid);
+
+    if (organisatorischeActor.results.length === 0) {
+
+      const newOrganisatorischeEenheidUuid = await postActoren({
+        fullName: naamOrganisatorischeEenheid,
+        typeOrganisatorischeEenheid,
+        identificatie: identificatieOrganisatorischeEenheid,
+      });
+    } 
+  }else
+  {
+    const actor = await getActorById(identificatie);
+
+  if (actor.results.length === 0) {
+
+    const newActorUuid = await postActoren({
+      fullName: naam,
+      typeOrganisatorischeEenheid,
+      identificatie,
+    });
+
+  }
+  return actor.uuid;
+}
+};
+
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
 // Fetch USE_KLANTCONTACTEN environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
   const response = await fetch('/api/environment/use-klantcontacten');
   const { useKlantContacten } = await response.json();
 
+<<<<<<< Updated upstream
   // KlantContacten flow
   if (useKlantContacten) {
+=======
+  // gedeeld contactmoment voor opslaan contactmomentdetails
+  const contactmoment: Contactmoment = {
+    bronorganisatie: organisatieIds.value[0] || "",
+    registratiedatum: new Date().toISOString(),
+    kanaal: vraag.kanaal,
+    tekst: vraag.notitie,
+    onderwerpLinks: [],
+    initiatiefnemer: "klant",
+    vraag: vraag?.vraag?.title,
+    specifiekevraag: vraag.specifiekevraag || undefined,
+    gespreksresultaat: vraag.gespreksresultaat || "Onbekend",
+    verantwoordelijkeAfdeling: vraag.afdeling?.naam || undefined,
+    startdatum: vraag.startdatum || new Date().toISOString(),
+    einddatum: new Date().toISOString(),
+    gespreksId,
+    voorkeurskanaal: "",
+    voorkeurstaal: "",
+    medewerker: "",
+    vorigContactmoment: undefined,
+  };
+
+  // Klantcontacten flow
+  if (useKlantInteracties) {
+>>>>>>> Stashed changes
     const klantcontact: KlantContact = {
       kanaal: vraag.kanaal,
       onderwerp: vraag.vraag?.title === "anders"
       ? vraag.specifiekevraag 
       : vraag.vraag 
         ? vraag.specifiekevraag 
+<<<<<<< Updated upstream
           ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
           : vraag.vraag.title
         : vraag.specifiekevraag, // fallback als vraag.vraag undefined is
+=======
+        : vraag.vraag 
+          ? vraag.specifiekevraag 
+            ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
+            : vraag.vraag.title
+          : vraag.specifiekevraag,
+>>>>>>> Stashed changes
       inhoud: vraag.notitie,
       indicatieContactGelukt: true,
       taal: "nld",
@@ -603,10 +692,90 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
+<<<<<<< Updated upstream
     return savedKlantContactResult;
   }
   else
   {
+=======
+    const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
+    let contactverzoekData;
+
+    const klantUrl = vraag.klanten
+      .filter((x) => x.shouldStore)
+      .map((x) => x.klant.url)
+      .find(Boolean);
+
+    if (isContactverzoek) {
+      contactverzoekData = mapContactverzoekData({
+        klantUrl,
+        data: vraag.contactverzoek,
+      });
+      Object.assign(contactmoment, contactverzoekData);
+    }
+
+        if (contactverzoekData?.actor) {
+      const actorUuid = await handleActor(contactverzoekData?.actor);
+      console.log(`Actor UUID:`, actorUuid);
+    }
+
+    // if (cvData?.actor) {
+    //   const typeOrganisatorischeEenheid = cvData.actor.typeOrganisatorischeEenheid;
+
+    //   if (typeOrganisatorischeEenheid === "afdeling" || typeOrganisatorischeEenheid === "groep") {
+
+    //     const actorUuid = await handleActor(cvData.actor.identificatie, {
+    //       firstName: cvData.actor.naam,
+    //       lastName: "", 
+    //       email: "", 
+    //     }, typeOrganisatorischeEenheid);
+        
+    //     console.log(`Actor UUID for ${typeOrganisatorischeEenheid}:`, actorUuid);
+    //   } else if (typeOrganisatorischeEenheid === "medewerker") {
+    //     const actorUuid = await handleActor('someIdentificatie', {
+    //       firstName: 'John',
+    //       lastName: 'Doe',
+    //       email: 'john.doe@example.com',
+    //     }, "medewerker");
+
+    //     console.log("Actor is a 'medewerker' with UUID:", actorUuid);
+    //   }
+    // }
+    // if(cvData?.actor)
+    // {
+      // const actorIdentificatie = cvData.actor.identificatie;
+      // const actorResponse = await fetchObjectByIdentificatie(actorIdentificatie);
+
+      // const type = cvData.actor.typeOrganisatorischeEenheid 
+
+    //   if (type === "afdeling") 
+    //   {
+    //     // await fetchActorByIdentificatie(cvData.actor.identificatie);
+    //     const actorUuid = await handleActor('someIdentificatie1', {
+    //     firstName: 'John',
+    //     lastName: 'Doe',
+    //     email: 'john.doe@example.com',
+    //   });
+    //   }
+    //     else if (type === "groep") 
+    //   {
+    //     //checken op identificatie
+    //     console.log("Actor is a 'groep'");
+    //   }
+    //     else if(type === "medewerker")
+    //   {
+    //     //checken op naam met comment erbij dat niet alle medewerkers een indentificatie hebben
+    //     console.log("Actor is a 'medewerker'");
+    //   }
+    // }
+   
+    const savedContactverzoekResult = await saveInternetaak(contactmoment);
+
+    return savedContactverzoekResult;
+    
+  } else {
+    
+>>>>>>> Stashed changes
     // Contactmomenten flow
   const contactmoment: Contactmoment = {
     bronorganisatie: organisatieIds.value[0] || "",
