@@ -15,7 +15,6 @@ import type {
   InternetaakApiViewModel,
   ActorApiViewModel,
 } from "./types";
-import { TypeOrganisatorischeEenheid } from "@/features/contact/components/types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -64,20 +63,6 @@ function mapToContactmomentViewModel(
 
   return paginatedContactenviewmodel;
 }
-
-// function filterOutInternetaken(
-//   value: PaginatedResult<BetrokkeneWithKlantContact>,
-// ): PaginatedResult<BetrokkeneWithKlantContact> {
-//   const filtered = value.page.filter(
-//     (item) => !item?.klantContact?.internetaak,
-//   );
-//   return {
-//     next: value.next,
-//     previous: value.previous,
-//     count: value.count,
-//     page: filtered,
-//   };
-// }
 
 const fetchContactmomenten = async (
   url: string,
@@ -242,7 +227,6 @@ function mapToContactverzoekViewModel(
       page: viewmodel,
     };
 
-  // console.log("viewmodel", viewmodel);
   return paginatedContactenviewmodel;
 }
 
@@ -278,9 +262,6 @@ async function enrichInterneTakenWithBetrokkene(
     //in principe hoeft dit maar 1 keer. alle contactverzoeken zouden dezelfde betrokkeke gegevens moeten hebben.
     //voor zekerheid wel allemaal apart ophalen. eventueel latere optimaliseren als data accuraat genoeg blijkt te zijn
 
-    // const searchParams = new URLSearchParams();
-    // searchParams.set("expand", "digitaleAdressen");
-
     const partijId = betrokkeneWithKlantcontact?.wasPartij.uuid;
     if (partijId) {
       const url = `${klantinteractiesPartijen}/${partijId}?`;
@@ -302,27 +283,10 @@ async function enrichInterneTakenWithBetrokkene(
               rol: "klant",
             };
           }
-          // betrokkeneWithKlantcontact.partij.digitaleAdressen = todo
-
-          //todo d.digitaleAdressen ook verwerken.
-
-          //         if (d.partijIdentificatoren) {
-          //           for (const p of d.partijIdentificatoren) {
-          //             await fetchLoggedIn(`${klantinteractiesPartijIndicatoren}/${p.uuid}`)
-          //               .then(throwIfNotOk)
-          //               .then(parseJson)
-          //               .then((i) => {
-          //                 console.log("-----", i);
-          //               });
-          //           }
-          //         }
-          //         //waarom kunnen de partijindicatoren niet geexpand worden dit is onnodig
-          //         // betrokkeneWithKlantcontact.partij = d ; partijindicatoren?????
         });
     }
   }
 
-  //  console.log(" partij toegevoegd ", value);
   return value;
 }
 
@@ -330,11 +294,6 @@ async function enrichBetrokkeneWithDigitaleAdressen(
   value: PaginatedResult<BetrokkeneWithKlantContact>,
 ): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
   for (const betrokkeneWithKlantcontact of value.page) {
-    //in principe hoeft dit maar 1 keer. alle contactverzoeken zouden dezelfde betrokkeke gegevens moeten hebben.
-    //voor zekerheid wel allemaal apart ophalen. eventueel latere optimaliseren als data accuraat genoeg blijkt te zijn
-
-    // const searchParams = new URLSearchParams();
-    // searchParams.set("expand", "digitaleAdressen");
     betrokkeneWithKlantcontact.digitaleAdressenExpanded = [];
     const digitaleAdressen = betrokkeneWithKlantcontact?.digitaleAdressen;
     for (const digitaalAdres of digitaleAdressen) {
@@ -352,7 +311,6 @@ async function enrichBetrokkeneWithDigitaleAdressen(
     }
   }
 
-  //  console.log(" partij toegevoegd ", value);
   return value;
 }
 
