@@ -17,7 +17,6 @@ import {
   type SaveContactmomentResponseModel,
   type KlantContact,
   type SaveKlantContactResponseModel,
-  type ActorModel
 } from "./types";
 import type { ContactmomentViewModel } from "@/features/shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
