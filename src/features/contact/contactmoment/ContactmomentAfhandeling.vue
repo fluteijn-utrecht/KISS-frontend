@@ -606,7 +606,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         ? vraag.specifiekevraag 
         : vraag.vraag 
           ? vraag.specifiekevraag 
-            ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
+            ? `${vraag.vraag.title} (${vraag.specifiekevraag})` 
             : vraag.vraag.title
           : vraag.specifiekevraag,
       inhoud: vraag.notitie,
