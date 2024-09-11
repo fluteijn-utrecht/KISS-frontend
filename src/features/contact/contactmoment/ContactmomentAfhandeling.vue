@@ -447,6 +447,7 @@ import {
   saveInternetaak,
   getActorById,
   postActoren,
+  mapContactmomentToInternetaak
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -584,46 +585,47 @@ const handleActor = async (actorData: ContactverzoekData["actor"]) => {
     identificatieOrganisatorischeEenheid,
   } = actorData;
 
-    //betekent dat de actor bestaat uit een medewerker EN groep/afdeling
-    if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
+  let actorUuid, organisatorischeActorUuid;
 
-    let actor = await getActorById(identificatie);
-
+  //betekent dat de actor bestaat uit een medewerker EN groep/afdeling
+  if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
+    const actor = await getActorById(identificatie);
     if (actor.results.length === 0) {
+      actorUuid = await postActoren({
+        fullName: naam,
+        typeOrganisatorischeEenheid: "medewerker",
+        identificatie,
+      });
+    } else {
+      actorUuid = actor.results[0].uuid;  
+    }
 
-    const newActorUuid = await postActoren({
-      fullName: naam,
-      typeOrganisatorischeEenheid: "medewerker", 
-      identificatie,
-    });
-
-    actor = { uuid: newActorUuid };
-    } 
     const organisatorischeActor = await getActorById(identificatieOrganisatorischeEenheid);
-
     if (organisatorischeActor.results.length === 0) {
-
-      const newOrganisatorischeEenheidUuid = await postActoren({
+      organisatorischeActorUuid = await postActoren({
         fullName: naamOrganisatorischeEenheid,
         typeOrganisatorischeEenheid,
         identificatie: identificatieOrganisatorischeEenheid,
       });
-    } 
-  }else
-  {
+    } else {
+      organisatorischeActorUuid = organisatorischeActor.results[0].uuid;  
+    }
+    
+    return { actorUuid, organisatorischeActorUuid };
+
+  } else {
     const actor = await getActorById(identificatie);
-
-  if (actor.results.length === 0) {
-
-    const newActorUuid = await postActoren({
-      fullName: naam,
-      typeOrganisatorischeEenheid,
-      identificatie,
-    });
-
+    if (actor.results.length === 0) {
+      actorUuid = await postActoren({
+        fullName: naam,
+        typeOrganisatorischeEenheid,
+        identificatie,
+      });
+    } else {
+      actorUuid = actor.results[0].uuid;  
+    }
+    return { actorUuid };
   }
-  return actor.uuid;
-}
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
@@ -632,8 +634,9 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const response = await fetch('/api/environment/use-klantinteracties');
   const { useKlantInteracties } = await response.json();
 
-  // gedeeld contactmoment voor opslaan contactmomentdetails
+  // gedeeld contactmoment voor contactmomentdetails
   const contactmoment: Contactmoment = {
+    uuid: "",
     bronorganisatie: organisatieIds.value[0] || "",
     registratiedatum: new Date().toISOString(),
     kanaal: vraag.kanaal,
@@ -651,6 +654,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurstaal: "",
     medewerker: "",
     vorigContactmoment: undefined,
+    toelichting: ""
   };
 
   // Klantcontacten flow
@@ -661,7 +665,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         ? vraag.specifiekevraag 
         : vraag.vraag 
           ? vraag.specifiekevraag 
-            ? `${vraag.vraag.title} - ${vraag.specifiekevraag}` 
+            ? `${vraag.vraag.title} (${vraag.specifiekevraag})` 
             : vraag.vraag.title
           : vraag.specifiekevraag,
       inhoud: vraag.notitie,
@@ -676,6 +680,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     if (savedKlantContactResult.errorMessage || !savedKlantContactResult.data) {
       return savedKlantContactResult;
     }
+
+    contactmoment.uuid = savedKlantContactResult.data?.uuid;
 
     await writeContactmomentDetails(contactmoment, savedKlantContactResult.data?.url);
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
@@ -696,67 +702,23 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       Object.assign(contactmoment, contactverzoekData);
     }
 
-        if (contactverzoekData?.actor) {
-      const actorUuid = await handleActor(contactverzoekData?.actor);
-      console.log(`Actor UUID:`, actorUuid);
+    let actorUuid: string | undefined;
+    let organisatorischeActorUuid: string | undefined;
+
+    if (contactverzoekData?.actor) {
+      const result = await handleActor(contactverzoekData?.actor);
+      actorUuid = result.actorUuid;
+      organisatorischeActorUuid = result.organisatorischeActorUuid;
     }
 
-    // if (cvData?.actor) {
-    //   const typeOrganisatorischeEenheid = cvData.actor.typeOrganisatorischeEenheid;
-
-    //   if (typeOrganisatorischeEenheid === "afdeling" || typeOrganisatorischeEenheid === "groep") {
-
-    //     const actorUuid = await handleActor(cvData.actor.identificatie, {
-    //       firstName: cvData.actor.naam,
-    //       lastName: "", 
-    //       email: "", 
-    //     }, typeOrganisatorischeEenheid);
-        
-    //     console.log(`Actor UUID for ${typeOrganisatorischeEenheid}:`, actorUuid);
-    //   } else if (typeOrganisatorischeEenheid === "medewerker") {
-    //     const actorUuid = await handleActor('someIdentificatie', {
-    //       firstName: 'John',
-    //       lastName: 'Doe',
-    //       email: 'john.doe@example.com',
-    //     }, "medewerker");
-
-    //     console.log("Actor is a 'medewerker' with UUID:", actorUuid);
-    //   }
-    // }
-    // if(cvData?.actor)
-    // {
-      // const actorIdentificatie = cvData.actor.identificatie;
-      // const actorResponse = await fetchObjectByIdentificatie(actorIdentificatie);
-
-      // const type = cvData.actor.typeOrganisatorischeEenheid 
-
-    //   if (type === "afdeling") 
-    //   {
-    //     // await fetchActorByIdentificatie(cvData.actor.identificatie);
-    //     const actorUuid = await handleActor('someIdentificatie1', {
-    //     firstName: 'John',
-    //     lastName: 'Doe',
-    //     email: 'john.doe@example.com',
-    //   });
-    //   }
-    //     else if (type === "groep") 
-    //   {
-    //     //checken op identificatie
-    //     console.log("Actor is a 'groep'");
-    //   }
-    //     else if(type === "medewerker")
-    //   {
-    //     //checken op naam met comment erbij dat niet alle medewerkers een indentificatie hebben
-    //     console.log("Actor is a 'medewerker'");
-    //   }
-    // }
-   
-    const savedContactverzoekResult = await saveInternetaak(contactmoment);
+    const savedContactverzoekResult = await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
 
     return savedContactverzoekResult;
     
-  } else {
-    
+    }
+    else
+    {
+      
     // Contactmomenten flow
     addKennisartikelenToContactmoment(contactmoment, vraag);
     addWebsitesToContactmoment(contactmoment, vraag);

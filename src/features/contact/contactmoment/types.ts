@@ -6,6 +6,7 @@ export interface MedewerkerIdentificatie {
 }
 
 export interface Contactmoment {
+  uuid: string;
   bronorganisatie: string; //verplicht in de api
   registratiedatum: string; //2019-08-24T14:15:22Z //serverside?
   kanaal: string;
@@ -19,6 +20,7 @@ export interface Contactmoment {
   //bovenstaande slaan we op bij een contactmoment.
   //de rest is mogelijk obsolete.
   //wellicht nog te gebruiken voor oa contactverzoeken
+  toelichting: string 
   vorigContactmoment: string | undefined;
   voorkeurskanaal: string;
   voorkeurstaal: string;
@@ -27,6 +29,20 @@ export interface Contactmoment {
   einddatum: string;
   gespreksId?: string;
   verantwoordelijkeAfdeling?: string;
+}
+
+export interface Internetaak {
+  nummer: string; 
+  gevraagdeHandeling: string; 
+  aanleidinggevendKlantcontact: { 
+    uuid: string;
+  };
+  toegewezenAanActoren: { 
+    uuid: string;
+  }[];
+  toelichting: string; 
+  status: "te_verwerken" | "verwerkt"; 
+  afgehandeldOp?: string;
 }
 
 export interface KlantContact {

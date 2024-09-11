@@ -17,6 +17,7 @@ import {
   type SaveContactmomentResponseModel,
   type KlantContact,
   type SaveKlantContactResponseModel,
+  type Internetaak
 } from "./types";
 import type { ContactmomentViewModel } from "@/features/shared/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -321,16 +322,16 @@ export function saveContactverzoek({
 }
 
 export const saveInternetaak = async (
-  data: Contactmoment,
+  data: Internetaak,
 ): Promise<SaveContactmomentResponseModel> => {
-  const response = await postInternetaak(data);
+  const response = await postInternetaak(data); 
   const responseBody = await response.json();
   
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
-const postInternetaak = (data: Contactmoment): Promise<Response> => {
+const postInternetaak = (data: Internetaak): Promise<Response> => {
   return fetchLoggedIn(`/api/postinternetaak`, {
     method: "POST",
     headers: {
@@ -339,6 +340,37 @@ const postInternetaak = (data: Contactmoment): Promise<Response> => {
     },
     body: JSON.stringify(data),
   });
+};
+
+export const mapContactmomentToInternetaak = (
+  contactmoment: Contactmoment, 
+  actorUuid?: string, 
+  organisatorischeActorUuid?: string
+): Internetaak => {
+  const toegewezenAanActoren = [];
+
+  if (actorUuid) {
+    toegewezenAanActoren.push({
+      uuid: actorUuid,  
+    });
+  }
+
+  if (organisatorischeActorUuid) {
+    toegewezenAanActoren.push({
+      uuid: organisatorischeActorUuid,  
+    });
+  }
+
+  return {
+    nummer: "",  
+    gevraagdeHandeling: "Contact opnemen met betrokkene", 
+    aanleidinggevendKlantcontact: {
+      uuid: contactmoment.uuid
+    },
+    toegewezenAanActoren, 
+    toelichting: contactmoment.toelichting,  
+    status: "te_verwerken"
+  };
 };
 
 export async function getActorById(identificatie: string): Promise<any> {
