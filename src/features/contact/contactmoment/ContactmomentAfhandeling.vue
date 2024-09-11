@@ -444,6 +444,10 @@ import {
   mapContactverzoekData,
   saveKlantContact,
   type KlantContact,
+  saveInternetaak,
+  getActorById,
+  postActoren,
+  mapContactmomentToInternetaak
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -456,6 +460,7 @@ import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVraag.vue";
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
+import type { ContactverzoekData } from "../components/types";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -571,6 +576,58 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
+const handleActor = async (actorData: ContactverzoekData["actor"]) => {
+  const {
+    identificatie,
+    naam,
+    typeOrganisatorischeEenheid,
+    naamOrganisatorischeEenheid,
+    identificatieOrganisatorischeEenheid,
+  } = actorData;
+
+  let actorUuid, organisatorischeActorUuid;
+
+  //betekent dat de actor bestaat uit een medewerker EN groep/afdeling
+  if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
+    const actor = await getActorById(identificatie);
+    if (actor.results.length === 0) {
+      actorUuid = await postActoren({
+        fullName: naam,
+        typeOrganisatorischeEenheid: "medewerker",
+        identificatie,
+      });
+    } else {
+      actorUuid = actor.results[0].uuid;  
+    }
+
+    const organisatorischeActor = await getActorById(identificatieOrganisatorischeEenheid);
+    if (organisatorischeActor.results.length === 0) {
+      organisatorischeActorUuid = await postActoren({
+        fullName: naamOrganisatorischeEenheid,
+        typeOrganisatorischeEenheid,
+        identificatie: identificatieOrganisatorischeEenheid,
+      });
+    } else {
+      organisatorischeActorUuid = organisatorischeActor.results[0].uuid;  
+    }
+    
+    return { actorUuid, organisatorischeActorUuid };
+
+  } else {
+    const actor = await getActorById(identificatie);
+    if (actor.results.length === 0) {
+      actorUuid = await postActoren({
+        fullName: naam,
+        typeOrganisatorischeEenheid,
+        identificatie,
+      });
+    } else {
+      actorUuid = actor.results[0].uuid;  
+    }
+    return { actorUuid };
+  }
+};
+
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
 // Fetch USE_KLANTINTERACTIES environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
@@ -579,6 +636,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
   // gedeeld contactmoment voor contactmomentdetails
   const contactmoment: Contactmoment = {
+    uuid: "",
     bronorganisatie: organisatieIds.value[0] || "",
     registratiedatum: new Date().toISOString(),
     kanaal: vraag.kanaal,
@@ -596,6 +654,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     voorkeurstaal: "",
     medewerker: "",
     vorigContactmoment: undefined,
+    toelichting: ""
   };
 
   // Klantcontacten flow
@@ -622,13 +681,45 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       return savedKlantContactResult;
     }
 
+    contactmoment.uuid = savedKlantContactResult.data?.uuid;
+
     await writeContactmomentDetails(contactmoment, savedKlantContactResult.data?.url);
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
-    return savedKlantContactResult;
+    const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
+    let contactverzoekData;
+
+    const klantUrl = vraag.klanten
+      .filter((x) => x.shouldStore)
+      .map((x) => x.klant.url)
+      .find(Boolean);
+
+    if (isContactverzoek) {
+      contactverzoekData = mapContactverzoekData({
+        klantUrl,
+        data: vraag.contactverzoek,
+      });
+      Object.assign(contactmoment, contactverzoekData);
+    }
+
+    let actorUuid: string | undefined;
+    let organisatorischeActorUuid: string | undefined;
+
+    if (contactverzoekData?.actor) {
+      const result = await handleActor(contactverzoekData?.actor);
+      actorUuid = result.actorUuid;
+      organisatorischeActorUuid = result.organisatorischeActorUuid;
+    }
+
+    const savedContactverzoekResult = 
+    await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
+
+    return savedContactverzoekResult;
     
-  } else {
-    
+    }
+    else
+    {
+      
     // Contactmomenten flow
     addKennisartikelenToContactmoment(contactmoment, vraag);
     addWebsitesToContactmoment(contactmoment, vraag);

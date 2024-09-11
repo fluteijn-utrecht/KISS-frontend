@@ -95,8 +95,6 @@ namespace Kiss.Bff.Extern.Klantinteracties
                 }
             };
 
-            parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
-
             var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/actoren";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url)
