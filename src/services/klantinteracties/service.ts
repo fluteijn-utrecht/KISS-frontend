@@ -24,6 +24,8 @@ const klantinteractiesKlantcontacten = `${klantinteractiesBaseUrl}/klantcontacte
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 const klantinteractiesInterneTaken = `${klantinteractiesBaseUrl}/internetaken`;
 const klantinteractiesActoren = `${klantinteractiesBaseUrl}/actoren`;
+const klantinteractiesPartijen = `${klantinteractiesBaseUrl}/partijen`;
+const klantinteractiesDigitaleadressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
@@ -63,19 +65,19 @@ function mapToContactmomentViewModel(
   return paginatedContactenviewmodel;
 }
 
-function filterOutInternetaken(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): PaginatedResult<BetrokkeneWithKlantContact> {
-  const filtered = value.page.filter(
-    (item) => !item?.klantContact?.internetaak,
-  );
-  return {
-    next: value.next,
-    previous: value.previous,
-    count: value.count,
-    page: filtered,
-  };
-}
+// function filterOutInternetaken(
+//   value: PaginatedResult<BetrokkeneWithKlantContact>,
+// ): PaginatedResult<BetrokkeneWithKlantContact> {
+//   const filtered = value.page.filter(
+//     (item) => !item?.klantContact?.internetaak,
+//   );
+//   return {
+//     next: value.next,
+//     previous: value.previous,
+//     count: value.count,
+//     page: filtered,
+//   };
+// }
 
 const fetchContactmomenten = async (
   url: string,
@@ -88,7 +90,6 @@ const fetchContactmomenten = async (
       .then((p) => parsePagination(p, (x) => x as BetrokkeneWithKlantContact))
       .then(enrichBetrokkeneWithKlantContact)
       .then(enrichKlantcontactWithInterneTaak) //necesarry to filter them out
-      .then(filterOutInternetaken)
       .then(mapToContactmomentViewModel);
   } else {
     return fetchLoggedIn(url)
@@ -178,6 +179,7 @@ async function enrichKlantcontactWithInterneTaak(
         }
       });
   }
+
   return value;
 }
 
@@ -215,19 +217,17 @@ function mapToContactverzoekViewModel(
             //naamOrganisatorischeEenheid: "", //todo: ???
             //typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling, //todo: ???
             //identificatieOrganisatorischeEenheid: "", //todo: ???
+            //kan nu nog niet want we kunnen deze gegevens nog niet invoeren in het nieuwe openklant
           },
 
           betrokkene: {
             rol: "klant",
-            //klant: null, //todo: wat moet hier, url, id ??
-            persoonsnaam: {
-              voornaam: "", //todo: partijgegevens
-              voorvoegselAchternaam: "",
-              achternaam: "",
-            },
-            organisatie: "",
-            digitaleAdressen: [], //todo DigitaalAdres[];
+            klant: x.partij.klant,
+            persoonsnaam: x.partij.persoonsnaam,
+            organisatie: x.partij.organisatie,
+            digitaleAdressen: x.digitaleAdressenExpanded,
           },
+
           verantwoordelijkeAfdeling: "", //todo: waa komt dit vandaan?
         },
       },
@@ -242,6 +242,7 @@ function mapToContactverzoekViewModel(
       page: viewmodel,
     };
 
+  // console.log("viewmodel", viewmodel);
   return paginatedContactenviewmodel;
 }
 
@@ -249,22 +250,109 @@ async function enrichInterneTakenWithActoren(
   value: PaginatedResult<BetrokkeneWithKlantContact>,
 ): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
   for (const betrokkeneWithKlantcontact of value.page) {
-    const id =
-      betrokkeneWithKlantcontact?.klantContact?.internetaak?.toegewezenAanActor
-        ?.uuid;
-    if (id) {
-      const url = `${klantinteractiesActoren}/${id}`;
+    const actoren =
+      betrokkeneWithKlantcontact?.klantContact?.internetaak
+        ?.toegewezenAanActoren;
+    for (const actor of actoren) {
+      //let op. dit is eigenelijk niet volgens klantinteractie api specs.
+      //toegewezen actoren zou alleen een lijst id's bevatten
+      //klopppen de specs niet of de implementatie?
+      const url = `${klantinteractiesActoren}/${actor.uuid}`;
       await fetchLoggedIn(url)
         .then(throwIfNotOk)
         .then(parseJson)
         .then((d) => {
-          console.log(d);
-
           betrokkeneWithKlantcontact.klantContact.internetaak.actor =
-            d as ActorApiViewModel; //in de huidige api is er maar 1 actor per interne taak. dat is te weining. maar dat is wat er is op dit moment
+            d as ActorApiViewModel;
         });
     }
   }
+
+  return value;
+}
+
+async function enrichInterneTakenWithBetrokkene(
+  value: PaginatedResult<BetrokkeneWithKlantContact>,
+): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
+  for (const betrokkeneWithKlantcontact of value.page) {
+    //in principe hoeft dit maar 1 keer. alle contactverzoeken zouden dezelfde betrokkeke gegevens moeten hebben.
+    //voor zekerheid wel allemaal apart ophalen. eventueel latere optimaliseren als data accuraat genoeg blijkt te zijn
+
+    // const searchParams = new URLSearchParams();
+    // searchParams.set("expand", "digitaleAdressen");
+
+    const partijId = betrokkeneWithKlantcontact?.wasPartij.uuid;
+    if (partijId) {
+      const url = `${klantinteractiesPartijen}/${partijId}?`;
+
+      await fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then(async (d) => {
+          if (d.partijIdentificatie) {
+            betrokkeneWithKlantcontact.partij = {
+              klant: url,
+              persoonsnaam: {
+                voornaam: d?.partijIdentificatie?.contactnaam?.voornaam,
+                voorvoegselAchternaam:
+                  d?.partijIdentificatie?.contactnaam?.voorvoegselAchternaam,
+                achternaam: d?.partijIdentificatie?.contactnaam?.achternaam,
+              },
+              organisatie: "", //verplicht maar leeg voor een persoon?
+              rol: "klant",
+            };
+          }
+          // betrokkeneWithKlantcontact.partij.digitaleAdressen = todo
+
+          //todo d.digitaleAdressen ook verwerken.
+
+          //         if (d.partijIdentificatoren) {
+          //           for (const p of d.partijIdentificatoren) {
+          //             await fetchLoggedIn(`${klantinteractiesPartijIndicatoren}/${p.uuid}`)
+          //               .then(throwIfNotOk)
+          //               .then(parseJson)
+          //               .then((i) => {
+          //                 console.log("-----", i);
+          //               });
+          //           }
+          //         }
+          //         //waarom kunnen de partijindicatoren niet geexpand worden dit is onnodig
+          //         // betrokkeneWithKlantcontact.partij = d ; partijindicatoren?????
+        });
+    }
+  }
+
+  //  console.log(" partij toegevoegd ", value);
+  return value;
+}
+
+async function enrichBetrokkeneWithDigitaleAdressen(
+  value: PaginatedResult<BetrokkeneWithKlantContact>,
+): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
+  for (const betrokkeneWithKlantcontact of value.page) {
+    //in principe hoeft dit maar 1 keer. alle contactverzoeken zouden dezelfde betrokkeke gegevens moeten hebben.
+    //voor zekerheid wel allemaal apart ophalen. eventueel latere optimaliseren als data accuraat genoeg blijkt te zijn
+
+    // const searchParams = new URLSearchParams();
+    // searchParams.set("expand", "digitaleAdressen");
+    betrokkeneWithKlantcontact.digitaleAdressenExpanded = [];
+    const digitaleAdressen = betrokkeneWithKlantcontact?.digitaleAdressen;
+    for (const digitaalAdres of digitaleAdressen) {
+      const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
+      await fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then(async (d) => {
+          betrokkeneWithKlantcontact.digitaleAdressenExpanded.push({
+            adres: d.adres,
+            soortDigitaalAdres: d.soortDigitaalAdres,
+            omschrijving: d.omschrijving,
+          });
+        });
+    }
+  }
+
+  //  console.log(" partij toegevoegd ", value);
   return value;
 }
 
@@ -302,7 +390,9 @@ export function useContactverzoekenByKlantIdApi(
         .then(enrichBetrokkeneWithKlantContact)
         .then(enrichKlantcontactWithInterneTaak)
         .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
         .then(enrichInterneTakenWithActoren)
+        .then(enrichInterneTakenWithBetrokkene)
         .then(mapToContactverzoekViewModel);
     } else {
       return fetchLoggedIn(url)

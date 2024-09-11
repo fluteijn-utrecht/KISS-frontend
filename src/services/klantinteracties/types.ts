@@ -1,9 +1,28 @@
 import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht/types";
-import type { OrganisatorischeEenheid } from "@/features/zaaksysteem/types";
+
+export type DigitaalAdres = {
+  adres: string;
+  soortDigitaalAdres?: string;
+  omschrijving?: string;
+};
 
 export type BetrokkeneMetKlantContact = {
   uuid: string;
+  wasPartij: { uuid: string; url: string };
   klantContact: ExpandedKlantContactApiViewmodel;
+  partij: {
+    rol: "klant";
+    klant: string;
+    persoonsnaam: {
+      voornaam: string;
+      voorvoegselAchternaam: string;
+      achternaam: string;
+    };
+    organisatie: string;
+    //
+  };
+  digitaleAdressen: Array<{ uuid: string; url: string }>;
+  digitaleAdressenExpanded: Array<DigitaalAdres>;
 };
 
 export type ExpandedKlantContactApiViewmodel = {
@@ -27,10 +46,10 @@ export type InternetaakApiViewModel = {
   url: string;
   nummer: string;
   gevraagdeHandeling: string;
-  toegewezenAanActor: {
+  toegewezenAanActoren: Array<{
     uuid: string;
     url: string;
-  };
+  }>;
   toelichting: string;
   status: string;
   toegewezenOp: string;
