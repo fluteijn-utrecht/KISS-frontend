@@ -59,7 +59,12 @@
               </template>
             </contactmoment-details-context>
           </template>
-          <template #contactmoment="{ url }">
+
+          <!-- voor OK1/esuite moeten gegevens die bij het contactmoment en niet bij het contactverzoek horen apart opgehaald worden-->
+          <template
+            v-if="!gebruikKlantInteracatiesApi"
+            #contactmoment="{ url }"
+          >
             <contactmoment-preview :url="url">
               <template #object="{ object }">
                 <zaak-preview :zaakurl="object.object" />
@@ -81,11 +86,11 @@ import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 import {
   isOk2DefaultContactenApi,
   useContactmomentenByKlantId,
+  useContactverzoekenByKlantId,
 } from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";

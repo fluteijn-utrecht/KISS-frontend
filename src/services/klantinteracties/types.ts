@@ -31,6 +31,7 @@ export type ExpandedKlantContactApiViewmodel = {
   plaatsgevondenOp: string;
   kanaal: string;
   inhoud: string;
+  onderwerp: string;
   hadBetrokkenActoren: Array<{
     soortActor: string;
     naam: string;

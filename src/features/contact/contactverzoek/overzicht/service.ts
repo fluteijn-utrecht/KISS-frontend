@@ -6,8 +6,6 @@ import {
 } from "@/services";
 import type { Ref } from "vue";
 
-import { useContactverzoekenByKlantIdApi } from "@/services/klantinteracties/service";
-
 type SearchParameters = {
   query: string;
 };
@@ -64,11 +62,4 @@ function search(url: string) {
 export function useSearch(params: Ref<SearchParameters>) {
   const getUrl = () => getSearchUrl(params.value);
   return ServiceResult.fromFetcher(getUrl, search);
-}
-
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  gebruikKlantInteractiesApi: boolean,
-) {
-  return useContactverzoekenByKlantIdApi(id, gebruikKlantInteractiesApi);
 }

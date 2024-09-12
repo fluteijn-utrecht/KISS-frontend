@@ -74,10 +74,30 @@
             </dd>
           </template>
 
+          <!-- 
+            Voor OK1/esuite worden een aantal gegevens uit het contactmometn gehaald.
+            Deze moeten apart worden opgehaald
+          -->
           <slot
             name="contactmoment"
             :url="contactverzoek.record.data.contactmoment"
           ></slot>
+          <!--
+            voor OK2 zijn deze gegevens reeds in het contactverzoek beschikbaar.
+            todo: voor zaken moet hier tzt nog iets geregeld worden
+          -->
+          <template v-if="contactverzoek.medewerker">
+            <dt>Aangemaakt door</dt>
+            <dd>{{ contactverzoek.medewerker }}</dd>
+            <dt>(Specifieke) Vraag</dt>
+            <dd>{{ contactverzoek.onderwerp }}</dd>
+            <!--
+            <template v-if="contactverzoek.record">
+              <dt>Toelichting</dt>
+              <dd>{{ "Toelichting" }}</dd>
+            </template>
+            -->
+          </template>
         </dl>
       </template>
     </expandable-table-list>
