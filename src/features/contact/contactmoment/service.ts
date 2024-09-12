@@ -44,7 +44,6 @@ import {
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
-  enrichInterneTakenWithBetrokkene,
   enrichKlantcontactWithInterneTaak,
   fetchBetrokkene,
   filterOutContactmomenten,
@@ -242,14 +241,15 @@ export function useContactverzoekenByKlantId(
     gebruikKlantinteractiesApi: boolean,
   ) => {
     if (gebruikKlantinteractiesApi) {
-      return fetchBetrokkene(url)
-        .then(enrichBetrokkeneWithKlantContact)
-        .then(enrichKlantcontactWithInterneTaak)
-        .then(filterOutContactmomenten)
-        .then(enrichBetrokkeneWithDigitaleAdressen)
-        .then(enrichInterneTakenWithActoren)
-        .then(enrichInterneTakenWithBetrokkene)
-        .then(mapToContactverzoekViewModel);
+      return (
+        fetchBetrokkene(url)
+          .then(enrichBetrokkeneWithKlantContact)
+          .then(enrichKlantcontactWithInterneTaak)
+          .then(filterOutContactmomenten)
+          .then(enrichBetrokkeneWithDigitaleAdressen)
+          .then(enrichInterneTakenWithActoren)          
+          .then(mapToContactverzoekViewModel)
+      );
     } else {
       return fetchLoggedIn(url)
         .then(throwIfNotOk)

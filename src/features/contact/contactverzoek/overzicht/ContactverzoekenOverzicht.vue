@@ -17,7 +17,13 @@
             :date="new Date(contactverzoek.record.data.registratiedatum)"
           />
           <span v-else />
-          <span>
+          <span v-if="contactverzoek.onderwerp"
+            >{{ contactverzoek.onderwerp.slice(0, 18)
+            }}<template v-if="contactverzoek.onderwerp.length > 18">
+              ...</template
+            >
+          </span>
+          <span v-else>
             <slot
               name="onderwerp"
               :contactmoment-url="contactverzoek.record.data.contactmoment"
@@ -89,14 +95,10 @@
           <template v-if="contactverzoek.medewerker">
             <dt>Aangemaakt door</dt>
             <dd>{{ contactverzoek.medewerker }}</dd>
-            <dt>(Specifieke) Vraag</dt>
+            <dt>Vraag</dt>
             <dd>{{ contactverzoek.onderwerp }}</dd>
-            <!--
-            <template v-if="contactverzoek.record">
-              <dt>Toelichting</dt>
-              <dd>{{ "Toelichting" }}</dd>
-            </template>
-            -->
+            <dt>Toelichting</dt>
+            <dd>{{ contactverzoek.toelichting }}</dd>
           </template>
         </dl>
       </template>

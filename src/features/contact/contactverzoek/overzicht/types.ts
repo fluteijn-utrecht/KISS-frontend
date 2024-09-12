@@ -4,4 +4,5 @@ export type Contactverzoek = NewContactverzoek & {
   url: string;
   medewerker: string;
   onderwerp: string;
+  toelichting: string;
 };

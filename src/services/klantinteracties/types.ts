@@ -10,19 +10,15 @@ export type BetrokkeneMetKlantContact = {
   uuid: string;
   wasPartij: { uuid: string; url: string };
   klantContact: ExpandedKlantContactApiViewmodel;
-  partij: {
-    rol: "klant";
-    klant: string;
-    persoonsnaam: {
-      voornaam: string;
-      voorvoegselAchternaam: string;
-      achternaam: string;
-    };
-    organisatie: string;
-    //
-  };
+
   digitaleAdressen: Array<{ uuid: string; url: string }>;
   digitaleAdressenExpanded: Array<DigitaalAdres>;
+  contactnaam: {
+    achternaam: string;
+    voorletters: string;
+    voornaam: string;
+    voorvoegselAchternaam: string;
+  };
 };
 
 export type ExpandedKlantContactApiViewmodel = {
