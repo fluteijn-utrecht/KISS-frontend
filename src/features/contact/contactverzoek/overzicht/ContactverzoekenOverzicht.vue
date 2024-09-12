@@ -17,7 +17,13 @@
             :date="new Date(contactverzoek.record.data.registratiedatum)"
           />
           <span v-else />
-          <span>
+          <span v-if="contactverzoek.onderwerp"
+            >{{ contactverzoek.onderwerp.slice(0, 18)
+            }}<template v-if="contactverzoek.onderwerp.length > 18">
+              ...</template
+            >
+          </span>
+          <span v-else>
             <slot
               name="onderwerp"
               :contactmoment-url="contactverzoek.record.data.contactmoment"
@@ -74,10 +80,26 @@
             </dd>
           </template>
 
+          <!-- 
+            Voor OK1/esuite worden een aantal gegevens uit het contactmometn gehaald.
+            Deze moeten apart worden opgehaald
+          -->
           <slot
             name="contactmoment"
             :url="contactverzoek.record.data.contactmoment"
           ></slot>
+          <!--
+            voor OK2 zijn deze gegevens reeds in het contactverzoek beschikbaar.
+            todo: voor zaken moet hier tzt nog iets geregeld worden
+          -->
+          <template v-if="contactverzoek.medewerker">
+            <dt>Aangemaakt door</dt>
+            <dd>{{ contactverzoek.medewerker }}</dd>
+            <dt>Vraag</dt>
+            <dd>{{ contactverzoek.onderwerp }}</dd>
+            <dt>Toelichting</dt>
+            <dd>{{ contactverzoek.toelichting }}</dd>
+          </template>
         </dl>
       </template>
     </expandable-table-list>

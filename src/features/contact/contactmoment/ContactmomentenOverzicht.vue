@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ContactmomentViewModel } from "@/features/shared/types";
+import type { ContactmomentViewModel } from "@/services/klantinteracties/types";
 import ContactmomentenOverzichtItem from "./ContactmomentenOverzichtItem.vue";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
 

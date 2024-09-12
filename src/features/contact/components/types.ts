@@ -50,7 +50,7 @@ export type ContactverzoekData = {
     soortActor: string;
     identificatie: string;
     naamOrganisatorischeEenheid?: string;
-    typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid;
+    typeOrganisatorischeEenheid?: TypeOrganisatorischeEenheid;
     identificatieOrganisatorischeEenheid?: string;
   };
   betrokkene: {

@@ -443,7 +443,8 @@ import {
   saveContactverzoek,
   mapContactverzoekData,
   saveKlantContact,
-  type KlantContact,
+  type KlantContactPostmodel,
+  isOk2DefaultContactenApi,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -572,6 +573,7 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
+  const useKlantInteractiesApi = await isOk2DefaultContactenApi();
 
 // Fetch USE_KLANTINTERACTIES environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
   const response = await fetch('/api/environment/use-klantinteracties');

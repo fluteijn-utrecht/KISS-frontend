@@ -75,14 +75,17 @@ import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
+import {
+  useContactmomentenByKlantId,
+  useContactverzoekenByKlantId,
+} from "@/features/contact/contactmoment/service";
 import {
   useZakenByKlantBedrijfIdentifier,
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
-import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
+
 import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
@@ -98,12 +101,13 @@ const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
 
-const contactverzoekenPage = ref(1);
+//const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage,
+  false,
+  //contactverzoekenPage,
 );
-const contactmomenten = useContactmomentenByKlantId(klantUrl);
+const contactmomenten = useContactmomentenByKlantId(klantUrl, false);
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;

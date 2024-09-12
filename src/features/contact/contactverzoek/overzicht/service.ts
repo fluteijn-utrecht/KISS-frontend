@@ -3,10 +3,8 @@ import {
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
-  parsePagination,
 } from "@/services";
 import type { Ref } from "vue";
-import type { Contactverzoek } from "./types";
 
 type SearchParameters = {
   query: string;
@@ -64,27 +62,4 @@ function search(url: string) {
 export function useSearch(params: Ref<SearchParameters>) {
   const getUrl = () => getSearchUrl(params.value);
   return ServiceResult.fromFetcher(getUrl, search);
-}
-
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  page: Ref<number>,
-) {
-  function getUrl() {
-    if (!id.value) return "";
-    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-    url.searchParams.set("ordering", "-record__data__registratiedatum");
-    url.searchParams.set("pageSize", "10");
-    url.searchParams.set("page", page.value.toString());
-    url.searchParams.set("data_attrs", `betrokkene__klant__exact__${id.value}`);
-    return url.toString();
-  }
-
-  const fetchContactverzoeken = (url: string) =>
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((r) => parsePagination(r, (v) => v as Contactverzoek));
-
-  return ServiceResult.fromFetcher(getUrl, fetchContactverzoeken);
 }

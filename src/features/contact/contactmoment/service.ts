@@ -15,10 +15,10 @@ import {
   type ObjectContactmoment,
   type ContactmomentDetails,
   type SaveContactmomentResponseModel,
-  type KlantContact,
+  type KlantContactPostmodel,
   type SaveKlantContactResponseModel,
 } from "./types";
-import type { ContactmomentViewModel } from "@/features/shared/types";
+
 import { toRelativeProxyUrl } from "@/helpers/url";
 
 import { formatIsoDate } from "@/helpers/date";
@@ -40,7 +40,20 @@ import {
   isInputVraag,
   isTextareaVraag,
 } from "../components/service";
+import {
+  enrichBetrokkeneWithDigitaleAdressen,
+  enrichBetrokkeneWithKlantContact,
+  enrichInterneTakenWithActoren,
+  enrichKlantcontactWithInterneTaak,
+  fetchBetrokkene,
+  filterOutContactmomenten,
+  mapToContactmomentViewModel,
+  mapToContactverzoekViewModel,
+  type ContactmomentViewModel,
+  type ContactverzoekViewmodel,
+} from "@/services/klantinteracties";
 
+//obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
@@ -49,22 +62,22 @@ const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomente
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
-const klantinteractiesProxyRoot = "/api/klantinteracties";
-const klantinteractiesApiRoot = "/api/v1";
-const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
-
 const zaaksysteemProxyRoot = `/api/zaken`;
 const zaaksysteemApiRoot = `/zaken/api/v1`;
 const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
 const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
+
+const klantinteractiesProxyRoot = "/api/klantinteracties";
+const klantinteractiesApiRoot = "/api/v1";
+const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
+const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 export const saveContactmoment = async (
   data: Contactmoment,
 ): Promise<SaveContactmomentResponseModel> => {
   const response = await postContactmoment(data);
   const responseBody = await response.json();
-  
+
   throwIfNotOk(response);
   return { data: responseBody };
 };
@@ -81,7 +94,7 @@ const postContactmoment = (data: Contactmoment): Promise<Response> => {
 };
 
 export const saveKlantContact = async (
-  data: KlantContact,
+  data: KlantContactPostmodel,
 ): Promise<SaveKlantContactResponseModel> => {
   const response = await postKlantContact(data);
   const responseBody = await response.json();
@@ -90,7 +103,7 @@ export const saveKlantContact = async (
   return { data: responseBody };
 };
 
-const postKlantContact = (data: KlantContact): Promise<Response> => {
+const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
   return fetchLoggedIn(`/api/postklantcontacten`, {
     method: "POST",
     headers: {
@@ -196,29 +209,115 @@ export function koppelBetrokkene({
         uuid: contactmomentId,
       },
       rol: "klant",
-      initiator: true
+      initiator: true,
     }),
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-const fetchContactmomenten = (u: string) =>
+export function useContactverzoekenByKlantId(
+  id: Ref<string>,
+  gebruikKlantInteractiesApi: boolean,
+) {
+  function getUrl() {
+    if (gebruikKlantInteractiesApi) {
+      const searchParams = new URLSearchParams();
+      searchParams.set("wasPartij__url", id.value);
+      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+    } else {
+      if (!id.value) return "";
+      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+      url.searchParams.set("ordering", "-record__data__registratiedatum");
+      url.searchParams.set("pageSize", "10");
+      url.searchParams.set(
+        "data_attrs",
+        `betrokkene__klant__exact__${id.value}`,
+      );
+      return url.toString();
+    }
+  }
+
+  const fetchContactverzoeken = (
+    url: string,
+    gebruikKlantinteractiesApi: boolean,
+  ) => {
+    if (gebruikKlantinteractiesApi) {
+      return (
+        fetchBetrokkene(url)
+          .then(enrichBetrokkeneWithKlantContact)
+          .then(enrichKlantcontactWithInterneTaak)
+          .then(filterOutContactmomenten)
+          .then(enrichBetrokkeneWithDigitaleAdressen)
+          .then(enrichInterneTakenWithActoren)          
+          .then(mapToContactverzoekViewModel)
+      );
+    } else {
+      return fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
+    }
+  };
+
+  return ServiceResult.fromFetcher(getUrl, (u: string) => {
+    return fetchContactverzoeken(u, gebruikKlantInteractiesApi);
+  });
+}
+
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  gebruikKlantinteractiesApi: boolean,
+) {
+  const fetchContactmomenten = async (
+    url: string,
+    gebruikKlantinteractiesApi: boolean,
+  ) => {
+    if (gebruikKlantinteractiesApi) {
+      return fetchBetrokkene(url)
+        .then(enrichBetrokkeneWithKlantContact)
+        .then(enrichKlantcontactWithInterneTaak) //necesarry to filter them out
+        .then(mapToContactmomentViewModel);
+    } else {
+      return fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
+    }
+  };
+
+  return ServiceResult.fromFetcher(
+    () => {
+      // retourneer een url voor openklant 1 OF de klantInteracties api
+      if (gebruikKlantinteractiesApi) {
+        const searchParams = new URLSearchParams();
+        searchParams.set("wasPartij__url", id.value);
+
+        //dit is nodig of er moet een unique id prop meegegeven worden.
+        //of er moet een unique id prop meegegeven worden
+        //anders wordt alleen de CM's OF de CV's opgehaald
+        //ze beginnen namelijk met dezelfde call, naar partij en als die hetzelfde is dan wordt die uit de cahce gehaald
+        //maar dan wordt er blijkbaar geen promise geresolved, want dan wordt de rest van de .then(...) trein niet uitgevoerd
+        //todo: SWRV eruit.als het al nutig is dan niet zo weggestopt in from fetcher
+        searchParams.set("random", "1");
+
+        return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+      } else {
+        if (!id.value) return "";
+        const searchParams = new URLSearchParams();
+        searchParams.set("klant", id.value);
+        searchParams.set("ordering", "-registratiedatum");
+        searchParams.set("expand", "objectcontactmomenten");
+        return `${contactmomentenUrl}?${searchParams.toString()}`;
+      }
+    },
+    (u: string) => fetchContactmomenten(u, gebruikKlantinteractiesApi),
+  );
+}
+
+const fetchOk1Contactmomenten = (u: string) =>
   fetchLoggedIn(u)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-
-export function useContactmomentenByKlantId(id: Ref<string>) {
-  function getUrl() {
-    if (!id.value) return "";
-    const searchParams = new URLSearchParams();
-    searchParams.set("klant", id.value);
-    searchParams.set("ordering", "-registratiedatum");
-    searchParams.set("expand", "objectcontactmomenten");
-    return `${contactmomentenUrl}?${searchParams.toString()}`;
-  }
-
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
-}
 
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
@@ -247,7 +346,7 @@ export function useContactmomentenByObjectUrl(url: Ref<string>) {
     return `${contactmomentenUrl}?${params}`;
   };
 
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+  return ServiceResult.fromFetcher(getUrl, fetchOk1Contactmomenten);
 }
 
 export function useContactmomentObject(getUrl: () => string) {
@@ -479,4 +578,12 @@ export function mapContactverzoekData({
       digitaleAdressen,
     },
   };
+}
+
+export async function isOk2DefaultContactenApi() {
+  // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
+  // Fetch USE_KLANTCONTACTEN environment variable, wordt in sommige gevallen vervangen door flow te bepalen op basis van zaken
+  const response = await fetch("/api/environment/use-klantinteracties");
+  const { useKlantInteracties } = await response.json();
+  return useKlantInteracties as boolean;
 }
