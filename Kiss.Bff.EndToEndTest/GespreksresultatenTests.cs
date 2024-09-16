@@ -44,7 +44,7 @@ namespace PlaywrightTests
 
 
         [TestMethod]
-        public async Task TestSkillsFilteringAsync()
+        public async Task TestSkillsFilteringAsync() 
         {
             // Example: Test filtering by skill
             await Page.ClickAsync("summary:has-text('Filter op categorie')");
