@@ -38,7 +38,7 @@ namespace PlaywrightTests
                 await Expect(currentPageButton).ToBeVisibleAsync();
 
                 // Ensure the current page button's aria-label attribute is 'Pagina 2'
-                await Expect(currentPageButton).ToHaveAttributeAsync("aria-label", "Pagina 2");
+                await Expect(currentPageButton).ToHaveAttributeAsync("aria-label", "Pagina 2"); 
             }
         }
 
