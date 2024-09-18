@@ -17,7 +17,7 @@ import type {
   SaveContactmomentResponseModel,
   KlantContactPostmodel,
   SaveKlantContactResponseModel,
-  DigitaalAdres
+  DigitaalAdresApiViewModel
 } from "./types";
 
 import type { Contactmoment } from "../../features/contact/contactmoment/types";
@@ -93,25 +93,23 @@ export async function enrichBetrokkeneWithKlantContact(
 export async function enrichKlantcontactWithInterneTaak(
   value: PaginatedResult<BetrokkeneWithKlantContact>,
 ): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  for (const betrokkeneWithKlantcontact of value.page) {
+  const fetchTasks = value.page.map((value) => {
     const searchParams = new URLSearchParams();
-    searchParams.set(
-      "klantcontact__uuid",
-      betrokkeneWithKlantcontact.klantContact.uuid,
-    );
+    searchParams.set("klantcontact__uuid", value.klantContact.uuid);
     const url = `${klantinteractiesInterneTaken}?${searchParams.toString()}`;
-    await fetchLoggedIn(url)
+    return fetchLoggedIn(url)
       .then(throwIfNotOk)
       .then(parseJson)
       .then((p) => parsePagination(p, (x) => x))
       .then((d) => {
         if (d.page.length >= 1) {
-          betrokkeneWithKlantcontact.klantContact.internetaak = d
-            .page[0] as InternetaakApiViewModel; //we mogen er vanuit gaan dat er 1 'hoofd interen tak' is bj een contact moment.
+          value.klantContact.internetaak = d.page[0] as InternetaakApiViewModel; //we mogen er vanuit gaan dat er 1 'hoofd interen tak' is bj een contact moment.
           // het model ondersteunt meerdere vervolg contacten, maar daar houden we binnen kiss nog geen rekening mee.
         }
       });
-  }
+  });
+
+  await Promise.all(fetchTasks);
 
   return value;
 }
@@ -190,18 +188,17 @@ export async function enrichInterneTakenWithActoren(
     //wordt naar verwachting tzt aangepast, dan gaan we gewoon alle actoren bij de internetak tonen
     const actorenDetails: Array<ActorApiViewModel> = [];
 
-    for (const actor of actoren) {
-      //let op. dit is eigenelijk niet volgens klantinteractie api specs.
-      //toegewezen actoren zou alleen een lijst id's bevatten
-      //klopppen de specs niet of de implementatie?
+    const actorenFetchTasks = actoren.map((actor) => {
       const url = `${klantinteractiesActoren}/${actor.uuid}`;
-      await fetchLoggedIn(url)
+      return fetchLoggedIn(url)
         .then(throwIfNotOk)
         .then(parseJson)
         .then((d) => {
           actorenDetails.push(d as ActorApiViewModel);
         });
-    }
+    });
+
+    await Promise.all(actorenFetchTasks);
 
     const medewerkerActor = actorenDetails.find(
       (x) => x.soortActor === "medewerker",
@@ -221,17 +218,16 @@ export async function enrichInterneTakenWithActoren(
   return value;
 }
 
-
-
 export async function enrichBetrokkeneWithDigitaleAdressen(
   value: PaginatedResult<BetrokkeneWithKlantContact>,
 ): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
   for (const betrokkeneWithKlantcontact of value.page) {
     betrokkeneWithKlantcontact.digitaleAdressenExpanded = [];
     const digitaleAdressen = betrokkeneWithKlantcontact?.digitaleAdressen;
-    for (const digitaalAdres of digitaleAdressen) {
+
+    const fetchTasks = digitaleAdressen.map((digitaalAdres) => {
       const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-      await fetchLoggedIn(url)
+      return fetchLoggedIn(url)
         .then(throwIfNotOk)
         .then(parseJson)
         .then(async (d) => {
@@ -241,7 +237,9 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
             omschrijving: d.omschrijving,
           });
         });
-    }
+    });
+
+    await Promise.all(fetchTasks);
   }
 
   return value;
@@ -433,7 +431,7 @@ const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
 };
 
 export const saveDigitaleAdressen = async (
-  digitaleAdressen: DigitaalAdres[],
+  digitaleAdressen: DigitaalAdresApiViewModel[],
   verstrektDoorBetrokkeneUuid: string,
   verstrektDoorPartijUuid?: string,
 ): Promise<Array<{ uuid: string; url: string }>> => {

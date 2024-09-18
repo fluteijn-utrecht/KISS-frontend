@@ -75,10 +75,7 @@ import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
-import {
-  useContactmomentenByKlantId,
-  useContactverzoekenByKlantId,
-} from "@/features/contact/contactmoment/service";
+import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import {
   useZakenByKlantBedrijfIdentifier,
   ZakenOverzicht,
@@ -93,6 +90,7 @@ import ContactmomentDetailsContext from "@/features/contact/contactmoment/Contac
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
+import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);

@@ -38,17 +38,12 @@ import {
   isInputVraag,
   isTextareaVraag,
 } from "../components/service";
-import {
-  enrichBetrokkeneWithDigitaleAdressen,
+import { 
   enrichBetrokkeneWithKlantContact,
-  enrichInterneTakenWithActoren,
   enrichKlantcontactWithInterneTaak,
   fetchBetrokkene,
-  filterOutContactmomenten,
   mapToContactmomentViewModel,
-  mapToContactverzoekViewModel,
   type ContactmomentViewModel,
-  type ContactverzoekViewmodel,
 } from "@/services/klantinteracties";
 
 //obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
@@ -191,59 +186,19 @@ export function koppelBetrokkene({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  gebruikKlantInteractiesApi: boolean,
-) {
-  function getUrl() {
-    if (gebruikKlantInteractiesApi) {
-      const searchParams = new URLSearchParams();
-      searchParams.set("wasPartij__url", id.value);
-      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
-    } else {
-      if (!id.value) return "";
-      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-      url.searchParams.set("ordering", "-record__data__registratiedatum");
-      url.searchParams.set("pageSize", "10");
-      url.searchParams.set(
-        "data_attrs",
-        `betrokkene__klant__exact__${id.value}`,
-      );
-      return url.toString();
-    }
-  }
 
-  const fetchContactverzoeken = (
-    url: string,
-    gebruikKlantinteractiesApi: boolean,
-  ) => {
-    if (gebruikKlantinteractiesApi) {
-      return (
-        fetchBetrokkene(url)
-          .then(enrichBetrokkeneWithKlantContact)
-          .then(enrichKlantcontactWithInterneTaak)
-          .then(filterOutContactmomenten)
-          .then(enrichBetrokkeneWithDigitaleAdressen)
-          .then(enrichInterneTakenWithActoren)          
-          .then(mapToContactverzoekViewModel)
-      );
-    } else {
-      return fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
-    }
-  };
-
-  return ServiceResult.fromFetcher(getUrl, (u: string) => {
-    return fetchContactverzoeken(u, gebruikKlantInteractiesApi);
-  });
-}
 
 export function useContactmomentenByKlantId(
   id: Ref<string>,
   gebruikKlantinteractiesApi: boolean,
 ) {
+  //een cackekey is nodig anders wordt alleen de CM's OF de CV's opgehaald
+  //ze beginnen namelijk met dezelfde call naar partij
+  //als die hetzelfde is dan wordt die uit de cahce gehaald
+  //maar dan wordt er blijkbaar geen promise geresolved, want dan wordt de rest van de .then(...) trein niet uitgevoerd
+  //todo: SWRV eruit. als het al nutig is dan niet zo weggestopt in from fetcher. of is het een bug in fromfetcher dat de promise niet geresolved wordt als de data uit de cache komt?
+  const getCacheKey = () => `${id.value}_contactmoment`;
+
   const fetchContactmomenten = async (
     url: string,
     gebruikKlantinteractiesApi: boolean,
@@ -268,14 +223,6 @@ export function useContactmomentenByKlantId(
         const searchParams = new URLSearchParams();
         searchParams.set("wasPartij__url", id.value);
 
-        //dit is nodig of er moet een unique id prop meegegeven worden.
-        //of er moet een unique id prop meegegeven worden
-        //anders wordt alleen de CM's OF de CV's opgehaald
-        //ze beginnen namelijk met dezelfde call, naar partij en als die hetzelfde is dan wordt die uit de cahce gehaald
-        //maar dan wordt er blijkbaar geen promise geresolved, want dan wordt de rest van de .then(...) trein niet uitgevoerd
-        //todo: SWRV eruit.als het al nutig is dan niet zo weggestopt in from fetcher
-        searchParams.set("random", "1");
-
         return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
       } else {
         if (!id.value) return "";
@@ -287,6 +234,7 @@ export function useContactmomentenByKlantId(
       }
     },
     (u: string) => fetchContactmomenten(u, gebruikKlantinteractiesApi),
+    { getUniqueId: getCacheKey },
   );
 }
 

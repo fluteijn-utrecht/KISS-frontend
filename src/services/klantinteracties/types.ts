@@ -1,24 +1,11 @@
 import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht/types";
 
-export type DigitaalAdres = {
+//api types
+
+export type DigitaalAdresApiViewModel = {
   adres: string;
   soortDigitaalAdres?: string;
   omschrijving?: string;
-};
-
-export type BetrokkeneMetKlantContact = {
-  uuid: string;
-  wasPartij: { uuid: string; url: string };
-  klantContact: ExpandedKlantContactApiViewmodel;
-
-  digitaleAdressen: Array<{ uuid: string; url: string }>;
-  digitaleAdressenExpanded: Array<DigitaalAdres>;
-  contactnaam: {
-    achternaam: string;
-    voorletters: string;
-    voornaam: string;
-    voorvoegselAchternaam: string;
-  };
 };
 
 export type ExpandedKlantContactApiViewmodel = {
@@ -60,6 +47,23 @@ export type ActorApiViewModel = {
   naam: string;
   soortActor: string;
   indicatieActief: boolean;
+};
+
+//applicatie types
+
+export type BetrokkeneMetKlantContact = {
+  uuid: string;
+  wasPartij: { uuid: string; url: string };
+  klantContact: ExpandedKlantContactApiViewmodel;
+
+  digitaleAdressen: Array<{ uuid: string; url: string }>;
+  digitaleAdressenExpanded: Array<DigitaalAdresApiViewModel>;
+  contactnaam: {
+    achternaam: string;
+    voorletters: string;
+    voornaam: string;
+    voorvoegselAchternaam: string;
+  };
 };
 
 export interface MedewerkerIdentificatie {
