@@ -254,11 +254,11 @@ export function fetchBetrokkene(url: string) {
     .then((p) => parsePagination(p, (x) => x as BetrokkeneWithKlantContact));
 }
 
-export function koppelBetrokkene({
+export function saveBetrokkene({
   partijId,
   contactmomentId,
 }: {
-  partijId: string;
+  partijId?: string;
   contactmomentId: string;
 }): Promise<{ uuid: string }> {
   return fetchLoggedIn(klantinteractiesBetrokkenen, {
@@ -268,7 +268,7 @@ export function koppelBetrokkene({
     },
     body: JSON.stringify({
       wasPartij: {
-        uuid: partijId,
+        wasPartij: partijId ? { uuid: partijId } : null,
       },
       hadKlantcontact: {
         uuid: contactmomentId,

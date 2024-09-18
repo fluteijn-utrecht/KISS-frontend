@@ -450,7 +450,7 @@ import {
   getActorById,
   postActoren,
   mapContactmomentToInternetaak,
-  koppelBetrokkene,
+  saveBetrokkene,
   saveDigitaleAdressen
  } from "../../../services/klantinteracties/service";
 
@@ -575,17 +575,18 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
-const saveAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string): Promise<string | undefined> => {
+const savePartijen = async (vraag: Vraag, contactmomentId: string): Promise<string[]> => {
+  const betrokkenenUuids: string[] = []; 
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {
-      const result = await koppelBetrokkene({
+      const result = await saveBetrokkene({
         partijId: klant.id,
         contactmomentId: contactmomentId,
       });
-      return result.uuid;
+      betrokkenenUuids.push(result.uuid); 
     }
   }
-  return undefined;
+  return betrokkenenUuids;
 };
 
 
@@ -695,6 +696,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     contactmoment.uuid = savedKlantContactResult.data?.uuid;
 
+    const partijenUuids = await savePartijen(vraag, savedKlantContactResult.data?.uuid);
+
     await writeContactmomentDetails(
       contactmoment,
       savedKlantContactResult.data?.url,
@@ -704,45 +707,55 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       
       if(isContactverzoek){
 
-      let contactverzoekData: Omit<ContactverzoekData, "contactmoment"> | undefined;
-      let actorUuid: string | undefined;
-      let organisatorischeActorUuid: string | undefined;
-
-      const klantUrl = vraag.klanten
+        const klantUrl = vraag.klanten
         .filter((x) => x.shouldStore)
         .map((x) => x.klant.url)
         .find(Boolean);
 
-      if (isContactverzoek) {
-        contactverzoekData = mapContactverzoekData({
+        const contactverzoekData = mapContactverzoekData({
           klantUrl,
           data: vraag.contactverzoek,
         });
         Object.assign(contactmoment, contactverzoekData);
-      }
 
-      if (contactverzoekData?.actor) {
         const result = await saveActors(contactverzoekData?.actor);
-        actorUuid = result.actorUuid;
-        organisatorischeActorUuid = result.organisatorischeActorUuid;
-      }
+        const actorUuid = result.actorUuid;
+        const organisatorischeActorUuid = result.organisatorischeActorUuid;
 
-      const betrokkeneUuid = await saveAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
+        if (partijenUuids.length > 0) {
+          for (const partijUuid of partijenUuids) {
+            if (partijUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
+              await saveDigitaleAdressen(
+                contactverzoekData.betrokkene.digitaleAdressen,
+                partijUuid
+              );
+            }
+          }
+        }
+        else 
+        {
+          // Voor anoniem klantcontact
+          const betrokkeneResult = await saveBetrokkene({
+            partijId: undefined, 
+            contactmomentId: savedKlantContactResult.data?.uuid,
+          });
 
-      if (betrokkeneUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
-        await saveDigitaleAdressen(
-          contactverzoekData.betrokkene.digitaleAdressen,
-          betrokkeneUuid
-        );
-      }
-          
-      const savedContactverzoekResult = 
-      await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
+          const betrokkeneUuid = betrokkeneResult.uuid;
 
-      return savedContactverzoekResult || savedKlantContactResult;      
+          if (betrokkeneUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
+            await saveDigitaleAdressen(
+              contactverzoekData.betrokkene.digitaleAdressen,
+              betrokkeneUuid
+            );
+          }
+        }
+
+        const savedContactverzoekResult = 
+        await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
+
+        return savedContactverzoekResult || savedKlantContactResult;      
      }
      return savedKlantContactResult;
-     
     }
     else
     {
