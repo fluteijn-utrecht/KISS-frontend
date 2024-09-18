@@ -3,8 +3,24 @@ import {
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
+  parsePagination,
 } from "@/services";
+import {
+  enrichBetrokkeneWithDigitaleAdressen,
+  enrichBetrokkeneWithKlantContact,
+  enrichInterneTakenWithActoren,
+  enrichKlantcontactWithInterneTaak,
+  fetchBetrokkene,
+  filterOutContactmomenten,
+  mapToContactverzoekViewModel,
+  type ContactverzoekViewmodel,
+} from "@/services/klantinteracties";
 import type { Ref } from "vue";
+
+const klantinteractiesProxyRoot = "/api/klantinteracties";
+const klantinteractiesApiRoot = "/api/v1";
+const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
+const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 type SearchParameters = {
   query: string;
@@ -62,4 +78,51 @@ function search(url: string) {
 export function useSearch(params: Ref<SearchParameters>) {
   const getUrl = () => getSearchUrl(params.value);
   return ServiceResult.fromFetcher(getUrl, search);
+}
+
+export function useContactverzoekenByKlantId(
+  id: Ref<string>,
+  gebruikKlantInteractiesApi: boolean,
+) {
+  function getUrl() {
+    if (gebruikKlantInteractiesApi) {
+      const searchParams = new URLSearchParams();
+      searchParams.set("wasPartij__url", id.value);
+      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+    } else {
+      if (!id.value) return "";
+      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+      url.searchParams.set("ordering", "-record__data__registratiedatum");
+      url.searchParams.set("pageSize", "10");
+      url.searchParams.set(
+        "data_attrs",
+        `betrokkene__klant__exact__${id.value}`,
+      );
+      return url.toString();
+    }
+  }
+
+  const fetchContactverzoeken = (
+    url: string,
+    gebruikKlantinteractiesApi: boolean,
+  ) => {
+    if (gebruikKlantinteractiesApi) {
+      return fetchBetrokkene(url)
+        .then(enrichBetrokkeneWithKlantContact)
+        .then(enrichKlantcontactWithInterneTaak)
+        .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then(enrichInterneTakenWithActoren)
+        .then(mapToContactverzoekViewModel);
+    } else {
+      return fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
+    }
+  };
+
+  return ServiceResult.fromFetcher(getUrl, (u: string) => {
+    return fetchContactverzoeken(u, gebruikKlantInteractiesApi);
+  });
 }

@@ -86,7 +86,6 @@ import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 import {
   isOk2DefaultContactenApi,
   useContactmomentenByKlantId,
-  useContactverzoekenByKlantId,
 } from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
@@ -100,6 +99,7 @@ import {
   usePersoonByBsn,
   BrpGegevens,
 } from "@/features/persoon/persoon-details";
+import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 
 const activeTab = ref("");
 
@@ -113,7 +113,7 @@ const gebruikKlantInteracatiesApi = ref<boolean>(true);
 
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  true, //gebruikKlantInteracatiesApi.value,
+  gebruikKlantInteracatiesApi.value,
 );
 
 onMounted(async () => {

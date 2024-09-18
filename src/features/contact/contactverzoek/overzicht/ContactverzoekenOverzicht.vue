@@ -17,11 +17,8 @@
             :date="new Date(contactverzoek.record.data.registratiedatum)"
           />
           <span v-else />
-          <span v-if="contactverzoek.onderwerp"
-            >{{ contactverzoek.onderwerp.slice(0, 18)
-            }}<template v-if="contactverzoek.onderwerp.length > 18">
-              ...</template
-            >
+          <span class="max18char" v-if="contactverzoek.onderwerp"
+            >{{ contactverzoek.onderwerp }}
           </span>
           <span v-else>
             <slot
@@ -124,5 +121,12 @@ const capitalizeFirstLetter = (val: string) =>
 <style scoped>
 .preserve-newline {
   white-space: pre-line;
+}
+
+.max18char {
+  max-width: 18ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>
