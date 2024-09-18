@@ -267,9 +267,7 @@ export function saveBetrokkene({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      wasPartij: {
-        wasPartij: partijId ? { uuid: partijId } : null,
-      },
+      wasPartij: partijId ? { uuid: partijId } : null,
       hadKlantcontact: {
         uuid: contactmomentId,
       },
