@@ -575,20 +575,28 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
-const savePartijen = async (vraag: Vraag, contactmomentId: string): Promise<string[]> => {
-  const betrokkenenUuids: string[] = []; 
+const savePartijen = async (
+  vraag: Vraag, 
+  contactmomentId: string, 
+): Promise<string[]> => {
+  const betrokkenenUuids: string[] = [];
+
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {
       const result = await saveBetrokkene({
         partijId: klant.id,
         contactmomentId: contactmomentId,
+        organisatienaam: klant?.bedrijfsnaam,
+        voornaam: klant?.voornaam,
+        voorvoegselAchternaam: klant?.voorvoegselAchternaam,
+        achternaam: klant?.achternaam,
       });
-      betrokkenenUuids.push(result.uuid); 
+      betrokkenenUuids.push(result.uuid);
     }
   }
+
   return betrokkenenUuids;
 };
-
 
 const saveActors = async (actorData: ContactverzoekData["actor"]) => {
   const {
@@ -696,14 +704,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     contactmoment.uuid = savedKlantContactResult.data?.uuid;
 
-    const partijenUuids = await savePartijen(vraag, savedKlantContactResult.data?.uuid);
-
     await writeContactmomentDetails(
       contactmoment,
       savedKlantContactResult.data?.url,
     );
       
-      const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
+    const partijenUuids = await savePartijen(vraag, savedKlantContactResult.data?.uuid);
+
+    const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
       
       if(isContactverzoek){
 
@@ -723,14 +731,15 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         const organisatorischeActorUuid = result.organisatorischeActorUuid;
 
         if (partijenUuids.length > 0) {
-          for (const partijUuid of partijenUuids) {
+          const saveAdressenPromises = partijenUuids.map(async (partijUuid) => {
             if (partijUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
-              await saveDigitaleAdressen(
+              return saveDigitaleAdressen(
                 contactverzoekData.betrokkene.digitaleAdressen,
                 partijUuid
               );
             }
-          }
+          });
+          await Promise.all(saveAdressenPromises);
         }
         else 
         {

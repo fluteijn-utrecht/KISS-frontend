@@ -257,10 +257,20 @@ export function fetchBetrokkene(url: string) {
 export function saveBetrokkene({
   partijId,
   contactmomentId,
+  organisatienaam,
+  voornaam,
+  voorvoegselAchternaam,
+  achternaam,
 }: {
   partijId?: string;
   contactmomentId: string;
+  organisatienaam?: string; 
+  voornaam?: string;
+  voorvoegselAchternaam?: string;
+  achternaam?: string;
 }): Promise<{ uuid: string }> {
+  const voorletters = voornaam ? voornaam.charAt(0) : undefined;
+
   return fetchLoggedIn(klantinteractiesBetrokkenen, {
     method: "POST",
     headers: {
@@ -273,6 +283,13 @@ export function saveBetrokkene({
       },
       rol: "klant",
       initiator: true,
+      organisatienaam: organisatienaam || "",
+      contactnaam: {
+        voorletters: voorletters || "",
+        voornaam: voornaam || "",
+        voorvoegselAchternaam: voorvoegselAchternaam || "",
+        achternaam: achternaam || "",
+      }
     }),
   })
     .then(throwIfNotOk)
