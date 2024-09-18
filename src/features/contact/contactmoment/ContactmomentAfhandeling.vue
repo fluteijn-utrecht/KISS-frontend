@@ -443,7 +443,8 @@ import {
   saveContactverzoek,
   mapContactverzoekData,
   saveKlantContact,
-  type KlantContact,
+  type KlantContactPostmodel,
+  isOk2DefaultContactenApi,
 } from "@/features/contact/contactmoment";
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -562,7 +563,7 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 
 const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
   for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore && klant.id) {  
+    if (shouldStore && klant.id) {
       await koppelBetrokkene({
         partijId: klant.id,
         contactmomentId: contactmomentId,
@@ -572,10 +573,7 @@ const koppelAlleBetrokkenen = async (vraag: Vraag, contactmomentId: string) => {
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
-
-// Fetch USE_KLANTINTERACTIES environment variable, wordt vervangen door flow te bepalen op basis van zaken straks
-  const response = await fetch('/api/environment/use-klantinteracties');
-  const { useKlantInteracties } = await response.json();
+  const useKlantInteractiesApi = await isOk2DefaultContactenApi();
 
   // gedeeld contactmoment voor contactmomentdetails
   const contactmoment: Contactmoment = {
@@ -599,16 +597,17 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   };
 
   // Klantcontacten flow
-  if (useKlantInteracties) {
-    const klantcontact: KlantContact = {
+  if (useKlantInteractiesApi) {
+    const klantcontact: KlantContactPostmodel = {
       kanaal: vraag.kanaal,
-      onderwerp: vraag.vraag?.title === "anders"
-        ? vraag.specifiekevraag 
-        : vraag.vraag 
-          ? vraag.specifiekevraag 
-            ? `${vraag.vraag.title} (${vraag.specifiekevraag})` 
-            : vraag.vraag.title
-          : vraag.specifiekevraag,
+      onderwerp:
+        vraag.vraag?.title === "anders"
+          ? vraag.specifiekevraag
+          : vraag.vraag
+            ? vraag.specifiekevraag
+              ? `${vraag.vraag.title} - ${vraag.specifiekevraag}`
+              : vraag.vraag.title
+            : vraag.specifiekevraag,
       inhoud: vraag.notitie,
       indicatieContactGelukt: true,
       taal: "nld",
@@ -622,13 +621,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       return savedKlantContactResult;
     }
 
-    await writeContactmomentDetails(contactmoment, savedKlantContactResult.data?.url);
+    await writeContactmomentDetails(
+      contactmoment,
+      savedKlantContactResult.data?.url,
+    );
     koppelAlleBetrokkenen(vraag, savedKlantContactResult.data?.uuid);
 
     return savedKlantContactResult;
-    
   } else {
-    
     // Contactmomenten flow
     addKennisartikelenToContactmoment(contactmoment, vraag);
     addWebsitesToContactmoment(contactmoment, vraag);
@@ -654,7 +654,10 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     const savedContactmomentResult = await saveContactmoment(contactmoment);
 
-    if (savedContactmomentResult.errorMessage || !savedContactmomentResult.data) {
+    if (
+      savedContactmomentResult.errorMessage ||
+      !savedContactmomentResult.data
+    ) {
       return savedContactmomentResult;
     }
 
@@ -670,7 +673,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         saveContactverzoek({
           data: cvData,
           contactmomentUrl: savedContactmoment.url,
-        })
+        }),
       );
     }
 
@@ -698,14 +701,12 @@ async function submit() {
       handleSaveVraagError(saveVraagResult.errorMessage);
     } else {
       // Gespreksid zit niet in savevraagresult als we de klantcontacten flow volgen
-      const gespreksId = (saveVraagResult.data && 'gespreksId' in saveVraagResult.data)
-        ? saveVraagResult.data.gespreksId
-        : undefined;
+      const gespreksId =
+        saveVraagResult.data && "gespreksId" in saveVraagResult.data
+          ? saveVraagResult.data.gespreksId
+          : undefined;
 
-      await handleSaveVraagSuccess(
-        gespreksId, 
-        vragen.slice(1),
-      );
+      await handleSaveVraagSuccess(gespreksId, vragen.slice(1));
     }
   } catch (error) {
     errorMessage.value =

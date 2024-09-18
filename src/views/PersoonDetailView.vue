@@ -19,7 +19,7 @@
     <tab-list-data-item
       label="Contactmomenten"
       :data="contactmomenten"
-      :disabled="(c) => !c.count"
+      :disabled="(c) => !c"
     >
       <template #success="{ data }">
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
@@ -59,7 +59,12 @@
               </template>
             </contactmoment-details-context>
           </template>
-          <template #contactmoment="{ url }">
+
+          <!-- voor OK1/esuite moeten gegevens die bij het contactmoment en niet bij het contactverzoek horen apart opgehaald worden-->
+          <template
+            v-if="!gebruikKlantInteracatiesApi"
+            #contactmoment="{ url }"
+          >
             <contactmoment-preview :url="url">
               <template #object="{ object }">
                 <zaak-preview :zaakurl="object.object" />
@@ -73,16 +78,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
-import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
+import {
+  isOk2DefaultContactenApi,
+  useContactmomentenByKlantId,
+} from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
@@ -92,6 +99,7 @@ import {
   usePersoonByBsn,
   BrpGegevens,
 } from "@/features/persoon/persoon-details";
+import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 
 const activeTab = ref("");
 
@@ -101,21 +109,21 @@ const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
-const contactverzoekenPage = ref(1);
+const gebruikKlantInteracatiesApi = ref<boolean>(true);
+
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage,
+  gebruikKlantInteracatiesApi.value,
 );
 
-// const contactmomentenPage = ref(1);
+onMounted(async () => {
+  gebruikKlantInteracatiesApi.value = await isOk2DefaultContactenApi();
+});
+
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl,
-  // contactmomentenPage
+  gebruikKlantInteracatiesApi.value,
 );
-
-// const onContactmomentenNavigate = (page: number) => {
-//   contactmomentenPage.value = page;
-// };
 
 const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
 const klantBsn = computed(getBsn);
