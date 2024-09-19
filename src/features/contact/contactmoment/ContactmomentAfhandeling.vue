@@ -599,7 +599,7 @@ const savePartijen = async (
 };
 
 
-const saveActors = async (actorData: ContactverzoekData["actor"]) => {
+const saveActoren = async (actorData: ContactverzoekData["actor"]) => {
   const {
     identificatie,
     naam,
@@ -715,7 +715,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         });
         Object.assign(contactmoment, contactverzoekData);
 
-        const result = await saveActors(contactverzoekData?.actor);
+        const result = await saveActoren(contactverzoekData?.actor);
         const actorUuid = result.actorUuid;
         const organisatorischeActorUuid = result.organisatorischeActorUuid;
 
