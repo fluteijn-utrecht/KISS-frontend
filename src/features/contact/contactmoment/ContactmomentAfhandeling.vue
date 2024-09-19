@@ -598,6 +598,7 @@ const savePartijen = async (
   return betrokkenenUuids;
 };
 
+
 const saveActors = async (actorData: ContactverzoekData["actor"]) => {
   const {
     identificatie,
@@ -607,48 +608,36 @@ const saveActors = async (actorData: ContactverzoekData["actor"]) => {
     identificatieOrganisatorischeEenheid,
   } = actorData;
 
-  let actorUuid, organisatorischeActorUuid;
+  const getOrCreateActor = async (name: string, id: string, type?: "afdeling" | "groep" | undefined) => {
+    const actor = await getActorById(id);
+    if (actor.results.length === 0) {
+      return await postActoren({
+        fullName: name,
+        identificatie: id,
+        typeOrganisatorischeEenheid: type ?? undefined,
+      });
+    }
+    return actor.results[0].uuid;
+  };
 
-  //betekent dat de actor bestaat uit een afdeling/groep EN een medewerker
+  // als zowel een afdeling/groep als medewerker is geselecteerd
   if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
-    const actor = await getActorById(identificatie);
-    if (actor.results.length === 0) {
-      //apart posten van actor voor medewerker
-      actorUuid = await postActoren({
-        fullName: naam,
-        typeOrganisatorischeEenheid: undefined,
-        identificatie,
-      });
-    } else {
-      actorUuid = actor.results[0].uuid;  
-    }
-    const organisatorischeActor = await getActorById(identificatieOrganisatorischeEenheid);
-    if (organisatorischeActor.results.length === 0) {
-      //apart posten van actor voor afdeling/groep
-      organisatorischeActorUuid = await postActoren({
-        fullName: naamOrganisatorischeEenheid,
-        typeOrganisatorischeEenheid,
-        identificatie: identificatieOrganisatorischeEenheid,
-      });
-    } else {
-      organisatorischeActorUuid = organisatorischeActor.results[0].uuid;  
-    }
+    const actorUuid = await getOrCreateActor(naam, identificatie, undefined); // medewerker zonder organisatorische eenheid
+    const organisatorischeActorUuid = await getOrCreateActor(
+      naamOrganisatorischeEenheid,
+      identificatieOrganisatorischeEenheid,
+      typeOrganisatorischeEenheid
+    );
     return { actorUuid, organisatorischeActorUuid };
-
-  } else {
-    //als een afdeling/groep is geselecteerd ZONDER medewerker
-    const actor = await getActorById(identificatie);
-    if (actor.results.length === 0) {
-      actorUuid = await postActoren({
-        fullName: naam,
-        typeOrganisatorischeEenheid,
-        identificatie,
-      });
-    } else {
-      actorUuid = actor.results[0].uuid;  
-    }
-    return { actorUuid };
   }
+
+  // als alleen een afdeling/groep is geselecteerd
+  const actorUuid = await getOrCreateActor(
+    naam,
+    identificatie,
+    typeOrganisatorischeEenheid
+  );
+  return { actorUuid };
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {

@@ -374,12 +374,12 @@ function mapActorType(typeOrganisatorischeEenheid: "groep" | "afdeling" | undefi
 
 export async function postActoren({
   fullName,
-  typeOrganisatorischeEenheid,
   identificatie,
+  typeOrganisatorischeEenheid,
 }: {
   fullName: string;
-  typeOrganisatorischeEenheid: "afdeling" | "groep" | undefined;
   identificatie: string;
+  typeOrganisatorischeEenheid: "afdeling" | "groep" | undefined;
 }): Promise<string> {
   const { codeObjecttype, codeRegister, codeSoortObjectId, soortActor } = mapActorType(typeOrganisatorischeEenheid);
 
