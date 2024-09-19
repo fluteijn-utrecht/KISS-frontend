@@ -38,7 +38,7 @@ import {
   isInputVraag,
   isTextareaVraag,
 } from "../components/service";
-import { 
+import {
   enrichBetrokkeneWithKlantContact,
   enrichKlantcontactWithInterneTaak,
   fetchBetrokkene,
@@ -186,11 +186,9 @@ export function koppelBetrokkene({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-
-
 export function useContactmomentenByKlantId(
   id: Ref<string>,
-  gebruikKlantinteractiesApi: boolean,
+  gebruikKlantinteractiesApi: Ref<boolean | null>,
 ) {
   //een cackekey is nodig anders wordt alleen de CM's OF de CV's opgehaald
   //ze beginnen namelijk met dezelfde call naar partij
@@ -201,9 +199,13 @@ export function useContactmomentenByKlantId(
 
   const fetchContactmomenten = async (
     url: string,
-    gebruikKlantinteractiesApi: boolean,
+    gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
-    if (gebruikKlantinteractiesApi) {
+    if (gebruikKlantinteractiesApi.value === null) {
+      null;
+    }
+
+    if (gebruikKlantinteractiesApi.value) {
       return fetchBetrokkene(url)
         .then(enrichBetrokkeneWithKlantContact)
         .then(enrichKlantcontactWithInterneTaak) //necesarry to filter them out
@@ -218,8 +220,12 @@ export function useContactmomentenByKlantId(
 
   return ServiceResult.fromFetcher(
     () => {
+      if (gebruikKlantinteractiesApi.value === null) {
+        return "";
+      }
+
       // retourneer een url voor openklant 1 OF de klantInteracties api
-      if (gebruikKlantinteractiesApi) {
+      if (gebruikKlantinteractiesApi.value === true) {
         const searchParams = new URLSearchParams();
         searchParams.set("wasPartij__url", id.value);
 
