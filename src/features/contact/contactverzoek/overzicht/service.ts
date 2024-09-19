@@ -82,10 +82,13 @@ export function useSearch(params: Ref<SearchParameters>) {
 
 export function useContactverzoekenByKlantId(
   id: Ref<string>,
-  gebruikKlantInteractiesApi: boolean,
+  gebruikKlantInteractiesApi: Ref<boolean | null>,
 ) {
   function getUrl() {
-    if (gebruikKlantInteractiesApi) {
+    if (gebruikKlantInteractiesApi.value === null) {
+      return "";
+    }
+    if (gebruikKlantInteractiesApi.value === true) {
       const searchParams = new URLSearchParams();
       searchParams.set("wasPartij__url", id.value);
       return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
@@ -104,9 +107,13 @@ export function useContactverzoekenByKlantId(
 
   const fetchContactverzoeken = (
     url: string,
-    gebruikKlantinteractiesApi: boolean,
+    gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
-    if (gebruikKlantinteractiesApi) {
+    if (gebruikKlantInteractiesApi.value === null) {
+      null;
+    }
+
+    if (gebruikKlantinteractiesApi.value) {
       return fetchBetrokkene(url)
         .then(enrichBetrokkeneWithKlantContact)
         .then(enrichKlantcontactWithInterneTaak)

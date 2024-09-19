@@ -99,13 +99,18 @@ const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
 
+const gebruikKlantInteracatiesApi = ref<boolean | null>(false);
+
 //const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  false,
+  gebruikKlantInteracatiesApi,
   //contactverzoekenPage,
 );
-const contactmomenten = useContactmomentenByKlantId(klantUrl, false);
+const contactmomenten = useContactmomentenByKlantId(
+  klantUrl,
+  gebruikKlantInteracatiesApi,
+);
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;

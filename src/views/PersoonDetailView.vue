@@ -109,21 +109,21 @@ const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
-const gebruikKlantInteracatiesApi = ref<boolean>(true);
+const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
 
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  gebruikKlantInteracatiesApi.value,
+  gebruikKlantInteracatiesApi,
+);
+
+const contactmomenten = useContactmomentenByKlantId(
+  klantUrl,
+  gebruikKlantInteracatiesApi,
 );
 
 onMounted(async () => {
   gebruikKlantInteracatiesApi.value = await isOk2DefaultContactenApi();
 });
-
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  gebruikKlantInteracatiesApi.value,
-);
 
 const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
 const klantBsn = computed(getBsn);
