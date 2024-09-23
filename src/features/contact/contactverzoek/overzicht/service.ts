@@ -109,12 +109,6 @@ export function useContactverzoekenByKlantId(
     url: string,
     gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
-    // if (gebruikKlantInteractiesApi.value === null) {
-    //   return new Promise((resolve) => {
-    //     resolve({ count: null, page: [] as Array<ContactverzoekViewmodel> });
-    //   });
-    // }
-
     if (gebruikKlantinteractiesApi.value) {
       return fetchBetrokkene(url)
         .then(enrichBetrokkeneWithKlantContact)
