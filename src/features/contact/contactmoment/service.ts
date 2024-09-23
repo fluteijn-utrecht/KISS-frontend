@@ -215,17 +215,21 @@ export function useContactmomentenByKlantId(
 ) {
   //een cackekey is nodig anders wordt alleen de CM's OF de CV's opgehaald
   //ze beginnen namelijk met dezelfde call naar partij
-  //als die hetzelfde is dan wordt die uit de cahce gehaald
-  //maar dan wordt er blijkbaar geen promise geresolved, want dan wordt de rest van de .then(...) trein niet uitgevoerd
-  //todo: SWRV eruit. als het al nutig is dan niet zo weggestopt in from fetcher. of is het een bug in fromfetcher dat de promise niet geresolved wordt als de data uit de cache komt?
-  const getCacheKey = () => `${id.value}_contactmoment`;
+  //als die hetzelfde is dan wordt die uit de cache gehaald
+
+  //om te voorkomen dat er al data opgehaald wordt voordat de juiste route bekend is, moet de cachekey een lege string retourneren
+  //als er geen cachekey gebruikt wordt, moet de url een lege string retourneren
+  const getCacheKey = () =>
+    gebruikKlantinteractiesApi.value === null
+      ? ""
+      : `${id.value}_contactmoment`;
 
   const fetchContactmomenten = async (
     url: string,
     gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
     if (gebruikKlantinteractiesApi.value === null) {
-      null;
+      return { page: [] };
     }
 
     if (gebruikKlantinteractiesApi.value) {
