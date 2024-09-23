@@ -19,7 +19,7 @@
     <tab-list-data-item
       label="Contactmomenten"
       :data="contactmomenten"
-      :disabled="(c) => !c"
+      :disabled="(c) => !c.count"
     >
       <template #success="{ data }">
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>

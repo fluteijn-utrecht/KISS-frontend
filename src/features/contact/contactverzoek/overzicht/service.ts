@@ -109,9 +109,11 @@ export function useContactverzoekenByKlantId(
     url: string,
     gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
-    if (gebruikKlantInteractiesApi.value === null) {
-      null;
-    }
+    // if (gebruikKlantInteractiesApi.value === null) {
+    //   return new Promise((resolve) => {
+    //     resolve({ count: null, page: [] as Array<ContactverzoekViewmodel> });
+    //   });
+    // }
 
     if (gebruikKlantinteractiesApi.value) {
       return fetchBetrokkene(url)
@@ -129,7 +131,7 @@ export function useContactverzoekenByKlantId(
     }
   };
 
-  return ServiceResult.fromFetcher(getUrl, (u: string) => {
-    return fetchContactverzoeken(u, gebruikKlantInteractiesApi);
-  });
+  return ServiceResult.fromFetcher(getUrl, (u: string) =>
+    fetchContactverzoeken(u, gebruikKlantInteractiesApi),
+  );
 }

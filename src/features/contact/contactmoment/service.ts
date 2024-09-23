@@ -229,7 +229,7 @@ export function useContactmomentenByKlantId(
     gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
     if (gebruikKlantinteractiesApi.value === null) {
-      return { page: [] };
+      return { count: null, page: [] };
     }
 
     if (gebruikKlantinteractiesApi.value) {
