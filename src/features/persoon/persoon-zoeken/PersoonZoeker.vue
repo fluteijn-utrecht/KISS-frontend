@@ -1,5 +1,6 @@
 <template>
   <section class="actions">
+    <p>Zoek op één van de onderstaande combinaties.</p>
     <form @submit.prevent="zoekOpGeboortedatum">
       <label class="utrecht-form-label">
         Achternaam
@@ -58,7 +59,7 @@
     </form>
     <form @submit.prevent="zoekOpBsn">
       <label class="utrecht-form-label">
-        Burgerservicenummer
+        Bsn
         <input
           v-validate="store.bsn"
           required
@@ -79,7 +80,10 @@
         :navigate-on-single-result="navigateOnSingleResult"
       >
         <template #caption>
-          <SearchResultsCaption :results="personen.data" />
+          <SearchResultsCaption
+            :results="personen.data"
+            :zoekTermen="store.persoonSearchQuery"
+          />
         </template>
       </personen-overzicht>
     </template>
@@ -233,6 +237,8 @@ input[type="radio"] {
   inline-size: min(40rem, 100%);
 
   form {
+    padding: var(--spacing-default);
+    background-color: var(--color-secondary);
     display: flex;
     gap: var(--spacing-default);
     align-items: flex-end;
