@@ -579,18 +579,24 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 const saveBetrokkeneBijKlantContact = async (
   vraag: Vraag, 
   klantcontactId: string, 
+  contactverzoekData?: Partial<ContactverzoekData>
 ): Promise<string[]> => {
   const betrokkenenUuids: string[] = [];
 
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {
+      const organisatie = contactverzoekData?.betrokkene?.organisatie || klant.bedrijfsnaam;
+      const voornaam = contactverzoekData?.betrokkene?.persoonsnaam?.voornaam || klant.voornaam;
+      const voorvoegselAchternaam = contactverzoekData?.betrokkene?.persoonsnaam?.voorvoegselAchternaam || klant.voorvoegselAchternaam;
+      const achternaam = contactverzoekData?.betrokkene?.persoonsnaam?.achternaam || klant.achternaam;
+
       const result = await saveBetrokkene({
         partijId: klant.id,
         klantcontactId: klantcontactId,
-        organisatienaam: klant?.bedrijfsnaam,
-        voornaam: klant?.voornaam,
-        voorvoegselAchternaam: klant?.voorvoegselAchternaam,
-        achternaam: klant?.achternaam,
+        organisatienaam: organisatie,
+        voornaam: voornaam,
+        voorvoegselAchternaam: voorvoegselAchternaam,
+        achternaam: achternaam,
       });
       betrokkenenUuids.push(result.uuid);
     }
@@ -685,7 +691,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     // 2. Contactverzoek met betrokkenen
     } else if (isContactverzoek && !isAnoniem && contactverzoekData) {
-      const betrokkenenUuids = await saveBetrokkeneBijKlantContact(vraag, savedKlantContactResult.data?.uuid);
+      const betrokkenenUuids = await saveBetrokkeneBijKlantContact(vraag, savedKlantContactResult.data?.uuid, contactverzoekData);
 
       if (betrokkenenUuids.length > 0) {
         const saveAdressenPromises = betrokkenenUuids.map(async (betrokkeneUuid) => {
@@ -708,9 +714,13 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       // 3. Anoniem contactverzoek 
       } else if (isContactverzoek && isAnoniem && contactverzoekData) {
 
-      const betrokkeneResult = await saveBetrokkene({
+        const betrokkeneResult = await saveBetrokkene({
         partijId: undefined,
         klantcontactId: savedKlantContactResult.data?.uuid,
+        organisatienaam: contactverzoekData?.betrokkene?.organisatie,
+        voornaam: contactverzoekData?.betrokkene?.persoonsnaam?.voornaam,
+        voorvoegselAchternaam: contactverzoekData?.betrokkene?.persoonsnaam?.voorvoegselAchternaam,
+        achternaam: contactverzoekData?.betrokkene?.persoonsnaam?.achternaam,
       });
 
       const betrokkeneUuid = betrokkeneResult.uuid;
