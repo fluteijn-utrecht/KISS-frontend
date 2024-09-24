@@ -1,6 +1,5 @@
 <template>
   <caption>
-   
     <p v-if="resultCount === 0">
       Geen resultaten gevonden {{ zoekTermenCaption }}
     </p>
@@ -60,14 +59,12 @@ caption {
 
   > * {
     &:first-child {
-
       border-bottom: 1px solid var(--color-tertiary);
       padding-block-end: var(--spacing-small);
     }
 
     &:last-child {
       margin-block-start: var(--spacing-small);
-
     }
   }
 }
