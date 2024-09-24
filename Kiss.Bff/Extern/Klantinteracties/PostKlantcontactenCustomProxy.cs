@@ -162,6 +162,19 @@ namespace Kiss.Bff.Extern.Klantinteracties
 
             return response.IsSuccessStatusCode;
         }
+
+        [HttpPost("postinternetaak")]
+        public IActionResult PostInterneTaak([FromBody] JsonObject parsedModel)
+        {
+            var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/internetaken";
+
+            return new ProxyResult(() =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(parsedModel) };
+                _klantinteractiesProxyConfig.ApplyHeaders(request.Headers, ControllerContext.HttpContext.User);
+                return request;
+            });
+        }
     }
 }
 

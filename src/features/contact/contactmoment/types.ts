@@ -6,6 +6,7 @@ export interface MedewerkerIdentificatie {
 }
 
 export interface Contactmoment {
+  uuid: string;
   bronorganisatie: string; //verplicht in de api
   registratiedatum: string; //2019-08-24T14:15:22Z //serverside?
   kanaal: string;
@@ -27,18 +28,7 @@ export interface Contactmoment {
   einddatum: string;
   gespreksId?: string;
   verantwoordelijkeAfdeling?: string;
-}
-
-export interface KlantContactPostmodel {
-  uuid?: string;
-  nummer?: string;
-  kanaal: string;
-  onderwerp: string;
-  inhoud: string;
-  indicatieContactGelukt: boolean;
-  taal: string;
-  vertrouwelijk: boolean;
-  plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
+  toelichting: string
 }
 
 export interface ContactmomentDetails {
@@ -100,7 +90,3 @@ export type SaveContactmomentResponseModel = {
   errorMessage?: string;
 };
 
-export type SaveKlantContactResponseModel = {
-  data?: { url: string; uuid: string };
-  errorMessage?: string;
-};

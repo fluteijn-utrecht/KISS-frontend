@@ -86,4 +86,43 @@ export interface ContactmomentViewModel {
   medewerkerIdentificatie: MedewerkerIdentificatie;
 }
 
+export interface InternetaakPostModel {
+  nummer: string; 
+  gevraagdeHandeling: string; 
+  aanleidinggevendKlantcontact: { 
+    uuid: string;
+  };
+  toegewezenAanActoren: { 
+    uuid: string;
+  }[];
+  toelichting: string; 
+  status: "te_verwerken" | "verwerkt"; 
+  afgehandeldOp?: string;
+}
+
+export type SaveInterneTaakResponseModel = {
+  data?: { url: string; gespreksId?: string };
+  errorMessage?: string;
+};
+
+export type SaveKlantContactResponseModel = {
+  data?: { url: string; uuid: string };
+  errorMessage?: string;
+};
+
+export interface KlantContactPostmodel {
+  uuid?: string;
+  nummer?: string;
+  kanaal: string;
+  onderwerp: string;
+  inhoud: string;
+  indicatieContactGelukt: boolean;
+  taal: string;
+  vertrouwelijk: boolean;
+  plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
+}
+
+///////////////////////////////
+
+//todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
 export type ContactverzoekViewmodel = Contactverzoek;

@@ -15,8 +15,6 @@ import {
   type ObjectContactmoment,
   type ContactmomentDetails,
   type SaveContactmomentResponseModel,
-  type KlantContactPostmodel,
-  type SaveKlantContactResponseModel,
 } from "./types";
 
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -79,27 +77,6 @@ export const saveContactmoment = async (
 
 const postContactmoment = (data: Contactmoment): Promise<Response> => {
   return fetchLoggedIn(`/api/postcontactmomenten`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-};
-
-export const saveKlantContact = async (
-  data: KlantContactPostmodel,
-): Promise<SaveKlantContactResponseModel> => {
-  const response = await postKlantContact(data);
-  const responseBody = await response.json();
-
-  throwIfNotOk(response);
-  return { data: responseBody };
-};
-
-const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
-  return fetchLoggedIn(`/api/postklantcontacten`, {
     method: "POST",
     headers: {
       Accept: "application/json",

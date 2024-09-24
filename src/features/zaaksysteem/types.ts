@@ -94,3 +94,4 @@ export type RolType = {
     | NietNatuurlijkPersoon
     | NatuurlijkPersoon;
 };
+

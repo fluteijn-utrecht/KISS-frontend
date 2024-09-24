@@ -28,9 +28,10 @@ export interface ContactVerzoekVragenSet {
   afdelingId: string;
 }
 
+// Kan alleen groep of afdeling zijn, medewerker bestaat niet
 export enum TypeOrganisatorischeEenheid {
   Groep = "groep",
-  Afdeling = "afdeling",
+  Afdeling = "afdeling"
 }
 
 export type DigitaalAdres = {
