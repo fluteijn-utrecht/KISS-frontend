@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Extern\Klantinteracties\PostContactmomentenCustomProxy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" Version="1.1.0" />
     <PackageReference Include="HtmlSanitizer" Version="8.0.723" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.16" />
