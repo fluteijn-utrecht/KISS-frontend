@@ -14,13 +14,14 @@ import type {
   InternetaakApiViewModel,
   ActorApiViewModel,
   InternetaakPostModel,
-  SaveContactmomentResponseModel,
+  SaveInterneTaakResponseModel,
   KlantContactPostmodel,
   SaveKlantContactResponseModel,
   DigitaalAdresApiViewModel
 } from "./types";
 
 import type { Contactmoment } from "../../features/contact/contactmoment/types";
+import type { ContactverzoekData } from "../../features/contact/components/types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -254,14 +255,14 @@ export function fetchBetrokkene(url: string) {
 
 export function saveBetrokkene({
   partijId,
-  contactmomentId,
+  klantcontactId,
   organisatienaam,
   voornaam,
   voorvoegselAchternaam,
   achternaam,
 }: {
   partijId?: string;
-  contactmomentId: string;
+  klantcontactId: string;
   organisatienaam?: string; 
   voornaam?: string;
   voorvoegselAchternaam?: string;
@@ -277,7 +278,7 @@ export function saveBetrokkene({
     body: JSON.stringify({
       wasPartij: partijId ? { uuid: partijId } : null,
       hadKlantcontact: {
-        uuid: contactmomentId,
+        uuid: klantcontactId,
       },
       rol: "klant",
       initiator: true,
@@ -299,7 +300,7 @@ export function saveBetrokkene({
 
 export const saveInternetaak = async (
   data: InternetaakPostModel,
-): Promise<SaveContactmomentResponseModel> => {
+): Promise<SaveInterneTaakResponseModel> => {
   const response = await postInternetaak(data); 
   const responseBody = await response.json();
 
@@ -320,22 +321,7 @@ const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
 
 export const mapContactmomentToInternetaak = (
   contactmoment: Contactmoment, 
-  actorUuid?: string, 
-  organisatorischeActorUuid?: string
 ): InternetaakPostModel => {
-  const toegewezenAanActoren = [];
-
-  if (actorUuid) {
-    toegewezenAanActoren.push({
-      uuid: actorUuid,  
-    });
-  }
-
-  if (organisatorischeActorUuid) {
-    toegewezenAanActoren.push({
-      uuid: organisatorischeActorUuid,  
-    });
-  }
 
   return {
     nummer: "",  
@@ -343,10 +329,63 @@ export const mapContactmomentToInternetaak = (
     aanleidinggevendKlantcontact: {
       uuid: contactmoment.uuid
     },
-    toegewezenAanActoren, 
+    toegewezenAanActoren: [], 
     toelichting: contactmoment.toelichting,  
     status: "te_verwerken"
   };
+};
+
+export const enrichInterneTaakWithActoren = async (
+  interneTaak: InternetaakPostModel,
+  actorData: ContactverzoekData["actor"]
+) => {
+  const actoren = await ensureActoren(actorData);
+
+  actoren.forEach((actor) => {
+    interneTaak.toegewezenAanActoren.push(actor);
+  });
+};
+
+const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
+  const {
+    identificatie,
+    naam,
+    typeOrganisatorischeEenheid,
+    naamOrganisatorischeEenheid,
+    identificatieOrganisatorischeEenheid,
+  } = actorData;
+
+  const getOrCreateActor = async (name: string, id: string, type?: "afdeling" | "groep" | undefined) => {
+    const actor = await getActorById(id);
+    if (actor.results.length === 0) {
+      return await postActor({
+        fullName: name,
+        identificatie: id,
+        typeOrganisatorischeEenheid: type ?? undefined,
+      });
+    }
+    return actor.results[0].uuid;
+  };
+
+  const actoren = [];
+
+  // als zowel een afdeling/groep als medewerker is geselecteerd
+  if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
+    const actorUuid = await getOrCreateActor(naam, identificatie, undefined); // medewerker zonder organisatorische eenheid
+    const organisatorischeActorUuid = await getOrCreateActor(
+      naamOrganisatorischeEenheid,
+      identificatieOrganisatorischeEenheid,
+      typeOrganisatorischeEenheid
+    );
+    if (actorUuid) actoren.push({ uuid: actorUuid });
+    if (organisatorischeActorUuid) actoren.push({ uuid: organisatorischeActorUuid });
+  } else {
+    // als alleen een afdeling/groep is geselecteerd
+    const actorUuid = await getOrCreateActor(naam, identificatie, typeOrganisatorischeEenheid);
+    if (actorUuid) actoren.push({ uuid: actorUuid });
+  }
+
+  return actoren;
 };
 
 export async function getActorById(identificatie: string): Promise<any> {  const url = `${klantinteractiesActoren}?actoridentificatorObjectId=${identificatie}`;
@@ -372,7 +411,7 @@ function mapActorType(typeOrganisatorischeEenheid: "groep" | "afdeling" | undefi
   }
 }
 
-export async function postActoren({
+export async function postActor({
   fullName,
   identificatie,
   typeOrganisatorischeEenheid,

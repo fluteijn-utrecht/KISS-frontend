@@ -90,7 +90,3 @@ export type SaveContactmomentResponseModel = {
   errorMessage?: string;
 };
 
-export type SaveKlantContactResponseModel = {
-  data?: { url: string; uuid: string };
-  errorMessage?: string;
-};

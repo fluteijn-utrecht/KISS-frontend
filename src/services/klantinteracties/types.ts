@@ -100,7 +100,7 @@ export interface InternetaakPostModel {
   afgehandeldOp?: string;
 }
 
-export type SaveContactmomentResponseModel = {
+export type SaveInterneTaakResponseModel = {
   data?: { url: string; gespreksId?: string };
   errorMessage?: string;
 };

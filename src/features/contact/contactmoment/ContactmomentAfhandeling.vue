@@ -444,20 +444,22 @@ import {
   isOk2DefaultContactenApi,
 } from "@/features/contact/contactmoment";
 
+import {
+  type ContactverzoekData,
+} from "../components/types";
+
 import { 
   saveKlantContact,
   saveInternetaak,
-  getActorById,
-  postActoren,
   mapContactmomentToInternetaak,
   saveBetrokkene,
-  saveDigitaleAdressen
+  saveDigitaleAdressen,
+  enrichInterneTaakWithActoren
  } from "../../../services/klantinteracties/service";
 
  import type { 
   KlantContactPostmodel
  } from "../../../services/klantinteracties/types";
-
 
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -470,7 +472,6 @@ import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVraag.vue";
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
-import type { ContactverzoekData } from "../components/types";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -575,9 +576,9 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
   }
 };
 
-const savePartijen = async (
+const saveBetrokkeneBijKlantContact = async (
   vraag: Vraag, 
-  contactmomentId: string, 
+  klantcontactId: string, 
 ): Promise<string[]> => {
   const betrokkenenUuids: string[] = [];
 
@@ -585,7 +586,7 @@ const savePartijen = async (
     if (shouldStore && klant.id) {
       const result = await saveBetrokkene({
         partijId: klant.id,
-        contactmomentId: contactmomentId,
+        klantcontactId: klantcontactId,
         organisatienaam: klant?.bedrijfsnaam,
         voornaam: klant?.voornaam,
         voorvoegselAchternaam: klant?.voorvoegselAchternaam,
@@ -599,49 +600,11 @@ const savePartijen = async (
 };
 
 
-const saveActoren = async (actorData: ContactverzoekData["actor"]) => {
-  const {
-    identificatie,
-    naam,
-    typeOrganisatorischeEenheid,
-    naamOrganisatorischeEenheid,
-    identificatieOrganisatorischeEenheid,
-  } = actorData;
-
-  const getOrCreateActor = async (name: string, id: string, type?: "afdeling" | "groep" | undefined) => {
-    const actor = await getActorById(id);
-    if (actor.results.length === 0) {
-      return await postActoren({
-        fullName: name,
-        identificatie: id,
-        typeOrganisatorischeEenheid: type ?? undefined,
-      });
-    }
-    return actor.results[0].uuid;
-  };
-
-  // als zowel een afdeling/groep als medewerker is geselecteerd
-  if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
-    const actorUuid = await getOrCreateActor(naam, identificatie, undefined); // medewerker zonder organisatorische eenheid
-    const organisatorischeActorUuid = await getOrCreateActor(
-      naamOrganisatorischeEenheid,
-      identificatieOrganisatorischeEenheid,
-      typeOrganisatorischeEenheid
-    );
-    return { actorUuid, organisatorischeActorUuid };
-  }
-
-  // als alleen een afdeling/groep is geselecteerd
-  const actorUuid = await getOrCreateActor(
-    naam,
-    identificatie,
-    typeOrganisatorischeEenheid
-  );
-  return { actorUuid };
-};
-
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const useKlantInteractiesApi = await isOk2DefaultContactenApi();
+
+  const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
+  const isAnoniem = !vraag.klanten.some((x) => x.shouldStore && x.klant.id);
 
   // gedeeld contactmoment voor contactmomentdetails
   const contactmoment: Contactmoment = {
@@ -665,6 +628,22 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     vorigContactmoment: undefined,
     toelichting: ""
   };
+
+  let contactverzoekData: Omit<ContactverzoekData, "contactmoment"> | undefined;
+  
+  if (isContactverzoek) {
+  const klantUrl = vraag.klanten
+    .filter((x) => x.shouldStore)
+    .map((x) => x.klant.url)
+    .find(Boolean);
+
+  contactverzoekData = mapContactverzoekData({
+    klantUrl,
+    data: vraag.contactverzoek,
+  });
+
+  Object.assign(contactmoment, contactverzoekData);
+  }
 
   // Klantcontacten flow
   if (useKlantInteractiesApi) {
@@ -691,69 +670,66 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       return savedKlantContactResult;
     }
 
-    contactmoment.uuid = savedKlantContactResult.data?.uuid;
-
     await writeContactmomentDetails(
       contactmoment,
       savedKlantContactResult.data?.url,
     );
-      
-    const partijenUuids = await savePartijen(vraag, savedKlantContactResult.data?.uuid);
 
-    const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
-      
-      if(isContactverzoek){
+    contactmoment.uuid = savedKlantContactResult.data?.uuid;
 
-        const klantUrl = vraag.klanten
-        .filter((x) => x.shouldStore)
-        .map((x) => x.klant.url)
-        .find(Boolean);
+    // Drie scenario's:
 
-        const contactverzoekData = mapContactverzoekData({
-          klantUrl,
-          data: vraag.contactverzoek,
-        });
-        Object.assign(contactmoment, contactverzoekData);
+    // 1. Klantcontact met betrokkenen
+    if (!isContactverzoek && !isAnoniem) {
+      await saveBetrokkeneBijKlantContact(vraag, savedKlantContactResult.data?.uuid);
 
-        const result = await saveActoren(contactverzoekData?.actor);
-        const actorUuid = result.actorUuid;
-        const organisatorischeActorUuid = result.organisatorischeActorUuid;
+    // 2. Contactverzoek met betrokkenen
+    } else if (isContactverzoek && !isAnoniem && contactverzoekData) {
+      const betrokkenenUuids = await saveBetrokkeneBijKlantContact(vraag, savedKlantContactResult.data?.uuid);
 
-        if (partijenUuids.length > 0) {
-          const saveAdressenPromises = partijenUuids.map(async (partijUuid) => {
-            if (partijUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
-              return saveDigitaleAdressen(
-                contactverzoekData.betrokkene.digitaleAdressen,
-                partijUuid
-              );
-            }
-          });
-          await Promise.all(saveAdressenPromises);
-        }
-        else 
-        {
-          // Voor anoniem klantcontact
-          const betrokkeneResult = await saveBetrokkene({
-            partijId: undefined, 
-            contactmomentId: savedKlantContactResult.data?.uuid,
-          });
-
-          const betrokkeneUuid = betrokkeneResult.uuid;
-
+      if (betrokkenenUuids.length > 0) {
+        const saveAdressenPromises = betrokkenenUuids.map(async (betrokkeneUuid) => {
           if (betrokkeneUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
-            await saveDigitaleAdressen(
+            return saveDigitaleAdressen(
               contactverzoekData.betrokkene.digitaleAdressen,
               betrokkeneUuid
             );
           }
-        }
+        });
+        await Promise.all(saveAdressenPromises);
+      }
 
-        const savedContactverzoekResult = 
-        await saveInternetaak(mapContactmomentToInternetaak(contactmoment, actorUuid, organisatorischeActorUuid));
+      const interneTaak = mapContactmomentToInternetaak(contactmoment);
+      await enrichInterneTaakWithActoren(interneTaak, contactverzoekData?.actor);
 
-        return savedContactverzoekResult || savedKlantContactResult;      
-     }
-     return savedKlantContactResult;
+      const savedContactverzoekResult = await saveInternetaak(interneTaak);
+      return savedContactverzoekResult || savedKlantContactResult;
+
+      // 3. Anoniem contactverzoek 
+      } else if (isContactverzoek && isAnoniem && contactverzoekData) {
+
+      const betrokkeneResult = await saveBetrokkene({
+        partijId: undefined,
+        klantcontactId: savedKlantContactResult.data?.uuid,
+      });
+
+      const betrokkeneUuid = betrokkeneResult.uuid;
+
+      if (betrokkeneUuid && contactverzoekData?.betrokkene?.digitaleAdressen?.length) {
+        await saveDigitaleAdressen(
+          contactverzoekData.betrokkene.digitaleAdressen,
+          betrokkeneUuid
+        );
+      }
+
+      const interneTaak = mapContactmomentToInternetaak(contactmoment);
+      await enrichInterneTaakWithActoren(interneTaak, contactverzoekData?.actor);
+
+      const savedContactverzoekResult = await saveInternetaak(interneTaak);
+      return savedContactverzoekResult || savedKlantContactResult;
+    }
+
+    return savedKlantContactResult;
     }
     else
     {

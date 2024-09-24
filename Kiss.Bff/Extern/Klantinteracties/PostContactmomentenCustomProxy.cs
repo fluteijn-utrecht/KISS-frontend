@@ -25,11 +25,6 @@ namespace Kiss.Bff.Extern.Klantinteracties
         [HttpPost("postinternetaak")]
         public IActionResult PostInterneTaak([FromBody] JsonObject parsedModel)
         {
-            if (parsedModel != null)
-            {
-                parsedModel["medewerkerIdentificatie"] = _getMedewerkerIdentificatie();
-            }
-
             var url = _klantinteractiesProxyConfig.Destination.TrimEnd('/') + "/api/v1/internetaken";
 
             return new ProxyResult(() =>
