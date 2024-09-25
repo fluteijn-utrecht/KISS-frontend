@@ -75,6 +75,7 @@ export async function enrichBetrokkeneWithKlantContact(
     const searchParams = new URLSearchParams();
     searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
     const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
+
     await fetchLoggedIn(url)
       .then(throwIfNotOk)
       .then(parseJson)
@@ -122,7 +123,7 @@ export function filterOutContactmomenten(
   return {
     next: value.next,
     previous: value.previous,
-    count: value.count,
+    count: value.count - value.page.length + filtered.length, //het totaal aantal verminderd met het aantal uitgefilterde items
     page: filtered,
   };
 }

@@ -32,7 +32,10 @@
         :navigate-on-single-result="navigateOnSingleResult"
       >
         <template #caption v-if="'pageNumber' in bedrijven.data">
-          <SearchResultsCaption :results="bedrijven.data" />
+          <SearchResultsCaption
+            :results="bedrijven.data"
+            :zoekTermen="undefined"
+          />
         </template>
       </bedrijven-overzicht>
       <pagination
