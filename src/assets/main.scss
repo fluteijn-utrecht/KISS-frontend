@@ -503,3 +503,11 @@ main > h1 + [role="tablist"] {
     }
   }
 }
+
+// layout
+.container-medium {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-default);
+  inline-size: min(40rem, 100%);
+}

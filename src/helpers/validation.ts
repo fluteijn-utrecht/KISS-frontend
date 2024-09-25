@@ -41,28 +41,6 @@ export function parsePostcode(input: string): Postcode | Error {
   };
 }
 
-export function parsePostcodeHuisnummer(
-  input: string,
-): PostcodeHuisnummer | Error {
-  const matches = input
-    .match(/^ *([1-9]\d{3}) *([A-Za-z]{2}) *(\d*) *$/)
-    ?.filter(Boolean);
-
-  if (matches?.length !== 4) {
-    return new Error(
-      "Voer een valide postcode en huisnummer in, bijvoorbeeld 1234 AZ 12.",
-    );
-  }
-
-  return {
-    postcode: {
-      numbers: matches[1],
-      digits: matches[2],
-    },
-    huisnummer: matches[3],
-  };
-}
-
 const dateRegex =
   /((?<day1>[0-9]{2})(?<month1>[0-9]{2})(?<year1>[0-9]{4}))|((?<day2>[0-9]{1,2})[/|-](?<month2>[0-9]{1,2})[/|-](?<year2>[0-9]{4}))/;
 

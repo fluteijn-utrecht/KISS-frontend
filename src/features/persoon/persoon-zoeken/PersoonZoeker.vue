@@ -1,5 +1,5 @@
 <template>
-  <section class="actions">
+  <section class="container-medium">
     <p>Zoek op één van de onderstaande combinaties.</p>
     <form @submit.prevent="zoekOpGeboortedatum" class="zoekerForm">
       <label class="utrecht-form-label">
@@ -228,12 +228,5 @@ input[type="radio"] {
     gap: var(--spacing-small);
     align-items: center;
   }
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-  inline-size: min(40rem, 100%);
 }
 </style>
