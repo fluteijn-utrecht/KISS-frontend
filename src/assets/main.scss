@@ -52,7 +52,7 @@ body {
 .app-layout > aside {
   grid-area: aside;
   position: sticky;
-  inset-block: 0 0; 
+  inset-block: 0 0;
 }
 
 .app-layout > main {
@@ -193,7 +193,7 @@ menu {
 
 // categories
 [class^="category-"],
-[class*=" category-"] {  
+[class*=" category-"] {
   border: black 1px solid;
   padding-inline: 0.75rem;
   padding-block: 0.5em;
@@ -485,4 +485,21 @@ dt {
 // TABS ON DETAIL PAGE
 main > h1 + [role="tablist"] {
   margin-block-start: var(--spacing-small);
+}
+
+// zoeken naar personen, bedrijven, zaken, ...
+.zoekerForm {
+  padding: var(--spacing-default);
+  background-color: var(--color-secondary);
+  display: flex;
+  gap: var(--spacing-default);
+  align-items: flex-end;
+
+  > :not(button) {
+    flex-basis: 33%;
+
+    &:first-child {
+      flex-grow: 1;
+    }
+  }
 }

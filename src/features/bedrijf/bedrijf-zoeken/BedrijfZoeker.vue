@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSearch">
+  <form @submit.prevent="handleSearch" class="zoekerForm">
     <fieldset class="radio-group">
       <legend>Waar wil je op zoeken?</legend>
       <label v-for="(label, field) in labels" :key="field">
