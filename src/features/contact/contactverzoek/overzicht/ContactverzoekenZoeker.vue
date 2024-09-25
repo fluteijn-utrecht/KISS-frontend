@@ -18,7 +18,10 @@
     <simple-spinner v-if="zoeker.loading" />
     <template v-if="zoeker.success">
       <table class="overview zoekresultaten-view">
-        <SearchResultsCaption :results="filteredZoekerData" />
+        <SearchResultsCaption
+          :results="filteredZoekerData"
+          :zoek-termen="undefined"
+        />
 
         <contactverzoeken-overzicht :contactverzoeken="filteredZoekerData">
           <template #onderwerp="{ contactmomentUrl }">
