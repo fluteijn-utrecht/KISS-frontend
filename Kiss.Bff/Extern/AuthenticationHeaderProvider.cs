@@ -2,7 +2,7 @@
 using Kiss.Bff.ZaakGerichtWerken;
 using Yarp.ReverseProxy.Transforms;
 
-namespace Kiss.Bff.Afdelingen
+namespace Kiss.Bff
 {
 
 

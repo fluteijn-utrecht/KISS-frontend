@@ -6,6 +6,6 @@
 </template>
 
 <script setup lang="ts">
+import { BedrijfZoeker } from "@/features/bedrijf/bedrijf-zoeken";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import { BedrijfZoeker } from "@/features/klant";
 </script>

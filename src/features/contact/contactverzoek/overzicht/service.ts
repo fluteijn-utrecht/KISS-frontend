@@ -5,8 +5,22 @@ import {
   parseJson,
   parsePagination,
 } from "@/services";
+import {
+  enrichBetrokkeneWithDigitaleAdressen,
+  enrichBetrokkeneWithKlantContact,
+  enrichInterneTakenWithActoren,
+  enrichKlantcontactWithInterneTaak,
+  fetchBetrokkene,
+  filterOutContactmomenten,
+  mapToContactverzoekViewModel,
+  type ContactverzoekViewmodel,
+} from "@/services/klantinteracties";
 import type { Ref } from "vue";
-import type { Contactverzoek } from "./types";
+
+const klantinteractiesProxyRoot = "/api/klantinteracties";
+const klantinteractiesApiRoot = "/api/v1";
+const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
+const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 type SearchParameters = {
   query: string;
@@ -68,23 +82,50 @@ export function useSearch(params: Ref<SearchParameters>) {
 
 export function useContactverzoekenByKlantId(
   id: Ref<string>,
-  page: Ref<number>,
+  gebruikKlantInteractiesApi: Ref<boolean | null>,
 ) {
   function getUrl() {
-    if (!id.value) return "";
-    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-    url.searchParams.set("ordering", "-record__data__registratiedatum");
-    url.searchParams.set("pageSize", "10");
-    url.searchParams.set("page", page.value.toString());
-    url.searchParams.set("data_attrs", `betrokkene__klant__exact__${id.value}`);
-    return url.toString();
+    if (gebruikKlantInteractiesApi.value === null) {
+      return "";
+    }
+    if (gebruikKlantInteractiesApi.value === true) {
+      const searchParams = new URLSearchParams();
+      searchParams.set("wasPartij__url", id.value);
+      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+    } else {
+      if (!id.value) return "";
+      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+      url.searchParams.set("ordering", "-record__data__registratiedatum");
+      url.searchParams.set("pageSize", "10");
+      url.searchParams.set(
+        "data_attrs",
+        `betrokkene__klant__exact__${id.value}`,
+      );
+      return url.toString();
+    }
   }
 
-  const fetchContactverzoeken = (url: string) =>
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((r) => parsePagination(r, (v) => v as Contactverzoek));
+  const fetchContactverzoeken = (
+    url: string,
+    gebruikKlantinteractiesApi: Ref<boolean | null>,
+  ) => {
+    if (gebruikKlantinteractiesApi.value) {
+      return fetchBetrokkene(url)
+        .then(enrichBetrokkeneWithKlantContact)
+        .then(enrichKlantcontactWithInterneTaak)
+        .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then(enrichInterneTakenWithActoren)
+        .then(mapToContactverzoekViewModel);
+    } else {
+      return fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
+    }
+  };
 
-  return ServiceResult.fromFetcher(getUrl, fetchContactverzoeken);
+  return ServiceResult.fromFetcher(getUrl, (u: string) =>
+    fetchContactverzoeken(u, gebruikKlantInteractiesApi),
+  );
 }

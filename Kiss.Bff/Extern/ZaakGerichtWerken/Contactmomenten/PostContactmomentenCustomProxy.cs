@@ -14,7 +14,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
         public PostContactmomentenCustomProxy(IConfiguration configuration, GetMedewerkerIdentificatie getMedewerkerIdentificatie)
         {
-            _destination = configuration["CONTACTMOMENTEN_BASE_URL"];
+            _destination = configuration["CONTACTMOMENTEN_BASE_URL"]; //open klant
             var clientId = configuration["CONTACTMOMENTEN_API_CLIENT_ID"];
             var apiKey = configuration["CONTACTMOMENTEN_API_KEY"];
 

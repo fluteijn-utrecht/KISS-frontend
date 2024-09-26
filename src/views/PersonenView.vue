@@ -7,5 +7,5 @@
 
 <script setup lang="ts">
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import { PersoonZoeker } from "@/features/klant";
+import { PersoonZoeker } from "@/features/persoon/persoon-zoeken";
 </script>
