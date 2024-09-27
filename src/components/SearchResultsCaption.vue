@@ -11,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven";
 import { formatDateOnly } from "@/helpers/date";
 import type { Paginated, PaginatedResult } from "@/services";
 import type { PersoonQuery } from "@/services/brp";
@@ -18,7 +19,7 @@ import { computed } from "vue";
 
 const props = defineProps<{
   results: Paginated<unknown> | PaginatedResult<unknown> | unknown[];
-  zoekTermen: PersoonQuery | undefined;
+  zoekTermen: PersoonQuery | BedrijvenQuery | undefined;
 }>();
 
 const zoekTermenCaption = computed(() => {
@@ -32,10 +33,16 @@ const zoekTermenCaption = computed(() => {
     const { geboortedatum, geslachtsnaam } =
       props.zoekTermen.geslachtsnaamGeboortedatum;
     return `voor '${geslachtsnaam}, ${formatDateOnly(geboortedatum)}'.`;
-  } else {
+  } else if ("postcodeHuisnummer" in props.zoekTermen) {
     const { postcode, huisnummer, huisletter, toevoeging } =
       props.zoekTermen.postcodeHuisnummer;
     return `voor '${postcode.numbers}${postcode.digits}, ${huisnummer}${huisletter ? `, ${huisletter}` : ""}${toevoeging ? `, ${toevoeging}` : ""}'.`;
+  } else if ("handelsnaam" in props.zoekTermen) {
+    return `voor '${props.zoekTermen.handelsnaam}'.`;
+  } else if ("kvkNummer" in props.zoekTermen) {
+    return `voor '${props.zoekTermen.kvkNummer}'.`;
+  } else {
+    return "";
   }
 });
 

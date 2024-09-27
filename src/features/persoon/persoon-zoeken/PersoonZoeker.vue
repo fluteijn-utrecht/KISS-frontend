@@ -1,7 +1,7 @@
 <template>
-  <section class="actions">
+  <section class="container-medium">
     <p>Zoek op één van de onderstaande combinaties.</p>
-    <form @submit.prevent="zoekOpGeboortedatum">
+    <form @submit.prevent="zoekOpGeboortedatum" class="zoekerForm">
       <label class="utrecht-form-label">
         Achternaam
         <input
@@ -21,7 +21,7 @@
         Zoeken
       </utrecht-button>
     </form>
-    <form @submit.prevent="zoekOpPostcode">
+    <form @submit.prevent="zoekOpPostcode" class="zoekerForm">
       <label class="utrecht-form-label">
         Postcode
         <input
@@ -57,7 +57,7 @@
         Zoeken
       </utrecht-button>
     </form>
-    <form @submit.prevent="zoekOpBsn">
+    <form @submit.prevent="zoekOpBsn" class="zoekerForm">
       <label class="utrecht-form-label">
         Bsn
         <input
@@ -227,29 +227,6 @@ input[type="radio"] {
     display: flex;
     gap: var(--spacing-small);
     align-items: center;
-  }
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-  inline-size: min(40rem, 100%);
-
-  form {
-    padding: var(--spacing-default);
-    background-color: var(--color-secondary);
-    display: flex;
-    gap: var(--spacing-default);
-    align-items: flex-end;
-
-    > :not(button) {
-      flex-basis: 33%;
-
-      &:first-child {
-        flex-grow: 1;
-      }
-    }
   }
 }
 </style>

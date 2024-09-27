@@ -41,28 +41,6 @@ export function parsePostcode(input: string): Postcode | Error {
   };
 }
 
-export function parsePostcodeHuisnummer(
-  input: string
-): PostcodeHuisnummer | Error {
-  const matches = input
-    .match(/^ *([1-9]\d{3}) *([A-Za-z]{2}) *(\d*) *$/)
-    ?.filter(Boolean);
-
-  if (matches?.length !== 4) {
-    return new Error(
-      "Voer een valide postcode en huisnummer in, bijvoorbeeld 1234 AZ 12."
-    );
-  }
-
-  return {
-    postcode: {
-      numbers: matches[1],
-      digits: matches[2],
-    },
-    huisnummer: matches[3],
-  };
-}
-
 const dateRegex =
   /((?<day1>[0-9]{2})(?<month1>[0-9]{2})(?<year1>[0-9]{4}))|((?<day2>[0-9]{1,2})[/|-](?<month2>[0-9]{1,2})[/|-](?<year2>[0-9]{4}))/;
 
@@ -92,7 +70,7 @@ const matchDutchDate = (input: string) => {
   }
 
   return new Error(
-    "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022."
+    "Voer een valide datum in, bijvoorbeeld 17-09-2022 of 17092022.",
   );
 };
 
@@ -108,9 +86,19 @@ function elfProef(numbers: number[]): boolean {
   const multipliedSum = numbers.reduce(
     (previousValue, currentValue, currentIndex) =>
       previousValue + currentValue * multipliers[currentIndex],
-    0
+    0,
   );
   return multipliedSum % 11 === 0;
+}
+
+export function parseBedrijfsnaam(input: string): string | Error {
+  if (!input) return input;
+  const matches = input.trim().match(/^([a-zA-Z0-9À-ž .\-']{2,199})$/);
+  return !matches || matches.length < 2
+    ? new Error(
+        "Vul een geldig (begin van een) bedrijfsnaam in, van minimaal 2 tekens",
+      )
+    : matches[1];
 }
 
 export function parseBsn(input: string): string | Error {
@@ -123,10 +111,12 @@ export function parseBsn(input: string): string | Error {
   return elfProef(numbers) ? match : new Error("Dit is geen valide BSN.");
 }
 
-export function parseKvkNummer(input: string): string | Error {
-  const matches = input.trim().match(/^(\d{8})$/);
+export function parseKkvkOfVestigingsnummer(input: string): string | Error {
+  const matches = input.trim().match(/^(\d{8}|\d{12})$/);
   return !matches || matches.length < 2
-    ? new Error("Vul de 8 cijfers van het KvK-nummer in, bijvoorbeeld 12345678")
+    ? new Error(
+        "Vul de 8 cijfers van het KvK-nummer in, bijvoorbeeld 12345678, of vul de 12 cijfers van het Vestigingsnummer in, bv. 123456789012",
+      )
     : matches[1];
 }
 
@@ -135,7 +125,7 @@ export function parseAchternaam(input: string): string | Error {
   const matches = input.trim().match(/^([a-zA-Z0-9À-ž .\-']{3,199})$/);
   return !matches || matches.length < 2
     ? new Error(
-        "Vul een geldig (begin van een) achternaam in, van minimaal 3 tekens"
+        "Vul een geldig (begin van een) achternaam in, van minimaal 3 tekens",
       )
     : matches[1];
 }
@@ -194,7 +184,7 @@ export const vValidate: Directive<HTMLInputElement, ValidatorSetup> = {
           value.validated = parsed;
         }
       },
-      { immediate: true }
+      { immediate: true },
     );
     function onInput() {
       value.current = el.value;
