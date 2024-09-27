@@ -27,7 +27,10 @@
           :vraag="contactmomentStore.huidigContactmoment?.huidigeVraag"
         >
           <template #caption>
-            <SearchResultsCaption :results="zaken.data" />
+            <SearchResultsCaption
+              :results="zaken.data"
+              :zoekTermen="undefined"
+            />
           </template>
         </zaken-overzicht>
       </section>

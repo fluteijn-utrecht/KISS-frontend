@@ -4,7 +4,6 @@ import {
   type BedrijfIdentifier,
 } from "@/services/kvk";
 
-// TODO: is deze map ok voor dit bestand? wordt door beide features gedeeld
 export const useBedrijfByIdentifier = (
   getId: () => BedrijfIdentifier | undefined,
 ) => {

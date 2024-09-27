@@ -1,30 +1,59 @@
 <template>
-  <form @submit.prevent="handleSearch">
-    <fieldset class="radio-group">
-      <legend>Waar wil je op zoeken?</legend>
-      <label v-for="(label, field) in labels" :key="field">
-        <input type="radio" :value="field" v-model="state.field" required />
-        {{ label }}
-      </label>
-    </fieldset>
-    <fieldset class="search-bar">
-      <label>
-        <span>Zoek naar een bedrijf</span>
+  <section class="container-medium">
+    <p>Zoek op één van de onderstaande combinaties.</p>
+    <form @submit.prevent="zoekOpBedrijfsnaam" class="zoekerForm">
+      <label class="utrecht-form-label">
+        Bedrijfsnaam
         <input
-          type="search"
-          placeholder="Zoek naar een bedrijf"
-          ref="inputRef"
-          v-model="state.currentSearch"
-          @search="handleSearch"
+          v-validate="store.bedrijfsnaam"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
         />
       </label>
-      <button title="Zoeken">
-        <span>Zoeken</span>
-      </button>
-    </fieldset>
-  </form>
+      <utrecht-button type="submit" appearance="primary-action-button">
+        Zoeken
+      </utrecht-button>
+    </form>
 
-  <section class="search-section" v-if="state.query">
+    <form @submit.prevent="zoekOpKvkOfVestigingsnummer" class="zoekerForm">
+      <label class="utrecht-form-label">
+        KVK-nummer of vestigingsnummer
+        <input
+          v-validate="store.kvkOfVestigingsnummer"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+
+      <utrecht-button type="submit" appearance="primary-action-button">
+        Zoeken
+      </utrecht-button>
+    </form>
+
+    <form @submit.prevent="zoekOpPostcodeHuisnummer" class="zoekerForm">
+      <label class="utrecht-form-label">
+        Postcode
+        <input
+          v-validate="store.postcode"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <label class="utrecht-form-label">
+        Huisnummer
+        <input
+          v-validate="store.huisnummer"
+          required
+          class="utrecht-textbox utrecht-textbox--html-input"
+        />
+      </label>
+      <utrecht-button type="submit" appearance="primary-action-button">
+        Zoeken
+      </utrecht-button>
+    </form>
+  </section>
+
+  <section class="search-section" v-if="store.query">
     <simple-spinner v-if="bedrijven.loading" />
     <template v-if="bedrijven.success">
       <bedrijven-overzicht
@@ -32,7 +61,10 @@
         :navigate-on-single-result="navigateOnSingleResult"
       >
         <template #caption v-if="'pageNumber' in bedrijven.data">
-          <SearchResultsCaption :results="bedrijven.data" />
+          <SearchResultsCaption
+            :results="bedrijven.data"
+            :zoekTermen="store.query"
+          />
         </template>
       </bedrijven-overzicht>
       <pagination
@@ -55,9 +87,16 @@
 </template>
 
 <script setup lang="ts">
-import { parseKvkNummer, parsePostcodeHuisnummer } from "@/helpers/validation";
+import {
+  vValidate,
+  parseBedrijfsnaam,
+  parseKkvkOfVestigingsnummer,
+  validateWith,
+  parsePostcode,
+  parseHuisnummer,
+} from "@/helpers/validation";
 import { ensureState } from "@/stores/create-store";
-import { computed, ref, watch } from "vue";
+import { ref } from "vue";
 import {
   useSearchBedrijven,
   type BedrijvenQuery,
@@ -69,112 +108,75 @@ import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import BedrijvenOverzicht from "./BedrijvenOverzicht.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { FriendlyError } from "@/services";
+import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 
-const labels = {
-  handelsnaam: "Bedrijfsnaam",
-  kvkNummer: "KVK-nummer",
-  postcodeHuisnummer: "Postcode + Huisnummer",
-  email: "E-mailadres",
-  telefoonnummer: "Telefoonnummer",
-};
-
-type SearchFields = keyof typeof labels;
-
-const state = ensureState({
+const store = ensureState({
   stateId: "BedrijfZoeker",
   stateFactory() {
     return {
       currentSearch: "",
-      field: Object.keys(labels)[0] as SearchFields,
+      bedrijfsnaam: validateWith(parseBedrijfsnaam),
+      kvkOfVestigingsnummer: validateWith(parseKkvkOfVestigingsnummer),
+      postcode: validateWith(parsePostcode),
+      huisnummer: validateWith(parseHuisnummer),
       query: undefined as BedrijvenQuery | undefined,
       page: 1,
     };
   },
 });
 
-const inputRef = ref();
-
-const currentQuery = computed<BedrijvenQuery | { error: Error } | undefined>(
-  () => {
-    const { currentSearch, field } = state.value;
-
-    if (!currentSearch) return undefined;
-
-    if (field === "postcodeHuisnummer") {
-      const parsed = parsePostcodeHuisnummer(currentSearch);
-      return parsed instanceof Error
-        ? {
-            error: parsed,
-          }
-        : {
-            postcodeHuisnummer: parsed,
-          };
-    }
-
-    if (field === "kvkNummer") {
-      const parsed = parseKvkNummer(currentSearch);
-      return parsed instanceof Error
-        ? {
-            error: parsed,
-          }
-        : {
-            kvkNummer: parsed,
-          };
-    }
-
-    if (field === "handelsnaam") {
-      return {
-        [field]: currentSearch,
-      };
-    }
-
-    if (field === "email") {
-      return {
-        email: currentSearch,
-      };
-    }
-
-    if (field === "telefoonnummer") {
-      return {
-        email: currentSearch,
-      };
-    }
-
-    return undefined;
-  },
-);
-
 const navigateOnSingleResult = ref(false);
 
-watch(
-  [currentQuery, inputRef],
-  ([query, input]) => {
-    if (!(input instanceof HTMLInputElement)) return;
-    input.setCustomValidity(
-      query && "error" in query ? query.error.message : "",
-    );
-  },
-  { immediate: true },
-);
+const zoekOpKvkOfVestigingsnummer = () => {
+  if (store.value.kvkOfVestigingsnummer.validated) {
+    if (store.value.kvkOfVestigingsnummer.validated.length === 8) {
+      store.value.query = {
+        kvkNummer: store.value.kvkOfVestigingsnummer.validated,
+      };
+    }
+    if (store.value.kvkOfVestigingsnummer.validated.length === 12) {
+      store.value.query = {
+        vestigingsnummer: store.value.kvkOfVestigingsnummer.validated,
+      };
+    }
+    store.value.page = 1;
+    navigateOnSingleResult.value = true;
+  }
+};
 
-const handleSearch = () => {
-  const query = currentQuery.value;
-  if (!query || "error" in query) return;
-  state.value.query = query;
-  state.value.page = 1;
-  navigateOnSingleResult.value = true;
+const zoekOpBedrijfsnaam = () => {
+  if (store.value.bedrijfsnaam.validated) {
+    (store.value.query = {
+      handelsnaam: store.value.bedrijfsnaam.validated,
+    }),
+      (store.value.page = 1);
+    navigateOnSingleResult.value = true;
+  }
+};
+
+const zoekOpPostcodeHuisnummer = () => {
+  if (store.value.postcode.validated && store.value.huisnummer.validated) {
+    store.value.query = {
+      postcodeHuisnummer: {
+        postcode: store.value.postcode.validated,
+        huisnummer: store.value.huisnummer.validated,
+      },
+    };
+    store.value.page = 1;
+    navigateOnSingleResult.value = true;
+  }
 };
 
 const bedrijven = useSearchBedrijven(
   () =>
-    state.value.query && {
-      query: state.value.query,
-      page: state.value.page,
+    store.value.query && {
+      query: store.value.query,
+      page: store.value.page,
     },
 );
 
 const navigate = (val: number) => {
-  state.value.page = val;
+  store.value.page = val;
 };
 </script>
 

@@ -15,10 +15,8 @@ import {
   type ObjectContactmoment,
   type ContactmomentDetails,
   type SaveContactmomentResponseModel,
-  type KlantContact,
-  type SaveKlantContactResponseModel,
 } from "./types";
-import type { ContactmomentViewModel } from "@/features/shared/types";
+
 import { toRelativeProxyUrl } from "@/helpers/url";
 
 import { formatIsoDate } from "@/helpers/date";
@@ -40,7 +38,15 @@ import {
   isInputVraag,
   isTextareaVraag,
 } from "../components/service";
+import {
+  enrichBetrokkeneWithKlantContact,
+  enrichKlantcontactWithInterneTaak,
+  fetchBetrokkene,
+  mapToContactmomentViewModel,
+  type ContactmomentViewModel,
+} from "@/services/klantinteracties";
 
+//obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
@@ -49,49 +55,28 @@ const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomente
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
-const klantinteractiesProxyRoot = "/api/klantinteracties";
-const klantinteractiesApiRoot = "/api/v1";
-const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
-
 const zaaksysteemProxyRoot = `/api/zaken`;
 const zaaksysteemApiRoot = `/zaken/api/v1`;
 const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
 const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
+
+const klantinteractiesProxyRoot = "/api/klantinteracties";
+const klantinteractiesApiRoot = "/api/v1";
+const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
+const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 export const saveContactmoment = async (
   data: Contactmoment,
 ): Promise<SaveContactmomentResponseModel> => {
   const response = await postContactmoment(data);
   const responseBody = await response.json();
-  
+
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
 const postContactmoment = (data: Contactmoment): Promise<Response> => {
   return fetchLoggedIn(`/api/postcontactmomenten`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-};
-
-export const saveKlantContact = async (
-  data: KlantContact,
-): Promise<SaveKlantContactResponseModel> => {
-  const response = await postKlantContact(data);
-  const responseBody = await response.json();
-
-  throwIfNotOk(response);
-  return { data: responseBody };
-};
-
-const postKlantContact = (data: KlantContact): Promise<Response> => {
-  return fetchLoggedIn(`/api/postklantcontacten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -196,29 +181,78 @@ export function koppelBetrokkene({
         uuid: contactmomentId,
       },
       rol: "klant",
-      initiator: true
+      initiator: true,
     }),
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-const fetchContactmomenten = (u: string) =>
+export function useContactmomentenByKlantId(
+  id: Ref<string>,
+  gebruikKlantinteractiesApi: Ref<boolean | null>,
+) {
+  //een cackekey is nodig anders wordt alleen de CM's OF de CV's opgehaald
+  //ze beginnen namelijk met dezelfde call naar partij
+  //als die hetzelfde is dan wordt die uit de cache gehaald
+
+  //om te voorkomen dat er al data opgehaald wordt voordat de juiste route bekend is, moet de cachekey een lege string retourneren
+  //als er geen cachekey gebruikt wordt, moet de url een lege string retourneren
+  const getCacheKey = () =>
+    gebruikKlantinteractiesApi.value === null
+      ? ""
+      : `${id.value}_contactmoment`;
+
+  const fetchContactmomenten = async (
+    url: string,
+    gebruikKlantinteractiesApi: Ref<boolean | null>,
+  ) => {
+    if (gebruikKlantinteractiesApi.value === null) {
+      return { count: null, page: [] };
+    }
+
+    if (gebruikKlantinteractiesApi.value) {
+      return fetchBetrokkene(url)
+        .then(enrichBetrokkeneWithKlantContact)
+        .then(enrichKlantcontactWithInterneTaak) //necesarry to filter them out
+        .then(mapToContactmomentViewModel);
+    } else {
+      return fetchLoggedIn(url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
+    }
+  };
+
+  return ServiceResult.fromFetcher(
+    () => {
+      if (gebruikKlantinteractiesApi.value === null) {
+        return "";
+      }
+
+      // retourneer een url voor openklant 1 OF de klantInteracties api
+      if (gebruikKlantinteractiesApi.value === true) {
+        const searchParams = new URLSearchParams();
+        searchParams.set("wasPartij__url", id.value);
+
+        return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+      } else {
+        if (!id.value) return "";
+        const searchParams = new URLSearchParams();
+        searchParams.set("klant", id.value);
+        searchParams.set("ordering", "-registratiedatum");
+        searchParams.set("expand", "objectcontactmomenten");
+        return `${contactmomentenUrl}?${searchParams.toString()}`;
+      }
+    },
+    (u: string) => fetchContactmomenten(u, gebruikKlantinteractiesApi),
+    { getUniqueId: getCacheKey },
+  );
+}
+
+const fetchOk1Contactmomenten = (u: string) =>
   fetchLoggedIn(u)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-
-export function useContactmomentenByKlantId(id: Ref<string>) {
-  function getUrl() {
-    if (!id.value) return "";
-    const searchParams = new URLSearchParams();
-    searchParams.set("klant", id.value);
-    searchParams.set("ordering", "-registratiedatum");
-    searchParams.set("expand", "objectcontactmomenten");
-    return `${contactmomentenUrl}?${searchParams.toString()}`;
-  }
-
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
-}
 
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
@@ -247,7 +281,7 @@ export function useContactmomentenByObjectUrl(url: Ref<string>) {
     return `${contactmomentenUrl}?${params}`;
   };
 
-  return ServiceResult.fromFetcher(getUrl, fetchContactmomenten);
+  return ServiceResult.fromFetcher(getUrl, fetchOk1Contactmomenten);
 }
 
 export function useContactmomentObject(getUrl: () => string) {
@@ -479,4 +513,12 @@ export function mapContactverzoekData({
       digitaleAdressen,
     },
   };
+}
+
+export async function isOk2DefaultContactenApi() {
+  // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
+  // Fetch USE_KLANTCONTACTEN environment variable, wordt in sommige gevallen vervangen door flow te bepalen op basis van zaken
+  const response = await fetch("/api/environment/use-klantinteracties");
+  const { useKlantInteracties } = await response.json();
+  return useKlantInteracties as boolean;
 }

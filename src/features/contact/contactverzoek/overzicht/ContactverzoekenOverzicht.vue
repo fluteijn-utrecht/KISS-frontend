@@ -17,7 +17,10 @@
             :date="new Date(contactverzoek.record.data.registratiedatum)"
           />
           <span v-else />
-          <span>
+          <span class="max18char" v-if="contactverzoek.onderwerp"
+            >{{ contactverzoek.onderwerp }}
+          </span>
+          <span v-else>
             <slot
               name="onderwerp"
               :contactmoment-url="contactverzoek.record.data.contactmoment"
@@ -74,10 +77,26 @@
             </dd>
           </template>
 
+          <!-- 
+            Voor OK1/esuite worden een aantal gegevens uit het contactmometn gehaald.
+            Deze moeten apart worden opgehaald
+          -->
           <slot
             name="contactmoment"
             :url="contactverzoek.record.data.contactmoment"
           ></slot>
+          <!--
+            voor OK2 zijn deze gegevens reeds in het contactverzoek beschikbaar.
+            todo: voor zaken moet hier tzt nog iets geregeld worden
+          -->
+          <template v-if="contactverzoek.medewerker">
+            <dt>Aangemaakt door</dt>
+            <dd>{{ contactverzoek.medewerker }}</dd>
+            <dt>Vraag</dt>
+            <dd>{{ contactverzoek.onderwerp }}</dd>
+            <dt>Toelichting</dt>
+            <dd>{{ contactverzoek.toelichting }}</dd>
+          </template>
         </dl>
       </template>
     </expandable-table-list>
@@ -102,5 +121,12 @@ const capitalizeFirstLetter = (val: string) =>
 <style scoped>
 .preserve-newline {
   white-space: pre-line;
+}
+
+.max18char {
+  max-width: 18ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

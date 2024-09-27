@@ -82,7 +82,7 @@ import {
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import { TabList, TabListDataItem } from "@/components/tabs";
-import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
+
 import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
@@ -90,6 +90,7 @@ import ContactmomentDetailsContext from "@/features/contact/contactmoment/Contac
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
+import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 
 const props = defineProps<{ bedrijfId: string }>();
 const klantId = computed(() => props.bedrijfId);
@@ -98,12 +99,18 @@ const klant = useKlantById(klantId);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
 
-const contactverzoekenPage = ref(1);
+const gebruikKlantInteracatiesApi = ref<boolean | null>(false);
+
+//const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,
-  contactverzoekenPage,
+  gebruikKlantInteracatiesApi,
+  //contactverzoekenPage,
 );
-const contactmomenten = useContactmomentenByKlantId(klantUrl);
+const contactmomenten = useContactmomentenByKlantId(
+  klantUrl,
+  gebruikKlantInteracatiesApi,
+);
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;

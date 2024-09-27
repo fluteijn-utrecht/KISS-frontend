@@ -1,19 +1,50 @@
 <template>
   <caption>
-    <p>Zoekresultaten</p>
-    <p v-if="resultCount === 0">Geen resultaten gevonden</p>
-    <p v-else-if="resultCount === 1">1 resultaat gevonden</p>
-    <p v-else>{{ resultCount }} resultaten gevonden</p>
+    <p v-if="resultCount === 0">
+      Geen resultaten gevonden {{ zoekTermenCaption }}
+    </p>
+    <p v-else-if="resultCount === 1">
+      1 resultaat gevonden {{ zoekTermenCaption }}
+    </p>
+    <p v-else>{{ resultCount }} resultaten gevonden {{ zoekTermenCaption }}</p>
   </caption>
 </template>
 
 <script setup lang="ts">
+import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven";
+import { formatDateOnly } from "@/helpers/date";
 import type { Paginated, PaginatedResult } from "@/services";
+import type { PersoonQuery } from "@/services/brp";
 import { computed } from "vue";
 
 const props = defineProps<{
   results: Paginated<unknown> | PaginatedResult<unknown> | unknown[];
+  zoekTermen: PersoonQuery | BedrijvenQuery | undefined;
 }>();
+
+const zoekTermenCaption = computed(() => {
+  if (!props.zoekTermen) {
+    return "";
+  }
+
+  if ("bsn" in props.zoekTermen) {
+    return `voor '${props.zoekTermen.bsn}'.`;
+  } else if ("geslachtsnaamGeboortedatum" in props.zoekTermen) {
+    const { geboortedatum, geslachtsnaam } =
+      props.zoekTermen.geslachtsnaamGeboortedatum;
+    return `voor '${geslachtsnaam}, ${formatDateOnly(geboortedatum)}'.`;
+  } else if ("postcodeHuisnummer" in props.zoekTermen) {
+    const { postcode, huisnummer, huisletter, toevoeging } =
+      props.zoekTermen.postcodeHuisnummer;
+    return `voor '${postcode.numbers}${postcode.digits}, ${huisnummer}${huisletter ? `, ${huisletter}` : ""}${toevoeging ? `, ${toevoeging}` : ""}'.`;
+  } else if ("handelsnaam" in props.zoekTermen) {
+    return `voor '${props.zoekTermen.handelsnaam}'.`;
+  } else if ("kvkNummer" in props.zoekTermen) {
+    return `voor '${props.zoekTermen.kvkNummer}'.`;
+  } else {
+    return "";
+  }
+});
 
 const resultCount = computed(() => {
   if (
@@ -35,25 +66,12 @@ caption {
 
   > * {
     &:first-child {
-      color: var(--caption-heading-color, var(--color-headings));
-      font-size: var(
-        --caption-heading-size,
-        var(--utrecht-heading-2-font-size, 2rem)
-      );
-      font-weight: var(
-        --caption-heading-weight,
-        var(
-          --utrecht-heading-2-font-weight,
-          var(--utrecht-heading-font-weight, bold)
-        )
-      );
       border-bottom: 1px solid var(--color-tertiary);
       padding-block-end: var(--spacing-small);
     }
 
     &:last-child {
       margin-block-start: var(--spacing-small);
-      color: var(--caption-results-color, var(--color-primary));
     }
   }
 }

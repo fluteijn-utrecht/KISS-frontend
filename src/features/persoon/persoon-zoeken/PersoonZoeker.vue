@@ -1,6 +1,7 @@
 <template>
-  <section class="actions">
-    <form @submit.prevent="zoekOpGeboortedatum">
+  <section class="container-medium">
+    <p>Zoek op één van de onderstaande combinaties.</p>
+    <form @submit.prevent="zoekOpGeboortedatum" class="zoekerForm">
       <label class="utrecht-form-label">
         Achternaam
         <input
@@ -20,7 +21,7 @@
         Zoeken
       </utrecht-button>
     </form>
-    <form @submit.prevent="zoekOpPostcode">
+    <form @submit.prevent="zoekOpPostcode" class="zoekerForm">
       <label class="utrecht-form-label">
         Postcode
         <input
@@ -56,9 +57,9 @@
         Zoeken
       </utrecht-button>
     </form>
-    <form @submit.prevent="zoekOpBsn">
+    <form @submit.prevent="zoekOpBsn" class="zoekerForm">
       <label class="utrecht-form-label">
-        Burgerservicenummer
+        Bsn
         <input
           v-validate="store.bsn"
           required
@@ -79,7 +80,10 @@
         :navigate-on-single-result="navigateOnSingleResult"
       >
         <template #caption>
-          <SearchResultsCaption :results="personen.data" />
+          <SearchResultsCaption
+            :results="personen.data"
+            :zoekTermen="store.persoonSearchQuery"
+          />
         </template>
       </personen-overzicht>
     </template>
@@ -223,27 +227,6 @@ input[type="radio"] {
     display: flex;
     gap: var(--spacing-small);
     align-items: center;
-  }
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
-  inline-size: min(40rem, 100%);
-
-  form {
-    display: flex;
-    gap: var(--spacing-default);
-    align-items: flex-end;
-
-    > :not(button) {
-      flex-basis: 33%;
-
-      &:first-child {
-        flex-grow: 1;
-      }
-    }
   }
 }
 </style>
