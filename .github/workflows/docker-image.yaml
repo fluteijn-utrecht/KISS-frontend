@@ -10,6 +10,13 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  statuses: write
+  checks: write
+  contents: write
+  pull-requests: write
+  actions: write
+  
 jobs:
   build-node:
     runs-on: ubuntu-latest
