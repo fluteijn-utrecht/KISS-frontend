@@ -50,7 +50,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, watchEffect } from "vue";
-import type { Klant } from "@/services/klanten";
+import type { Klant } from "@/services/openklant2";
 import { useBedrijfByIdentifier } from "../use-bedrijf-by-identifier";
 import { useKlantByBedrijfIdentifier } from "./use-klant-by-bedrijf-identifier";
 import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";

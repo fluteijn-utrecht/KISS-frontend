@@ -4,7 +4,7 @@ import {
   PartijTypes,
   searchKlantenByDigitaalAdres,
   type Klant,
-} from "@/services/klanten";
+} from "@/services/openklant2";
 import {
   searchBedrijvenInHandelsRegister,
   type Bedrijf,

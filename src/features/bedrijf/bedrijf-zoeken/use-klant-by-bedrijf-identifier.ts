@@ -2,7 +2,7 @@ import { ServiceResult } from "@/services";
 import {
   findKlantByIdentifier,
   type KlantBedrijfIdentifier,
-} from "@/services/klanten";
+} from "@/services/openklant2";
 
 export const useKlantByBedrijfIdentifier = (
   getId: () => KlantBedrijfIdentifier | undefined,

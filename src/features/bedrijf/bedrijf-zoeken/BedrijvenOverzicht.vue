@@ -28,7 +28,7 @@
 <script lang="ts" setup>
 import type { Bedrijf } from "@/services/kvk";
 import BedrijvenOverzichtRow from "./BedrijvenOverzichtRow.vue";
-import type { Klant } from "@/services/klanten";
+import type { Klant } from "@/services/openklant2";
 
 defineProps<{
   records: Array<Bedrijf | Klant>;

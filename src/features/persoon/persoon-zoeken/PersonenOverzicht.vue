@@ -49,11 +49,15 @@
 <script lang="ts" setup>
 import DutchDate from "@/components/DutchDate.vue";
 import type { Persoon } from "@/services/brp";
-import type { Klant } from "@/services/klanten";
 import { useRouter } from "vue-router";
-import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
+import { useOrganisatieIds } from "@/stores/user";
 import { mutate } from "swrv";
 import { watchEffect } from "vue";
+
+import { ensureKlantForBsn as ensureKlantForBsn1 } from "@/services/openklant1/service";
+import { ensureKlantForBsn as ensureKlantForBsn2, useOpenKlant2 } from "@/services/openklant2/service";
+import type { Klant as Klant1 } from "@/services/openklant1/types";
+import type { Klant as Klant2 } from "@/services/openklant2/types";
 
 const props = defineProps<{
   records: Persoon[];
@@ -62,16 +66,30 @@ const props = defineProps<{
 
 const router = useRouter();
 
+const isOpenKlant2 = await useOpenKlant2();
+
+type Klant = Klant1 | Klant2;
+
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
 const navigate = async (persoon: Persoon) => {
   const { bsn } = persoon;
-  if (!bsn) throw new Error();
-  const klant = await ensureKlantForBsn({
-    bsn,
-  });
+  if (!bsn) throw new Error("BSN is required");
+
+  let klant: Klant;
+
+  if (isOpenKlant2) {
+    // Gebruik openklant2 implementatie
+    klant = await ensureKlantForBsn2(bsn);
+  } else {
+    // Gebruik openklant1 implementatie
+    const organisatieIds = useOrganisatieIds();
+    klant = (await ensureKlantForBsn1({ bsn }, organisatieIds.value[0] || ""));
+  }
+
   await mutate("persoon" + bsn, persoon);
   await mutate(klant.id, klant);
+
   const url = getKlantUrl(klant);
   await router.push(url);
 };
