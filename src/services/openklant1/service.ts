@@ -13,6 +13,7 @@ import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier } from "./types";
+import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../kvk/types";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
@@ -324,6 +325,18 @@ export const useKlantByIdentifier = (
     getUniqueId,
   });
 };
+
+export function mapBedrijfsIdentifier(
+    bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2
+  ): BedrijfIdentifier {
+    if ('vestigingsnummer' in bedrijfIdentifierOpenKlant2) {
+      return {
+        vestigingsnummer: bedrijfIdentifierOpenKlant2.vestigingsnummer,
+      };
+    } else {
+      throw new Error("Ongeldig BedrijfIdentifier: geen vestigingsnummer gevonden");
+    }
+  }
 
 //maak een klant aan in het klanten register als die nog niet bestaat
 //bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan

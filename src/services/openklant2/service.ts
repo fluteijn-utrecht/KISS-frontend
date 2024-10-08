@@ -643,16 +643,6 @@ export function findKlantByIdentifier(
     .then(enforceOneOrZero);
 }
 
-export async function ensureKlantForBsn(bsn: string) {
-  let klant = await findKlantByIdentifier({ bsn });
-
-  if (!klant) {
-    klant = await createKlant({ bsn });
-  }
-
-  return klant;
-}
-
 export async function createKlant(
   parameters:
     | {

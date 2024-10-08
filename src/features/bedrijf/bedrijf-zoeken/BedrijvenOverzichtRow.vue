@@ -57,6 +57,8 @@ import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
 import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { ensureKlantForBedrijfIdentifier } from "./ensure-klant-for-bedrijf-identifier";
+import type { Klant as Klant1 } from "@/services/openklant1/types";
+import type { Klant as Klant2 } from "@/services/openklant2/types";
 
 const props = defineProps<{ item: Bedrijf | Klant; autoNavigate?: boolean }>();
 
@@ -121,9 +123,9 @@ const bedrijfIdentifier = computed<BedrijfIdentifier | undefined>(() => {
 
 const router = useRouter();
 
-const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
+const getKlantUrl = (klant: Klant1 | Klant2) => `/bedrijven/${klant.id}`;
 
-const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
+const setCache = (klant: Klant1 | Klant2, bedrijf?: Bedrijf | null) => {
   mutate(klant.id, klant);
   const bedrijfId = bedrijf?.vestigingsnummer || bedrijf?.rsin;
   if (bedrijfId) {
@@ -132,10 +134,13 @@ const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
 };
 
 async function navigate(bedrijf: Bedrijf, identifier: BedrijfIdentifier) {
-  const newKlant =
-    klant.value.data || (await ensureKlantForBedrijfIdentifier(identifier));
-  setCache(newKlant, bedrijf);
-  const url = getKlantUrl(newKlant);
+
+  const bedrijfsnaam = bedrijf.bedrijfsnaam; 
+  const klant = await ensureKlantForBedrijfIdentifier(identifier, bedrijfsnaam);
+
+  setCache(klant, bedrijf);
+
+  const url = getKlantUrl(klant);
   await router.push(url);
 }
 
