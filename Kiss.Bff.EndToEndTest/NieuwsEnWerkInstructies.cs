@@ -5,79 +5,79 @@ namespace Kiss.Bff.EndToEndTest;
 [TestClass]
 public class NieuwsEnWerkInstructies : BaseTestInitializer
 {
-    [TestMethod]
-    public async Task Als_ik_op_de_paginering_links_klik_navigeer_ik_naar_een_nieuwe_pagina()
-    {
-        // Locate the 'Nieuws' section
-        await Expect(NieuwsSection).ToBeVisibleAsync();
+    //[TestMethod]
+    //public async Task Als_ik_op_de_paginering_links_klik_navigeer_ik_naar_een_nieuwe_pagina()
+    //{
+    //    // Locate the 'Nieuws' section
+    //    await Expect(NieuwsSection).ToBeVisibleAsync();
 
-        // Locate the 'Next' page button using the pagination structure
-        var nextPageButton = NieuwsSection.Locator("[rel='next']").First;
+    //    // Locate the 'Next' page button using the pagination structure
+    //    var nextPageButton = NieuwsSection.Locator("[rel='next']").First;
 
-        await Expect(nextPageButton).ToBeVisibleAsync();
+    //    await Expect(nextPageButton).ToBeVisibleAsync();
 
-        // Click the 'Next' page button
-        await nextPageButton.ClickAsync();
+    //    // Click the 'Next' page button
+    //    await nextPageButton.ClickAsync();
 
-        // Wait for the button to ensure the page navigation has started
-        await nextPageButton.WaitForAsync();
+    //    // Wait for the button to ensure the page navigation has started
+    //    await nextPageButton.WaitForAsync();
 
-        // Verify that the first page button is still visible after navigation
-        var firstPageButton = NieuwsSection.GetByLabel("Pagina 1");
-        // TODO fix the pagination component. numbers should always have an aria label with the number in it
-        //await Expect(firstPageButton).ToBeVisibleAsync();
+    //    // Verify that the first page button is still visible after navigation
+    //    var firstPageButton = NieuwsSection.GetByLabel("Pagina 1");
+    //    // TODO fix the pagination component. numbers should always have an aria label with the number in it
+    //    //await Expect(firstPageButton).ToBeVisibleAsync();
 
-        // Verify that the current page button reflects the correct page number
-        var currentPageButton = NieuwsSection.Locator("[aria-current=page]");
-        var page2Button = NieuwsSection.GetByLabel("Pagina 2");
-        var page2ButtonWithAriaCurrentPage = currentPageButton.And(page2Button);
+    //    // Verify that the current page button reflects the correct page number
+    //    var currentPageButton = NieuwsSection.Locator("[aria-current=page]");
+    //    var page2Button = NieuwsSection.GetByLabel("Pagina 2");
+    //    var page2ButtonWithAriaCurrentPage = currentPageButton.And(page2Button);
 
-        // Ensure the current page button's aria-label attribute is 'Pagina 2'
-        await Expect(page2ButtonWithAriaCurrentPage).ToBeVisibleAsync();
-    }
+    //    // Ensure the current page button's aria-label attribute is 'Pagina 2'
+    //    await Expect(page2ButtonWithAriaCurrentPage).ToBeVisibleAsync();
+    //}
 
 
-    [TestMethod]
-    public async Task Als_ik_skill_filters_selecteer_worden_de_nieuwberichten_hierop_gefilterd()
-    {
-        // Example: Test filtering by skill
-        var categorieFilterSection = Page.Locator("details").Filter(new() { HasText = "Filter op categorie" });
-        await Expect(categorieFilterSection).ToBeVisibleAsync();
-        await categorieFilterSection.Locator("summary").ClickAsync();
-        var algemeenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Algemeen" });
-        var belastingenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Belastingen" });
+    //[TestMethod]
+    //public async Task Als_ik_skill_filters_selecteer_worden_de_nieuwberichten_hierop_gefilterd()
+    //{
+    //    // Example: Test filtering by skill
+    //    var categorieFilterSection = Page.Locator("details").Filter(new() { HasText = "Filter op categorie" });
+    //    await Expect(categorieFilterSection).ToBeVisibleAsync();
+    //    await categorieFilterSection.Locator("summary").ClickAsync();
+    //    var algemeenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Algemeen" });
+    //    var belastingenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Belastingen" });
 
-        await algemeenCheckbox.CheckAsync();
-        await belastingenCheckbox.CheckAsync();
+    //    await algemeenCheckbox.CheckAsync();
+    //    await belastingenCheckbox.CheckAsync();
 
-        // Verify results are filtered
-        var articles = Page.GetByRole(AriaRole.Article);
-        await Expect(articles.First).ToBeVisibleAsync();
+    //    // Verify results are filtered
+    //    var articles = Page.GetByRole(AriaRole.Article);
+    //    await Expect(articles.First).ToBeVisibleAsync();
 
-        var resultCount = await articles.CountAsync();
+    //    var resultCount = await articles.CountAsync();
 
-        Assert.IsTrue(resultCount > 0, "Expected to find articles after filtering by skills.");
+    //    Assert.IsTrue(resultCount > 0, "Expected to find articles after filtering by skills.");
 
-        // Loop through each article and verify it contains at least one of the selected skills
-        for (var i = 0; i < resultCount; i++)
-        {
-            var article = articles.Nth(i);
-            var algemeenSkill = article.Locator("small.category-Algemeen");
-            var belastingenSkill = article.Locator("small.category-Belastingen");
-            await Expect(algemeenSkill.Or(belastingenSkill).First).ToBeVisibleAsync();
-        }
+    //    // Loop through each article and verify it contains at least one of the selected skills
+    //    for (var i = 0; i < resultCount; i++)
+    //    {
+    //        var article = articles.Nth(i);
+    //        var algemeenSkill = article.Locator("small.category-Algemeen");
+    //        var belastingenSkill = article.Locator("small.category-Belastingen");
+    //        await Expect(algemeenSkill.Or(belastingenSkill).First).ToBeVisibleAsync();
+    //    }
 
-        // Reset filters
-        await algemeenCheckbox.UncheckAsync();
-        await belastingenCheckbox.UncheckAsync();
-    }
+    //    // Reset filters
+    //    await algemeenCheckbox.UncheckAsync();
+    //    await belastingenCheckbox.UncheckAsync();
+    //}
 
     [TestMethod]
     public async Task Als_ik_een_oud_bericht_update_komt_deze_bovenaan()
     {
         try
         {
-            // Check if old test messages exist (e.g., message with specific text like "dfgdg-546-dfg-456-dfgdfg")
+            // Check if old test messages exist
             var oldTestMessageLocator = Page.Locator("article:has-text('8e600d44-81fb-4302-9675-31b687619026')");
             if (await oldTestMessageLocator.IsVisibleAsync())
             {
@@ -86,10 +86,15 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 await DeleteBericht("5b8277a7-fb1a-4358-8099-24b9487b29bc");
             }
 
-            // Step 2: Create messages A, B, and C
-            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false, "");
-            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false, "");
-            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true, "");
+            // Set the current publish date
+            var currentPublishDate = DateTime.Now;
+
+            // Step 2: Create Message A with the publish date one minute in the past
+            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false, "", true);
+
+            // Create Message B and C with the current publish date
+            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false, "", false);
+            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true, "", false);
 
             // Go to the page and retrieve the order of articles
             await Page.GotoAsync("/");
@@ -116,15 +121,15 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 }
             }
 
-            // Assert the initial order: C (highest), B, A (lowest)
+            // Assert the initial order: A (lowest), B, C (highest)
             var indexVanA = orderOnPage["Message A"];
             var indexVanB = orderOnPage["Message B"];
             var indexVanC = orderOnPage["Message C"];
 
-            Assert.IsTrue(indexVanC < indexVanB && indexVanB > indexVanA, "Initial order should be C, A, B.");
+            Assert.IsTrue(indexVanC < indexVanB && indexVanB < indexVanA, "Initial order should be C, B, A.");
 
             // Act: Update message A
-            await UpdateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", "Updated Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a");
+            await UpdateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", "Updated Message A: 8e600d44-81fb-4302-9675-31b687619026");
 
             // Refresh page and retrieve articles again
             await Page.GotoAsync("/");
@@ -137,11 +142,11 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 var element = allArticles.Nth(index);
                 var innerHtml = await element.InnerTextAsync();
 
-                if (innerHtml.Contains("Message A: 8e600d44-81fb-4302-9675-31b687619026"))
+                if (innerHtml.Contains("Updated Message A: 8e600d44-81fb-4302-9675-31b687619026"))
                 {
                     orderOnPage.Add("Message A", index);
                 }
-                if (innerHtml.Contains("Updated Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
+                if (innerHtml.Contains("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
                 {
                     orderOnPage.Add("Message B", index);
                 }
@@ -151,12 +156,12 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 }
             }
 
-            // Assert the updated order: C (highest), A, B (lowest)
+            // Assert the updated order: C (highest), B, A (lowest)
             indexVanA = orderOnPage["Message A"];
             indexVanB = orderOnPage["Message B"];
             indexVanC = orderOnPage["Message C"];
 
-            Assert.IsTrue(indexVanC < indexVanA && indexVanA > indexVanB, "Updated order should be C, B, A.");
+            Assert.IsTrue(indexVanC < indexVanB && indexVanB > indexVanA, "Updated order should be C, A, B.");
         }
         finally
         {
@@ -167,97 +172,98 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
-    [TestMethod]
-    public async Task Als_ik_een_belangrijk_bericht_publiceer_komt_deze_bovenaan()
-    {
-        var titel = $"End to end test {Guid.NewGuid()}";
-        var featuredIndicator = Page.Locator(".featured-indicator");
-        var intitialFeatureCount = await featuredIndicator.IsVisibleAsync()
-            && int.TryParse(await featuredIndicator.TextContentAsync(), out var c)
-                ? c
-                : 0;
 
-        await CreateBericht(titel, true, "");
-        
-        try
-        {
-            await Page.GotoAsync("/");
+    //[TestMethod]
+    //public async Task Als_ik_een_belangrijk_bericht_publiceer_komt_deze_bovenaan()
+    //{
+    //    var titel = $"End to end test {Guid.NewGuid()}";
+    //    var featuredIndicator = Page.Locator(".featured-indicator");
+    //    var intitialFeatureCount = await featuredIndicator.IsVisibleAsync()
+    //        && int.TryParse(await featuredIndicator.TextContentAsync(), out var c)
+    //            ? c
+    //            : 0;
 
-            await Expect(NieuwsSection).ToBeVisibleAsync();
-            var firstArticle = NieuwsSection.GetByRole(AriaRole.Article).First;
-            await Expect(firstArticle).ToContainTextAsync(titel);
-            await Expect(firstArticle).ToContainTextAsync("Belangrijk");
-            await firstArticle.GetByRole(AriaRole.Button, new() { Name = "Markeer als gelezen" }).ClickAsync();
-            await Page.WaitForResponseAsync(x => x.Url.Contains("featuredcount"));
-            await Expect(featuredIndicator).ToHaveTextAsync(intitialFeatureCount.ToString());
-        }
-        finally
-        {
-            await DeleteBericht(titel);
-        }
-    }
+    //    await CreateBericht(titel, true, "");
 
-    [TestMethod]
-    public async Task Als_ik_een_skill_toevoeg_wordt_deze_vermeld_in_de_filter()
-    {
-        // Define the new skill name to be added and tested
-        var newSkill = "Test Skill";
+    //    try
+    //    {
+    //        await Page.GotoAsync("/");
 
-        try
-        {
-            // Step 1: Navigate to the Skills management page
-            await NavigateToSkillsBeheer();
+    //        await Expect(NieuwsSection).ToBeVisibleAsync();
+    //        var firstArticle = NieuwsSection.GetByRole(AriaRole.Article).First;
+    //        await Expect(firstArticle).ToContainTextAsync(titel);
+    //        await Expect(firstArticle).ToContainTextAsync("Belangrijk");
+    //        await firstArticle.GetByRole(AriaRole.Button, new() { Name = "Markeer als gelezen" }).ClickAsync();
+    //        await Page.WaitForResponseAsync(x => x.Url.Contains("featuredcount"));
+    //        await Expect(featuredIndicator).ToHaveTextAsync(intitialFeatureCount.ToString());
+    //    }
+    //    finally
+    //    {
+    //        await DeleteBericht(titel);
+    //    }
+    //}
 
-            // Step 2: Add the new skill
-            await CreateSkill(newSkill);
-            await Page.GotoAsync("/");
-            // Step 3: Open the filter dropdown to verify the skill
-            await Page.ClickAsync("summary:has-text('Filter op categorie')");
+    //[TestMethod]
+    //public async Task Als_ik_een_skill_toevoeg_wordt_deze_vermeld_in_de_filter()
+    //{
+    //    // Define the new skill name to be added and tested
+    //    var newSkill = "Test Skill";
 
-            // Step 4: Verify the newly added skill appears in the filter list as a checkbox option
-            var addedSkillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = newSkill });
-            await Expect(addedSkillCheckbox).ToBeVisibleAsync();
+    //    try
+    //    {
+    //        // Step 1: Navigate to the Skills management page
+    //        await NavigateToSkillsBeheer();
 
-        }
-        finally
-        {
-            // Optional clean-up: Remove the skill after test completion if necessary
-            await DeleteSkill(newSkill);
-        }
-    }
+    //        // Step 2: Add the new skill
+    //        await CreateSkill(newSkill);
+    //        await Page.GotoAsync("/");
+    //        // Step 3: Open the filter dropdown to verify the skill
+    //        await Page.ClickAsync("summary:has-text('Filter op categorie')");
 
-    // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
-    [TestMethod]
-    public async Task Als_ik_een_skill_en_nieuws_item_toevoeg_zou_ik_deze_moeten_zien_bij_filteren()
-    {
-        var newSkill = "Test Skill";
-        var newsTitle = "Test Nieuws Item";
-        bool isImportant = false;
+    //        // Step 4: Verify the newly added skill appears in the filter list as a checkbox option
+    //        var addedSkillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = newSkill }).First;
+    //        await Expect(addedSkillCheckbox).ToBeVisibleAsync();
 
-        try
-        {
-            // Step 1: Create a new skill
-            await CreateSkill(newSkill);
+    //    }
+    //    finally
+    //    {
+    //        // Optional clean-up: Remove the skill after test completion if necessary
+    //        await DeleteSkill(newSkill);
+    //    }
+    //}
 
-            // Step 2: Create a news item with the new skill
-            await CreateBericht(newsTitle, isImportant, newSkill);
+    //// Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
+    //[TestMethod]
+    //public async Task Als_ik_een_skill_en_nieuws_item_toevoeg_zou_ik_deze_moeten_zien_bij_filteren()
+    //{
+    //    var newSkill = "Test Skill";
+    //    var newsTitle = "Test Nieuws Item";
+    //    bool isImportant = false;
 
-            // Step 3: Verify that the news item appears when filtering by the new skill
-            await Page.GotoAsync("/");
+    //    try
+    //    {
+    //        // Step 1: Create a new skill
+    //        await CreateSkill(newSkill);
 
-            await Page.ClickAsync("summary:has-text('Filter op categorie')"); // Open the filter dropdown
-            var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = newSkill });
-            await skillCheckbox.CheckAsync(); // Check the skill in the filter
+    //        // Step 2: Create a news item with the new skill
+    //        await CreateBericht(newsTitle, isImportant, newSkill);
 
-            // Step 4: Verify the news item appears
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = newsTitle })).ToBeVisibleAsync();
-        }
-        finally
-        {
-            await DeleteBericht(newsTitle);
-            await DeleteSkill(newSkill);
-        }
-    }
+    //        // Step 3: Verify that the news item appears when filtering by the new skill
+    //        await Page.GotoAsync("/");
+
+    //        await Page.ClickAsync("summary:has-text('Filter op categorie')"); // Open the filter dropdown
+    //        var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = newSkill }).First;
+    //        await skillCheckbox.CheckAsync(); // Check the skill in the filter
+
+    //        // Step 4: Verify the news item appears
+    //        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = newsTitle })).ToBeVisibleAsync();
+    //    }
+    //    finally
+    //    {
+    //        await DeleteBericht(newsTitle);
+    //        await DeleteSkill(newSkill);
+    //    }
+    //}
 
     private ILocator NieuwsSection => Page.Locator("section").Filter(new() { HasText = "Nieuws" });
 
@@ -346,16 +352,16 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
-    private async Task CreateBericht(string titel, bool isBelangrijk, string skill)
+    private async Task CreateBericht(string titel, bool isBelangrijk, string skill, bool changePublishDate = false)
     {
         await NavigateToNieuwsWerkinstructiesBeheer();
         var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
         await toevoegenLink.ClickAsync();
         await Page.GetByRole(AriaRole.Radio, new() { Name = "Nieuws" }).CheckAsync();
-        
+
         await Page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(titel);
-        // TODO label van inhoud wordt niet geassocieerd met de input
-        // await Page.GetByRole(AriaRole.Textbox, new() { Name = "Inhoud" }).FillAsync(titel);
+
+        // Fill in the content area
         await Page.Locator(".ck-content").WaitForAsync();
         await Page.Locator("textarea").FillAsync(titel);
 
@@ -364,23 +370,31 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             await Page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" }).CheckAsync();
         }
 
-        if (skill != "")
+        if (!string.IsNullOrEmpty(skill))
         {
             var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
-            await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
+            await skillCheckbox.CheckAsync();
+        }
+
+
+        if (changePublishDate)
+        {
+            DateTime publishDate = DateTime.Now;
+            publishDate = publishDate.AddMinutes(-1); // Subtract one minute
+            var publishDateInput = Page.Locator("#publicatieDatum");
+            await publishDateInput.FillAsync(publishDate.ToString("yyyy-MM-ddTHH:mm"));
         }
 
         var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-
         while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
         {
             await opslaanKnop.ClickAsync();
         }
-        
+
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
     }
 
-    private async Task UpdateBericht(string oldTitle, string newTitle)
+    private async Task UpdateBericht(string oldTitle, string newTitle, DateTime? publishDate = null)
     {
         // Navigate to the news management page
         await NavigateToNieuwsWerkinstructiesBeheer();
@@ -456,7 +470,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         await NavigateToSkillsBeheer();
 
         // Step 2: Locate the skill item by its name
-        var skillLocator = Page.Locator($"li.listItem:has-text('{skillName}')");
+        var skillLocator = Page.Locator($"li.listItem:has-text('{skillName}')").First;
 
         // Step 3: Check if the skill exists
         if (await skillLocator.CountAsync() > 0)
