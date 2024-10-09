@@ -87,9 +87,9 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             }
 
             // Step 2: Create messages A, B, and C
-            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false);
-            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false);
-            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true);
+            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false, "");
+            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false, "");
+            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true, "");
 
             // Go to the page and retrieve the order of articles
             await Page.GotoAsync("/");
@@ -156,7 +156,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             indexVanB = orderOnPage["Message B"];
             indexVanC = orderOnPage["Message C"];
 
-            Assert.IsTrue(indexVanC < indexVanA && indexVanA < indexVanB, "Updated order should be C, B, A.");
+            Assert.IsTrue(indexVanC < indexVanA && indexVanA > indexVanB, "Updated order should be C, B, A.");
         }
         finally
         {
@@ -177,7 +177,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 ? c
                 : 0;
 
-        await CreateBericht(titel, true);
+        await CreateBericht(titel, true, "");
         
         try
         {
@@ -228,57 +228,35 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
     // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
     [TestMethod]
-    private async Task MarkAsImportant()
+    public async Task Als_ik_een_skill_en_nieuws_item_toevoeg_zou_ik_deze_moeten_zien_bij_filteren()
     {
-        // Example: Mark a news item as important
-        await Page.ClickAsync("a:has-text('Details')");
-        await Page.CheckAsync("input[name='Belangrijk']");
-        await Page.ClickAsync("button:has-text('Opslaan')");
-        await Page.WaitForURLAsync("https://dev.kiss-demo.nl/Beheer/NieuwsEnWerkinstructies");
+        var newSkill = "Test Skill";
+        var newsTitle = "Test Nieuws Item";
+        bool isImportant = false;
 
-        // Verify the item is marked as important
-        Assert.IsTrue(await Page.IsVisibleAsync("a:has-text('Belangrijk')"));
-    }
+        try
+        {
+            // Step 1: Create a new skill
+            await CreateSkill(newSkill);
 
-    // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
-    [TestMethod]
-    private async Task TestAddAndVerifySkillAsync()
-    {
-        // Add a skill
-        await Page.ClickAsync("a:has-text('Skills')");
-        await Page.FillAsync("input[name='new-skill']", "Test Skill");
-        await Page.ClickAsync("button:has-text('Voeg toe')");
+            // Step 2: Create a news item with the new skill
+            await CreateBericht(newsTitle, isImportant, newSkill);
 
-        // Verify the skill appears in the dropdown
-        await Page.ClickAsync("summary:has-text('Filter op categorie')");
-        Assert.IsTrue(await Page.IsVisibleAsync("input[name='Test Skill']"));
-    }
+            // Step 3: Verify that the news item appears when filtering by the new skill
+            await Page.GotoAsync("/");
 
-    // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
-    [TestMethod]
-    private async Task TestDeleteSkillAsync()
-    {
-        // Delete the skill
-        await Page.ClickAsync("a:has-text('Skills')");
-        await Page.ClickAsync("button:has-text('Verwijder')");
+            await Page.ClickAsync("summary:has-text('Filter op categorie')"); // Open the filter dropdown
+            var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = newSkill });
+            await skillCheckbox.CheckAsync(); // Check the skill in the filter
 
-        // Verify the skill is removed
-        await Page.ClickAsync("summary:has-text('Filter op categorie')");
-        Assert.IsFalse(await Page.IsVisibleAsync("input[name='Test Skill']"));
-    }
-
-    // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
-    [TestMethod]
-    private async Task TestModifyAndVerifyNewsItemAsync()
-    {
-        // Modify an existing news item
-        await Page.ClickAsync("a:has-text('Details')");
-        await Page.FillAsync("textarea[name='editor']", "Updated Content");
-        await Page.ClickAsync("button:has-text('Opslaan')");
-        await Page.WaitForURLAsync("https://dev.kiss-demo.nl/Beheer/NieuwsEnWerkinstructies");
-
-        // Verify the modification
-        Assert.IsTrue(await Page.IsVisibleAsync("article:has-text('Updated Content')"));
+            // Step 4: Verify the news item appears
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = newsTitle })).ToBeVisibleAsync();
+        }
+        finally
+        {
+            await DeleteBericht(newsTitle);
+            await DeleteSkill(newSkill);
+        }
     }
 
     private ILocator NieuwsSection => Page.Locator("section").Filter(new() { HasText = "Nieuws" });
@@ -328,27 +306,6 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
-    private async Task<(string Titel, bool IsBelangrijk)> UpdateLastNotImportantNieuwsberichtInBeheer()
-    {
-        await NavigateToNieuwsWerkinstructiesBeheer();
-
-        var nieuwsRows = Page.GetByRole(AriaRole.Row)
-            .Filter(new()
-            {
-                Has = Page.GetByRole(AriaRole.Cell, new() { Name = "Nieuws" })
-            });
-
-        await nieuwsRows.GetByRole(AriaRole.Link, new() { Name = "Details" }).Last.ClickAsync();
-
-        var titel = await Page.GetByLabel("Titel").InputValueAsync();
-        var isBelangrijk = await Page.GetByLabel("Belangrijk").IsCheckedAsync();
-
-        await Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" }).ClickAsync();
-        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
-
-        return (titel, isBelangrijk);
-    }
-
     private async Task NavigateToNieuwsWerkinstructiesBeheer()
     {
         var beheerlink = Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" });
@@ -389,7 +346,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
-    private async Task CreateBericht(string titel, bool isBelangrijk)
+    private async Task CreateBericht(string titel, bool isBelangrijk, string skill)
     {
         await NavigateToNieuwsWerkinstructiesBeheer();
         var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
@@ -405,6 +362,12 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         if (isBelangrijk)
         {
             await Page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" }).CheckAsync();
+        }
+
+        if (skill != "")
+        {
+            var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
+            await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
         }
 
         var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
