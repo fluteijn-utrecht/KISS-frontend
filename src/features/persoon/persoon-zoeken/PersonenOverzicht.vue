@@ -53,8 +53,8 @@ import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { watchEffect } from "vue";
 
-import type { Klant as Klant1 } from "@/services/openklant1/types";
-import type { Klant as Klant2 } from "@/services/openklant2/types";
+import type { Klant as KlantOpenKlant1 } from "@/services/openklant1/types";
+import type { Klant as KlantOpenKlant2 } from "@/services/openklant2/types";
 import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
 
 const props = defineProps<{
@@ -64,7 +64,7 @@ const props = defineProps<{
 
 const router = useRouter();
 
-const getKlantUrl = (klant: Klant1 | Klant2) => `/personen/${klant.id}`;
+const getKlantUrl = (klant: KlantOpenKlant1 | KlantOpenKlant2) => `/personen/${klant.id}`;
 
 const navigate = async (persoon: Persoon) => {
   const { bsn } = persoon;

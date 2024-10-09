@@ -12,8 +12,9 @@ import type { Klant, UpdateContactgegevensParams } from "./types.ts";
 import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
-import type { BedrijfIdentifier } from "./types";
-import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../kvk/types";
+import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant1 } from "./types";
+import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven.js";
+import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../openklant2/types.js";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
@@ -24,36 +25,8 @@ type FieldParams = {
   telefoonnummer: string;
 };
 
-export function createKlantQuery<K extends KlantSearchField>(
-  args: KlantSearch<K>,
-): KlantSearch<K> {
-  return args;
-}
-
-export type KlantSearchField = keyof FieldParams;
-
-type QueryDictionary = {
-  [K in KlantSearchField]: (search: FieldParams[K]) => QueryParam;
-};
-
-const queryDictionary: QueryDictionary = {
-  email: (search) => [["emailadres", search]],
-  telefoonnummer: (search) => [["telefoonnummer", search]],
-};
-
-export type KlantSearch<K extends KlantSearchField> = {
-  field: K;
-  query: FieldParams[K];
-};
-
-function getQueryParams<K extends KlantSearchField>(params: KlantSearch<K>) {
-  return queryDictionary[params.field](params.query) as ReturnType<
-    QueryDictionary[K]
-  >;
-}
-
-type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
-  query: Ref<KlantSearch<K> | undefined>;
+type KlantSearchParameters   = {
+  query: Ref<BedrijvenQuery | undefined>;
   page: Ref<number | undefined>;
   subjectType?: KlantType;
 };
@@ -61,41 +34,44 @@ type KlantSearchParameters<K extends KlantSearchField = KlantSearchField> = {
 const klantRootUrl = new URL(document.location.href);
 klantRootUrl.pathname = klantenBaseUrl;
 
-function getKlantSearchUrl<K extends KlantSearchField>(
-  search: KlantSearch<K> | undefined,
+function getKlantSearchUrl(
+  search: BedrijvenQuery | undefined,
   subjectType: KlantType,
   page: number | undefined,
 ) {
-  if (!search?.query) return "";
+  if (!search) return "";
 
   const url = new URL(klantRootUrl);
   url.searchParams.set("page", page?.toString() ?? "1");
   url.searchParams.append("subjectType", subjectType);
 
-  getQueryParams(search).forEach((tuple) => {
-    url.searchParams.set(...tuple);
-  });
+  if ("email" in search ){
+    url.searchParams.set("emailadres", search.email);    
+  }
+  
+  if ("telefoonnummer" in search ){
+    url.searchParams.set("telefoonnummer", search.telefoonnummer);    
+  }
+  
+ 
 
   return url.toString();
 }
 
-function mapKlant(obj: any): Klant {
-  const { subjectIdentificatie, url, emailadres, telefoonnummer } = obj ?? {};
-  const { inpBsn, vestigingsNummer, innNnpId } = subjectIdentificatie ?? {};
-  const urlSplit: string[] = url?.split("/") ?? [];
-
-  return {
-    ...obj,
-    id: urlSplit[urlSplit.length - 1],
-    _typeOfKlant: "klant",
-    bsn: inpBsn,
-    vestigingsnummer: vestigingsNummer,
-    url: url,
-    nietNatuurlijkPersoonIdentifier: innNnpId,
-    emailadressen: emailadres ? [emailadres] : [],
-    telefoonnummers: telefoonnummer ? [telefoonnummer] : []
-  };
+export function useSearchKlanten({
+  query,
+  page,
+  subjectType,
+}: KlantSearchParameters) {
+  const getUrl = () =>
+    getKlantSearchUrl(
+      query.value,
+      subjectType ?? KlantType.Persoon,
+      page.value,
+    );
+  return ServiceResult.fromFetcher(getUrl, searchKlanten);
 }
+
 
 function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
   return fetchLoggedIn(url)
@@ -116,6 +92,24 @@ function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
       });
       return p;
     });
+}
+
+function mapKlant(obj: any): Klant {
+  const { subjectIdentificatie, url, emailadres, telefoonnummer } = obj ?? {};
+  const { inpBsn, vestigingsNummer, innNnpId } = subjectIdentificatie ?? {};
+  const urlSplit: string[] = url?.split("/") ?? [];
+
+  return {
+    ...obj,
+    id: urlSplit[urlSplit.length - 1],
+    _typeOfKlant: "klant",
+    bsn: inpBsn,
+    vestigingsnummer: vestigingsNummer,
+    url: url,
+    nietNatuurlijkPersoonIdentifier: innNnpId,
+    emailadressen: emailadres ? [emailadres] : [],
+    telefoonnummers: telefoonnummer ? [telefoonnummer] : []
+  };
 }
 
 function getKlantIdUrl(id?: string) {
@@ -140,14 +134,14 @@ const getSingleBsnSearchId = (bsn: string | undefined) => {
   return url + "_single";
 };
 
-function fetchKlantByIdEsuite(url: string) {
+function fetchKlantById(url: string) {
   return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
 }
 
 export function useKlantById(id: Ref<string>) {
   return ServiceResult.fromFetcher(
     () => getKlantIdUrl(id.value),
-    fetchKlantByIdEsuite,
+    fetchKlantById,
   );
 }
 
@@ -193,21 +187,6 @@ function updateContactgegevens({
       emailadressen,
     }));
 }
-
-export function useSearchKlanten<K extends KlantSearchField>({
-  query,
-  page,
-  subjectType,
-}: KlantSearchParameters<K>) {
-  const getUrl = () =>
-    getKlantSearchUrl(
-      query.value,
-      subjectType ?? KlantType.Persoon,
-      page.value,
-    );
-  return ServiceResult.fromFetcher(getUrl, searchKlanten);
-}
-
 export function useKlantByBsn(
   getBsn: () => string | undefined,
 ): ServiceData<Klant | null> {
@@ -268,17 +247,15 @@ export async function ensureKlantForBsn(
 }
 
 const getUrlVoorGetKlantById = (
-  bedrijfSearchParameter: BedrijfIdentifier | undefined,
+  bedrijfSearchParameter: BedrijfIdentifierOpenKlant1 | undefined,
 ) => {
   if (!bedrijfSearchParameter) {
     return "";
   }
 
-  if (
-    "vestigingsnummer" in bedrijfSearchParameter &&
-    bedrijfSearchParameter.vestigingsnummer
-  ) {
-    const url = new URL(klantRootUrl);
+  const url = new URL(klantRootUrl);
+
+  if ("vestigingsnummer" in bedrijfSearchParameter && bedrijfSearchParameter.vestigingsnummer) {
     url.searchParams.set(
       "subjectVestiging__vestigingsNummer",
       bedrijfSearchParameter.vestigingsnummer,
@@ -286,15 +263,10 @@ const getUrlVoorGetKlantById = (
     url.searchParams.set("subjectType", KlantType.Bedrijf);
     return url.toString();
   }
-
-  if (
-    "nietNatuurlijkPersoonIdentifier" in bedrijfSearchParameter &&
-    bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier
-  ) {
-    const url = new URL(klantRootUrl);
+  if ("nietNatuurlijkPersoonIdentifier" in bedrijfSearchParameter && bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier) {
     url.searchParams.set(
       "subjectNietNatuurlijkPersoon__innNnpId",
-      bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier,
+      bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier, 
     );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
@@ -302,6 +274,7 @@ const getUrlVoorGetKlantById = (
 
   return "";
 };
+
 
 const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
   if (!id) return "";
@@ -312,7 +285,7 @@ const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
 };
 
 export const useKlantByIdentifier = (
-  getId: () => BedrijfIdentifier | undefined,
+  getId: () =>  BedrijfIdentifierOpenKlant1 | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetKlantById(getId());
 
@@ -327,16 +300,19 @@ export const useKlantByIdentifier = (
 };
 
 export function mapBedrijfsIdentifier(
-    bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2
-  ): BedrijfIdentifier {
-    if ('vestigingsnummer' in bedrijfIdentifierOpenKlant2) {
-      return {
-        vestigingsnummer: bedrijfIdentifierOpenKlant2.vestigingsnummer,
-      };
-    } else {
-      throw new Error("Ongeldig BedrijfIdentifier: geen vestigingsnummer gevonden");
-    }
-  }
+  bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2
+): BedrijfIdentifierOpenKlant1 {
+  return {
+    vestigingsnummer: 'vestigingsnummer' in bedrijfIdentifierOpenKlant2
+      ? bedrijfIdentifierOpenKlant2.vestigingsnummer
+      : "",
+
+    nietNatuurlijkPersoonIdentifier: 'rsin' in bedrijfIdentifierOpenKlant2
+      ? bedrijfIdentifierOpenKlant2.rsin
+      : "", 
+  };
+}
+
 
 //maak een klant aan in het klanten register als die nog niet bestaat
 //bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan
@@ -346,7 +322,7 @@ export async function ensureKlantForBedrijfIdentifier(
     identifier,
   }: {
     bedrijfsnaam: string;
-    identifier: BedrijfIdentifier;
+    identifier: BedrijfIdentifierOpenKlant1;
   },
   bronorganisatie: string,
 ) {
@@ -463,7 +439,7 @@ export async function ensureKlantForNietNatuurlijkPersoon(
   return newKlant;
 }
 
-export function createKlantEsuite({
+export function createKlant({
   telefoonnummer = "",
   emailadres = "",
   bronorganisatie = "",

@@ -13,6 +13,7 @@ export interface Klant {
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
   url?: string;
+  kvkNummer?: string;
   nietNatuurlijkPersoonIdentifier?: string;
 }
 

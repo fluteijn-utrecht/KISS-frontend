@@ -809,8 +809,7 @@ async function mapPartijToKlant(
   return ret;
 }
 
-export function searchKlantenByDigitaalAdres(
-  query:
+export function searchKlantenByDigitaalAdres(  query:
     | {
         telefoonnummer: string;
         partijType: PartijTypes;

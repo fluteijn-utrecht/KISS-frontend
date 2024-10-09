@@ -1,12 +1,11 @@
-import type { BedrijfIdentifier } from "@/services/kvk";
-import { findKlantByIdentifier, createKlant } from "@/services/openklant2";
-import { ensureKlantForBedrijfIdentifier as ensureKlantForBedrijfIdentifier1 } from "@/services/openklant1/service";
+import { findKlantByIdentifier, createKlant, type KlantBedrijfIdentifier } from "@/services/openklant2";
+import { ensureKlantForBedrijfIdentifier as ensureKlantForBedrijfsIdentifier } from "@/services/openklant1/service";
 import { useOpenKlant2 } from "@/services/openklant2/service";
 import { mapBedrijfsIdentifier } from "@/services/openklant1/service";
 import { useOrganisatieIds } from "@/stores/user"; 
 
 export const ensureKlantForBedrijfIdentifier = async (
-  identifier: BedrijfIdentifier,
+  identifier: KlantBedrijfIdentifier,
   bedrijfsnaam: string,
 ) => {
 
@@ -22,7 +21,7 @@ export const ensureKlantForBedrijfIdentifier = async (
     const organisatieIds = useOrganisatieIds();
     const organisatieId = organisatieIds.value[0] || "";
 
-    return await ensureKlantForBedrijfIdentifier1({
+    return await ensureKlantForBedrijfsIdentifier({
       bedrijfsnaam,
       identifier: mappedIdentifier,
     }, organisatieId);

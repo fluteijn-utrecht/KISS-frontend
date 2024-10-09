@@ -50,20 +50,19 @@
 </template>
 <script lang="ts" setup>
 import { computed, watchEffect } from "vue";
-import type { Klant } from "@/services/openklant2";
 import { useBedrijfByIdentifier } from "../use-bedrijf-by-identifier";
 import { useKlantByBedrijfIdentifier } from "./use-klant-by-bedrijf-identifier";
 import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
 import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { ensureKlantForBedrijfIdentifier } from "./ensure-klant-for-bedrijf-identifier";
-import type { Klant as Klant1 } from "@/services/openklant1/types";
-import type { Klant as Klant2 } from "@/services/openklant2/types";
+import type { Klant as KlantOpenKlant1 } from "@/services/openklant1/types";
+import type { Klant as KlantOpenKlant2 } from "@/services/openklant2/types";
 
-const props = defineProps<{ item: Bedrijf | Klant; autoNavigate?: boolean }>();
+const props = defineProps<{ item: Bedrijf | KlantOpenKlant1 | KlantOpenKlant2; autoNavigate?: boolean }>();
 
 const matchingBedrijf = useBedrijfByIdentifier(() => {
-  // we hebben al een bedrijf, we hoeven die niet meer op te zoeken
+  // wordt niet meer gebruikt, alleen als we een klant hebben maar telefoonnumer en email adres is eruitgesloopt
   if (props.item._typeOfKlant === "bedrijf") return undefined;
   const { vestigingsnummer, rsin } = props.item;
   if (vestigingsnummer)
@@ -123,9 +122,9 @@ const bedrijfIdentifier = computed<BedrijfIdentifier | undefined>(() => {
 
 const router = useRouter();
 
-const getKlantUrl = (klant: Klant1 | Klant2) => `/bedrijven/${klant.id}`;
+const getKlantUrl = (klant: KlantOpenKlant1 | KlantOpenKlant2) => `/bedrijven/${klant.id}`;
 
-const setCache = (klant: Klant1 | Klant2, bedrijf?: Bedrijf | null) => {
+const setCache = (klant: KlantOpenKlant1 | KlantOpenKlant2, bedrijf?: Bedrijf | null) => {
   mutate(klant.id, klant);
   const bedrijfId = bedrijf?.vestigingsnummer || bedrijf?.rsin;
   if (bedrijfId) {
