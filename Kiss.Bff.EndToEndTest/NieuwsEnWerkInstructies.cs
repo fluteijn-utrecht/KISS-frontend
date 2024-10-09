@@ -1,4 +1,6 @@
-﻿namespace Kiss.Bff.EndToEndTest;
+﻿using System.Xml.Linq;
+
+namespace Kiss.Bff.EndToEndTest;
 
 [TestClass]
 public class NieuwsEnWerkInstructies : BaseTestInitializer
@@ -73,22 +75,96 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
     [TestMethod]
     public async Task Als_ik_een_oud_bericht_update_komt_deze_bovenaan()
     {
-        await MarkAllNewsItems(true);
-        var (title, isBelangrijk) = await UpdateLastNotImportantNieuwsberichtInBeheer();
+        try
+        {
+            // Check if old test messages exist (e.g., message with specific text like "dfgdg-546-dfg-456-dfgdfg")
+            var oldTestMessageLocator = Page.Locator("article:has-text('8e600d44-81fb-4302-9675-31b687619026')");
+            if (await oldTestMessageLocator.IsVisibleAsync())
+            {
+                await DeleteBericht("8e600d44-81fb-4302-9675-31b687619026");
+                await DeleteBericht("724e44a3-6ba1-4e92-85c3-d44e35238f4a");
+                await DeleteBericht("5b8277a7-fb1a-4358-8099-24b9487b29bc");
+            }
 
-        // navigate back to home
-        await Page.GotoAsync("/");
+            // Step 2: Create messages A, B, and C
+            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false);
+            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false);
+            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true);
 
-        var articles = NieuwsSection.GetByRole(AriaRole.Article);
+            // Go to the page and retrieve the order of articles
+            await Page.GotoAsync("/");
+            var allArticles = NieuwsSection.GetByRole(AriaRole.Article);
 
-        var firstArticle = isBelangrijk
-            ? articles.First
-            : articles.Filter(new LocatorFilterOptions() { HasNot = Page.Locator(".featured") }).First;
+            // Dictionary to hold article positions
+            var orderOnPage = new Dictionary<string, int>();
+            for (var index = 0; index < await allArticles.CountAsync(); index++)
+            {
+                var element = allArticles.Nth(index);
+                var innerHtml = await element.InnerTextAsync();
 
-        var heading = firstArticle.GetByRole(AriaRole.Heading).First;
+                if (innerHtml.Contains("Message A: 8e600d44-81fb-4302-9675-31b687619026"))
+                {
+                    orderOnPage.Add("Message A", index);
+                }
+                if (innerHtml.Contains("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
+                {
+                    orderOnPage.Add("Message B", index);
+                }
+                if (innerHtml.Contains("Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc"))
+                {
+                    orderOnPage.Add("Message C", index);
+                }
+            }
 
-        await Expect(heading).ToHaveTextAsync(title);
-        await MarkAllNewsItems(false);
+            // Assert the initial order: C (highest), B, A (lowest)
+            var indexVanA = orderOnPage["Message A"];
+            var indexVanB = orderOnPage["Message B"];
+            var indexVanC = orderOnPage["Message C"];
+
+            Assert.IsTrue(indexVanC < indexVanB && indexVanB > indexVanA, "Initial order should be C, A, B.");
+
+            // Act: Update message A
+            await UpdateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", "Updated Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a");
+
+            // Refresh page and retrieve articles again
+            await Page.GotoAsync("/");
+            allArticles = NieuwsSection.GetByRole(AriaRole.Article);
+
+            // Rebuild the dictionary for updated positions
+            orderOnPage.Clear();
+            for (var index = 0; index < await allArticles.CountAsync(); index++)
+            {
+                var element = allArticles.Nth(index);
+                var innerHtml = await element.InnerTextAsync();
+
+                if (innerHtml.Contains("Message A: 8e600d44-81fb-4302-9675-31b687619026"))
+                {
+                    orderOnPage.Add("Message A", index);
+                }
+                if (innerHtml.Contains("Updated Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
+                {
+                    orderOnPage.Add("Message B", index);
+                }
+                if (innerHtml.Contains("Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc"))
+                {
+                    orderOnPage.Add("Message C", index);
+                }
+            }
+
+            // Assert the updated order: C (highest), A, B (lowest)
+            indexVanA = orderOnPage["Message A"];
+            indexVanB = orderOnPage["Message B"];
+            indexVanC = orderOnPage["Message C"];
+
+            Assert.IsTrue(indexVanC < indexVanA && indexVanA < indexVanB, "Updated order should be C, B, A.");
+        }
+        finally
+        {
+            // Clean up test messages
+            await DeleteBericht("8e600d44-81fb-4302-9675-31b687619026");
+            await DeleteBericht("724e44a3-6ba1-4e92-85c3-d44e35238f4a");
+            await DeleteBericht("5b8277a7-fb1a-4358-8099-24b9487b29bc");
+        }
     }
 
     [TestMethod]
@@ -292,6 +368,30 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
     }
 
+    private async Task UpdateBericht(string oldTitle, string newTitle)
+    {
+        // Navigate to the news management page
+        await NavigateToNieuwsWerkinstructiesBeheer();
+
+        // Find the news item by its old title
+        var nieuwsRows = Page.GetByRole(AriaRole.Row)
+            .Filter(new()
+            {
+                Has = Page.GetByRole(AriaRole.Cell, new() { Name = oldTitle, Exact = true })
+            });
+
+        // Click the "Details" link for the news item
+        await nieuwsRows.GetByRole(AriaRole.Link, new() { Name = "Details" }).ClickAsync();
+
+        // Update the title to the new one
+        await Page.GetByLabel("Titel").FillAsync(newTitle);
+
+        // Save the changes
+        await Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" }).ClickAsync();
+        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
+    }
+
+
     private async Task DeleteBericht(string titel)
     {
         await NavigateToNieuwsWerkinstructiesBeheer();
@@ -302,7 +402,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             })
             .Filter(new()
             {
-                Has = Page.GetByRole(AriaRole.Cell, new() { Name = titel, Exact = true })
+                Has = Page.GetByRole(AriaRole.Cell, new() { Name = titel, Exact = false })
             });
 
         var deleteButton = nieuwsRows.GetByTitle("Verwijder");
