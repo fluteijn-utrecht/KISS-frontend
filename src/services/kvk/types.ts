@@ -43,7 +43,8 @@ export type BedrijfSearchOptions =
       handelsnaam: string;
     }
   | { kvkNummer: string }
-  | { postcodeHuisnummer: PostcodeHuisnummer };
+  | { postcodeHuisnummer: PostcodeHuisnummer }
+  | { vestigingsnummer: string };
 
 export type BedrijfIdentifier =
   | {
