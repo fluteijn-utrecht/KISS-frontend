@@ -197,6 +197,35 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
+    [TestMethod]
+    public async Task Als_ik_een_skill_toevoeg_wordt_deze_vermeld_in_de_filter()
+    {
+        // Define the new skill name to be added and tested
+        var newSkill = "Test Skill";
+
+        try
+        {
+            // Step 1: Navigate to the Skills management page
+            await NavigateToSkillsBeheer();
+
+            // Step 2: Add the new skill
+            await CreateSkill(newSkill);
+            await Page.GotoAsync("/");
+            // Step 3: Open the filter dropdown to verify the skill
+            await Page.ClickAsync("summary:has-text('Filter op categorie')");
+
+            // Step 4: Verify the newly added skill appears in the filter list as a checkbox option
+            var addedSkillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = newSkill });
+            await Expect(addedSkillCheckbox).ToBeVisibleAsync();
+
+        }
+        finally
+        {
+            // Optional clean-up: Remove the skill after test completion if necessary
+            await DeleteSkill(newSkill);
+        }
+    }
+
     // Made private because the test isn't done yet, this is just a stepping stone made with the playwright editor
     [TestMethod]
     private async Task MarkAsImportant()
@@ -340,6 +369,26 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
+    private async Task NavigateToSkillsBeheer()
+    {
+        var beheerlink = Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" });
+        var skillslink = Page.GetByRole(AriaRole.Link, new() { Name = "Skills" });
+
+        await Expect(beheerlink.Or(skillslink).First).ToBeVisibleAsync();
+
+        if (await beheerlink.IsVisibleAsync())
+        {
+            await beheerlink.ClickAsync();
+        }
+
+        await Expect(beheerlink).ToBeVisibleAsync(new() { Visible = false });
+
+        if (await skillslink.GetAttributeAsync("aria-current") != "page")
+        {
+            await skillslink.ClickAsync();
+        }
+    }
+
     private async Task CreateBericht(string titel, bool isBelangrijk)
     {
         await NavigateToNieuwsWerkinstructiesBeheer();
@@ -411,6 +460,71 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         await deleteButton.ClickAsync();
         Page.Dialog -= Accept;
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
+    }
+
+    private async Task CreateSkill(string skillName)
+    {
+        // Step 1: Navigate to the "Skills" beheer page
+        await NavigateToSkillsBeheer();
+
+        // Step 2: Click on the "Toevoegen" button to add a new skill
+        var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "toevoegen" });
+        await toevoegenLink.ClickAsync();
+
+        // Step 3: Fill in the skill name in the input field
+        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Naam" }).FillAsync(skillName);
+
+        // Step 4: Locate and click the "Opslaan" button to save the new skill
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+
+        // Ensure that the save button is visible and enabled before clicking
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
+
+        // Step 5: Optionally verify that the new skill has been added
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Skills" })).ToBeVisibleAsync();
+    }
+
+    private async Task DeleteSkill(string skillName)
+    {
+        // Step 1: Navigate to the Skills management page
+        await NavigateToSkillsBeheer();
+
+        // Step 2: Locate the skill item by its name
+        var skillLocator = Page.Locator($"li.listItem:has-text('{skillName}')");
+
+        // Step 3: Check if the skill exists
+        if (await skillLocator.CountAsync() > 0)
+        {
+            // Step 4: Click the delete button for the specified skill
+            var deleteButton = skillLocator.Locator("button[title='Verwijderen']").First;
+            await Expect(deleteButton).ToBeVisibleAsync();
+            await Expect(deleteButton).ToBeEnabledAsync();
+            if (await deleteButton.IsVisibleAsync())
+            {
+                // Handle the confirmation dialog
+                Page.Dialog += async (sender, dialog) =>
+                {
+                    await dialog.AcceptAsync(); // Accept the confirmation dialog
+                };
+
+                await deleteButton.ClickAsync(); // Click the delete button
+            }
+            else
+            {
+                throw new Exception("Delete button is not visible.");
+            }
+
+            // Step 7: Verify the skill is no longer present in the list
+            await Expect(skillLocator).ToBeHiddenAsync();
+        }
+        else
+        {
+            // Handle the case where the skill does not exist
+            throw new Exception($"Skill '{skillName}' not found for deletion.");
+        }
     }
 
     static async void Accept(object? _, IDialog dialog) => await dialog.AcceptAsync();
