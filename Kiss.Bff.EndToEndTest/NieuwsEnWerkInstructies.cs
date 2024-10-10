@@ -88,11 +88,11 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
 
             // Step 2: Create Message A with the publish date one minute in the past
-            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false, "", true);
+            await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false, "", TimeSpan.FromMinutes(-1));
 
             // Create Message B and C with the current publish date
-            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false, "", false);
-            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true, "", false);
+            await CreateBericht("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a", false, "");
+            await CreateBericht("Important Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc", true, "");
 
             // Go to the page and retrieve the order of articles
             await Page.GotoAsync("/");
@@ -350,7 +350,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         }
     }
 
-    private async Task CreateBericht(string titel, bool isBelangrijk, string skill, bool changePublishDate = false)
+    private async Task CreateBericht(string titel, bool isBelangrijk, string skill, TimeSpan? publishDateOffset = null)
     {
         await NavigateToNieuwsWerkinstructiesBeheer();
         var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
@@ -371,17 +371,21 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         if (!string.IsNullOrEmpty(skill))
         {
             var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
-            await skillCheckbox.CheckAsync();
+            await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
         }
 
+        // Use the current time as the base publish date
+        DateTime publishDate = DateTime.Now;
 
-        if (changePublishDate)
+        // Apply the provided offset to the publish date
+        if (publishDateOffset.HasValue)
         {
-            DateTime publishDate = DateTime.Now;
-            publishDate = publishDate.AddMinutes(-1); // Subtract one minute
-            var publishDateInput = Page.Locator("#publicatieDatum");
-            await publishDateInput.FillAsync(publishDate.ToString("yyyy-MM-ddTHH:mm"));
+            publishDate = publishDate.Add(publishDateOffset.Value);
         }
+
+        // Set the publish date in the input field
+        var publishDateInput = Page.Locator("#publicatieDatum");
+        await publishDateInput.FillAsync(publishDate.ToString("yyyy-MM-ddTHH:mm"));
 
         var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
         while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
