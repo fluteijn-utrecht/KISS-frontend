@@ -86,8 +86,6 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 await DeleteBericht("5b8277a7-fb1a-4358-8099-24b9487b29bc");
             }
 
-            // Set the current publish date
-            var currentPublishDate = DateTime.Now;
 
             // Step 2: Create Message A with the publish date one minute in the past
             await CreateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", false, "", true);
@@ -394,7 +392,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
     }
 
-    private async Task UpdateBericht(string oldTitle, string newTitle, DateTime? publishDate = null)
+    private async Task UpdateBericht(string oldTitle, string newTitle)
     {
         // Navigate to the news management page
         await NavigateToNieuwsWerkinstructiesBeheer();
