@@ -1,11 +1,12 @@
 import {
-    enforceOneOrZero,
-    fetchLoggedIn,
-    parseJson,
-    parsePagination,
-    throwIfNotOk,ServiceResult,
-type PaginatedResult,
-type ServiceData,
+  enforceOneOrZero,
+  fetchLoggedIn,
+  parseJson,
+  parsePagination,
+  throwIfNotOk,
+  ServiceResult,
+  type PaginatedResult,
+  type ServiceData,
 } from "@/services";
 import { mutate } from "swrv";
 import type { Klant, UpdateContactgegevensParams } from "./types.ts";
@@ -25,7 +26,7 @@ type FieldParams = {
   telefoonnummer: string;
 };
 
-type KlantSearchParameters   = {
+type KlantSearchParameters = {
   query: Ref<BedrijvenQuery | undefined>;
   page: Ref<number | undefined>;
   subjectType?: KlantType;
@@ -45,15 +46,13 @@ function getKlantSearchUrl(
   url.searchParams.set("page", page?.toString() ?? "1");
   url.searchParams.append("subjectType", subjectType);
 
-  if ("email" in search ){
-    url.searchParams.set("emailadres", search.email);    
+  if ("email" in search) {
+    url.searchParams.set("emailadres", search.email);
   }
-  
-  if ("telefoonnummer" in search ){
-    url.searchParams.set("telefoonnummer", search.telefoonnummer);    
+
+  if ("telefoonnummer" in search) {
+    url.searchParams.set("telefoonnummer", search.telefoonnummer);
   }
-  
- 
 
   return url.toString();
 }
@@ -72,7 +71,6 @@ export function useSearchKlanten({
   return ServiceResult.fromFetcher(getUrl, searchKlanten);
 }
 
-
 function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
@@ -80,6 +78,8 @@ function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
     .then((j) => parsePagination(j, mapKlant))
     .then((p) => {
       p.page.forEach((klant) => {
+        console.log(klant.emailadressen, klant.telefoonnummers);
+
         const idUrl = getKlantIdUrl(klant.id);
         if (idUrl) {
           mutate(idUrl, klant);
@@ -108,7 +108,7 @@ function mapKlant(obj: any): Klant {
     url: url,
     nietNatuurlijkPersoonIdentifier: innNnpId,
     emailadressen: emailadres ? [emailadres] : [],
-    telefoonnummers: telefoonnummer ? [telefoonnummer] : []
+    telefoonnummers: telefoonnummer ? [telefoonnummer] : [],
   };
 }
 
@@ -154,7 +154,6 @@ const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {
     return subjectIdentificatie;
   return rest;
 };
-
 
 function updateContactgegevens({
   id,
@@ -255,7 +254,10 @@ const getUrlVoorGetKlantById = (
 
   const url = new URL(klantRootUrl);
 
-  if ("vestigingsnummer" in bedrijfSearchParameter && bedrijfSearchParameter.vestigingsnummer) {
+  if (
+    "vestigingsnummer" in bedrijfSearchParameter &&
+    bedrijfSearchParameter.vestigingsnummer
+  ) {
     url.searchParams.set(
       "subjectVestiging__vestigingsNummer",
       bedrijfSearchParameter.vestigingsnummer,
@@ -263,10 +265,13 @@ const getUrlVoorGetKlantById = (
     url.searchParams.set("subjectType", KlantType.Bedrijf);
     return url.toString();
   }
-  if ("nietNatuurlijkPersoonIdentifier" in bedrijfSearchParameter && bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier) {
+  if (
+    "nietNatuurlijkPersoonIdentifier" in bedrijfSearchParameter &&
+    bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier
+  ) {
     url.searchParams.set(
       "subjectNietNatuurlijkPersoon__innNnpId",
-      bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier, 
+      bedrijfSearchParameter.nietNatuurlijkPersoonIdentifier,
     );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();
@@ -274,7 +279,6 @@ const getUrlVoorGetKlantById = (
 
   return "";
 };
-
 
 const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
   if (!id) return "";
@@ -284,35 +288,38 @@ const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
   return url.toString();
 };
 
-export const useKlantByIdentifier = (
-  getId: () =>  BedrijfIdentifierOpenKlant1 | undefined,
+export const useKlantByIdentifier = async (
+  getId: () => BedrijfIdentifierOpenKlant1 | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetKlantById(getId());
 
-  const getUniqueId = () => {
-    const url = getUrl();
-    return url && url + "_single";
-  };
+  // const getUniqueId = () => {
+  //   const url = getUrl();
+  //   return url && url + "_single";
+  // };
 
-  return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
-    getUniqueId,
-  });
+  return await searchSingleKlant(getUrl());
+
+  // return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
+  //   getUniqueId,
+  // });
 };
 
 export function mapBedrijfsIdentifier(
-  bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2
+  bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2,
 ): BedrijfIdentifierOpenKlant1 {
   return {
-    vestigingsnummer: 'vestigingsnummer' in bedrijfIdentifierOpenKlant2
-      ? bedrijfIdentifierOpenKlant2.vestigingsnummer
-      : "",
+    vestigingsnummer:
+      "vestigingsnummer" in bedrijfIdentifierOpenKlant2
+        ? bedrijfIdentifierOpenKlant2.vestigingsnummer
+        : "",
 
-    nietNatuurlijkPersoonIdentifier: 'rsin' in bedrijfIdentifierOpenKlant2
-      ? bedrijfIdentifierOpenKlant2.rsin
-      : "", 
+    nietNatuurlijkPersoonIdentifier:
+      "rsin" in bedrijfIdentifierOpenKlant2
+        ? bedrijfIdentifierOpenKlant2.rsin
+        : "",
   };
 }
-
 
 //maak een klant aan in het klanten register als die nog niet bestaat
 //bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan

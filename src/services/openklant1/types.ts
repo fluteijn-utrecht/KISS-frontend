@@ -3,6 +3,7 @@ export type UpdateContactgegevensParams = Pick<
   "id" | "telefoonnummers" | "emailadressen"
 >;
 
+//todo: refactor openklant 1 en 2 moeten beiden dezelfde klant interface gebruiken
 export interface Klant {
   _typeOfKlant: "klant";
   id: string;
@@ -12,9 +13,10 @@ export interface Klant {
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
-  url?: string;
+  url: string;
   kvkNummer?: string;
   nietNatuurlijkPersoonIdentifier?: string;
+  rsin?: string;
 }
 
 export enum KlantType {
@@ -28,9 +30,9 @@ export interface Contactverzoek {
 }
 
 export type BedrijfIdentifier =
-| {
-    vestigingsnummer: string;
-  }
-| {
-    nietNatuurlijkPersoonIdentifier: string;
-  };
+  | {
+      vestigingsnummer: string;
+    }
+  | {
+      nietNatuurlijkPersoonIdentifier: string;
+    };

@@ -87,16 +87,16 @@ export interface ContactmomentViewModel {
 }
 
 export interface InternetaakPostModel {
-  nummer: string; 
-  gevraagdeHandeling: string; 
-  aanleidinggevendKlantcontact: { 
+  nummer: string;
+  gevraagdeHandeling: string;
+  aanleidinggevendKlantcontact: {
     uuid: string;
   };
-  toegewezenAanActoren: { 
+  toegewezenAanActoren: {
     uuid: string;
   }[];
-  toelichting: string; 
-  status: "te_verwerken" | "verwerkt"; 
+  toelichting: string;
+  status: "te_verwerken" | "verwerkt";
   afgehandeldOp?: string;
 }
 
@@ -122,6 +122,7 @@ export interface KlantContactPostmodel {
   plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
 }
 
+//todo: refactor openklant 1 en 2 moeten beiden dezelfde klant interface gebruiken
 export interface Klant {
   _typeOfKlant: "klant";
   id: string;
@@ -133,6 +134,7 @@ export interface Klant {
   vestigingsnummer?: string;
   rsin?: string;
   kvkNummer?: string;
+  nietNatuurlijkPersoonIdentifier?: string;
   url: string;
 }
 
