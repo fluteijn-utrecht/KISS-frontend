@@ -1,52 +1,58 @@
 <template>
-  <tr class="row-link">
-    <th scope="row" class="wrap">
-      <div class="skeleton" v-if="bedrijf.loading" />
-      <template v-else-if="bedrijf.success">{{
+    <tr class="row-link">
+        <th scope="row" class="wrap">
+            <div class="skeleton" v-if="bedrijf.loading" />
+            <template v-else-if="bedrijf.success">
+                {{
         bedrijf.data?.bedrijfsnaam
-      }}</template>
-    </th>
-    <td>
-      <div class="skeleton" v-if="bedrijf.loading" />
-      <template v-if="bedrijf.success">{{ bedrijf.data?.type }}</template>
-    </td>
-    <td>
-      {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
-    </td>
-    <td>
-      <div class="skeleton" v-if="bedrijf.loading" />
-      <template v-if="bedrijf.success">{{
+                }}
+            </template>
+        </th>
+        <td>
+            {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
+        </td>
+        <td>
+            <div class="skeleton" v-if="bedrijf.loading" />
+            <template v-if="bedrijf.success">
+                {{ bedrijf.data?.vestigingsnummer }}
+            </template>
+        </td>
+        <td>
+            <div class="skeleton" v-if="bedrijf.loading" />
+            <template v-if="bedrijf.success">
+                {{
         [bedrijf.data?.postcode, bedrijf.data?.huisnummer].join(" ")
-      }}</template>
-    </td>
-    <td class="wrap">
-      <div class="skeleton" v-if="klant.loading" />
-      <template v-if="klant.success">{{
+                }}
+            </template>
+        </td>
+        <td class="wrap">
+            <div class="skeleton" v-if="klant.loading" />
+            <template v-if="klant.success">
+                {{
         klant.data?.emailadressen?.join(", ")
-      }}</template>
-    </td>
-    <td class="wrap">
-      <div class="skeleton" v-if="klant.loading" />
-      <template v-if="klant.success">{{
+                }}
+            </template>
+        </td>
+        <td class="wrap">
+            <div class="skeleton" v-if="klant.loading" />
+            <template v-if="klant.success">
+                {{
         klant.data?.telefoonnummers.join(", ")
-      }}</template>
-    </td>
-    <td>
-      <div class="skeleton" v-if="klant.loading || bedrijf.loading" />
-      <router-link
-        v-if="klant.data"
-        :title="`Details ${naam}`"
-        :to="getKlantUrl(klant.data)"
-        @click="setCache(klant.data, bedrijf.data)"
-      />
-      <button
-        v-else-if="bedrijf.data && bedrijfIdentifier"
-        type="button"
-        title="Aanmaken"
-        @click="navigate(bedrijf.data, bedrijfIdentifier)"
-      />
-    </td>
-  </tr>
+                }}
+            </template>
+        </td>
+        <td>
+            <div class="skeleton" v-if="klant.loading || bedrijf.loading" />
+            <router-link v-if="klant.data"
+                         :title="`Details ${naam}`"
+                         :to="getKlantUrl(klant.data)"
+                         @click="setCache(klant.data, bedrijf.data)" />
+            <button v-else-if="bedrijf.data && bedrijfIdentifier"
+                    type="button"
+                    title="Aanmaken"
+                    @click="navigate(bedrijf.data, bedrijfIdentifier)" />
+        </td>
+    </tr>
 </template>
 <script lang="ts" setup>
 import { computed, watchEffect } from "vue";
