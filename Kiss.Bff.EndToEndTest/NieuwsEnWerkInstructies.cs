@@ -100,7 +100,9 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
             // Dictionary to hold article positions
             var orderOnPage = new Dictionary<string, int>();
-            for (var index = 0; index < await allArticles.CountAsync(); index++)
+            var a = await allArticles.CountAsync();
+            Console.WriteLine(a);
+            for (var index = 0; index < a; index++)
             {
                 var element = allArticles.Nth(index);
                 var innerHtml = await element.InnerTextAsync();
