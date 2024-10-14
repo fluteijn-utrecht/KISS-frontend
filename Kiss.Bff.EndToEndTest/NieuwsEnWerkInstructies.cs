@@ -103,12 +103,14 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             var orderOnPage = new Dictionary<string, int>();
             var a = await allArticles.CountAsync();
             Console.WriteLine(a);
+            Console.WriteLine(orderOnPage);
             await Page.EvaluateAsync($"console.log('aantal articles: {a}')");
             await Page.EvaluateAsync($"console.log('Dictionary: {orderOnPage}')");
             for (var index = 0; index < a; index++)
             {
                 var element = allArticles.Nth(index);
                 var innerHtml = await element.InnerTextAsync();
+                Console.WriteLine(innerHtml);
                 await Page.EvaluateAsync($"console.log('innerHTML van arctile: {innerHtml}')");
 
                 if (innerHtml.Contains("Message A: 8e600d44-81fb-4302-9675-31b687619026"))
