@@ -139,7 +139,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
 
             Console.WriteLine("klaar met loop");
-
+            Console.WriteLine(orderOnPage.Values);
             // Assert the initial order: A (lowest), B, C (highest)
             var indexVanA = orderOnPage["Message A"];
             var indexVanB = orderOnPage["Message B"];
