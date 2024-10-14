@@ -139,20 +139,24 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
 
             Console.WriteLine("klaar met loop");
-            foreach (var itemInDictionary in orderOnPage)
-            {
-                Console.WriteLine(itemInDictionary.Value.ToString());
-                Console.WriteLine(itemInDictionary.Key.ToString());
-            }
             foreach (var kvp in orderOnPage)
             {
                 Console.WriteLine($"Key: {kvp.Key}, Value: {kvp.Value}");
             }
 
             // Assert the initial order: A (lowest), B, C (highest)
-            var indexVanA = orderOnPage["Message A"];
+            var indexVanA = orderOnPage.GetValueOrDefault("Message A");
+
+            Console.WriteLine($"indexVanA: {indexVanA}");
+
             var indexVanB = orderOnPage["Message B"];
+
+            Console.WriteLine("bbb");
+
             var indexVanC = orderOnPage["Message C"];
+
+            Console.WriteLine("ccc");
+
 
             Assert.IsTrue(indexVanC < indexVanB && indexVanB < indexVanA, "Initial order should be C, B, A.");
 
