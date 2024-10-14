@@ -139,7 +139,10 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
 
             Console.WriteLine("klaar met loop");
-            Console.WriteLine(orderOnPage.Values);
+            foreach (var itemInDictionary in orderOnPage)
+            {
+                Console.WriteLine(itemInDictionary.Value.ToString());
+            }
             // Assert the initial order: A (lowest), B, C (highest)
             var indexVanA = orderOnPage["Message A"];
             var indexVanB = orderOnPage["Message B"];
