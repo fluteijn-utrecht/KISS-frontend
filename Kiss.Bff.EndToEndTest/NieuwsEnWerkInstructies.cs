@@ -111,19 +111,22 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 var element = allArticles.Nth(index);
                 var innerHtml = await element.InnerTextAsync();
                 Console.WriteLine(innerHtml);
-                await Page.EvaluateAsync($"console.log('innerHTML van arctile: {innerHtml}')");
+                await Page.EvaluateAsync($"console.log('Starting new iteration in loop with innerHTML of arctile: {innerHtml}')");
 
                 if (innerHtml.Contains("Message A: 8e600d44-81fb-4302-9675-31b687619026"))
                 {
                     orderOnPage.Add("Message A", index);
+                    Console.WriteLine($"Added Message A! {innerHtml}");
                 }
                 if (innerHtml.Contains("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
                 {
                     orderOnPage.Add("Message B", index);
+                    Console.WriteLine($"Added Message B! {innerHtml}");
                 }
                 if (innerHtml.Contains("Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc"))
                 {
                     orderOnPage.Add("Message C", index);
+                    Console.WriteLine($"Added Message C! {innerHtml}");
                 }
             }
 
