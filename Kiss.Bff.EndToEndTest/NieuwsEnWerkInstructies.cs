@@ -102,6 +102,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             var orderOnPage = new Dictionary<string, int>();
             var a = await allArticles.CountAsync();
             Console.WriteLine(a);
+            await Page.EvaluateAsync($"console.log('aantal articles: {a}')"); 
             for (var index = 0; index < a; index++)
             {
                 var element = allArticles.Nth(index);
@@ -428,14 +429,14 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         var nieuwsRows = Page.GetByRole(AriaRole.Row)
             .Filter(new()
             {
-                Has = Page.GetByRole(AriaRole.Cell, new() { Name = "Nieuws" })
+                Has = Page.GetByRole(AriaRole.Cell, new() { Name = "Nieuws" }).First
             })
             .Filter(new()
             {
-                Has = Page.GetByRole(AriaRole.Cell, new() { Name = titel, Exact = false })
+                Has = Page.GetByRole(AriaRole.Cell, new() { Name = titel, Exact = false }).First
             });
 
-        var deleteButton = nieuwsRows.GetByTitle("Verwijder");
+        var deleteButton = nieuwsRows.GetByTitle("Verwijder").First;
         
         Page.Dialog += Accept;
         await deleteButton.ClickAsync();
