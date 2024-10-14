@@ -166,6 +166,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
             // Refresh page and retrieve articles again
             await Page.GotoAsync("/");
+            await Page.WaitForTimeoutAsync(5000);
             allArticles = Page.Locator("section").Filter(new() { HasText = "Nieuws" }).GetByRole(AriaRole.Article);
 
             // Rebuild the dictionary for updated positions
