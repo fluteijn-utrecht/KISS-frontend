@@ -117,19 +117,19 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 {
                     orderOnPage.Add("Message A", index);
                     Console.WriteLine($"Added Message A! {innerHtml}");
-                    await Page.EvaluateAsync("Added Message A!");
+                    await Page.EvaluateAsync("console.log(Added Message A!)");
                 }
                 if (innerHtml.Contains("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
                 {
                     orderOnPage.Add("Message B", index);
                     Console.WriteLine($"Added Message B! {innerHtml}");
-                    await Page.EvaluateAsync("Added Message B!");
+                    await Page.EvaluateAsync("console.log(Added Message B!)");
                 }
                 if (innerHtml.Contains("Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc"))
                 {
                     orderOnPage.Add("Message C", index);
                     Console.WriteLine($"Added Message C! {innerHtml}");
-                    await Page.EvaluateAsync("Added Message C!");
+                    await Page.EvaluateAsync("console.log(Added Message C!)");
                 }
             }
 
