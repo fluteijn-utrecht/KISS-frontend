@@ -100,7 +100,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             var allArticles = Page.Locator("section").Filter(new() { HasText = "Nieuws" }).GetByRole(AriaRole.Article);
 
             // Dictionary to hold article positions
-            var orderOnPage = new Dictionary<string, int>();
+            var initialOrderOnPage = new Dictionary<string, int>();
             var a = await allArticles.CountAsync();
             //Console.WriteLine(a);
             //Console.WriteLine(orderOnPage);
@@ -119,19 +119,19 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
                 if (innerHtml.Contains("Message A: 8e600d44-81fb-4302-9675-31b687619026"))
                 {
-                    orderOnPage.Add("Message A", index);
+                    initialOrderOnPage.Add("Message A", index);
                     Console.WriteLine($"Added Message A! {innerHtml}");
                 //    await Page.EvaluateAsync("console.log(Added Message A!)");
                 }
                 if (innerHtml.Contains("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
                 {
-                    orderOnPage.Add("Message B", index);
+                    initialOrderOnPage.Add("Message B", index);
                     Console.WriteLine($"Added Message B! {innerHtml}");
                  //   await Page.EvaluateAsync("console.log(Added Message B!)");
                 }
                 if (innerHtml.Contains("Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc"))
                 {
-                    orderOnPage.Add("Message C", index);
+                    initialOrderOnPage.Add("Message C", index);
                     Console.WriteLine($"Added Message C! {innerHtml}");
                  //   await Page.EvaluateAsync("console.log(Added Message C!)");
                 }
@@ -139,59 +139,71 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
 
             Console.WriteLine("klaar met loop");
-            foreach (var kvp in orderOnPage)
-            {
-                Console.WriteLine($"Key: {kvp.Key}, Value: {kvp.Value}");
-            }
+            //foreach (var kvp in initialOrderOnPage)
+            //{
+            //    Console.WriteLine($"Key: {kvp.Key}, Value: {kvp.Value}");
+            //}
 
             // Assert the initial order: A (lowest), B, C (highest)
-            var indexVanA = orderOnPage.GetValueOrDefault("Message A");
+            var indexVanA = initialOrderOnPage.GetValueOrDefault("Message A");
 
-            Console.WriteLine($"indexVanA: {indexVanA}");
+         
 
-            var indexVanB = orderOnPage["Message B"];
+            var indexVanB = initialOrderOnPage["Message B"];
 
-            Console.WriteLine("bbb");
+      
 
-            var indexVanC = orderOnPage["Message C"];
+            var indexVanC = initialOrderOnPage["Message C"];
 
-            Console.WriteLine("ccc");
-
+          
 
             Assert.IsTrue(indexVanC < indexVanB && indexVanB < indexVanA, "Initial order should be C, B, A.");
 
             // Act: Update message A
             await UpdateBericht("Message A: 8e600d44-81fb-4302-9675-31b687619026", "Updated Message A: 8e600d44-81fb-4302-9675-31b687619026");
 
+            Console.WriteLine("klaar met update");
+
             // Refresh page and retrieve articles again
             await Page.GotoAsync("/");
-            allArticles = NieuwsSection.GetByRole(AriaRole.Article);
+            allArticles = Page.Locator("section").Filter(new() { HasText = "Nieuws" }).GetByRole(AriaRole.Article);
 
             // Rebuild the dictionary for updated positions
-            orderOnPage.Clear();
+            var orderOnPageAfterMessageUpdate = new Dictionary<string, int>();
             for (var index = 0; index < await allArticles.CountAsync(); index++)
             {
+
+                Console.WriteLine("loop2 " + index);
                 var element = allArticles.Nth(index);
                 var innerHtml = await element.InnerTextAsync();
 
                 if (innerHtml.Contains("Updated Message A: 8e600d44-81fb-4302-9675-31b687619026"))
                 {
-                    orderOnPage.Add("Message A", index);
+                    orderOnPageAfterMessageUpdate.Add("Message A", index);
+                    Console.WriteLine("loop2 add " + index);
                 }
                 if (innerHtml.Contains("Message B: 724e44a3-6ba1-4e92-85c3-d44e35238f4a"))
                 {
-                    orderOnPage.Add("Message B", index);
+                    orderOnPageAfterMessageUpdate.Add("Message B", index);
+                    Console.WriteLine("loop2 add " + index);
                 }
                 if (innerHtml.Contains("Message C: 5b8277a7-fb1a-4358-8099-24b9487b29bc"))
                 {
-                    orderOnPage.Add("Message C", index);
+                    orderOnPageAfterMessageUpdate.Add("Message C", index);
+                    Console.WriteLine("loop2 add " + index);
                 }
             }
 
+
+            foreach (var kvp in orderOnPageAfterMessageUpdate)
+            {
+                Console.WriteLine($" -- Key: {kvp.Key}, Value: {kvp.Value}");
+            }
+
             // Assert the updated order: C (highest), B, A (lowest)
-            indexVanA = orderOnPage["Message A"];
-            indexVanB = orderOnPage["Message B"];
-            indexVanC = orderOnPage["Message C"];
+            indexVanA = orderOnPageAfterMessageUpdate["Message A"];
+            indexVanB = orderOnPageAfterMessageUpdate["Message B"];
+            indexVanC = orderOnPageAfterMessageUpdate["Message C"];
 
             Assert.IsTrue(indexVanC < indexVanB && indexVanB > indexVanA, "Updated order should be C, A, B.");
         }
