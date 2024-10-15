@@ -96,7 +96,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
             // Go to the page and retrieve the order of articles
             await Page.GotoAsync("/");
-            await Page.WaitForTimeoutAsync(5000);
+            await Page.WaitForSelectorAsync("article");
             var allArticles = NieuwsSection.GetByRole(AriaRole.Article);
 
             // Dictionary to hold article positions
