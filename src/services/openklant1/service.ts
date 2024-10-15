@@ -78,8 +78,6 @@ function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
     .then((j) => parsePagination(j, mapKlant))
     .then((p) => {
       p.page.forEach((klant) => {
-        console.log(klant.emailadressen, klant.telefoonnummers);
-
         const idUrl = getKlantIdUrl(klant.id);
         if (idUrl) {
           mutate(idUrl, klant);
@@ -135,6 +133,8 @@ const getSingleBsnSearchId = (bsn: string | undefined) => {
 };
 
 function fetchKlantById(url: string) {
+  console.log("neeeee");
+
   return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
 }
 
@@ -280,13 +280,13 @@ const getUrlVoorGetKlantById = (
   return "";
 };
 
-const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
-  if (!id) return "";
-  const url = new URL(klantRootUrl);
-  url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", id);
-  url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
-  return url.toString();
-};
+// const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
+//   if (!id) return "";
+//   const url = new URL(klantRootUrl);
+//   url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", id);
+//   url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
+//   return url.toString();
+// };
 
 export const useKlantByIdentifier = async (
   getId: () => BedrijfIdentifierOpenKlant1 | undefined,
@@ -308,6 +308,8 @@ export const useKlantByIdentifier = async (
 export function mapBedrijfsIdentifier(
   bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2,
 ): BedrijfIdentifierOpenKlant1 {
+  //990983419 wordt hier als rsin meegegeven...
+
   return {
     vestigingsnummer:
       "vestigingsnummer" in bedrijfIdentifierOpenKlant2
@@ -317,7 +319,9 @@ export function mapBedrijfsIdentifier(
     nietNatuurlijkPersoonIdentifier:
       "rsin" in bedrijfIdentifierOpenKlant2
         ? bedrijfIdentifierOpenKlant2.rsin
-        : "",
+        : "kvkNummer" in bedrijfIdentifierOpenKlant2
+          ? bedrijfIdentifierOpenKlant2.kvkNummer
+          : "",
   };
 }
 
@@ -396,55 +400,55 @@ export async function ensureKlantForBedrijfIdentifier(
   return newKlant;
 }
 
-export async function ensureKlantForNietNatuurlijkPersoon(
-  {
-    bedrijfsnaam,
-    id,
-  }: {
-    bedrijfsnaam: string;
-    id: string;
-  },
-  bronorganisatie: string,
-) {
-  const url = getKlantByNietNatuurlijkpersoonIdentifierUrl(id);
-  const uniqueId = url && url + "_single";
+// export async function ensureKlantForNietNatuurlijkPersoon(
+//   {
+//     bedrijfsnaam,
+//     id,
+//   }: {
+//     bedrijfsnaam: string;
+//     id: string;
+//   },
+//   bronorganisatie: string,
+// ) {
+//   const url = getKlantByNietNatuurlijkpersoonIdentifierUrl(id);
+//   const uniqueId = url && url + "_single";
 
-  if (!url || !uniqueId) throw new Error();
+//   if (!url || !uniqueId) throw new Error();
 
-  const first = await searchSingleKlant(url);
+//   const first = await searchSingleKlant(url);
 
-  if (first) {
-    mutate(uniqueId, first);
-    const idUrl = getKlantIdUrl(first.id);
-    mutate(idUrl, first);
-    return first;
-  }
+//   if (first) {
+//     mutate(uniqueId, first);
+//     const idUrl = getKlantIdUrl(first.id);
+//     mutate(idUrl, first);
+//     return first;
+//   }
 
-  const response = await fetchLoggedIn(klantRootUrl, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      bronorganisatie,
-      klantnummer: nanoid(8),
-      subjectIdentificatie: { innNnpId: id },
-      subjectType: KlantType.NietNatuurlijkPersoon,
-      bedrijfsnaam,
-    }),
-  });
+//   const response = await fetchLoggedIn(klantRootUrl, {
+//     method: "POST",
+//     headers: {
+//       "content-type": "application/json",
+//     },
+//     body: JSON.stringify({
+//       bronorganisatie,
+//       klantnummer: nanoid(8),
+//       subjectIdentificatie: { innNnpId: id },
+//       subjectType: KlantType.NietNatuurlijkPersoon,
+//       bedrijfsnaam,
+//     }),
+//   });
 
-  if (!response.ok) throw new Error();
+//   if (!response.ok) throw new Error();
 
-  const json = await response.json();
-  const newKlant = mapKlant(json);
-  const idUrl = getKlantIdUrl(newKlant.id);
+//   const json = await response.json();
+//   const newKlant = mapKlant(json);
+//   const idUrl = getKlantIdUrl(newKlant.id);
 
-  mutate(idUrl, newKlant);
-  mutate(uniqueId, newKlant);
+//   mutate(idUrl, newKlant);
+//   mutate(uniqueId, newKlant);
 
-  return newKlant;
-}
+//   return newKlant;
+// }
 
 export function createKlant({
   telefoonnummer = "",

@@ -9,6 +9,9 @@ export const useBedrijfByIdentifier = (
 ) => {
   const getCacheKey = () => {
     const id = getId();
+
+    console.log("-4", id);
+
     if (!id) return "";
     const identfier = "vestigingsnummer" in id ? id.vestigingsnummer : id.rsin;
     return "bedrijf" + identfier;
@@ -21,6 +24,9 @@ export const useBedrijfByIdentifier = (
         "Dit scenario kan niet voorkomen, wordt al afgehandeld door getCacheKey",
       );
     }
+
+    console.log("bedrijfsinfo ophalen bij kvk ");
+
     return searchBedrijvenInHandelsRegister(id).then(enforceOneOrZero);
   };
 

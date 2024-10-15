@@ -607,13 +607,15 @@ type Partij = {
   };
 };
 
-export const fetchKlantById = (uuid: string) =>
-  fetchLoggedIn(
+export const fetchKlantById = (uuid: string) => {
+
+  return fetchLoggedIn(
     `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`,
   )
     .then(throwIfNotOk)
     .then(parseJson)
     .then(mapPartijToKlant);
+};
 
 export function findKlantByIdentifier(
   query:

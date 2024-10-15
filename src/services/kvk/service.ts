@@ -71,6 +71,9 @@ const parseKvkPagination = async ({
   totaal,
   resultaten,
 }: KvkPagination): Promise<Paginated<Bedrijf>> => {
+
+  console.log("bedrijfsinfo ophalen bij kvk - parse result")
+
   return {
     page: await Promise.all(resultaten.map((x) => mapHandelsRegister(x))),
     pageNumber: pagina,
@@ -119,6 +122,8 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
     ...(vestiging ?? {}),
     ...(naamgeving ?? {}),
   };
+
+  console.log("bedrijfsinfo ophalen bij kvk - gemapped")
 
   return merged;
 }

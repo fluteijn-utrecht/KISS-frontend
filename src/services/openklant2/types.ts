@@ -129,6 +129,10 @@ export interface Klant {
   klantnummer: string;
   telefoonnummers: string[];
   emailadressen: string[];
+
+  telefoonnummer?: string;
+  emailadres?: string;
+
   bsn?: string;
   bedrijfsnaam?: string;
   vestigingsnummer?: string;
@@ -144,6 +148,9 @@ export type KlantBedrijfIdentifier =
     }
   | {
       rsin: string;
+    }
+  | {
+      kvkNummer: string;
     };
 
 ///////////////////////////////

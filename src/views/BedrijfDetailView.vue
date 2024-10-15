@@ -1,6 +1,15 @@
 <template>
   <back-link />
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
+
+  <p>test</p>
+  <div v-if="bedrijf.loading">bedrijf loading</div>
+  <div v-else-if="bedrijf.success">
+    <div v-if="bedrijf.data">
+      <pre>{{ bedrijf.data }}</pre>
+    </div>
+  </div>
+
   <tab-list v-model="currentTab">
     <tab-list-data-item
       label="Contactgegevens"
@@ -69,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
@@ -91,15 +100,17 @@ import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
 import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
+import { useOpenKlant2 } from "@/services/openklant2/service";
 
 const props = defineProps<{ bedrijfId: string }>();
+
+const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
+
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId);
+const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
-
-const gebruikKlantInteracatiesApi = ref<boolean | null>(false);
 
 //const contactverzoekenPage = ref(1);
 const contactverzoeken = useContactverzoekenByKlantId(
@@ -123,9 +134,19 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
       rsin: klant.data.rsin,
       kvkNummer: klant.data.kvkNummer,
     };
+
+  if (klant.data.nietNatuurlijkPersoonIdentifier)
+    return {
+
+dit is niet genoeg!! er kunnen meerdere records met hetzelfde kvk nr useZakenByKlantBedrijfIdentifier. we moeten erder dus toch een ander rsin hebben!!!!
+
+
+      kvkNummer: klant.data.nietNatuurlijkPersoonIdentifier,
+    };
 };
 
 const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
+
 const zaken = useZakenByKlantBedrijfIdentifier(() => {
   if (!bedrijf.success || !bedrijf.data?.kvkNummer) return undefined;
   if (bedrijf.data.vestigingsnummer)
@@ -150,4 +171,8 @@ watch(
   },
   { immediate: true },
 );
+
+onMounted(async () => {
+  gebruikKlantInteracatiesApi.value = await useOpenKlant2();
+});
 </script>

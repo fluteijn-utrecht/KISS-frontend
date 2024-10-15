@@ -99,15 +99,14 @@ import {
 import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 import { useOpenKlant2 } from "@/services/openklant2";
 
-const activeTab = ref("");
-
 const props = defineProps<{ persoonId: string }>();
-const klantId = computed(() => props.persoonId);
-const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId);
-const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
+const activeTab = ref("");
+const klantId = computed(() => props.persoonId);
+const contactmomentStore = useContactmomentStore();
+const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 const contactverzoeken = useContactverzoekenByKlantId(
   klantUrl,

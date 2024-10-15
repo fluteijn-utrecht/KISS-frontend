@@ -53,7 +53,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, watchEffect } from "vue";
-import { useBedrijfByIdentifier } from "../use-bedrijf-by-identifier";
+
 import { useKlantByBedrijfIdentifier } from "./use-klant-by-bedrijf-identifier";
 import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
 import { useRouter } from "vue-router";
@@ -82,8 +82,11 @@ const props = defineProps<{
 // });
 
 const matchingKlant = useKlantByBedrijfIdentifier(() => {
+  //mist hier niet de aanvullende info.. met rsin.. de kvk naamgeving data??
+
   if (props.item._typeOfKlant === "klant") return undefined;
-  const { vestigingsnummer, rsin } = props.item;
+
+  const { vestigingsnummer, rsin, kvkNummer } = props.item;
 
   if (vestigingsnummer)
     return {
@@ -91,7 +94,7 @@ const matchingKlant = useKlantByBedrijfIdentifier(() => {
     };
   if (rsin)
     return {
-      rsin,
+      kvkNummer, //openklant1 gebruikte rsin. esuite kvknummer.
     };
 });
 
@@ -119,6 +122,10 @@ const bedrijfIdentifier = computed<BedrijfIdentifier | undefined>(() => {
   if (vestigingsnummer)
     return {
       vestigingsnummer,
+    };
+  if (kvkNummer)
+    return {
+      kvkNummer,
     };
   if (rsin)
     return {

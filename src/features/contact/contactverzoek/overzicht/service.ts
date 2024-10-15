@@ -101,6 +101,7 @@ export function useContactverzoekenByKlantId(
         "data_attrs",
         `betrokkene__klant__exact__${id.value}`,
       );
+
       return url.toString();
     }
   }
