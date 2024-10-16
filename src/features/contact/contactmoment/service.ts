@@ -226,6 +226,8 @@ export function useContactmomentenByKlantId(
 
   return ServiceResult.fromFetcher(
     () => {
+      console.log("fetch cm url 1");
+
       if (gebruikKlantinteractiesApi.value === null) {
         return "";
       }

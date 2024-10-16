@@ -105,7 +105,7 @@ const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
 const activeTab = ref("");
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
+const klant = useKlantById(klantId, gebruikKlantInteracatiesApi, "peroon");
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 const contactverzoeken = useContactverzoekenByKlantId(
@@ -122,11 +122,25 @@ onMounted(async () => {
   gebruikKlantInteracatiesApi.value = await useOpenKlant2();
 });
 
-const getBsn = () => (!klant.success || !klant.data.bsn ? "" : klant.data.bsn);
+const getBsn = () => {
+  console.log("brp getbsn ");
+
+  const x =
+    !klant.success ||
+    !klant.data.bsn ||
+    gebruikKlantInteracatiesApi.value === null
+      ? ""
+      : klant.data.bsn;
+
+  console.log("brp getbsn ", x);
+
+  return x;
+};
+
 const klantBsn = computed(getBsn);
 
 const zaken = useZakenByBsn(klantBsn);
-const persoon = usePersoonByBsn(getBsn);
+const persoon = usePersoonByBsn(getBsn, gebruikKlantInteracatiesApi);
 
 watch(
   [() => klant.success && klant.data, () => persoon.success && persoon.data],

@@ -152,6 +152,9 @@ const setCache = (
 ) => {
   mutate(klant.id, klant);
   const bedrijfId = bedrijf?.vestigingsnummer || bedrijf?.rsin;
+
+  console.log("cache key bedrijf", bedrijfId);
+
   if (bedrijfId) {
     mutate("bedrijf" + bedrijfId, bedrijf);
   }

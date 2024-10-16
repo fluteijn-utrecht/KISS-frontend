@@ -34,7 +34,14 @@ export function searchBedrijvenInHandelsRegister(
 
     //is nodig voor het ophalen ok1 -esuite voor stichtingen!! contorleren of dit ook goed gaat bij aanmaken en ok2
 
-    searchParams.set("kvkNummer", query.rsin);
+    if (query.rsin.length === 9) {
+      //ok2
+      searchParams.set("rsin", query.rsin);
+    } else {
+      //e-suite variant van ok1
+      searchParams.set("kvkNummer", query.rsin);
+    }
+
     searchParams.set("type", "rechtspersoon");
   } else if ("postcodeHuisnummer" in query) {
     const {

@@ -57,7 +57,6 @@
             </contactmoment-details-context>
           </template>
 
-          <!-- voor OK1/esuite moeten gegevens die bij het contactmoment en niet bij het contactverzoek horen apart opgehaald worden-->
           <template
             v-if="!gebruikKlantInteracatiesApi"
             #contactmoment="{ url }"
@@ -105,7 +104,9 @@ const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
 
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
+
+const klant = useKlantById(klantId, gebruikKlantInteracatiesApi, "bedrijf");
+
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
 
@@ -115,6 +116,7 @@ const contactverzoeken = useContactverzoekenByKlantId(
   gebruikKlantInteracatiesApi,
   //contactverzoekenPage,
 );
+
 const contactmomenten = useContactmomentenByKlantId(
   klantUrl,
   gebruikKlantInteracatiesApi,
@@ -136,6 +138,12 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     return {
       //gechoogel met params verschil ok1 en esuite
       rsin: klant.data.nietNatuurlijkPersoonIdentifier,
+    };
+
+  if (klant.data.rsin)
+    return {
+      //gechoogel met params verschil ok1 en esuite
+      rsin: klant.data.rsin,
     };
 };
 

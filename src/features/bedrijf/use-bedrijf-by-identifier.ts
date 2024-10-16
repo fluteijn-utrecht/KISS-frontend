@@ -10,8 +10,11 @@ export const useBedrijfByIdentifier = (
   const getCacheKey = () => {
     const id = getId();
 
+    console.log("qqq", id);
+
     if (!id) return "";
-    const identfier = "vestigingsnummer" in id ? id.vestigingsnummer : id.rsin;
+    const identfier =
+      "vestigingsnummer" in id ? id.vestigingsnummer : id.kvkNummer;
     return "bedrijf" + identfier;
   };
 
@@ -25,6 +28,8 @@ export const useBedrijfByIdentifier = (
 
     return searchBedrijvenInHandelsRegister(id).then(enforceOneOrZero);
   };
+
+  console.log("q");
 
   return ServiceResult.fromFetcher("", fetcher, {
     getUniqueId: getCacheKey,

@@ -73,7 +73,11 @@ export function mapToContactmomentViewModel(
 export async function enrichBetrokkeneWithKlantContact(
   value: PaginatedResult<BetrokkeneWithKlantContact>,
 ): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
+  console.log("fetch cm 5");
+
   for (const betrokkene of value.page) {
+    console.log("fetch cm 6 loop");
+
     const searchParams = new URLSearchParams();
     searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
     const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
@@ -250,6 +254,8 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
 }
 
 export function fetchBetrokkene(url: string) {
+  console.log("fetch cm 4");
+
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
@@ -608,7 +614,6 @@ type Partij = {
 };
 
 export const fetchKlantById = (uuid: string) => {
-
   return fetchLoggedIn(
     `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`,
   )

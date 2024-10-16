@@ -11,6 +11,7 @@ import type { Klant } from "@/services/openklant1/types";
 export const useKlantById = (
   id: Ref<string>,
   gebruikKlantInteractiesApi: Ref<boolean | null>,
+  cachesection: string,
 ) => {
   //OK1 ////////////////////////////////////////////////////
   function mapKlant(obj: any): Klant {
@@ -48,13 +49,20 @@ export const useKlantById = (
   /////////////////////////////////////////////////////////
 
   const getApiSpecifickUrl = () => {
+    console.log("getApiSpecifickUrl");
+
     if (gebruikKlantInteractiesApi.value === null) {
+      console.log("getApiSpecifickUrl null");
+
       return "";
     }
 
     if (gebruikKlantInteractiesApi.value) {
+      console.log("getApiSpecifickUrl id?", id.value);
+
       return id.value || "";
     } else {
+      console.log("getApiSpecifickUrl nee toch");
       return getKlantIdUrl(id.value);
     }
   };
@@ -75,9 +83,12 @@ export const useKlantById = (
     url: string,
     gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
+    console.log("fetch iets");
     if (gebruikKlantinteractiesApi.value) {
+      console.log("fetch iets, fetchKlantById");
       return fetchKlantById(url);
     } else {
+      console.log("fetch iets, nee toch");
       return fetchKlantByIdOk1(url);
     }
   };
@@ -86,7 +97,16 @@ export const useKlantById = (
   //   fetchContactverzoeken(u, gebruikKlantInteractiesApi),
   // );
 
-  return ServiceResult.fromFetcher(getApiSpecifickUrl, (u: string) =>
-    fetchIets(u, gebruikKlantInteractiesApi),
+  return ServiceResult.fromFetcher(
+    getApiSpecifickUrl,
+    (u: string) => fetchIets(u, gebruikKlantInteractiesApi),
+    {
+      getUniqueId: () =>
+        gebruikKlantInteractiesApi.value === null
+          ? ""
+          : id.value
+            ? `${id.value}_${cachesection}_klaaaaant`
+            : "",
+    },
   );
 };
