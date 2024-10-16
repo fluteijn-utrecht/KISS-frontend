@@ -56,7 +56,12 @@
               </template>
             </contactmoment-details-context>
           </template>
-          <template #contactmoment="{ url }">
+
+          <!-- voor OK1/esuite moeten gegevens die bij het contactmoment en niet bij het contactverzoek horen apart opgehaald worden-->
+          <template
+            v-if="!gebruikKlantInteracatiesApi"
+            #contactmoment="{ url }"
+          >
             <contactmoment-preview :url="url">
               <template #object="{ object }">
                 <zaak-preview v-if="object.object" :zaakurl="object.object" />
@@ -137,7 +142,6 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
 const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
 
 const zaken = useZakenByKlantBedrijfIdentifier(() => {
-
   if (!bedrijf.success || !bedrijf.data?.kvkNummer) return undefined;
   if (bedrijf.data.vestigingsnummer)
     return { vestigingsnummer: bedrijf.data.vestigingsnummer };

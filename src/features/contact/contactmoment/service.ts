@@ -230,6 +230,8 @@ export function useContactmomentenByKlantId(
         return "";
       }
 
+      if (!id.value) return "";
+
       // retourneer een url voor openklant 1 OF de klantInteracties api
       if (gebruikKlantinteractiesApi.value === true) {
         const searchParams = new URLSearchParams();
@@ -237,7 +239,6 @@ export function useContactmomentenByKlantId(
 
         return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
       } else {
-        if (!id.value) return "";
         const searchParams = new URLSearchParams();
         searchParams.set("klant", id.value);
         searchParams.set("ordering", "-registratiedatum");

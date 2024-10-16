@@ -47,14 +47,46 @@ export const useKlantById = (
 
   /////////////////////////////////////////////////////////
 
-  if (gebruikKlantInteractiesApi.value) {
-    return ServiceResult.fromFetcher(() => id.value || "", fetchKlantById);
-  } else {
-    return ServiceResult.fromFetcher(() => {
-      if (gebruikKlantInteractiesApi.value === null) {
-        return "";
-      }
+  const getApiSpecifickUrl = () => {
+    if (gebruikKlantInteractiesApi.value === null) {
+      return "";
+    }
+
+    if (gebruikKlantInteractiesApi.value) {
+      return id.value || "";
+    } else {
       return getKlantIdUrl(id.value);
-    }, fetchKlantByIdOk1);
-  }
+    }
+  };
+
+  const fetchApiSpecificKlant = () => {
+    // if (gebruikKlantInteractiesApi.value === null) {
+    //   return null;
+    // }
+
+    if (gebruikKlantInteractiesApi.value) {
+      return fetchKlantById;
+    } else {
+      return fetchKlantByIdOk1;
+    }
+  };
+
+  const fetchIets = (
+    url: string,
+    gebruikKlantinteractiesApi: Ref<boolean | null>,
+  ) => {
+    if (gebruikKlantinteractiesApi.value) {
+      return fetchKlantById(url);
+    } else {
+      return fetchKlantByIdOk1(url);
+    }
+  };
+
+  // return ServiceResult.fromFetcher(getUrl, (u: string) =>
+  //   fetchContactverzoeken(u, gebruikKlantInteractiesApi),
+  // );
+
+  return ServiceResult.fromFetcher(getApiSpecifickUrl, (u: string) =>
+    fetchIets(u, gebruikKlantInteractiesApi),
+  );
 };
