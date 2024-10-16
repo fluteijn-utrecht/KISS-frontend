@@ -139,8 +139,6 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
             var orderOnPageAfterMessageUpdate = new Dictionary<string, int>();
             for (var index = 0; index < await allArticles.CountAsync(); index++)
             {
-
-                Console.WriteLine("loop2 " + index);
                 var element = allArticles.Nth(index);
                 var innerHtml = await element.InnerTextAsync();
 
