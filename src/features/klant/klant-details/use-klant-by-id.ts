@@ -26,6 +26,8 @@ export const useKlantById = (
       vestigingsnummer: vestigingsNummer,
       url: url,
       nietNatuurlijkPersoonIdentifier: innNnpId,
+      emailadressen: [],
+      telefoonnummers: [],
     };
   }
 

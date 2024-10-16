@@ -2,14 +2,6 @@
   <back-link />
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
 
-  <p>test</p>
-  <div v-if="bedrijf.loading">bedrijf loading</div>
-  <div v-else-if="bedrijf.success">
-    <div v-if="bedrijf.data">
-      <pre>{{ bedrijf.data }}</pre>
-    </div>
-  </div>
-
   <tab-list v-model="currentTab">
     <tab-list-data-item
       label="Contactgegevens"
@@ -129,25 +121,23 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     return {
       vestigingsnummer: klant.data.vestigingsnummer,
     };
-  if (klant.data.rsin)
-    return {
-      rsin: klant.data.rsin,
-      kvkNummer: klant.data.kvkNummer,
-    };
+  // if (klant.data.rsin)
+  //   return {
+  //     rsin: klant.data.rsin,
+  //     kvkNummer: klant.data.kvkNummer,
+  //   };
 
   if (klant.data.nietNatuurlijkPersoonIdentifier)
     return {
-
-dit is niet genoeg!! er kunnen meerdere records met hetzelfde kvk nr useZakenByKlantBedrijfIdentifier. we moeten erder dus toch een ander rsin hebben!!!!
-
-
-      kvkNummer: klant.data.nietNatuurlijkPersoonIdentifier,
+      //gechoogel met params verschil ok1 en esuite
+      rsin: klant.data.nietNatuurlijkPersoonIdentifier,
     };
 };
 
 const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
 
 const zaken = useZakenByKlantBedrijfIdentifier(() => {
+
   if (!bedrijf.success || !bedrijf.data?.kvkNummer) return undefined;
   if (bedrijf.data.vestigingsnummer)
     return { vestigingsnummer: bedrijf.data.vestigingsnummer };
@@ -166,7 +156,8 @@ watch(
       ...k,
       ...b,
       hasContactInformation:
-        !!k.emailadressen.length || !!k.telefoonnummers.length,
+        (k.emailadressen && k.emailadressen.length > 0) ||
+        (k.telefoonnummers && k.telefoonnummers.length > 0),
     });
   },
   { immediate: true },

@@ -92,7 +92,11 @@ const matchingKlant = useKlantByBedrijfIdentifier(() => {
     return {
       vestigingsnummer,
     };
-  if (rsin)
+  // if (rsin)
+  //   return {
+  //     rsin, //openklant1 gebruikte rsin. esuite kvknummer.
+  //   };
+  if (kvkNummer)
     return {
       kvkNummer, //openklant1 gebruikte rsin. esuite kvknummer.
     };
@@ -123,13 +127,15 @@ const bedrijfIdentifier = computed<BedrijfIdentifier | undefined>(() => {
     return {
       vestigingsnummer,
     };
-  if (kvkNummer)
-    return {
-      kvkNummer,
-    };
+
   if (rsin)
     return {
       rsin,
+      kvkNummer,
+    };
+
+  if (kvkNummer)
+    return {
       kvkNummer,
     };
   return undefined;

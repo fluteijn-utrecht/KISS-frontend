@@ -199,7 +199,9 @@ export function useContactmomentenByKlantId(
   const getCacheKey = () =>
     gebruikKlantinteractiesApi.value === null
       ? ""
-      : `${id.value}_contactmoment`;
+      : id.value
+        ? `${id.value}_contactmoment`
+        : "";
 
   const fetchContactmomenten = async (
     url: string,

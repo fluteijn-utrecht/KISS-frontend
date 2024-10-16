@@ -133,8 +133,6 @@ const getSingleBsnSearchId = (bsn: string | undefined) => {
 };
 
 function fetchKlantById(url: string) {
-  console.log("neeeee");
-
   return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
 }
 
@@ -308,7 +306,7 @@ export const useKlantByIdentifier = async (
 export function mapBedrijfsIdentifier(
   bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2,
 ): BedrijfIdentifierOpenKlant1 {
-  //990983419 wordt hier als rsin meegegeven...
+  //990983419 wordt hier als rsin meegegeven... maar esuite acepteert alleen 8 cijferig kvk
 
   return {
     vestigingsnummer:
@@ -316,12 +314,16 @@ export function mapBedrijfsIdentifier(
         ? bedrijfIdentifierOpenKlant2.vestigingsnummer
         : "",
 
+    //als esuite dan kvk nr gebruiken
     nietNatuurlijkPersoonIdentifier:
-      "rsin" in bedrijfIdentifierOpenKlant2
-        ? bedrijfIdentifierOpenKlant2.rsin
-        : "kvkNummer" in bedrijfIdentifierOpenKlant2
-          ? bedrijfIdentifierOpenKlant2.kvkNummer
-          : "",
+      "kvkNummer" in bedrijfIdentifierOpenKlant2
+        ? bedrijfIdentifierOpenKlant2.kvkNummer
+        : "",
+
+    // nietNatuurlijkPersoonIdentifier:
+    //   "rsin" in bedrijfIdentifierOpenKlant2
+    //     ? bedrijfIdentifierOpenKlant2.rsin
+    //     : "",
   };
 }
 

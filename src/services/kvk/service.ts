@@ -30,7 +30,11 @@ export function searchBedrijvenInHandelsRegister(
     searchParams.set("type", "hoofdvestiging");
     searchParams.append("type", "nevenvestiging");
   } else if ("rsin" in query && query.rsin) {
-    searchParams.set("rsin", query.rsin);
+    //searchParams.set("rsin", query.rsin);
+
+    //is nodig voor het ophalen ok1 -esuite voor stichtingen!! contorleren of dit ook goed gaat bij aanmaken en ok2
+
+    searchParams.set("kvkNummer", query.rsin);
     searchParams.set("type", "rechtspersoon");
   } else if ("postcodeHuisnummer" in query) {
     const {
@@ -71,9 +75,6 @@ const parseKvkPagination = async ({
   totaal,
   resultaten,
 }: KvkPagination): Promise<Paginated<Bedrijf>> => {
-
-  console.log("bedrijfsinfo ophalen bij kvk - parse result")
-
   return {
     page: await Promise.all(resultaten.map((x) => mapHandelsRegister(x))),
     pageNumber: pagina,
@@ -122,8 +123,6 @@ async function mapHandelsRegister(json: any): Promise<Bedrijf> {
     ...(vestiging ?? {}),
     ...(naamgeving ?? {}),
   };
-
-  console.log("bedrijfsinfo ophalen bij kvk - gemapped")
 
   return merged;
 }

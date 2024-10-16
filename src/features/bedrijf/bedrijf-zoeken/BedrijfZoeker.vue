@@ -56,7 +56,6 @@
   <section class="search-section" v-if="store.query">
     <simple-spinner v-if="bedrijven.loading" />
     <template v-if="bedrijven.success">
-      <pre>{{ bedrijven.data.page }}</pre>
       <bedrijven-overzicht
         :records="bedrijven.data.page"
         :navigate-on-single-result="navigateOnSingleResult"
