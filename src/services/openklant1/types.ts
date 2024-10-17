@@ -1,23 +1,9 @@
+import type { Klant } from "../openklant/types";
+
 export type UpdateContactgegevensParams = Pick<
   Klant,
   "id" | "telefoonnummers" | "emailadressen"
 >;
-
-//todo: refactor openklant 1 en 2 moeten beiden dezelfde klant interface gebruiken
-export interface Klant {
-  _typeOfKlant: "klant";
-  id: string;
-  klantnummer: string;
-  telefoonnummers: string[];
-  emailadressen: string[];
-  bsn?: string;
-  bedrijfsnaam?: string;
-  vestigingsnummer?: string;
-  url: string;
-  kvkNummer?: string;
-  nietNatuurlijkPersoonIdentifier?: string;
-  rsin?: string;
-}
 
 export enum KlantType {
   Persoon = "natuurlijk_persoon",

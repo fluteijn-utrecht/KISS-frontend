@@ -19,11 +19,11 @@ import type {
   KlantContactPostmodel,
   SaveKlantContactResponseModel,
   DigitaalAdresApiViewModel,
-  Klant,
 } from "./types";
 
 import type { Contactmoment } from "../../features/contact/contactmoment/types";
 import type { ContactverzoekData } from "../../features/contact/components/types";
+import type { Klant } from "../openklant/types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -607,7 +607,7 @@ type Partij = {
   };
 };
 
-export const fetchKlantById = (uuid: string) => {
+export const fetchKlantByIdOk2 = (uuid: string) => {
   return fetchLoggedIn(
     `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`,
   )
@@ -885,7 +885,7 @@ export function searchKlantenByDigitaalAdres(
         }) => {
           const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
           const uniquePartijIds = [...new Set(partijIds)];
-          const promises = uniquePartijIds.map(fetchKlantById);
+          const promises = uniquePartijIds.map(fetchKlantByIdOk2);
           return Promise.all(promises);
         },
       )
@@ -898,10 +898,14 @@ export function searchKlantenByDigitaalAdres(
           if (!isBedrijf) return false;
           const matchesEmail =
             key === DigitaalAdresTypes.email &&
-            klant.emailadressen.some((adres) => adres.includes(value));
+            klant.emailadressen.some((adres: string | string[]) =>
+              adres.includes(value),
+            );
           const matchesTelefoon =
             key === DigitaalAdresTypes.telefoonnummer &&
-            klant.telefoonnummers.some((adres) => adres.includes(value));
+            klant.telefoonnummers.some((adres: string | string[]) =>
+              adres.includes(value),
+            );
           return matchesEmail || matchesTelefoon;
         }),
       )

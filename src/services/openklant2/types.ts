@@ -122,25 +122,8 @@ export interface KlantContactPostmodel {
   plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
 }
 
-//todo: refactor openklant 1 en 2 moeten beiden dezelfde klant interface gebruiken
-export interface Klant {
-  _typeOfKlant: "klant";
-  id: string;
-  klantnummer: string;
-  telefoonnummers: string[];
-  emailadressen: string[];
 
-  telefoonnummer?: string;
-  emailadres?: string;
 
-  bsn?: string;
-  bedrijfsnaam?: string;
-  vestigingsnummer?: string;
-  rsin?: string;
-  kvkNummer?: string;
-  nietNatuurlijkPersoonIdentifier?: string;
-  url: string;
-}
 
 export type KlantBedrijfIdentifier =
   | {

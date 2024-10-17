@@ -9,13 +9,14 @@ import {
   type ServiceData,
 } from "@/services";
 import { mutate } from "swrv";
-import type { Klant, UpdateContactgegevensParams } from "./types";
+import type { UpdateContactgegevensParams } from "./types";
 import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant1 } from "./types";
 import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven.js";
 import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../openklant2/types.js";
+import type { Klant } from "../openklant/types";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
@@ -132,15 +133,16 @@ const getSingleBsnSearchId = (bsn: string | undefined) => {
   return url + "_single";
 };
 
-function fetchKlantById(url: string) {
-  return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
-}
-
 export function useKlantById(id: Ref<string>) {
   return ServiceResult.fromFetcher(
     () => getKlantIdUrl(id.value),
-    fetchKlantById,
+    fetchKlantByIdOk1,
   );
+}
+
+export function fetchKlantByIdOk1(id: string) {
+  const url = getKlantIdUrl(id);
+  return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
 }
 
 const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {

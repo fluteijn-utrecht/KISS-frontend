@@ -105,7 +105,7 @@ const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 
-const klant = useKlantById(klantId, gebruikKlantInteracatiesApi, "bedrijf");
+const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
 
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
@@ -133,13 +133,11 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   //     rsin: klant.data.rsin,
   //     kvkNummer: klant.data.kvkNummer,
   //   };
-
   if (klant.data.nietNatuurlijkPersoonIdentifier)
     return {
       //gechoogel met params verschil ok1 en esuite
       rsin: klant.data.nietNatuurlijkPersoonIdentifier,
     };
-
   if (klant.data.rsin)
     return {
       //gechoogel met params verschil ok1 en esuite

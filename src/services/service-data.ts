@@ -175,6 +175,8 @@ export const ServiceResult = {
       fetcherWithoutParameters,
       {
         refreshInterval: config?.poll ? refreshInterval : undefined,
+        dedupingInterval: 0,
+        revalidateOnFocus: false,
       },
     );
 

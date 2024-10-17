@@ -59,11 +59,10 @@ import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
 import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { ensureKlantForBedrijfIdentifier } from "./ensure-klant-for-bedrijf-identifier";
-import type { Klant as KlantOpenKlant1 } from "@/services/openklant1/types";
-import type { Klant as KlantOpenKlant2 } from "@/services/openklant2/types";
+import type { Klant } from "@/services/openklant/types";
 
 const props = defineProps<{
-  item: Bedrijf | KlantOpenKlant1 | KlantOpenKlant2;
+  item: Bedrijf | Klant;
   autoNavigate?: boolean;
 }>();
 
@@ -130,13 +129,9 @@ const bedrijfIdentifier = computed<BedrijfIdentifier | undefined>(() => {
 
 const router = useRouter();
 
-const getKlantUrl = (klant: KlantOpenKlant1 | KlantOpenKlant2) =>
-  `/bedrijven/${klant.id}`;
+const getKlantUrl = (klant: Klant) => `/bedrijven/${klant.id}`;
 
-const setCache = (
-  klant: KlantOpenKlant1 | KlantOpenKlant2,
-  bedrijf?: Bedrijf | null,
-) => {
+const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
   mutate(klant.id, klant);
   const bedrijfId = bedrijf?.vestigingsnummer || bedrijf?.rsin;
 
