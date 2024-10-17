@@ -144,6 +144,9 @@ export interface Klant {
 
 export type KlantBedrijfIdentifier =
   | {
+      bsn: string;
+    }
+  | {
       vestigingsnummer: string;
     }
   | {
@@ -151,6 +154,10 @@ export type KlantBedrijfIdentifier =
     }
   | {
       kvkNummer: string;
+    }
+  | {
+      rsin: string;
+      kvkNummer?: string;
     };
 
 ///////////////////////////////

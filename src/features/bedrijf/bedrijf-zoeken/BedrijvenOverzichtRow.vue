@@ -82,11 +82,9 @@ const props = defineProps<{
 // });
 
 const matchingKlant = useKlantByBedrijfIdentifier(() => {
-  //mist hier niet de aanvullende info.. met rsin.. de kvk naamgeving data??
-
   if (props.item._typeOfKlant === "klant") return undefined;
 
-  const { vestigingsnummer, rsin, kvkNummer } = props.item;
+  const { vestigingsnummer, kvkNummer } = props.item;
 
   if (vestigingsnummer)
     return {
@@ -107,17 +105,6 @@ const bedrijf = computed(() =>
     ? { data: props.item, success: true, loading: false, error: false }
     : { success: false, loading: false },
 );
-
-// const klant = computed(() => {
-//   console.log(props.item._typeOfKlant === "klant", { ...matchingKlant });
-
-//   const x =
-//     props.item._typeOfKlant === "klant"
-//       ? { data: props.item, success: true, loading: false, error: false }
-//       : { ...matchingKlant };
-
-//   return x;
-// });
 
 const naam = computed(() => bedrijf.value.data?.bedrijfsnaam || "");
 
@@ -152,8 +139,6 @@ const setCache = (
 ) => {
   mutate(klant.id, klant);
   const bedrijfId = bedrijf?.vestigingsnummer || bedrijf?.rsin;
-
-  console.log("cache key bedrijf", bedrijfId);
 
   if (bedrijfId) {
     mutate("bedrijf" + bedrijfId, bedrijf);

@@ -9,7 +9,7 @@ import {
   type ServiceData,
 } from "@/services";
 import { mutate } from "swrv";
-import type { Klant, UpdateContactgegevensParams } from "./types.ts";
+import type { Klant, UpdateContactgegevensParams } from "./types";
 import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
@@ -19,12 +19,12 @@ import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../o
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
-type QueryParam = [string, string][];
+// type QueryParam = [string, string][];
 
-type FieldParams = {
-  email: string;
-  telefoonnummer: string;
-};
+// type FieldParams = {
+//   email: string;
+//   telefoonnummer: string;
+// };
 
 type KlantSearchParameters = {
   query: Ref<BedrijvenQuery | undefined>;

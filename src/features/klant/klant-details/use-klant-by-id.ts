@@ -49,33 +49,14 @@ export const useKlantById = (
   /////////////////////////////////////////////////////////
 
   const getApiSpecifickUrl = () => {
-    console.log("getApiSpecifickUrl");
-
     if (gebruikKlantInteractiesApi.value === null) {
-      console.log("getApiSpecifickUrl null");
-
       return "";
     }
 
     if (gebruikKlantInteractiesApi.value) {
-      console.log("getApiSpecifickUrl id?", id.value);
-
       return id.value || "";
     } else {
-      console.log("getApiSpecifickUrl nee toch");
       return getKlantIdUrl(id.value);
-    }
-  };
-
-  const fetchApiSpecificKlant = () => {
-    // if (gebruikKlantInteractiesApi.value === null) {
-    //   return null;
-    // }
-
-    if (gebruikKlantInteractiesApi.value) {
-      return fetchKlantById;
-    } else {
-      return fetchKlantByIdOk1;
     }
   };
 
@@ -83,19 +64,12 @@ export const useKlantById = (
     url: string,
     gebruikKlantinteractiesApi: Ref<boolean | null>,
   ) => {
-    console.log("fetch iets");
     if (gebruikKlantinteractiesApi.value) {
-      console.log("fetch iets, fetchKlantById");
       return fetchKlantById(url);
     } else {
-      console.log("fetch iets, nee toch");
       return fetchKlantByIdOk1(url);
     }
   };
-
-  // return ServiceResult.fromFetcher(getUrl, (u: string) =>
-  //   fetchContactverzoeken(u, gebruikKlantInteractiesApi),
-  // );
 
   return ServiceResult.fromFetcher(
     getApiSpecifickUrl,
@@ -105,7 +79,7 @@ export const useKlantById = (
         gebruikKlantInteractiesApi.value === null
           ? ""
           : id.value
-            ? `${id.value}_${cachesection}_klaaaaant`
+            ? `${id.value}_${cachesection}_klaant`
             : "",
     },
   );

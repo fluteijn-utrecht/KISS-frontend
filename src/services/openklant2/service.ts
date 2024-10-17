@@ -73,11 +73,7 @@ export function mapToContactmomentViewModel(
 export async function enrichBetrokkeneWithKlantContact(
   value: PaginatedResult<BetrokkeneWithKlantContact>,
 ): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  console.log("fetch cm 5");
-
   for (const betrokkene of value.page) {
-    console.log("fetch cm 6 loop");
-
     const searchParams = new URLSearchParams();
     searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
     const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
@@ -254,8 +250,6 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
 }
 
 export function fetchBetrokkene(url: string) {
-  console.log("fetch cm 4");
-
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
@@ -633,6 +627,9 @@ export function findKlantByIdentifier(
       }
     | {
         bsn: string;
+      }
+    | {
+        kvkNummer: string;
       },
 ): Promise<Klant | null> {
   const expand = "digitaleAdressen";
@@ -652,10 +649,16 @@ export function findKlantByIdentifier(
       partijIdentificator__codeSoortObjectId =
         identificatorTypes.vestiging.codeSoortObjectId;
       partijIdentificator__objectId = query.vestigingsnummer;
-    } else {
+    } else if ("rsin" in query) {
       partijIdentificator__codeSoortObjectId =
         identificatorTypes.nietNatuurlijkPersoonRsin.codeSoortObjectId;
       partijIdentificator__objectId = query.rsin;
+    } else {
+      //toegeovegd om types te alignen.. is dee route wenselijk???
+
+      partijIdentificator__codeSoortObjectId =
+        identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId;
+      partijIdentificator__objectId = query.kvkNummer;
     }
   }
 
@@ -676,14 +679,17 @@ export function findKlantByIdentifier(
 export async function createKlant(
   parameters:
     | {
-        bsn: string;
-      }
-    | {
         vestigingsnummer: string;
       }
     | {
         rsin: string;
         kvkNummer?: string;
+      }
+    | {
+        bsn: string;
+      }
+    | {
+        kvkNummer: string;
       },
 ) {
   let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
