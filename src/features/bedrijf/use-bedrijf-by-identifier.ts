@@ -22,16 +22,12 @@ export const useBedrijfByIdentifier = (
   };
 
   const fetcher = () => {
-    console.log("qqqqqq");
-
     const id = getId();
     if (!id) {
       throw new Error(
         "Dit scenario kan niet voorkomen, wordt al afgehandeld door getCacheKey",
       );
     }
-
-    console.log("qqqqqq2");
 
     return searchBedrijvenInHandelsRegister(id).then(enforceOneOrZero);
   };

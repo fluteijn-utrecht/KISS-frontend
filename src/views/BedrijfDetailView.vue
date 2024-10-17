@@ -147,10 +147,7 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     };
 };
 
-const bedrijf = useBedrijfByIdentifier(
-  getBedrijfIdentifier,
-  gebruikKlantInteracatiesApi,
-);
+const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
 
 const zaken = useZakenByKlantBedrijfIdentifier(() => {
   if (!bedrijf.success || !bedrijf.data?.kvkNummer) return undefined;
