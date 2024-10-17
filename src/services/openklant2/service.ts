@@ -7,18 +7,24 @@ import {
   type PaginatedResult,
 } from "@/services";
 
-import type {
-  ContactmomentViewModel,
-  BetrokkeneMetKlantContact as BetrokkeneWithKlantContact,
-  ExpandedKlantContactApiViewmodel,
-  ContactverzoekViewmodel,
-  InternetaakApiViewModel,
-  ActorApiViewModel,
-  InternetaakPostModel,
-  SaveInterneTaakResponseModel,
-  KlantContactPostmodel,
-  SaveKlantContactResponseModel,
-  DigitaalAdresApiViewModel,
+import {
+  type ContactmomentViewModel,
+  type BetrokkeneMetKlantContact as BetrokkeneWithKlantContact,
+  type ExpandedKlantContactApiViewmodel,
+  type ContactverzoekViewmodel,
+  type InternetaakApiViewModel,
+  type ActorApiViewModel,
+  type InternetaakPostModel,
+  type SaveInterneTaakResponseModel,
+  type KlantContactPostmodel,
+  type SaveKlantContactResponseModel,
+  type DigitaalAdresApiViewModel,
+  PartijTypes,
+  identificatorTypes,
+  type IdentificatorType,
+  type Contactnaam,
+  type Partij,
+  DigitaalAdresTypes,
 } from "./types";
 
 import type { Contactmoment } from "../../features/contact/contactmoment/types";
@@ -545,67 +551,6 @@ const postDigitaalAdres = async (data: {
 };
 
 //-----------------------------------------------------------------------------------------------------------
-
-export type Contactnaam = {
-  voornaam: string;
-  voorvoegselAchternaam?: string;
-  achternaam: string;
-};
-
-export enum DigitaalAdresTypes {
-  email = "email",
-  telefoonnummer = "telnr",
-}
-
-type IdentificatorType = {
-  codeRegister: string;
-  codeSoortObjectId: string;
-  codeObjecttype: string;
-};
-
-// TODO in toekomstige story: waardes overleggen met Maykin en INFO
-export const identificatorTypes = {
-  persoon: {
-    codeRegister: "brp",
-    codeSoortObjectId: "bsn",
-    codeObjecttype: "inp",
-  },
-  vestiging: {
-    codeRegister: "hr",
-    codeSoortObjectId: "vtn",
-    codeObjecttype: "vst",
-  },
-  nietNatuurlijkPersoonRsin: {
-    codeRegister: "hr",
-    codeSoortObjectId: "rsin",
-    codeObjecttype: "nnp",
-  },
-  nietNatuurlijkPersoonKvkNummer: {
-    codeRegister: "hr",
-    codeSoortObjectId: "kvk",
-    codeObjecttype: "nnp",
-  },
-} satisfies Record<string, IdentificatorType>;
-
-export enum PartijTypes {
-  persoon = "persoon",
-  organisatie = "organisatie",
-  contactpersoon = "contactpersoon",
-}
-
-type Partij = {
-  nummer?: string;
-  uuid: string;
-  url: string;
-  partijIdentificatie: {
-    contactnaam?: Contactnaam;
-    naam?: string;
-  };
-  partijIdentificatoren: { uuid: string }[];
-  _expand?: {
-    digitaleAdressen?: { adres?: string; soortDigitaalAdres?: string }[];
-  };
-};
 
 export const fetchKlantByIdOk2 = (uuid: string) => {
   return fetchLoggedIn(

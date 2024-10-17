@@ -30,10 +30,6 @@ export function searchBedrijvenInHandelsRegister(
     searchParams.set("type", "hoofdvestiging");
     searchParams.append("type", "nevenvestiging");
   } else if ("rsin" in query && query.rsin) {
-    //searchParams.set("rsin", query.rsin);
-
-    //is nodig voor het ophalen ok1 -esuite voor stichtingen!! contorleren of dit ook goed gaat bij aanmaken en ok2
-
     if (query.rsin.length === 9) {
       //ok2
       searchParams.set("rsin", query.rsin);

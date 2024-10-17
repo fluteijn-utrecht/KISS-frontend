@@ -57,6 +57,7 @@
             </contactmoment-details-context>
           </template>
 
+          <!-- voor OK1/esuite moeten gegevens die bij het contactmoment en niet bij het contactverzoek horen apart opgehaald worden-->
           <template
             v-if="!gebruikKlantInteracatiesApi"
             #contactmoment="{ url }"

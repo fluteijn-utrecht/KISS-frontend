@@ -20,8 +20,6 @@ import type { Klant } from "../openklant/types";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
-// type QueryParam = [string, string][];
-
 // type FieldParams = {
 //   email: string;
 //   telefoonnummer: string;
@@ -155,6 +153,7 @@ const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {
   return rest;
 };
 
+//momenteel niet in gebruik
 function updateContactgegevens({
   id,
   telefoonnummers,
@@ -186,6 +185,11 @@ function updateContactgegevens({
       emailadressen,
     }));
 }
+
+export function useUpdateContactGegevens() {
+  return ServiceResult.fromSubmitter(updateContactgegevens);
+}
+
 export function useKlantByBsn(
   getBsn: () => string | undefined,
 ): ServiceData<Klant | null> {
@@ -194,10 +198,6 @@ export function useKlantByBsn(
   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
     getUniqueId: () => getSingleBsnSearchId(getBsn()),
   });
-}
-
-export function useUpdateContactGegevens() {
-  return ServiceResult.fromSubmitter(updateContactgegevens);
 }
 
 export async function ensureKlantForBsn(
@@ -280,36 +280,17 @@ const getUrlVoorGetKlantById = (
   return "";
 };
 
-// const getKlantByNietNatuurlijkpersoonIdentifierUrl = (id: string) => {
-//   if (!id) return "";
-//   const url = new URL(klantRootUrl);
-//   url.searchParams.set("subjectNietNatuurlijkPersoon__innNnpId", id);
-//   url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
-//   return url.toString();
-// };
-
 export const useKlantByIdentifier = async (
   getId: () => BedrijfIdentifierOpenKlant1 | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetKlantById(getId());
 
-  // const getUniqueId = () => {
-  //   const url = getUrl();
-  //   return url && url + "_single";
-  // };
-
   return await searchSingleKlant(getUrl());
-
-  // return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
-  //   getUniqueId,
-  // });
 };
 
 export function mapBedrijfsIdentifier(
   bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2,
 ): BedrijfIdentifierOpenKlant1 {
-  //990983419 wordt hier als rsin meegegeven... maar esuite acepteert alleen 8 cijferig kvk
-
   return {
     vestigingsnummer:
       "vestigingsnummer" in bedrijfIdentifierOpenKlant2
@@ -403,56 +384,6 @@ export async function ensureKlantForBedrijfIdentifier(
 
   return newKlant;
 }
-
-// export async function ensureKlantForNietNatuurlijkPersoon(
-//   {
-//     bedrijfsnaam,
-//     id,
-//   }: {
-//     bedrijfsnaam: string;
-//     id: string;
-//   },
-//   bronorganisatie: string,
-// ) {
-//   const url = getKlantByNietNatuurlijkpersoonIdentifierUrl(id);
-//   const uniqueId = url && url + "_single";
-
-//   if (!url || !uniqueId) throw new Error();
-
-//   const first = await searchSingleKlant(url);
-
-//   if (first) {
-//     mutate(uniqueId, first);
-//     const idUrl = getKlantIdUrl(first.id);
-//     mutate(idUrl, first);
-//     return first;
-//   }
-
-//   const response = await fetchLoggedIn(klantRootUrl, {
-//     method: "POST",
-//     headers: {
-//       "content-type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       bronorganisatie,
-//       klantnummer: nanoid(8),
-//       subjectIdentificatie: { innNnpId: id },
-//       subjectType: KlantType.NietNatuurlijkPersoon,
-//       bedrijfsnaam,
-//     }),
-//   });
-
-//   if (!response.ok) throw new Error();
-
-//   const json = await response.json();
-//   const newKlant = mapKlant(json);
-//   const idUrl = getKlantIdUrl(newKlant.id);
-
-//   mutate(idUrl, newKlant);
-//   mutate(uniqueId, newKlant);
-
-//   return newKlant;
-// }
 
 export function createKlant({
   telefoonnummer = "",

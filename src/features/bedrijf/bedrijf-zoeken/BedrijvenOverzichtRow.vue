@@ -67,7 +67,8 @@ const props = defineProps<{
 }>();
 
 // const matchingBedrijf = useBedrijfByIdentifier(() => {
-//   // wordt niet meer gebruikt, alleen als we een klant hebben maar telefoonnumer en email adres is eruitgesloopt
+// wordt niet meer gebruikt, alleen relevant als we een klant hebben en kvkv gegevens erbij willen zoeken/
+// maar dat was alleen relevant toen een klant ook uit openklant gevonden kon worden adhv telefoonnumer en email, maar dat is momenteel niet meer mogelijk
 //   if (props.item._typeOfKlant === "bedrijf") return undefined;
 //   const { vestigingsnummer, rsin } = props.item;
 //   if (vestigingsnummer)

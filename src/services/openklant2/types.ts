@@ -122,9 +122,6 @@ export interface KlantContactPostmodel {
   plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
 }
 
-
-
-
 export type KlantBedrijfIdentifier =
   | {
       bsn: string;
@@ -144,6 +141,67 @@ export type KlantBedrijfIdentifier =
     };
 
 ///////////////////////////////
+
+export type Contactnaam = {
+  voornaam: string;
+  voorvoegselAchternaam?: string;
+  achternaam: string;
+};
+
+export enum DigitaalAdresTypes {
+  email = "email",
+  telefoonnummer = "telnr",
+}
+
+export type IdentificatorType = {
+  codeRegister: string;
+  codeSoortObjectId: string;
+  codeObjecttype: string;
+};
+
+// TODO in toekomstige story: waardes overleggen met Maykin en INFO
+export const identificatorTypes = {
+  persoon: {
+    codeRegister: "brp",
+    codeSoortObjectId: "bsn",
+    codeObjecttype: "inp",
+  },
+  vestiging: {
+    codeRegister: "hr",
+    codeSoortObjectId: "vtn",
+    codeObjecttype: "vst",
+  },
+  nietNatuurlijkPersoonRsin: {
+    codeRegister: "hr",
+    codeSoortObjectId: "rsin",
+    codeObjecttype: "nnp",
+  },
+  nietNatuurlijkPersoonKvkNummer: {
+    codeRegister: "hr",
+    codeSoortObjectId: "kvk",
+    codeObjecttype: "nnp",
+  },
+} satisfies Record<string, IdentificatorType>;
+
+export enum PartijTypes {
+  persoon = "persoon",
+  organisatie = "organisatie",
+  contactpersoon = "contactpersoon",
+}
+
+export type Partij = {
+  nummer?: string;
+  uuid: string;
+  url: string;
+  partijIdentificatie: {
+    contactnaam?: Contactnaam;
+    naam?: string;
+  };
+  partijIdentificatoren: { uuid: string }[];
+  _expand?: {
+    digitaleAdressen?: { adres?: string; soortDigitaalAdres?: string }[];
+  };
+};
 
 //todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
 export type ContactverzoekViewmodel = Contactverzoek;

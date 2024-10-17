@@ -41,15 +41,7 @@ import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
 import { useContactmomentByUrl } from "./service";
 import { fullName } from "@/helpers/string";
 import ContactmomentDetailsContext from "./ContactmomentDetailsContext.vue";
-//import { onMounted, ref } from "vue";
-//import { useOpenKlant2 } from "@/services/openklant2";
+
 const props = defineProps<{ url: string }>();
-
-//const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
-
 const cm = useContactmomentByUrl(() => props.url);
-
-// onMounted(async () => {
-//   gebruikKlantInteracatiesApi.value = await useOpenKlant2();
-// });
 </script>

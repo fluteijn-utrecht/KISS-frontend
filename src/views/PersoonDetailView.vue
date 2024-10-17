@@ -132,7 +132,7 @@ const getBsn = () =>
 const klantBsn = computed(getBsn);
 
 const zaken = useZakenByBsn(klantBsn);
-const persoon = usePersoonByBsn(getBsn, gebruikKlantInteracatiesApi);
+const persoon = usePersoonByBsn(getBsn);
 
 watch(
   [() => klant.success && klant.data, () => persoon.success && persoon.data],
