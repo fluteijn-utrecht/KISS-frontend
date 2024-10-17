@@ -10,15 +10,20 @@ export const useBedrijfByIdentifier = (
   const getCacheKey = () => {
     const id = getId();
 
-    console.log("qqq", id);
-
     if (!id) return "";
-    const identfier =
-      "vestigingsnummer" in id ? id.vestigingsnummer : id.kvkNummer;
-    return "bedrijf" + identfier;
+
+    //disable cache for now
+    return "" + Date.now();
+
+    // const identfier =
+    //   "vestigingsnummer" in id ? id.vestigingsnummer : id.kvkNummer;
+
+    // return "bedrijf" + identfier;
   };
 
   const fetcher = () => {
+    console.log("qqqqqq");
+
     const id = getId();
     if (!id) {
       throw new Error(
@@ -26,10 +31,10 @@ export const useBedrijfByIdentifier = (
       );
     }
 
+    console.log("qqqqqq2");
+
     return searchBedrijvenInHandelsRegister(id).then(enforceOneOrZero);
   };
-
-  console.log("q");
 
   return ServiceResult.fromFetcher("", fetcher, {
     getUniqueId: getCacheKey,
