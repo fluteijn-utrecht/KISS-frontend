@@ -96,7 +96,11 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
             // Go to the page and retrieve the order of articles
             await Page.GotoAsync("/");
-            await Page.WaitForSelectorAsync("article");
+
+            await Page.WaitForSelectorAsync("article:has-text('Message A')");
+            await Page.WaitForSelectorAsync("article:has-text('Message B')");
+            await Page.WaitForSelectorAsync("article:has-text('Message C')");
+
             var allArticles = NieuwsSection.GetByRole(AriaRole.Article);
 
             // Dictionary to hold article positions
@@ -132,7 +136,11 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
 
             // Refresh page and retrieve articles again
             await Page.GotoAsync("/");
-            await Page.WaitForSelectorAsync("article");
+
+            await Page.WaitForSelectorAsync("article:has-text('Message A')");
+            await Page.WaitForSelectorAsync("article:has-text('Message B')");
+            await Page.WaitForSelectorAsync("article:has-text('Message C')");
+
             allArticles = NieuwsSection.GetByRole(AriaRole.Article);
 
             // Rebuild the dictionary for updated positions
