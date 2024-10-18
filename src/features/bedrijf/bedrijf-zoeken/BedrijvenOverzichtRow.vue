@@ -2,17 +2,18 @@
   <tr class="row-link">
     <th scope="row" class="wrap">
       <div class="skeleton" v-if="bedrijf.loading" />
-
-      <template v-else-if="bedrijf.success">
-        {{ bedrijf.data?.bedrijfsnaam }}</template
-      >
+      <template v-else-if="bedrijf.success">{{
+        bedrijf.data?.bedrijfsnaam
+      }}</template>
     </th>
+          <td>
+          <div class="skeleton" v-if="bedrijf.loading" />
+          <template v-if="bedrijf.success">
+              {{ bedrijf.data?.vestigingsnummer }}
+          </template>
+      </td>
     <td>
-      <div class="skeleton" v-if="bedrijf.loading" />
-      <template v-if="bedrijf.success">{{ bedrijf.data?.type }}</template>
-    </td>
-    <td>
-      {{ bedrijf.data?.kvkNummer }}
+      {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
     </td>
     <td>
       <div class="skeleton" v-if="bedrijf.loading" />
