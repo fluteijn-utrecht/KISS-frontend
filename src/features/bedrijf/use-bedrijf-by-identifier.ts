@@ -9,9 +9,16 @@ export const useBedrijfByIdentifier = (
 ) => {
   const getCacheKey = () => {
     const id = getId();
+
     if (!id) return "";
-    const identfier = "vestigingsnummer" in id ? id.vestigingsnummer : id.rsin;
-    return "bedrijf" + identfier;
+
+    //disable cache for now
+    return "" + Date.now();
+
+    // const identfier =
+    //   "vestigingsnummer" in id ? id.vestigingsnummer : id.kvkNummer;
+
+    // return "bedrijf" + identfier;
   };
 
   const fetcher = () => {
@@ -21,6 +28,7 @@ export const useBedrijfByIdentifier = (
         "Dit scenario kan niet voorkomen, wordt al afgehandeld door getCacheKey",
       );
     }
+
     return searchBedrijvenInHandelsRegister(id).then(enforceOneOrZero);
   };
 
