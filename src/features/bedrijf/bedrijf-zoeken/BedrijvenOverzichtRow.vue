@@ -1,56 +1,61 @@
 <template>
-  <tr class="row-link">
-    <th scope="row" class="wrap">
-      <div class="skeleton" v-if="bedrijf.loading" />
-      <template v-else-if="bedrijf.success">{{
+    <tr class="row-link">
+        <th scope="row" class="wrap">
+            <div class="skeleton" v-if="bedrijf.loading" />
+            <template v-else-if="bedrijf.success">
+                {{
         bedrijf.data?.bedrijfsnaam
-      }}</template>
-    </th>
-          <td>
-          <div class="skeleton" v-if="bedrijf.loading" />
-          <template v-if="bedrijf.success">
-              {{ bedrijf.data?.vestigingsnummer }}
-          </template>
-      </td>
-    <td>
-      {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
-    </td>
-    <td>
-      <div class="skeleton" v-if="bedrijf.loading" />
-      <template v-if="bedrijf.success">{{
-        [bedrijf.data?.postcode, bedrijf.data?.huisnummer].join(" ")
-      }}</template>
-    </td>
-    <td class="wrap">
-      <div class="skeleton" v-if="matchingKlant.loading" />
-      <template v-if="matchingKlant.success">{{
-        matchingKlant.data?.emailadressen?.join(", ")
-      }}</template>
-    </td>
-    <td class="wrap">
-      <div class="skeleton" v-if="matchingKlant.loading" />
-      <template v-if="matchingKlant.success">{{
-        matchingKlant.data?.telefoonnummers.join(", ")
-      }}</template>
-    </td>
-    <td>
-      <div class="skeleton" v-if="matchingKlant.loading || bedrijf.loading" />
+                }}
+            </template>
+        </th>
+        <td>
+            {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
+        </td>
+        <td>
+            <div class="skeleton" v-if="bedrijf.loading" />
+            <template v-if="bedrijf.success">
+                {{ bedrijf.data?.vestigingsnummer }}
+            </template>
+        </td>
 
-      <template v-if="matchingKlant.success && matchingKlant.data">
-        <router-link
-          :title="`Details ${naam}`"
-          :to="getKlantUrl(matchingKlant.data)"
-          @click="setCache(matchingKlant.data, bedrijf.data)"
-        />
-      </template>
-      <button
-        v-else-if="bedrijf.data && bedrijfIdentifier"
-        type="button"
-        title="Aanmaken"
-        @click="navigate(bedrijf.data, bedrijfIdentifier)"
-      />
-    </td>
-  </tr>
+        <td>
+            <div class="skeleton" v-if="bedrijf.loading" />
+            <template v-if="bedrijf.success">
+                {{
+        [bedrijf.data?.postcode, bedrijf.data?.huisnummer].join(" ")
+                }}
+            </template>
+        </td>
+        <td class="wrap">
+            <div class="skeleton" v-if="matchingKlant.loading" />
+            <template v-if="matchingKlant.success">
+                {{
+        matchingKlant.data?.emailadressen?.join(", ")
+                }}
+            </template>
+        </td>
+        <td class="wrap">
+            <div class="skeleton" v-if="matchingKlant.loading" />
+            <template v-if="matchingKlant.success">
+                {{
+        matchingKlant.data?.telefoonnummers.join(", ")
+                }}
+            </template>
+        </td>
+        <td>
+            <div class="skeleton" v-if="matchingKlant.loading || bedrijf.loading" />
+
+            <template v-if="matchingKlant.success && matchingKlant.data">
+                <router-link :title="`Details ${naam}`"
+                             :to="getKlantUrl(matchingKlant.data)"
+                             @click="setCache(matchingKlant.data, bedrijf.data)" />
+            </template>
+            <button v-else-if="bedrijf.data && bedrijfIdentifier"
+                    type="button"
+                    title="Aanmaken"
+                    @click="navigate(bedrijf.data, bedrijfIdentifier)" />
+        </td>
+    </tr>
 </template>
 <script lang="ts" setup>
 import { computed, watchEffect } from "vue";
