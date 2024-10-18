@@ -9,7 +9,7 @@
             </template>
         </th>
         <td>
-            {{ bedrijf.data?.kvkNummer || klant.data?.kvkNummer }}
+            {{ bedrijf.data?.kvkNummer }}
         </td>
         <td>
             <div class="skeleton" v-if="bedrijf.loading" />
