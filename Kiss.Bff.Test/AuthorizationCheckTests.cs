@@ -27,7 +27,7 @@ namespace Kiss.Bff.Test
         [ClassInitialize]
         public static void ClassInit(TestContext _)
         {
-            Environment.SetEnvironmentVariable("CONTACTMOMENTDETAILS_API_KEY", "eenZeerGeheimeSleutelMetMinimaal32TekensLang");
+            Environment.SetEnvironmentVariable("MANAGEMENTINFORMATIE_API_KEY", "eenZeerGeheimeSleutelMetMinimaal32TekensLang");
             s_factory = new CustomWebApplicationFactory();
             s_client = s_factory.CreateDefaultClient();
         }
@@ -35,7 +35,7 @@ namespace Kiss.Bff.Test
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            Environment.SetEnvironmentVariable("CONTACTMOMENTDETAILS_API_KEY", null);
+            Environment.SetEnvironmentVariable("MANAGEMENTINFORMATIE_API_KEY", null);
             s_client?.Dispose();
             s_factory?.Dispose();
         }

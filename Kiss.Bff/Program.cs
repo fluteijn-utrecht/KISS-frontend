@@ -59,7 +59,7 @@ try
 
     builder.Services.AddJwtAuth(options =>
     {
-        options.SecretKey = builder.Configuration["CONTACTMOMENTDETAILS_API_KEY"];
+        options.SecretKey = builder.Configuration["MANAGEMENTINFORMATIE_API_KEY"];
     });
 
     builder.Services.AddKissProxy();
