@@ -27,7 +27,6 @@ import {
   DigitaalAdresTypes,
 } from "./types";
 
-import type { Contactmoment } from "../../features/contact/contactmoment/types";
 import type { ContactverzoekData } from "../../features/contact/components/types";
 import type { Klant } from "../openklant/types";
 
@@ -328,33 +327,18 @@ const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
   });
 };
 
-export const mapContactmomentToInternetaak = (
-  contactmoment: Contactmoment,
-): InternetaakPostModel => {
-  return {
-    nummer: "",
-    gevraagdeHandeling: "Contact opnemen met betrokkene",
-    aanleidinggevendKlantcontact: {
-      uuid: contactmoment.uuid,
-    },
-    toegewezenAanActoren: [],
-    toelichting: contactmoment.toelichting,
-    status: "te_verwerken",
-  };
-};
+// export const enrichInterneTaakWithActoren = async (
+//   interneTaak: InternetaakPostModel,
+//   actorData: ContactverzoekData["actor"],
+// ) => {
+//   const actoren = await ensureActoren(actorData);
 
-export const enrichInterneTaakWithActoren = async (
-  interneTaak: InternetaakPostModel,
-  actorData: ContactverzoekData["actor"],
-) => {
-  const actoren = await ensureActoren(actorData);
+//   actoren.forEach((actor) => {
+//     interneTaak.toegewezenAanActoren.push(actor);
+//   });
+// };
 
-  actoren.forEach((actor) => {
-    interneTaak.toegewezenAanActoren.push(actor);
-  });
-};
-
-const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
+export const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
   const {
     identificatie,
     naam,
