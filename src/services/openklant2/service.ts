@@ -327,17 +327,6 @@ const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
   });
 };
 
-// export const enrichInterneTaakWithActoren = async (
-//   interneTaak: InternetaakPostModel,
-//   actorData: ContactverzoekData["actor"],
-// ) => {
-//   const actoren = await ensureActoren(actorData);
-
-//   actoren.forEach((actor) => {
-//     interneTaak.toegewezenAanActoren.push(actor);
-//   });
-// };
-
 export const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
   const {
     identificatie,
