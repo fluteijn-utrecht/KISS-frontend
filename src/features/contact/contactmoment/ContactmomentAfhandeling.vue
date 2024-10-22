@@ -454,7 +454,10 @@ import {
   ensureActoren,
 } from "../../../services/openklant2/service";
 
-import type { InternetaakPostModel, KlantContactPostmodel } from "../../../services/openklant2/types";
+import type {
+  InternetaakPostModel,
+  KlantContactPostmodel,
+} from "../../../services/openklant2/types";
 
 import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
@@ -718,7 +721,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
       const actoren = await ensureActoren(contactverzoekData?.actor);
       const interneTaak = createInternetaakPostModel(
-        contactmoment,
+        contactverzoekData.toelichting ?? "",
         savedKlantContactResult.data?.uuid,
         actoren,
       );
@@ -752,7 +755,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
       const actoren = await ensureActoren(contactverzoekData?.actor);
       const interneTaak = createInternetaakPostModel(
-        contactmoment,
+        contactverzoekData.toelichting ?? "",
         savedKlantContactResult.data?.uuid,
         actoren,
       );
@@ -1000,7 +1003,7 @@ const trySetOfficieleAfdeling = async (vraag: Vraag) => {
 };
 
 const createInternetaakPostModel = (
-  contactmoment: Contactmoment,
+  toelichting: string,
   uuid: string,
   actoren: { uuid: string }[],
 ): InternetaakPostModel => {
@@ -1011,7 +1014,7 @@ const createInternetaakPostModel = (
       uuid: uuid,
     },
     toegewezenAanActoren: [],
-    toelichting: "",
+    toelichting: toelichting,
     status: "te_verwerken",
   };
 
