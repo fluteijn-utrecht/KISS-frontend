@@ -309,6 +309,7 @@ export function saveBetrokkene({
 }
 
 export const saveInternetaak = async (
+  toelichting: string,
   contactmomentId: string,
   actorenIds: string[],
 ): Promise<SaveInterneTaakResponseModel> => {
@@ -323,7 +324,7 @@ export const saveInternetaak = async (
         uuid: uuid,
       },
       toegewezenAanActoren: [],
-      toelichting: "",
+      toelichting: toelichting,
       status: "te_verwerken",
     };
 

@@ -665,6 +665,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     let savedContactverzoekResult: SaveInterneTaakResponseModel | null = null;
     if (isContactverzoek) {
       savedContactverzoekResult = await saveInternetaak(
+        contactverzoekData?.toelichting ?? "",
         savedKlantContactId,
         actoren,
       );
