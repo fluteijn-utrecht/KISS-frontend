@@ -1,11 +1,15 @@
 ﻿using System.Security.Claims;
+using System.Text;
 using System.Text.Json.Nodes;
 using AngleSharp.Io;
 using IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Kiss
 {
@@ -67,6 +71,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public string? RedacteurRole { get; set; }
         public string? MedewerkerIdentificatieClaimType { get; set; }
         public int? TruncateMedewerkerIdentificatie { get; set; }
+
+        public string? JwtTokenAuthenticationSecret { get; set; }
     }
 
     public static class AuthenticationSetupExtensions
@@ -156,6 +162,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
             }
 
+
+            if (authOptions.JwtTokenAuthenticationSecret != null)
+            {
+                authBuilder.AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authOptions.JwtTokenAuthenticationSecret))
+                    };
+                });
+            }
+
+
             services.AddDistributedMemoryCache();
             services.AddOpenIdConnectAccessTokenManagement();
 
@@ -169,6 +192,16 @@ namespace Microsoft.Extensions.DependencyInjection
                     new AuthorizationPolicyBuilder()
                         .RequireRole(redacteurRole)
                         .Build());
+
+
+                options.AddPolicy(Policies.ExternSysteemPolicy, policy =>
+                {
+                    policy.RequireRole("ExternSysteem");
+                    policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+                });
+
+
+
             });
 
             return services;
