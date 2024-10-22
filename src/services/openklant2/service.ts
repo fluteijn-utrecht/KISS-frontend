@@ -25,10 +25,12 @@ import {
   type Contactnaam,
   type Partij,
   DigitaalAdresTypes,
+  type onderwerpObjectPostModel,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
 import type { Klant } from "../openklant/types";
+import type { Vraag } from "@/stores/contactmoment";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -307,9 +309,35 @@ export function saveBetrokkene({
 }
 
 export const saveInternetaak = async (
-  data: InternetaakPostModel,
+  toelichting: string,
+  contactmomentId: string,
+  actorenIds: string[],
 ): Promise<SaveInterneTaakResponseModel> => {
-  const response = await postInternetaak(data);
+  const createInternetaakPostModel = (
+    uuid: string,
+    actoren: string[],
+  ): InternetaakPostModel => {
+    const interneTaak: InternetaakPostModel = {
+      nummer: "",
+      gevraagdeHandeling: "Contact opnemen met betrokkene",
+      aanleidinggevendKlantcontact: {
+        uuid: uuid,
+      },
+      toegewezenAanActoren: [],
+      toelichting: toelichting,
+      status: "te_verwerken",
+    };
+
+    actoren.forEach((actor) => {
+      interneTaak.toegewezenAanActoren.push({ uuid: actor });
+    });
+
+    return interneTaak;
+  };
+
+  const interneTaak = createInternetaakPostModel(contactmomentId, actorenIds);
+
+  const response = await postInternetaak(interneTaak);
   const responseBody = await response.json();
 
   throwIfNotOk(response);
@@ -327,7 +355,13 @@ const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
   });
 };
 
-export const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
+export const ensureActoren = async (
+  actorData: undefined | ContactverzoekData["actor"],
+): Promise<string[]> => {
+  if (!actorData) {
+    return [];
+  }
+
   const {
     identificatie,
     naam,
@@ -363,8 +397,7 @@ export const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
       typeOrganisatorischeEenheid,
     );
     if (actorUuid) actoren.push({ uuid: actorUuid });
-    if (organisatorischeActorUuid)
-      actoren.push({ uuid: organisatorischeActorUuid });
+    if (organisatorischeActorUuid) actoren.push(organisatorischeActorUuid);
   } else {
     // als alleen een afdeling/groep is geselecteerd
     const actorUuid = await getOrCreateActor(
@@ -372,7 +405,7 @@ export const ensureActoren = async (actorData: ContactverzoekData["actor"]) => {
       identificatie,
       typeOrganisatorischeEenheid,
     );
-    if (actorUuid) actoren.push({ uuid: actorUuid });
+    if (actorUuid) actoren.push(actorUuid);
   }
 
   return actoren;
@@ -458,9 +491,26 @@ export async function postActor({
 }
 
 export const saveKlantContact = async (
-  data: KlantContactPostmodel,
+  vraag: Vraag,
 ): Promise<SaveKlantContactResponseModel> => {
-  const response = await postKlantContact(data);
+  const klantcontactPostModel: KlantContactPostmodel = {
+    kanaal: vraag.kanaal,
+    onderwerp:
+      vraag.vraag?.title === "anders"
+        ? vraag.specifiekevraag
+        : vraag.vraag
+          ? vraag.specifiekevraag
+            ? `${vraag.vraag.title} (${vraag.specifiekevraag})`
+            : vraag.vraag.title
+          : vraag.specifiekevraag,
+    inhoud: vraag.notitie,
+    indicatieContactGelukt: true,
+    taal: "nld",
+    vertrouwelijk: false,
+    plaatsgevondenOp: new Date().toISOString(),
+  };
+
+  const response = await postKlantContact(klantcontactPostModel);
   const responseBody = await response.json();
 
   throwIfNotOk(response);
@@ -481,7 +531,6 @@ const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
 export const saveDigitaleAdressen = async (
   digitaleAdressen: DigitaalAdresApiViewModel[],
   verstrektDoorBetrokkeneUuid: string,
-  verstrektDoorPartijUuid?: string,
 ): Promise<Array<{ uuid: string; url: string }>> => {
   const savedAdressen: Array<{ uuid: string; url: string }> = [];
 
@@ -837,3 +886,18 @@ export async function useOpenKlant2() {
   const { useKlantInteracties } = await response.json();
   return useKlantInteracties as boolean;
 }
+
+export const postOnderwerpobject = async (data: onderwerpObjectPostModel) => {
+  const response = await fetchLoggedIn(
+    `${klantinteractiesBaseUrl}/onderwerpobjecten`,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    },
+  );
+  throwIfNotOk(response);
+};

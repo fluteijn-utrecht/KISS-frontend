@@ -129,7 +129,7 @@ try
     app.MapKissAuthEndpoints();
     app.MapControllers();
     app.MapKissProxy();
-    app.MapHealthChecks("/healthz");
+    app.MapHealthChecks("/healthz").AllowAnonymous();
     app.MapFallbackToIndexHtml();
 
     using (var scope = app.Services.CreateScope())

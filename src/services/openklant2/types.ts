@@ -203,5 +203,18 @@ export type Partij = {
   };
 };
 
+export type identificator = {
+  objectId: string;
+  codeObjecttype: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
+};
+
+export type onderwerpObjectPostModel = {
+  klantcontact: { uuid: string };
+  wasKlantcontact: { uuid: string } | null;
+  onderwerpobjectidentificator: identificator;
+};
+
 //todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
 export type ContactverzoekViewmodel = Contactverzoek;
