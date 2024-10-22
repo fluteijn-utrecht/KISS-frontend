@@ -12,13 +12,9 @@ export const useBedrijfByIdentifier = (
 
     if (!id) return "";
 
-    //disable cache for now
+    //door de constructie zoder url is een cachekey nodig, maar die willen we eigenlijk niet gebruiken, ivm onvoorspelbaar gedrag.
+    //voor nu opgelost door een unieke key te genereren.,
     return "" + Date.now();
-
-    // const identfier =
-    //   "vestigingsnummer" in id ? id.vestigingsnummer : id.kvkNummer;
-
-    // return "bedrijf" + identfier;
   };
 
   const fetcher = () => {
