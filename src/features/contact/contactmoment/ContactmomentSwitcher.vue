@@ -5,11 +5,7 @@
   />
   <details ref="detailsEl" v-if="contactmomentStore.contactmomenten.length">
     <summary class="utrecht-button utrecht-button--secondary-action">
-      {{
-        moments.length > 1
-          ? `${moments.length} actieve contactmomenten`
-          : "1 actief contactmoment"
-      }}
+      Actief ({{ moments.length }})
     </summary>
     <menu>
       <li v-for="(moment, idx) in moments" :key="idx">
@@ -99,13 +95,14 @@ details {
 menu {
   position: absolute;
   z-index: 1;
+  right: 0;
+  margin-block-start: var(--spacing-small);
   padding-inline: var(--spacing-default);
   padding-block-end: var(--spacing-default);
   background: var(--color-white);
-  inline-size: 100%;
   border-radius: var(--radius-default);
   box-shadow: var(--shadow-default);
-  justify-content: flex-start;
+  inline-size: 17rem; // ...
 
   li {
     border-block-end: 1px solid var(--color-black);

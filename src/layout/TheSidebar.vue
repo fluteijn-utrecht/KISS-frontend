@@ -185,26 +185,22 @@ aside {
 }
 
 menu {
-  align-self: center;
-
-  --utrecht-button-min-inline-size: 17rem;
+  --utrecht-button-min-inline-size: 100%;
 }
 
 menu.starter {
-  margin-block: 4rem var(--spacing-default);
   display: flex;
-  flex-direction: column;
   gap: var(--spacing-default);
+  margin-block: var(--spacing-default) var(--spacing-small);
+  margin-inline: var(--spacing-default);
 
   li {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    flex: 1;
   }
 }
 
 menu.finisher {
-  margin-block: var(--spacing-large);
+  margin: var(--spacing-default);
 }
 
 .within-moment {
@@ -214,7 +210,8 @@ menu.finisher {
   flex: 1;
   background-color: var(--color-white);
   color: var(--color-white);
-  margin-block-start: var(--spacing-default);
+
+  // margin-block-start: var(--spacing-default);
 
   > h2 {
     margin-block-start: var(--spacing-small);
@@ -223,9 +220,9 @@ menu.finisher {
   }
 
   > .contactmoment-header {
-    background-color: var(--color-primary);
-    padding-block: var(--spacing-default) var(--spacing-default);
-    padding-inline: var(--spacing-small);
+    padding-block: var(--spacing-small) var(--spacing-default);
+    padding-inline: var(--spacing-default);
+    background-color: var(--sidebar-color-1);
 
     --utrecht-heading-color: var(--color-white);
 

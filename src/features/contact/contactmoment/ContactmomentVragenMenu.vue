@@ -5,6 +5,7 @@
   />
   <div>
     <utrecht-heading :level="3">Vragen</utrecht-heading>
+
     <menu class="vragen-menu" v-if="vragen">
       <li v-for="(vraag, idx) in vragen" :key="idx">
         <utrecht-button
@@ -45,17 +46,15 @@ import {
 const contactmomentStore = useContactmomentStore();
 const dialog = useConfirmDialog();
 
-const vragen = computed(
-  () =>
-    contactmomentStore.huidigContactmoment?.vragen.map((vraag) => {
-      return {
-        isCurrent:
-          contactmomentStore.huidigContactmoment?.huidigeVraag === vraag,
-        async switchVraag() {
-          contactmomentStore.switchVraag(vraag);
-        },
-      };
-    }),
+const vragen = computed(() =>
+  contactmomentStore.huidigContactmoment?.vragen.map((vraag) => {
+    return {
+      isCurrent: contactmomentStore.huidigContactmoment?.huidigeVraag === vraag,
+      async switchVraag() {
+        contactmomentStore.switchVraag(vraag);
+      },
+    };
+  }),
 );
 
 async function startNieuweVraag() {
@@ -68,9 +67,12 @@ async function startNieuweVraag() {
 
 <style lang="scss" scoped>
 div {
+  --utrecht-heading-3-font-size: 1rem; // ...
+  --utrecht-heading-3-font-weight: normal; // ...
+
   display: flex;
   gap: var(--spacing-default);
-  margin-block-start: var(--spacing-large);
+  margin-block-start: var(--spacing-default);
   align-items: baseline;
 }
 

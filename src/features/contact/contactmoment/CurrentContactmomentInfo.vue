@@ -44,6 +44,8 @@ article {
   --utrecht-button-min-inline-size: auto;
 
   h2 {
+    font-size: 1rem;
+    font-weight: normal;
     margin-block-start: 0;
   }
 
