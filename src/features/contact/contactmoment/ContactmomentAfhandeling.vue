@@ -702,7 +702,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
             objectId: zaakinfo.zaak.id,
             codeObjecttype: "zgw-Zaak",
             codeRegister: "openzaak",
-            codeSoortObjectId: "identificatie",
+            codeSoortObjectId: "uuid",
           },
         };
 
@@ -710,7 +710,14 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
         postOnderwerpobject(onderwerpObject);
 
         //voeg het contactmoment toe aan de zaak
-        addContactmomentToZaak(savedKlantContactId, zaakinfo.zaak);
+        //DIT WERKT NIET
+        //OPENZAAK ACCEPTEERT ALLEEN OK1 Contactmomenten, GEEN KLANTCONTACTEN
+        //ER ZIJN GEEN PLANNEN OM DIT MOGELIJK TE GAAN MAKEN
+        // addContactmomentToZaak(
+        //   savedKlantContactResult.data?.url as string,
+        //   zaakinfo.zaak?.url,
+        //   zaakinfo.zaaksysteemId,
+        // );
       }
     });
 

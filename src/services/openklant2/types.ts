@@ -23,6 +23,8 @@ export type ExpandedKlantContactApiViewmodel = {
     };
   }>;
   internetaak: InternetaakApiViewModel;
+  //toe te voegen bij PC-317 Klantcontacten bij een Zaak tonen
+  //"gingOverOnderwerpobjecten": [ {   "uuid": "...",  "url": "..."  }],
 };
 
 export type InternetaakApiViewModel = {

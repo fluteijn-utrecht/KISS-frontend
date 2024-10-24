@@ -44,7 +44,7 @@ import {
   type ContactmomentViewModel,
 } from "@/services/openklant2";
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
-import { koppelZaakContactmoment } from "@/services/openzaak";
+import { voegContactmomentToeAanZaak } from "@/services/openzaak";
 import { koppelObject } from "@/services/openklant1";
 
 //obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
@@ -184,10 +184,13 @@ export function useContactmomentenByKlantId(
     }
 
     if (gebruikKlantinteractiesApi.value) {
-      return fetchBetrokkene(url)
-        .then(enrichBetrokkeneWithKlantContact)
-        .then(enrichKlantcontactWithInterneTaak) //necesarry to filter them out
-        .then(mapToContactmomentViewModel);
+      return (
+        fetchBetrokkene(url)
+          .then(enrichBetrokkeneWithKlantContact)
+          .then(enrichKlantcontactWithInterneTaak) //noig om contactverzoeken eruit te kunnen filteren
+          // .then(enrichKlantcontactWithZaak) // te implementeren bij PC-317 Klantcontacten bij een Zaak tonen
+          .then(mapToContactmomentViewModel)
+      );
     } else {
       return fetchLoggedIn(url)
         .then(throwIfNotOk)
@@ -492,11 +495,11 @@ export function mapContactverzoekData({
 
 export async function koppelZaakEnContactmoment(
   zaak: ZaakDetails,
-  contactmomentId: string,
+  contactmomentUrl: string,
 ) {
   // dit is voorlopige, hopelijk tijdelijke, code om uit te proberen of dit een nuttige manier is om met de instabiliteit van openzaak en openklant om te gaan
   // derhalve bewust nog niet geoptimaliseerd
-  await addContactmomentToZaak(contactmomentId, zaak);
+  await addContactmomentToZaak(contactmomentUrl, zaak.url, zaak.zaaksysteemId);
 
   // voorgaande gaat vaak mis, maar geeft dan bijna altijd ten onterechte een error response.
   // de data is dan wel correct opgeslagen
@@ -505,7 +508,7 @@ export async function koppelZaakEnContactmoment(
     setTimeout(
       async () =>
         await koppelObject({
-          contactmoment: contactmomentId,
+          contactmoment: contactmomentUrl,
           object: zaak.self,
           objectType: "zaak",
         }),
@@ -516,30 +519,49 @@ export async function koppelZaakEnContactmoment(
   }
 }
 export async function addContactmomentToZaak(
-  contactmomentId: string,
-  zaak: ZaakDetails,
+  contactmomentUrl: string,
+  zaakUrl: string,
+  zaaksysteemId: string,
 ) {
   try {
-    await koppelZaakContactmoment({
-      contactmoment: contactmomentId,
-      ...zaak,
-    });
+    await voegContactmomentToeAanZaak(
+      {
+        contactmoment: contactmomentUrl,
+        zaak: zaakUrl,
+      },
+      zaaksysteemId,
+    );
   } catch (e) {
     try {
-      console.log("koppelZaakContactmoment in openzaak attempt 1 failed", e);
-      await koppelZaakContactmoment({
-        contactmoment: contactmomentId,
-        ...zaak,
-      });
+      console.log(
+        "voegContactmomentToeAanZaak in openzaak attempt 1 failed",
+        e,
+      );
+      await voegContactmomentToeAanZaak(
+        {
+          contactmoment: contactmomentUrl,
+          zaak: zaakUrl,
+        },
+        zaaksysteemId,
+      );
     } catch (e) {
       try {
-        console.log("koppelZaakContactmoment in openzaak attempt 2 failed", e);
-        await koppelZaakContactmoment({
-          contactmoment: contactmomentId,
-          ...zaak,
-        });
+        console.log(
+          "voegContactmomentToeAanZaak in openzaak attempt 2 failed",
+          e,
+        );
+        await voegContactmomentToeAanZaak(
+          {
+            contactmoment: contactmomentUrl,
+            zaak: zaakUrl,
+          },
+          zaaksysteemId,
+        );
       } catch (e) {
-        console.log("koppelZaakContactmoment in openzaak attempt 3 failed", e);
+        console.log(
+          "voegContactmomentToeAanZaak in openzaak attempt 3 failed",
+          e,
+        );
       }
     }
   }

@@ -99,6 +99,22 @@ export async function enrichBetrokkeneWithKlantContact(
   return value;
 }
 
+// te implementeren bij PC-317 Klantcontacten bij een Zaak tonen
+export async function enrichKlantcontactWithZaak(
+  value: PaginatedResult<BetrokkeneWithKlantContact>,
+): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
+  throw new Error("not implemented (enrichKlantcontactWithZaak)");
+  // bij het klantcontact zit een lijst onderwerpobjecten
+  // haal daar de zaken uit en voeg deze toe aan
+  // "gingOverOnderwerpobjecten": [
+  //   {
+  //       "uuid": "22c0925d-6b83-4679-b88c-7a8dec7dfda9",
+  //       "url": "https://openklant.dev.kiss-demo.nl/klantinteracties/api/v1/onderwerpobjecten/22c0925d-6b83-4679-b88c-7a8dec7dfda9"
+  //   }
+  // ],
+  return value;
+}
+
 ////////////////////////////////////////////
 // contactverzoeken
 export async function enrichKlantcontactWithInterneTaak(
@@ -386,7 +402,7 @@ export const ensureActoren = async (
     return actor.results[0].uuid;
   };
 
-  const actoren = [];
+  const actoren: string[] = [];
 
   // als zowel een afdeling/groep als medewerker is geselecteerd
   if (naamOrganisatorischeEenheid && identificatieOrganisatorischeEenheid) {
@@ -396,7 +412,7 @@ export const ensureActoren = async (
       identificatieOrganisatorischeEenheid,
       typeOrganisatorischeEenheid,
     );
-    if (actorUuid) actoren.push({ uuid: actorUuid });
+    if (actorUuid) actoren.push(actorUuid);
     if (organisatorischeActorUuid) actoren.push(organisatorischeActorUuid);
   } else {
     // als alleen een afdeling/groep is geselecteerd
