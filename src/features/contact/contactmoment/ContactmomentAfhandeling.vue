@@ -497,9 +497,9 @@ const zakenToevoegenAanContactmoment = async (
   for (const { zaak, shouldStore } of vraag.zaken) {
     if (shouldStore) {
       try {
-        koppelZaakEnContactmoment(zaak, contactmomentId);
+        await koppelZaakEnContactmoment(zaak, contactmomentId);
       } catch (e) {
-        // zaken toevoegen aan een contactmoment en anedrsom retourneert soms een error terwijl de data meetal wel correct opgelsagen is.
+        // zaken toevoegen aan een contactmoment en andersom retourneert soms een error terwijl de data meetal wel correct opgeslagen is.
         // toch maar verder gaan dus
         console.error(e);
       }
