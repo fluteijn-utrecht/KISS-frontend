@@ -25,7 +25,7 @@ import {
   type Contactnaam,
   type Partij,
   DigitaalAdresTypes,
-  type onderwerpObjectPostModel,
+  type OnderwerpObjectPostModel,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
@@ -903,7 +903,7 @@ export async function useOpenKlant2() {
   return useKlantInteracties as boolean;
 }
 
-export const postOnderwerpobject = async (data: onderwerpObjectPostModel) => {
+export const postOnderwerpobject = async (data: OnderwerpObjectPostModel) => {
   const response = await fetchLoggedIn(
     `${klantinteractiesBaseUrl}/onderwerpobjecten`,
     {

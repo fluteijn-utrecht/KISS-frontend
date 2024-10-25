@@ -205,17 +205,17 @@ export type Partij = {
   };
 };
 
-export type identificator = {
+export type Identificator = {
   objectId: string;
   codeObjecttype: string;
   codeRegister: string;
   codeSoortObjectId: string;
 };
 
-export type onderwerpObjectPostModel = {
+export type OnderwerpObjectPostModel = {
   klantcontact: { uuid: string };
   wasKlantcontact: { uuid: string } | null;
-  onderwerpobjectidentificator: identificator;
+  onderwerpobjectidentificator: Identificator;
 };
 
 //todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
