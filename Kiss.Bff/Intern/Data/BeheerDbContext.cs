@@ -42,7 +42,7 @@ namespace Kiss.Bff.Beheer.Data
 
             modelBuilder.Entity<VerwerkingsLog>(r => r.Property(l => l.InsertedAt).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd());
 
-            modelBuilder.Entity<ContactmomentDetails>(l =>
+            modelBuilder.Entity<ContactmomentDetailsModel>(l =>
             {
                 l.HasIndex(x => x.Vraag);
                 l.HasIndex(x => x.VerantwoordelijkeAfdeling);
@@ -66,7 +66,7 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<Gespreksresultaat> Gespreksresultaten { get; set; } = null!;
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
-        public DbSet<ContactmomentDetails> ContactMomentDetails { get; set; } = null!;
+        public DbSet<ContactmomentDetailsModel> ContactMomentDetails { get; set; } = null!;
         public DbSet<ContactVerzoekVragenSet> ContactVerzoekVragenSets { get; set; } = null!;
         public DbSet<Kanaal> Kanalen { get; set; } = null!;
     }

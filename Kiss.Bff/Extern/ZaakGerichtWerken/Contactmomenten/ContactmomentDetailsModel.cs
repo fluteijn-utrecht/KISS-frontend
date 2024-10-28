@@ -2,7 +2,7 @@
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
-    public class ContactmomentDetails
+    public class ContactmomentDetailsModel
     {
         [Required]
         public string Id { get; set; } = default!;
