@@ -43,7 +43,7 @@ namespace Kiss.Bff.Test
         private void SeedTestData()
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
-            var contactmoment1 = new ContactmomentDetails
+            var contactmoment1 = new ContactmomentDetailsModel
             {
                 Id = "1",
                 Startdatum = DateTime.Now,
@@ -52,7 +52,7 @@ namespace Kiss.Bff.Test
                 Vraag = "Question 1"
             };
 
-            var contactmoment2 = new ContactmomentDetails
+            var contactmoment2 = new ContactmomentDetailsModel
             {
                 Id = "2",
                 Startdatum = DateTime.Now,
@@ -70,7 +70,7 @@ namespace Kiss.Bff.Test
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactmomentenDetails(dbContext);
+            var controller = new ReadContactmomentDetails(dbContext);
             var validId = "1";
 
             // Act
@@ -80,7 +80,7 @@ namespace Kiss.Bff.Test
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
 
-            var contactmoment = result.Value as ContactmomentDetails;
+            var contactmoment = result.Value as ContactmomentDetailsModel;
             Assert.IsNotNull(contactmoment);
             Assert.AreEqual(validId, contactmoment.Id);
         }
@@ -90,7 +90,7 @@ namespace Kiss.Bff.Test
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new ReadContactmomentenDetails(dbContext);
+            var controller = new ReadContactmomentDetails(dbContext);
             var invalidId = "nonexistent";
 
             // Act
