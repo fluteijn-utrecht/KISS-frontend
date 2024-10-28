@@ -17,8 +17,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
             _db = db;
         }
 
-        [HttpGet("/api/contactmomentdetails")]
-        [Authorize(Policy = Policies.ExternSysteemPolicy)]
+        [HttpGet("/api/contactmomentdetails")]      
         public async Task<IActionResult> Get([FromQuery] string id, CancellationToken token)
         {
             var contactmoment = await _db.ContactMomentDetails
