@@ -31,13 +31,13 @@ namespace Kiss.Bff.Test
             // Arrange
             var controller = new GetFaq(dbContext);
 
-            var testData = new List<ContactmomentDetails>();
+            var testData = new List<ContactmomentDetailsModel>();
             var topQuestionsCount = 10;
 
             // Add 500 questions
             for (int i = 1; i <= 500; i++)
             {
-                testData.Add(new ContactmomentDetails
+                testData.Add(new ContactmomentDetailsModel
                 {
                     Id = i.ToString(),
                     Vraag = $"Question {i}",

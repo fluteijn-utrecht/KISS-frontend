@@ -15,6 +15,7 @@ using Kiss.Bff.NieuwsEnWerkinstructies.Features;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Intern.Links.Features;
 using Kiss.Bff.Intern.Gespreksresultaten.Features;
+using Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten;
 
 namespace Kiss.Bff.Test
 {
@@ -109,7 +110,7 @@ namespace Kiss.Bff.Test
         [TestMethod]
         public void TestAuthorizationOfManagementInformatieEndpoint()
         {
-            var controllerType = typeof(ReadContactmomentenDetails);
+            var controllerType = typeof(ContactmomentDetailsRapportageOverzicht);
 
             var dbContext = new BeheerDbContext(new DbContextOptions<BeheerDbContext>());
             var controller = Activator.CreateInstance(controllerType, dbContext) as ControllerBase;
@@ -118,7 +119,7 @@ namespace Kiss.Bff.Test
 
             var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-            Assert.AreEqual(2, methods.Length);
+            Assert.AreEqual(1, methods.Length);
 
             for (var i = 0; i < methods.Length; i += 1)
             {
