@@ -3,6 +3,7 @@ import {
   ServiceResult,
   parsePagination,
   parseJson,
+  type PaginatedResult,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
@@ -40,8 +41,10 @@ import {
   enrichBetrokkeneWithKlantContact,
   enrichKlantcontactWithInterneTaak,
   fetchBetrokkene,
+  fetchKlantcontacten,
   mapToContactmomentViewModel,
   type ContactmomentViewModel,
+  type KlantContactRoot,
 } from "@/services/openklant2";
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { voegContactmomentToeAanZaak } from "@/services/openzaak";
@@ -226,12 +229,6 @@ export function useContactmomentenByKlantId(
   );
 }
 
-const fetchOk1Contactmomenten = (u: string) =>
-  fetchLoggedIn(u)
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
     () => {
@@ -249,17 +246,29 @@ export const useContactmomentDetails = (url: () => string) =>
       }),
   );
 
-export function useContactmomentenByObjectUrl(url: Ref<string>) {
-  const getUrl = () => {
-    if (!url.value) return "";
-    const params = new URLSearchParams();
-    params.set("object", url.value);
-    params.set("ordering", "-registratiedatum");
-    params.set("expand", "objectcontactmomenten");
-    return `${contactmomentenUrl}?${params}`;
-  };
+export function fetchContactmomentenByObjectUrl(
+  url: string,
+  gebruikKlantinteractiesApi: boolean,
+) {
+  if (gebruikKlantinteractiesApi) {
+    // OK2
+    return fetchKlantcontacten({
+      onderwerpobject__onderwerpobjectidentificatorObjectId: url
+        .split("/")
+        .at(-1),
+    }).then(mapper);
+  }
 
-  return ServiceResult.fromFetcher(getUrl, fetchOk1Contactmomenten);
+  // OK1
+  const params = new URLSearchParams();
+  params.set("object", url);
+  params.set("ordering", "-registratiedatum");
+  params.set("expand", "objectcontactmomenten");
+
+  return fetchLoggedIn(`${contactmomentenUrl}?${params}`)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
 }
 
 export function useContactmomentObject(getUrl: () => string) {
@@ -275,6 +284,34 @@ export function useContactmomentObject(getUrl: () => string) {
         .then(parseJson) as Promise<ObjectContactmoment>,
   );
 }
+
+const mapper = (paginated: PaginatedResult<KlantContactRoot>) => ({
+  ...paginated,
+  page: paginated.page.map((klantContact) => {
+    const medewerker = klantContact.hadBetrokkenActoren?.find(
+      (x) => x.soortActor === "medewerker",
+    );
+    const vm: ContactmomentViewModel = {
+      url: klantContact.url,
+      registratiedatum: klantContact.plaatsgevondenOp,
+      kanaal: klantContact?.kanaal,
+      tekst: klantContact?.inhoud,
+      objectcontactmomenten:
+        klantContact._expand.ging_over_onderwerpobjecten?.map((o) => ({
+          objectType: "zaak",
+          contactmoment: o.klantcontact.url,
+          object: o.onderwerpobjectidentificator.objectId,
+        })) || [],
+      medewerkerIdentificatie: {
+        identificatie: medewerker?.actoridentificator?.objectId || "",
+        voorletters: "",
+        achternaam: medewerker?.naam || "",
+        voorvoegselAchternaam: "",
+      },
+    };
+    return vm;
+  }),
+});
 
 export function useContactmomentByUrl(getUrl: () => string) {
   return ServiceResult.fromFetcher(

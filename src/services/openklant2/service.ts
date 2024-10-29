@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 import {
   fetchLoggedIn,
   enforceOneOrZero,
@@ -917,3 +918,189 @@ export const postOnderwerpobject = async (data: OnderwerpObjectPostModel) => {
   );
   throwIfNotOk(response);
 };
+
+export function fetchKlantcontacten(
+  params: {
+    onderwerpobject__onderwerpobjectidentificatorObjectId?: string;
+    hadBetrokkene__url?: string;
+  } = {},
+) {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value),
+  );
+  query.append(
+    "expand",
+    [
+      "gingOverOnderwerpobjecten",
+      "hadBetrokkenen",
+      "hadBetrokkenen.digitaleAdressen",
+      "leiddeTotInterneTaken",
+      "omvatteBijlagen",
+    ].join(","),
+  );
+
+  return fetchLoggedIn(`${klantinteractiesKlantcontacten}?${query}`)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => parsePagination(r, (x) => x as KlantContactRoot));
+}
+
+export interface KlantContactRoot {
+  uuid: string;
+  url: string;
+  gingOverOnderwerpobjecten: GingOverOnderwerpobjecten[];
+  hadBetrokkenActoren: HadBetrokkenActoren[];
+  omvatteBijlagen: OmvatteBijlagen[];
+  hadBetrokkenen: HadBetrokkenen[];
+  leiddeTotInterneTaken: LeiddeTotInterneTaken[];
+  nummer: string;
+  kanaal: string;
+  onderwerp: string;
+  inhoud: string;
+  indicatieContactGelukt: boolean;
+  taal: string;
+  vertrouwelijk: boolean;
+  plaatsgevondenOp: string;
+  _expand: Expand;
+}
+
+export interface GingOverOnderwerpobjecten {
+  uuid: string;
+  url: string;
+}
+
+export interface HadBetrokkenActoren {
+  uuid: string;
+  url: string;
+  naam: string;
+  soortActor: string;
+  indicatieActief: boolean;
+  actoridentificator: Actoridentificator;
+}
+
+export interface Actoridentificator {
+  objectId: string;
+  codeObjecttype: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
+}
+
+export interface OmvatteBijlagen {
+  uuid: string;
+  url: string;
+}
+
+export interface HadBetrokkenen {
+  uuid: string;
+  url: string;
+}
+
+export interface LeiddeTotInterneTaken {
+  uuid: string;
+  url: string;
+}
+
+export interface Expand {
+  had_betrokkenen: HadBetrokkenen2[];
+  leidde_tot_interne_taken: LeiddeTotInterneTaken2[];
+  ging_over_onderwerpobjecten: GingOverOnderwerpobjecten2[];
+  omvatte_bijlagen: OmvatteBijlagen2[];
+}
+
+export interface HadBetrokkenen2 {
+  uuid: string;
+  url: string;
+  wasPartij: WasPartij;
+  hadKlantcontact: HadKlantcontact;
+  digitaleAdressen: any[];
+  bezoekadres: Bezoekadres;
+  correspondentieadres: Correspondentieadres;
+  contactnaam: Contactnaam;
+  volledigeNaam: string;
+  rol: string;
+  organisatienaam: string;
+  initiator: boolean;
+}
+
+export interface WasPartij {}
+
+export interface HadKlantcontact {}
+
+export interface Bezoekadres {}
+
+export interface Correspondentieadres {}
+
+export interface Contactnaam {}
+
+export interface LeiddeTotInterneTaken2 {
+  uuid: string;
+  url: string;
+  nummer: string;
+  gevraagdeHandeling: string;
+  aanleidinggevendKlantcontact: AanleidinggevendKlantcontact;
+  toegewezenAanActor: ToegewezenAanActor;
+  toegewezenAanActoren: ToegewezenAanActoren[];
+  toelichting: string;
+  status: string;
+  toegewezenOp: string;
+  afgehandeldOp: string;
+}
+
+export interface AanleidinggevendKlantcontact {
+  uuid: string;
+  url: string;
+}
+
+export interface ToegewezenAanActor {
+  uuid: string;
+  url: string;
+}
+
+export interface ToegewezenAanActoren {
+  uuid: string;
+  url: string;
+}
+
+export interface GingOverOnderwerpobjecten2 {
+  uuid: string;
+  url: string;
+  klantcontact: Klantcontact;
+  wasKlantcontact: WasKlantcontact;
+  onderwerpobjectidentificator: Onderwerpobjectidentificator;
+}
+
+export interface Klantcontact {
+  uuid: string;
+  url: string;
+}
+
+export interface WasKlantcontact {
+  uuid: string;
+  url: string;
+}
+
+export interface Onderwerpobjectidentificator {
+  objectId: string;
+  codeObjecttype: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
+}
+
+export interface OmvatteBijlagen2 {
+  uuid: string;
+  url: string;
+  wasBijlageVanKlantcontact: WasBijlageVanKlantcontact;
+  bijlageidentificator: Bijlageidentificator;
+}
+
+export interface WasBijlageVanKlantcontact {
+  uuid: string;
+  url: string;
+}
+
+export interface Bijlageidentificator {
+  objectId: string;
+  codeObjecttype: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
+}
