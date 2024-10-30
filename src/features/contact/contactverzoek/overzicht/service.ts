@@ -17,6 +17,9 @@ import {
   mapToContactverzoekViewModel,
   type ContactverzoekViewmodel,
 } from "@/services/openklant2";
+import{
+  mapObjectToContactverzoekViewModel
+} from "@/services/openklant1";
 import { ref, type Ref } from "vue";
 import type { Contactverzoek } from "./types";
 
@@ -75,7 +78,7 @@ function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
 export async function search(
   query: string,
   gebruikKlantInteractiesApi: Ref<boolean | null>
-): Promise<PaginatedResult<Contactverzoek>[]> {
+): Promise<PaginatedResult<Contactverzoek>[]> { 
   const url = getSearchUrl(query, gebruikKlantInteractiesApi);
 
   if (gebruikKlantInteractiesApi.value) {
@@ -88,7 +91,13 @@ export async function search(
     );
     return enrichedResults;
   } else {
-    return await searchRecursive(url);
+    const searchResults = await searchRecursive(url);
+    return [mapObjectToContactverzoekViewModel({
+      next: null,
+      previous: null,
+      count: searchResults.length,
+      results: searchResults,
+    })]; 
   }
 }
 

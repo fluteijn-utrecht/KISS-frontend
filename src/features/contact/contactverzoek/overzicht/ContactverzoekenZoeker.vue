@@ -98,19 +98,28 @@ const handleSearch = async () => {
     zoekerResults.value.loading = false;
   }
 };
-
 const filteredZoekerData = computed(() => {
   if (zoekerResults.value.success && store.value.searchQuery) {
-    return zoekerResults.value.data.flatMap((paginatedResult) =>
-      paginatedResult.page.filter((item) => {
-        return item.record.data.betrokkene.wasPartij === null || 
-               item.record.data.betrokkene.wasPartij === undefined;
-      })
-    );
+    if (openKlant2.value) {
+      return zoekerResults.value.data.flatMap((paginatedResult) =>
+        paginatedResult.page.filter((item) => {
+          return item.record.data.betrokkene.wasPartij === null ||
+                 item.record.data.betrokkene.wasPartij === undefined;
+        })
+      );
+    } else {
+      return zoekerResults.value.data.flatMap((paginatedResult) =>
+        paginatedResult.page.filter((item) =>
+          !Object.prototype.hasOwnProperty.call(
+            item.record.data.betrokkene,
+            "klant"
+          )
+        )
+      );
+    }
   }
   return [];
 });
-
 
 </script>
 

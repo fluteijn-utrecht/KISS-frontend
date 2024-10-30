@@ -15,7 +15,7 @@ import type { Ref } from "vue";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant1 } from "./types";
 import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven.js";
-import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../openklant2/types.js";
+import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2, ContactverzoekViewmodel } from "../openklant2/types.js";
 import type { Klant } from "../openklant/types";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
@@ -432,3 +432,45 @@ export const koppelObject = (data: ContactmomentObject) =>
     },
     body: JSON.stringify(data),
   }).then(throwIfNotOk);
+  export function mapObjectToContactverzoekViewModel(
+    value: { next: string | null; previous: string | null; count: number; results: any[] }
+  ): PaginatedResult<ContactverzoekViewmodel> {
+    const viewmodel = value.results.map((item) => {
+      const record = item.record;
+      const data = record.data;
+  
+      return {
+        url: item.url,
+        toelichting: data.toelichting || "",
+        record: {
+          startAt: record.startAt,
+          data: {
+            status: data.status || "onbekend",
+            contactmoment: data.contactmoment,
+            registratiedatum: data.registratiedatum,
+            datumVerwerkt: data.datumVerwerkt,
+            toelichting: data.toelichting || "",
+            actor: {
+              naam: data.actor?.naam || "",
+              soortActor: data.actor?.soortActor || "onbekend",
+              identificatie: data.actor?.identificatie || "",
+            },
+            betrokkene: {
+              rol: data.betrokkene?.rol,
+              persoonsnaam: data.betrokkene?.persoonsnaam || {},
+              digitaleAdressen: data.betrokkene?.digitaleAdressen || [],
+              wasPartij: data.betrokkene?.wasPartij || null,
+            },
+            verantwoordelijkeAfdeling: data.verantwoordelijkeAfdeling || "",
+          },
+        },
+      } as ContactverzoekViewmodel;
+    });
+  
+    return {
+      next: value.next,
+      previous: value.previous,
+      count: value.count,
+      page: viewmodel,
+    };
+  }
