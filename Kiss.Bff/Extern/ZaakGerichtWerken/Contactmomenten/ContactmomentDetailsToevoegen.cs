@@ -5,17 +5,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
     [ApiController]
-    public class WriteContactmomentenDetails : ControllerBase
+    public class ContactmomentDetailsToevoegen : ControllerBase
     {
         private readonly BeheerDbContext _db;
 
-        public WriteContactmomentenDetails(BeheerDbContext db)
+        public ContactmomentDetailsToevoegen(BeheerDbContext db)
         {
             _db = db;
         }
 
         [HttpPut("/api/contactmomentdetails")]
-        public async Task<IActionResult> Post(ContactmomentDetails model, CancellationToken cancellationToken)
+        public async Task<IActionResult> Post(ContactmomentDetailsModel model, CancellationToken cancellationToken)
         {
             model.EmailadresKcm = User.GetEmail();
             var existingModel = await _db.ContactMomentDetails.FindAsync(model.Id);
