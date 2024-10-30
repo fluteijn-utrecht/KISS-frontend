@@ -134,7 +134,6 @@ form {
 }
 
 .overview {
-  inline-size: 30rem;
   min-inline-size: max-content;
 }
 
