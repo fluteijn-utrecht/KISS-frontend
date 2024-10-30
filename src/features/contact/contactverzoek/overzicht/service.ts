@@ -1,9 +1,11 @@
+
 import {
   ServiceResult,
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
   parsePagination,
+  type PaginatedResult,
 } from "@/services";
 import {
   enrichBetrokkeneWithDigitaleAdressen,
@@ -15,69 +17,95 @@ import {
   mapToContactverzoekViewModel,
   type ContactverzoekViewmodel,
 } from "@/services/openklant2";
-import type { Ref } from "vue";
+import { ref, type Ref } from "vue";
+import type { Contactverzoek } from "./types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
+const klantinteractiesDigitaleAdressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
 
-type SearchParameters = {
-  query: string;
-};
-
-function getSearchUrl({ query = "" }: SearchParameters) {
+function getSearchUrl(
+ query: string,
+  gebruikKlantInteractiesApi: Ref<boolean | null>
+) {
   if (!query) return "";
 
-  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-  url.searchParams.set("ordering", "-record__data__registratiedatum"); //todo: is dit de correcte orderning?
-  url.searchParams.set("pageSize", "10");
+  let url: URL;
 
-  url.searchParams.set(
-    "data_attrs",
-    `betrokkene__digitaleAdressen__icontains__${query}`,
-  ); //todo: kan je in 1 call op email OF telefoonnr zoeken? anders de interface aanpassen zodat duidelijk is dat je maar naar een van beide kan zoeken (bv samenvoegen in 1 zoekveld!)
+  if (gebruikKlantInteractiesApi.value) {
+    url = new URL(klantinteractiesDigitaleAdressen, location.origin);
+    url.searchParams.set("adres", query);
+    url.searchParams.set("expand", "verstrektDoorBetrokkene");
+    url.searchParams.set("page", "1");
+  } else {
+    url = new URL("/api/internetaak/api/v2/objects", location.origin);
+    url.searchParams.set("ordering", "-record__data__registratiedatum");
+    url.searchParams.set("pageSize", "10");
+    url.searchParams.set(
+      "data_attrs",
+      `betrokkene__digitaleAdressen__icontains__${query}`
+    );
+  }
 
   return url.toString();
 }
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
-  //recursive alle pagina's ophalen.
-  //set de page param van de huidige op te halen pagina
   const url = new URL(urlStr);
   url.searchParams.set("page", page.toString());
 
-  return (
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      //todo: parsePagination toevoegen??
-      .then(async (j) => {
-        if (!Array.isArray(j?.results)) {
-          throw new Error("expected array: " + JSON.stringify(j));
-        }
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(async (j) => {
+      if (!Array.isArray(j?.results)) {
+        throw new Error("Expected array: " + JSON.stringify(j));
+      }
 
-        const result: any[] = [];
-        j.results.forEach((k: any) => {
-          result.push(k);
-        });
+      const result: any[] = [...j.results];
 
-        if (!j.next) return result;
-        return await searchRecursive(urlStr, page + 1).then((next) => [
-          ...result,
-          ...next,
-        ]);
+      if (!j.next) return result; 
+      const nextResults = await searchRecursive(urlStr, page + 1);
+      return [...result, ...nextResults];
+    });
+}
+
+export async function search(
+  query: string,
+  gebruikKlantInteractiesApi: Ref<boolean | null>
+): Promise<PaginatedResult<Contactverzoek>[]> {
+  const url = getSearchUrl(query, gebruikKlantInteractiesApi);
+
+  if (gebruikKlantInteractiesApi.value) {
+    const searchResults = await searchRecursive(url);
+    const enrichedResults = await Promise.all(
+      searchResults.map(async (result: any) => {
+        const klantUrl = ref(result.url);
+        return await getContactverzoekenByKlantUrl(klantUrl);
       })
-  );
+    );
+    return enrichedResults;
+  } else {
+    return await searchRecursive(url);
+  }
 }
 
-function search(url: string) {
-  return searchRecursive(url); //todo: sortering???  .then((r) => r.sort(sortKlant));
-}
+export async function getContactverzoekenByKlantUrl(klantUrl: Ref<string>) {
+  function getUrl() {
+    const searchParams = new URLSearchParams();
+    searchParams.set("verstrektedigitaalAdres__url", klantUrl.value);
+    return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
+  }
 
-export function useSearch(params: Ref<SearchParameters>) {
-  const getUrl = () => getSearchUrl(params.value);
-  return ServiceResult.fromFetcher(getUrl, search);
+  return fetchBetrokkene(getUrl())
+    .then(enrichBetrokkeneWithKlantContact)
+    .then(enrichKlantcontactWithInterneTaak)
+    .then(filterOutContactmomenten)
+    .then(enrichBetrokkeneWithDigitaleAdressen)
+    .then(enrichInterneTakenWithActoren)
+    .then(mapToContactverzoekViewModel);
 }
 
 export function useContactverzoekenByKlantId(

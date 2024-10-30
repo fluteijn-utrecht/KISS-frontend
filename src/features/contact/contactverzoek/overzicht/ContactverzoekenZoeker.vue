@@ -4,7 +4,7 @@
       Telefoonnummer of e-mailadres
       <input
         type="text"
-        v-model="query"
+        v-model="store.searchQuery"
         class="utrecht-textbox utrecht-textbox--html-input"
       />
     </label>
@@ -13,100 +13,105 @@
     </utrecht-button>
   </form>
 
-  <!-- <section class="search-section" v-if="store.klantEmail || store.klantPhone"> -->
   <section class="search-section">
-    <simple-spinner v-if="zoeker.loading" />
-    <template v-if="zoeker.success">
+    <simple-spinner v-if="zoekerResults.loading" />
+    <template v-if="zoekerResults.success">
       <table class="overview zoekresultaten-view">
         <SearchResultsCaption
           :results="filteredZoekerData"
           :zoek-termen="undefined"
         />
-
         <contactverzoeken-overzicht :contactverzoeken="filteredZoekerData">
           <template #onderwerp="{ contactmomentUrl }">
-            <slot name="onderwerp" :contactmoment-url="contactmomentUrl"></slot>
+            <contactmoment-details-context :url="contactmomentUrl">
+              <template #details="{ details }">
+                {{ details?.vraag || details?.specifiekeVraag }}
+              </template>
+            </contactmoment-details-context>
           </template>
-          <template #contactmoment="{ url }">
-            <slot name="contactmoment" :url="url"></slot>
+
+          <template v-if="!openKlant2" #contactmoment="{ url }">
+            <contactmoment-preview :url="url">
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object" />
+              </template>
+            </contactmoment-preview>
           </template>
         </contactverzoeken-overzicht>
       </table>
     </template>
+
     <application-message
-      v-if="zoeker.error"
+      v-if="zoekerResults.error"
       messageType="error"
       message="Er is een fout opgetreden"
     />
   </section>
 </template>
-
 <script lang="ts" setup>
-import { watch, computed, ref } from "vue";
-import { useSearch } from "./service";
-import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import SimpleSpinner from "@/components/SimpleSpinner.vue"; //todo: spinner via slot?
-import { ensureState } from "@/stores/create-store"; //todo: niet in de stores map. die is applicatie specifiek. dit is generieke functionaliteit
-import { useRouter } from "vue-router";
+import { computed, ref, onMounted } from "vue";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
+import { ensureState } from "@/stores/create-store";
+import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
+import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
+import { useOpenKlant2 } from "@/services/openklant2";
+import { search } from "./service";
+import type { Contactverzoek } from "./types";
+import type { PaginatedResult } from "@/services";
+
+const openKlant2 = ref<boolean>(false);
 
 const store = ensureState({
   stateId: "klant-zoeker",
   stateFactory() {
     return {
-      // currentPhone: "",
-      // currentEmail: "",
       searchQuery: "",
-      // klantPhone: "",
-      // klantEmail: "",
     };
   },
 });
 
-const query = ref<string>("");
-
-const q = computed(() => ({ query: store.value.searchQuery }));
-
-const zoeker = useSearch(q);
-
-const singleKlantId = computed(() => {
-  if (zoeker.success && zoeker.data.length === 1) {
-    const first = zoeker.data[0];
-    if (first?._typeOfKlant === "klant") {
-      return first.id;
-    }
-  }
-  return undefined;
+const zoekerResults = ref({
+  loading: false,
+  success: false,
+  error: false,
+  data: [] as PaginatedResult<Contactverzoek>[], 
 });
 
+onMounted(async () => {
+  openKlant2.value = await useOpenKlant2();
+});
+
+const handleSearch = async () => {
+  zoekerResults.value.loading = true;
+  zoekerResults.value.success = false;
+  zoekerResults.value.error = false;
+
+  try {
+    zoekerResults.value.data = await search(store.value.searchQuery, openKlant2);
+    zoekerResults.value.success = true;
+  } catch (error) {
+    zoekerResults.value.error = true;
+  } finally {
+    zoekerResults.value.loading = false;
+  }
+};
+
 const filteredZoekerData = computed(() => {
-  if (zoeker.success) {
-    return zoeker.data.filter(
-      (item) =>
-        !item.record.data.betrokkene.hasOwnProperty.call(
-          item.record.data.betrokkene,
-          "klant",
-        ),
+  if (zoekerResults.value.success && store.value.searchQuery) {
+    return zoekerResults.value.data.flatMap((paginatedResult) =>
+      paginatedResult.page.filter((item) => {
+        return item.record.data.betrokkene.wasPartij === null || 
+               item.record.data.betrokkene.wasPartij === undefined;
+      })
     );
   }
   return [];
 });
 
-const router = useRouter();
 
-watch(singleKlantId, (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    router.push(`/contacten/${newId}`);
-  }
-});
-
-const handleSearch = () => {
-  store.value.searchQuery = query.value;
-  // store.value.klantEmail = store.value.currentEmail;
-  // store.value.klantPhone = store.value.currentPhone;
-};
 </script>
 
 <style lang="scss" scoped>
