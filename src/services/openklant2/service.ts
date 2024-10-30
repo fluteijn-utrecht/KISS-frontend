@@ -1003,7 +1003,7 @@ export interface LeiddeTotInterneTaken {
 export interface Expand {
   had_betrokkenen: HadBetrokkenen2[];
   leidde_tot_interne_taken: LeiddeTotInterneTaken2[];
-  ging_over_onderwerpobjecten: GingOverOnderwerpobjecten2[];
+  gingOverOnderwerpobjecten: GingOverOnderwerpobjecten2[];
   omvatte_bijlagen: OmvatteBijlagen2[];
 }
 

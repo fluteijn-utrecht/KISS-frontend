@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useZakenPreviewByUrl } from "../service";
+import { useZakenPreviewByUrlOrId } from "../service";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 
@@ -23,5 +23,5 @@ const props = defineProps<{
   zaakurl: string;
 }>();
 
-const zaak = useZakenPreviewByUrl(computed(() => props.zaakurl));
+const zaak = useZakenPreviewByUrlOrId(computed(() => props.zaakurl));
 </script>

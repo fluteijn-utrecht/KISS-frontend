@@ -297,7 +297,7 @@ const mapper = (paginated: PaginatedResult<KlantContactRoot>) => ({
       kanaal: klantContact?.kanaal,
       tekst: klantContact?.inhoud,
       objectcontactmomenten:
-        klantContact._expand.ging_over_onderwerpobjecten?.map((o) => ({
+        klantContact._expand.gingOverOnderwerpobjecten?.map((o) => ({
           objectType: "zaak",
           contactmoment: o.klantcontact.url,
           object: o.onderwerpobjectidentificator.objectId,

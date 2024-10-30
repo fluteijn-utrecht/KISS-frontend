@@ -41,17 +41,22 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
-export const useZakenPreviewByUrl = (url: Ref<string>) => {
+export const useZakenPreviewByUrlOrId = (urlOrId: Ref<string>) => {
   const getUrl = () => {
-    return toRelativeProxyUrl(url.value, zakenProxyRoot) ?? "";
+    if (!urlOrId.value.includes("/")) return getZaakUrl(urlOrId.value);
+    try {
+      return toRelativeProxyUrl(urlOrId.value, zakenProxyRoot) ?? urlOrId.value;
+    } catch {
+      return urlOrId.value;
+    }
   };
 
   const getZaaksysteemId = () => {
-    const u = url.value;
-    if (!u) return "";
-    const parsed = new URL(u);
-    parsed.pathname = "";
-    return parsed.toString();
+    try {
+      return new URL(urlOrId.value).origin;
+    } catch {
+      return "";
+    }
   };
 
   const fetchPreview = (u: string) => {
@@ -62,12 +67,12 @@ export const useZakenPreviewByUrl = (url: Ref<string>) => {
       .then((json) =>
         mapZaakDetailsPreview({
           ...json,
-          zaaksysteemId,
+          zaaksysteemId: json.zaaksysteemId || zaaksysteemId,
         }),
       );
   };
 
-  const getUniqueId = () => url.value && `${url.value}_preview`;
+  const getUniqueId = () => urlOrId.value && `${urlOrId.value}_preview`;
 
   return ServiceResult.fromFetcher(getUrl, fetchPreview, {
     getUniqueId,
