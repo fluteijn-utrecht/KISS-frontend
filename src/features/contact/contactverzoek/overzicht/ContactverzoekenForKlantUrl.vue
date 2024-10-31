@@ -2,7 +2,11 @@
   <contactverzoeken-overzicht
     v-if="contactverzoeken?.page"
     :contactverzoeken="contactverzoeken.page"
-  />
+  >
+    <template v-for="(_, slotName) in $slots" #[slotName]="props">
+      <slot :name="slotName" v-bind="props"></slot>
+    </template>
+  </contactverzoeken-overzicht>
 </template>
 
 <script lang="ts" setup>

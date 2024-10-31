@@ -51,7 +51,7 @@
         <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
         <contactverzoeken-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null"
+          v-if="gebruikKlantInteracatiesApi != null && klantUrl"
           :klant-url="klantUrl"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
           @load="setDisabled(!$event?.count)"

@@ -2,7 +2,11 @@
   <contactmomenten-overzicht
     v-if="contactmomenten?.page"
     :contactmomenten="contactmomenten.page"
-  />
+  >
+    <template v-for="(_, slotName) in $slots" #[slotName]="props">
+      <slot :name="slotName" v-bind="props"></slot>
+    </template>
+  </contactmomenten-overzicht>
 </template>
 <script setup lang="ts">
 import type { PaginatedResult } from "@/services";
