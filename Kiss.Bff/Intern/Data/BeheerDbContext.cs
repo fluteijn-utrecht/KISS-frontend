@@ -46,6 +46,11 @@ namespace Kiss.Bff.Beheer.Data
             {
                 l.HasIndex(x => x.Vraag);
                 l.HasIndex(x => x.VerantwoordelijkeAfdeling);
+
+                l.HasMany(c => c.Bronnen)
+                    .WithOne(b => b.ContactmomentDetails)
+                    .HasForeignKey(b => b.ContactmomentDetailsId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ContactVerzoekVragenSet>()
@@ -67,6 +72,7 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
         public DbSet<ContactmomentDetailsModel> ContactMomentDetails { get; set; } = null!;
+        public DbSet<BronModel> Bronnen { get; set; } = null!;
         public DbSet<ContactVerzoekVragenSet> ContactVerzoekVragenSets { get; set; } = null!;
         public DbSet<Kanaal> Kanalen { get; set; } = null!;
     }
