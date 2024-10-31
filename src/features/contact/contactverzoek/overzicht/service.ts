@@ -52,9 +52,14 @@ function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
           throw new Error("expected array: " + JSON.stringify(j));
         }
 
-        if (!j.next) return j.results;
+        const result: any[] = [];
+        j.results.forEach((k: any) => {
+          result.push(k);
+        });
+
+        if (!j.next) return result;
         return await searchRecursive(urlStr, page + 1).then((next) => [
-          ...j.results,
+          ...result,
           ...next,
         ]);
       })
