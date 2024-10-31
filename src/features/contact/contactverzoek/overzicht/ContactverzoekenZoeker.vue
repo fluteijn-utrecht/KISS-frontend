@@ -14,8 +14,8 @@
   </form>
 
   <section class="search-section">
-    <simple-spinner v-if="zoekerResults.loading" />
-    <template v-if="zoekerResults.success">
+    <simple-spinner v-if="store.zoekerResults.loading" />
+    <template v-if="store.zoekerResults.success">
       <table class="overview zoekresultaten-view">
         <SearchResultsCaption
           :results="filteredZoekerData"
@@ -42,7 +42,7 @@
     </template>
 
     <application-message
-      v-if="zoekerResults.error"
+      v-if="store.zoekerResults.error"
       messageType="error"
       message="Er is een fout opgetreden"
     />
@@ -69,15 +69,14 @@ const store = ensureState({
   stateFactory() {
     return {
       searchQuery: "",
+      zoekerResults: {
+        loading: false,
+        success: false,
+        error: false,
+        data: [] as PaginatedResult<Contactverzoek>[],
+      },
     };
   },
-});
-
-const zoekerResults = ref({
-  loading: false,
-  success: false,
-  error: false,
-  data: [] as PaginatedResult<Contactverzoek>[], 
 });
 
 onMounted(async () => {
@@ -85,42 +84,58 @@ onMounted(async () => {
 });
 
 const handleSearch = async () => {
-  zoekerResults.value.loading = true;
-  zoekerResults.value.success = false;
-  zoekerResults.value.error = false;
+  store.value.zoekerResults.loading = true;
+  store.value.zoekerResults.success = false;
+  store.value.zoekerResults.error = false;
 
   try {
-    zoekerResults.value.data = await search(store.value.searchQuery, openKlant2);
-    zoekerResults.value.success = true;
+    store.value.zoekerResults.data = await search(
+      store.value.searchQuery,
+      openKlant2,
+    );
+    store.value.zoekerResults.success = true;
   } catch (error) {
-    zoekerResults.value.error = true;
+    store.value.zoekerResults.error = true;
   } finally {
-    zoekerResults.value.loading = false;
+    store.value.zoekerResults.loading = false;
   }
 };
+
 const filteredZoekerData = computed(() => {
-  if (zoekerResults.value.success && store.value.searchQuery) {
+  if (store.value.zoekerResults.success && store.value.searchQuery) {
     if (openKlant2.value) {
-      return zoekerResults.value.data.flatMap((paginatedResult) =>
+      return store.value.zoekerResults.data.flatMap((paginatedResult) =>
         paginatedResult.page.filter((item) => {
-          return item.record.data.betrokkene.wasPartij === null ||
-                 item.record.data.betrokkene.wasPartij === undefined;
-        })
+          return (
+            item.record.data.betrokkene.wasPartij === null ||
+            item.record.data.betrokkene.wasPartij === undefined
+          );
+        }),
       );
     } else {
-      return zoekerResults.value.data.flatMap((paginatedResult) =>
-        paginatedResult.page.filter((item) =>
-          !Object.prototype.hasOwnProperty.call(
-            item.record.data.betrokkene,
-            "klant"
-          )
-        )
+      return store.value.zoekerResults.data.flatMap((paginatedResult) =>
+        paginatedResult.page.filter(
+          (item) =>
+            !Object.prototype.hasOwnProperty.call(
+              item.record.data.betrokkene,
+              "klant",
+            ),
+        ),
       );
     }
   }
   return [];
 });
 
+// watch(
+//   () => store.value.searchQuery,
+//   async (newQuery) => {
+//     if (newQuery) {
+//       await handleSearch();
+//     }
+//   },
+//   { immediate: true }
+// );
 </script>
 
 <style lang="scss" scoped>
