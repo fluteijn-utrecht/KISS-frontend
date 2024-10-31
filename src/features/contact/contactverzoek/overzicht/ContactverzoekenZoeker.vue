@@ -61,11 +61,13 @@ import { useOpenKlant2 } from "@/services/openklant2";
 import { search } from "./service";
 import type { Contactverzoek } from "./types";
 import type { PaginatedResult } from "@/services";
+import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
 const openKlant2 = ref<boolean>(false);
 
 const store = ensureState({
-  stateId: "klant-zoeker",
+  stateId: "contactverzoeken-zoeker",
   stateFactory() {
     return {
       searchQuery: "",
