@@ -105,6 +105,7 @@ const handleSearch = async () => {
 
 const filteredZoekerData = computed(() => {
   if (store.value.zoekerResults.success && store.value.searchQuery) {
+    // Bij OK2 (klantinteracties) flow checken we op wasPartij
     if (openKlant2.value) {
       return store.value.zoekerResults.data.flatMap((paginatedResult) =>
         paginatedResult.page.filter((item) => {
@@ -115,29 +116,16 @@ const filteredZoekerData = computed(() => {
         }),
       );
     } else {
+      // Bij OK1 (objecten) flow checken we of `klant` niet is gedefinieerd
       return store.value.zoekerResults.data.flatMap((paginatedResult) =>
         paginatedResult.page.filter(
-          (item) =>
-            !Object.prototype.hasOwnProperty.call(
-              item.record.data.betrokkene,
-              "klant",
-            ),
+          (item) => item.record.data.betrokkene.klant === undefined,
         ),
       );
     }
   }
   return [];
 });
-
-// watch(
-//   () => store.value.searchQuery,
-//   async (newQuery) => {
-//     if (newQuery) {
-//       await handleSearch();
-//     }
-//   },
-//   { immediate: true }
-// );
 </script>
 
 <style lang="scss" scoped>
