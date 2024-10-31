@@ -116,7 +116,7 @@ const filteredZoekerData = computed(() => {
         }),
       );
     } else {
-      // Bij OK1 (objecten) flow checken we of `klant` niet is gedefinieerd
+      // Bij OK1 (objecten) flow checken we op klant
       return store.value.zoekerResults.data.flatMap((paginatedResult) =>
         paginatedResult.page.filter(
           (item) => item.record.data.betrokkene.klant === undefined,
