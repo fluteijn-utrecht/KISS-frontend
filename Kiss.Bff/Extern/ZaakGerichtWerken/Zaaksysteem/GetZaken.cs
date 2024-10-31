@@ -134,7 +134,7 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
             var tasks = _configs
                 .Select(async (config) =>
                 {
-                    var client = CreateClient(config);
+                    var client = _httpClientFactory.CreateClient(config, User);
                     try
                     {
                         var queryString = Request?.QueryString.ToString();
@@ -197,14 +197,6 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem
                 detail: Message,
                 statusCode: 500
             );
-        }
-
-        private HttpClient CreateClient(ZaaksysteemConfig config)
-        {
-            var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new(config.BaseUrl);
-            client.DefaultRequestHeaders.ApplyZaaksysteemHeaders(config, User);
-            return client;
         }
 
         private class CopyResponseMessageResult : IStatusCodeActionResult

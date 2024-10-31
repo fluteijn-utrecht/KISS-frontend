@@ -27,27 +27,22 @@
       >
         <zaak-documenten :zaak="zaak.data" />
       </tab-list-item>
-      <tab-list-item
-        label="Contactmomenten"
-        :disabled="!data?.count"
-        class="data-tabpanel"
-      >
-        <template #tab="{ isActive, label }">
-          <div class="data-tab" :data-active="isActive">
-            <span :class="error ? 'alert icon-after' : ''">{{ label }}</span>
-            <simple-spinner class="small-spinner" v-if="loading" />
-          </div>
-        </template>
-        <template #default="{ isActive }">
-          <div class="data-tabpanel" :data-active="isActive">
-            <div class="contactmomenten">
-              <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-              <contactmomenten-overzicht :contactmomenten="data?.page || []">
-                <template #object="{ object }">
-                  <zaak-preview :zaakurl="object.object"></zaak-preview>
-                </template>
-              </contactmomenten-overzicht>
-            </div>
+      <tab-list-item label="Contactmomenten">
+        <template #default="{ setError, setLoading, setDisabled }">
+          <div class="contactmomenten">
+            <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
+            <contactmomenten-for-object-url
+              v-if="gebruikKlantInteracatiesApi != undefined && zaakUrl"
+              :object-url="zaakUrl"
+              :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+              @load="setDisabled(!$event.count)"
+              @loading="setLoading"
+              @error="setError"
+            >
+              <template #object="{ object }">
+                <zaak-preview :zaakurl="object.object" />
+              </template>
+            </contactmomenten-for-object-url>
           </div>
         </template>
       </tab-list-item>
@@ -64,16 +59,13 @@ import { useContactmomentStore } from "@/stores/contactmoment";
 import ZaakDocumenten from "@/features/zaaksysteem/components/ZaakDocumenten.vue";
 import ZaakAlgemeen from "@/features/zaaksysteem/components/ZaakAlgemeen.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import {
-  ContactmomentenOverzicht,
-  fetchContactmomentenByObjectUrl as fetchContactmomentenByObjectUrl,
-} from "@/features/contact/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import ZaakDeeplink from "@/features/zaaksysteem/components/ZaakDeeplink.vue";
 import { TabList, TabListItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import type { PaginatedResult } from "@/services";
-import type { ContactmomentViewModel } from "@/services/openklant2";
+import { useAsync } from "@/services/use-async";
+import { useOpenKlant2 } from "@/services/openklant2";
+import ContactmomentenForObjectUrl from "@/features/contact/contactmoment/ContactmomentenForObjectUrl.vue";
 
 const props = defineProps<{ zaakId: string; zaaksysteemId: string }>();
 const contactmomentStore = useContactmomentStore();
@@ -84,28 +76,7 @@ const zaak = useZaakById(
 const zaakUrl = computed(() =>
   zaak.success && zaak.data.self ? zaak.data.self : "",
 );
-
-const data = ref<PaginatedResult<ContactmomentViewModel>>();
-const loading = ref(true);
-const error = ref(false);
-watch(
-  [zaakUrl],
-  ([u]) => {
-    if (!u) return;
-    loading.value = true;
-    fetchContactmomentenByObjectUrl(u, true)
-      .then((r) => {
-        data.value = r;
-      })
-      .catch(() => {
-        error.value = true;
-      })
-      .finally(() => {
-        loading.value = false;
-      });
-  },
-  { immediate: true },
-);
+const { data: gebruikKlantInteracatiesApi } = useAsync(() => useOpenKlant2());
 
 const activeTab = ref("");
 

@@ -16,21 +16,24 @@
       </template>
     </tab-list-data-item>
 
-    <tab-list-data-item
-      label="Contactmomenten"
-      :data="contactmomenten"
-      :disabled="(c) => !c.count"
-    >
-      <template #success="{ data }">
+    <tab-list-item label="Contactmomenten">
+      <template #default="{ setError, setLoading, setDisabled }">
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-        <contactmomenten-overzicht :contactmomenten="data.page">
-          <template v-slot:object="{ object }">
-            <zaak-preview :zaakurl="object.object"></zaak-preview>
+        <contactmomenten-for-klant-url
+          v-if="gebruikKlantInteracatiesApi != null"
+          :klant-url="klantUrl"
+          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          @load="setDisabled(!$event.count)"
+          @loading="setLoading"
+          @error="setError"
+        >
+          <template #object="{ object }">
+            <zaak-preview :zaakurl="object.object" />
           </template>
-        </contactmomenten-overzicht>
+        </contactmomenten-for-klant-url>
       </template>
-    </tab-list-data-item>
+    </tab-list-item>
 
     <tab-list-data-item label="Zaken" :data="zaken" :disabled="(c) => !c.count">
       <template #success="{ data }">
@@ -43,15 +46,18 @@
       </template>
     </tab-list-data-item>
 
-    <tab-list-data-item
-      label="Contactverzoeken"
-      :data="contactverzoeken"
-      :disabled="(c) => !c.count"
-    >
-      <template #success="{ data }">
+    <tab-list-item label="Contactverzoeken">
+      <template #default="{ setError, setLoading, setDisabled }">
         <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
-        <contactverzoeken-overzicht :contactverzoeken="data.page">
+        <contactverzoeken-for-klant-url
+          v-if="gebruikKlantInteracatiesApi != null"
+          :klant-url="klantUrl"
+          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          @load="setDisabled(!$event?.count)"
+          @loading="setLoading"
+          @error="setError"
+        >
           <template #onderwerp="{ contactmomentUrl }">
             <contactmoment-details-context :url="contactmomentUrl">
               <template #details="{ details }">
@@ -67,13 +73,13 @@
           >
             <contactmoment-preview :url="url">
               <template #object="{ object }">
-                <zaak-preview :zaakurl="object.object" />
+                <zaak-preview v-if="object.object" :zaakurl="object.object" />
               </template>
             </contactmoment-preview>
           </template>
-        </contactverzoeken-overzicht>
+        </contactverzoeken-for-klant-url>
       </template>
-    </tab-list-data-item>
+    </tab-list-item>
   </tab-list>
 </template>
 
@@ -81,23 +87,21 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
-import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import { useZakenByBsn } from "@/features/zaaksysteem";
 import ZakenOverzicht from "@/features/zaaksysteem/ZakenOverzicht.vue";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
-import { TabList, TabListDataItem } from "@/components/tabs";
+import { TabList, TabListDataItem, TabListItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
 import {
   usePersoonByBsn,
   BrpGegevens,
 } from "@/features/persoon/persoon-details";
-import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 import { useOpenKlant2 } from "@/services/openklant2";
+import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
+import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
 
 const props = defineProps<{ persoonId: string }>();
 
@@ -107,16 +111,6 @@ const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
-
-const contactverzoeken = useContactverzoekenByKlantId(
-  klantUrl,
-  gebruikKlantInteracatiesApi,
-);
-
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  gebruikKlantInteracatiesApi,
-);
 
 onMounted(async () => {
   gebruikKlantInteracatiesApi.value = await useOpenKlant2();

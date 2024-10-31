@@ -1,27 +1,31 @@
 <template>
-  <simple-spinner v-if="zaak.loading" />
+  <simple-spinner v-if="loading" />
 
   <application-message
-    v-if="zaak.error"
+    v-if="error"
     message="Er ging iets mis bij het ophalen van de gegevens. Probeer het later nog eens."
     messageType="error"
   />
 
-  <template v-if="zaak.success && zaak.data">
+  <template v-if="zaak">
     <dt>Zaaknummer</dt>
-    <dd>{{ zaak.data.identificatie }}</dd>
+    <dd>{{ zaak.identificatie }}</dd>
   </template>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useZakenPreviewByUrlOrId } from "../service";
+import { fetchZakenPreviewByUrlOrId } from "../service";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import { useAsync } from "@/services/use-async";
 
 const props = defineProps<{
   zaakurl: string;
 }>();
 
-const zaak = useZakenPreviewByUrlOrId(computed(() => props.zaakurl));
+const {
+  data: zaak,
+  error,
+  loading,
+} = useAsync(() => fetchZakenPreviewByUrlOrId(props.zaakurl));
 </script>

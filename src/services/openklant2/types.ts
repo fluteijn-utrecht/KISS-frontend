@@ -18,13 +18,15 @@ export type ExpandedKlantContactApiViewmodel = {
   hadBetrokkenActoren: Array<{
     soortActor: string;
     naam: string;
-    actorIdentificator: {
+    actoridentificator: {
       objectId: string;
     };
   }>;
-  internetaak: InternetaakApiViewModel;
-  //toe te voegen bij PC-317 Klantcontacten bij een Zaak tonen
-  //"gingOverOnderwerpobjecten": [ {   "uuid": "...",  "url": "..."  }],
+  _expand: {
+    hadBetrokkenen?: Omit<BetrokkeneMetKlantContact, "klantContact">[];
+    leiddeTotInterneTaken?: InternetaakApiViewModel[];
+    gingOverOnderwerpobjecten?: OnderwerpObjectPostModel[];
+  };
 };
 
 export type InternetaakApiViewModel = {
@@ -52,20 +54,24 @@ export type ActorApiViewModel = {
 };
 
 //applicatie types
-
-export type BetrokkeneMetKlantContact = {
+export type Betrokkene = {
   uuid: string;
   wasPartij: { uuid: string; url: string };
-  klantContact: ExpandedKlantContactApiViewmodel;
 
   digitaleAdressen: Array<{ uuid: string; url: string }>;
-  digitaleAdressenExpanded: Array<DigitaalAdresApiViewModel>;
   contactnaam: {
     achternaam: string;
     voorletters: string;
     voornaam: string;
     voorvoegselAchternaam: string;
   };
+  _expand: {
+    digitaleAdressen?: Array<DigitaalAdresApiViewModel>;
+  };
+};
+
+export type BetrokkeneMetKlantContact = Betrokkene & {
+  klantContact: ExpandedKlantContactApiViewmodel;
 };
 
 export interface MedewerkerIdentificatie {
@@ -82,7 +88,7 @@ export interface ContactmomentViewModel {
   tekst: string;
   objectcontactmomenten: {
     object: string;
-    objectType: "zaak";
+    objectType: string;
     contactmoment: string;
   }[];
   medewerkerIdentificatie: MedewerkerIdentificatie;

@@ -41,42 +41,25 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
-export const useZakenPreviewByUrlOrId = (urlOrId: Ref<string>) => {
-  const getUrl = () => {
-    if (!urlOrId.value.includes("/")) return getZaakUrl(urlOrId.value);
-    try {
-      return toRelativeProxyUrl(urlOrId.value, zakenProxyRoot) ?? urlOrId.value;
-    } catch {
-      return urlOrId.value;
-    }
-  };
+export const fetchZakenPreviewByUrlOrId = (urlOrId: string) => {
+  const [url, zaaksysteemId] = urlOrId.includes("/")
+    ? // dit is een url
+      [
+        toRelativeProxyUrl(urlOrId, zakenProxyRoot) || "",
+        new URL(urlOrId).origin,
+      ]
+    : // dit is een id
+      [getZaakUrl(urlOrId), ""];
 
-  const getZaaksysteemId = () => {
-    try {
-      return new URL(urlOrId.value).origin;
-    } catch {
-      return "";
-    }
-  };
-
-  const fetchPreview = (u: string) => {
-    const zaaksysteemId = getZaaksysteemId();
-    return fetchWithZaaksysteemId(zaaksysteemId, u)
-      .then(throwIfNotOk)
-      .then((x) => x.json())
-      .then((json) =>
-        mapZaakDetailsPreview({
-          ...json,
-          zaaksysteemId: json.zaaksysteemId || zaaksysteemId,
-        }),
-      );
-  };
-
-  const getUniqueId = () => urlOrId.value && `${urlOrId.value}_preview`;
-
-  return ServiceResult.fromFetcher(getUrl, fetchPreview, {
-    getUniqueId,
-  });
+  return fetchWithZaaksysteemId(zaaksysteemId, url)
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) =>
+      mapZaakDetailsPreview({
+        ...json,
+        zaaksysteemId: json.zaaksysteemId || zaaksysteemId,
+      }),
+    );
 };
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
