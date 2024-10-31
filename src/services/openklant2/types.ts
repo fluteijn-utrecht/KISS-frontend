@@ -23,7 +23,7 @@ export type ExpandedKlantContactApiViewmodel = {
     };
   }>;
   _expand: {
-    hadBetrokkenen?: Omit<BetrokkeneMetKlantContact, "klantContact">[];
+    hadBetrokkenen?: Betrokkene[];
     leiddeTotInterneTaken?: InternetaakApiViewModel[];
     gingOverOnderwerpobjecten?: OnderwerpObjectPostModel[];
   };
