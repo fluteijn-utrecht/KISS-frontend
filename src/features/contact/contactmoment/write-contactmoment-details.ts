@@ -9,7 +9,13 @@ export type ContactmomentDetails = Pick<
   | "vraag"
   | "specifiekevraag"
   | "verantwoordelijkeAfdeling"
->;
+> & {
+  bronnen: {
+    url: string;
+    soort: string;
+    titel: string;
+  }[];
+};
 
 export const writeContactmomentDetails = (
   contactmoment: ContactmomentDetails,

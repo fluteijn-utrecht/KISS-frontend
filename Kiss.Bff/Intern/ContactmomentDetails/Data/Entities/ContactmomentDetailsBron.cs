@@ -1,9 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
+﻿namespace Kiss.Bff.Intern.ContactmomentDetails.Data.Entities
 {
-    public class BronModel
+    public class ContactmomentDetailsBron
     {
         public int Id { get; set; }
 
@@ -15,6 +12,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 
         public string Url { get; set; } = string.Empty;
 
-        public ContactmomentDetailsModel ContactmomentDetails { get; set; } = null!;
+        public ContactmomentDetails ContactmomentDetails { get; set; } = null!;
     }
 }

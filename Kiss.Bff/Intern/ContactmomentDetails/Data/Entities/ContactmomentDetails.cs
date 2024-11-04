@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
+namespace Kiss.Bff.Intern.ContactmomentDetails.Data.Entities
 {
-    public class ContactmomentDetailsModel
+    public class ContactmomentDetails
     {
         [Required]
         public string Id { get; set; } = default!;
@@ -16,6 +16,6 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         public string? EmailadresKcm { get; set; }
         public string? VerantwoordelijkeAfdeling { get; set; }
 
-        public List<BronModel> Bronnen { get; set; } = new ();
+        public List<ContactmomentDetailsBron> Bronnen { get; set; } = new();
     }
 }

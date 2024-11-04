@@ -1,9 +1,9 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
+using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
 using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +42,7 @@ namespace Kiss.Bff.Beheer.Data
 
             modelBuilder.Entity<VerwerkingsLog>(r => r.Property(l => l.InsertedAt).HasDefaultValueSql("NOW()").ValueGeneratedOnAdd());
 
-            modelBuilder.Entity<ContactmomentDetailsModel>(l =>
+            modelBuilder.Entity<ContactmomentDetails>(l =>
             {
                 l.HasIndex(x => x.Vraag);
                 l.HasIndex(x => x.VerantwoordelijkeAfdeling);
@@ -71,8 +71,8 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<Gespreksresultaat> Gespreksresultaten { get; set; } = null!;
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
-        public DbSet<ContactmomentDetailsModel> ContactMomentDetails { get; set; } = null!;
-        public DbSet<BronModel> Bronnen { get; set; } = null!;
+        public DbSet<ContactmomentDetails> ContactMomentDetails { get; set; } = null!;
+        public DbSet<ContactmomentDetailsBron> Bronnen { get; set; } = null!;
         public DbSet<ContactVerzoekVragenSet> ContactVerzoekVragenSets { get; set; } = null!;
         public DbSet<Kanaal> Kanalen { get; set; } = null!;
     }
