@@ -4,11 +4,8 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Data.Entities
 {
     public class ContactmomentDetails
     {
-        [Required]
         public string Id { get; set; } = default!;
-        [Required]
         public DateTimeOffset Startdatum { get; set; }
-        [Required]
         public DateTimeOffset Einddatum { get; set; }
         public string? Gespreksresultaat { get; set; }
         public string? Vraag { get; set; }

@@ -42,20 +42,7 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
                 .OrderByDescending(x => x.Startdatum)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new ContactmomentDetailsModel(
-                    x.Id,
-                    x.Einddatum,
-                    x.EmailadresKcm,
-                    x.Gespreksresultaat,
-                    x.SpecifiekeVraag,
-                    x.Startdatum,
-                    x.VerantwoordelijkeAfdeling,
-                    x.Vraag,
-                    x.Bronnen.Select(b => new BronModel(
-                        b.Soort,
-                        b.Titel,
-                        b.Url))
-                    ))
+                .ToModel()
                 .ToListAsync(token);
 
             return Ok(contactmomenten);

@@ -8,7 +8,6 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
     public class ReadContactmomentDetails : ControllerBase
     {
         private readonly BeheerDbContext _db;
-        private const int MaxPageSize = 5000;
 
         public ReadContactmomentDetails(BeheerDbContext db)
         {
@@ -20,21 +19,7 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
         {
             var contactmoment = await _db.ContactMomentDetails
                 .Where(x => x.Id == id)
-                .Select(x => new ContactmomentDetailsModel(
-                    x.Id,
-                    x.Einddatum,
-                    x.EmailadresKcm,
-                    x.Gespreksresultaat,
-                    x.SpecifiekeVraag,
-                    x.Startdatum,
-                    x.VerantwoordelijkeAfdeling,
-                    x.Vraag,
-                    x.Bronnen.Select(b => new BronModel(
-                        b.Soort,
-                        b.Titel,
-                        b.Url
-                    ))
-                ))
+                .ToModel()
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(token);
 
