@@ -83,6 +83,8 @@ div {
   button {
     --utrecht-button-inline-size: 1.5rem;
     --_utrecht-button-hover-color: var(--color-white);
+    --_utrecht-button-active-color: var(--color-white);
+    --_utrecht-button-focus-color: var(--color-white);
 
     color: var(--color-white);
 
