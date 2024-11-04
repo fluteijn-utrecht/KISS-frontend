@@ -1,4 +1,3 @@
-
 import {
   ServiceResult,
   fetchLoggedIn,
@@ -17,9 +16,7 @@ import {
   mapToContactverzoekViewModel,
   type ContactverzoekViewmodel,
 } from "@/services/openklant2";
-import{
-  mapObjectToContactverzoekViewModel
-} from "@/services/openklant1";
+import { mapObjectToContactverzoekViewModel } from "@/services/openklant1";
 import { ref, type Ref } from "vue";
 import type { Contactverzoek } from "./types";
 
@@ -28,32 +25,6 @@ const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 const klantinteractiesDigitaleAdressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
-
-function getSearchUrl(
- query: string,
-  gebruikKlantInteractiesApi: Ref<boolean | null>
-) {
-  if (!query) return "";
-
-  let url: URL;
-
-  if (gebruikKlantInteractiesApi.value) {
-    url = new URL(klantinteractiesDigitaleAdressen, location.origin);
-    url.searchParams.set("adres", query);
-    url.searchParams.set("expand", "verstrektDoorBetrokkene");
-    url.searchParams.set("page", "1");
-  } else {
-    url = new URL("/api/internetaak/api/v2/objects", location.origin);
-    url.searchParams.set("ordering", "-record__data__registratiedatum");
-    url.searchParams.set("pageSize", "10");
-    url.searchParams.set(
-      "data_attrs",
-      `betrokkene__digitaleAdressen__icontains__${query}`
-    );
-  }
-
-  return url.toString();
-}
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
   const url = new URL(urlStr);
@@ -67,44 +38,82 @@ function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
         throw new Error("Expected array: " + JSON.stringify(j));
       }
 
-      const result: any[] = [...j.results];
-
-      if (!j.next) return result; 
+      if (!j.next) return j.results;
       const nextResults = await searchRecursive(urlStr, page + 1);
-      return [...result, ...nextResults];
+      return [...j.results, ...nextResults];
     });
 }
 
 export async function search(
   query: string,
-  gebruikKlantInteractiesApi: Ref<boolean | null>
-): Promise<PaginatedResult<Contactverzoek>[]> { 
-  const url = getSearchUrl(query, gebruikKlantInteractiesApi);
+  gebruikKlantInteractiesApi: boolean,
+): Promise<PaginatedResult<Contactverzoek>[]> {
+  if (gebruikKlantInteractiesApi) {
+    const url = new URL(klantinteractiesDigitaleAdressen, location.origin);
+    url.searchParams.set("adres", query);
 
-  if (gebruikKlantInteractiesApi.value) {
-    const searchResults = await searchRecursive(url);
+    const searchResults = await searchRecursive(url.toString());
     const enrichedResults = await Promise.all(
       searchResults.map(async (result: any) => {
-        const klantUrl = ref(result.url);
-        return await getContactverzoekenByKlantUrl(klantUrl);
-      })
+        const digitaalAdresUrl = ref(result.url);
+        const contactverzoek = await getContactverzoekenByDigitaalAdresUrl(
+          digitaalAdresUrl.value,
+        );
+        // Filter voor OK2: alleen resultaten met 'wasPartij' null of undefined
+        return contactverzoek.page.filter(
+          (item) =>
+            item.record.data.betrokkene.wasPartij === null ||
+            item.record.data.betrokkene.wasPartij === undefined,
+        );
+      }),
     );
-    return enrichedResults;
+
+    return [
+      {
+        page: enrichedResults.flat(),
+        next: null,
+        previous: null,
+        count: enrichedResults.flat().length,
+      },
+    ];
   } else {
-    const searchResults = await searchRecursive(url);
-    return [mapObjectToContactverzoekViewModel({
+    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+    url.searchParams.set("ordering", "-record__data__registratiedatum");
+    url.searchParams.set("pageSize", "10");
+    url.searchParams.set(
+      "data_attrs",
+      `betrokkene__digitaleAdressen__icontains__${query}`,
+    );
+
+    const searchResults = await searchRecursive(url.toString());
+
+    const mappedResults = mapObjectToContactverzoekViewModel({
       next: null,
       previous: null,
       count: searchResults.length,
       results: searchResults,
-    })]; 
+    });
+
+    // Filter voor OK1: alleen resultaten zonder 'klant'
+    const filteredResults = mappedResults.page.filter(
+      (item) => item.record.data.betrokkene.klant === undefined,
+    );
+
+    return [
+      {
+        page: filteredResults,
+        next: mappedResults.next,
+        previous: mappedResults.previous,
+        count: filteredResults.length,
+      },
+    ];
   }
 }
 
-export async function getContactverzoekenByKlantUrl(klantUrl: Ref<string>) {
+export async function getContactverzoekenByDigitaalAdresUrl(klantUrl: string) {
   function getUrl() {
     const searchParams = new URLSearchParams();
-    searchParams.set("verstrektedigitaalAdres__url", klantUrl.value);
+    searchParams.set("verstrektedigitaalAdres__url", klantUrl);
     return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
   }
 

@@ -18,10 +18,14 @@
     <template v-if="store.zoekerResults.success">
       <table class="overview zoekresultaten-view">
         <SearchResultsCaption
-          :results="filteredZoekerData"
+          :results="store.zoekerResults.data"
           :zoek-termen="undefined"
         />
-        <contactverzoeken-overzicht :contactverzoeken="filteredZoekerData">
+        <contactverzoeken-overzicht
+          :contactverzoeken="
+            store.zoekerResults.data.flatMap((result) => result.page)
+          "
+        >
           <template #onderwerp="{ contactmomentUrl }">
             <contactmoment-details-context :url="contactmomentUrl">
               <template #details="{ details }">
@@ -48,8 +52,9 @@
     />
   </section>
 </template>
+
 <script lang="ts" setup>
-import { computed, ref, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
@@ -93,7 +98,7 @@ const handleSearch = async () => {
   try {
     store.value.zoekerResults.data = await search(
       store.value.searchQuery,
-      openKlant2,
+      openKlant2.value,
     );
     store.value.zoekerResults.success = true;
   } catch (error) {
@@ -102,30 +107,6 @@ const handleSearch = async () => {
     store.value.zoekerResults.loading = false;
   }
 };
-
-const filteredZoekerData = computed(() => {
-  if (store.value.zoekerResults.success && store.value.searchQuery) {
-    // Bij OK2 (klantinteracties) flow checken we op wasPartij
-    if (openKlant2.value) {
-      return store.value.zoekerResults.data.flatMap((paginatedResult) =>
-        paginatedResult.page.filter((item) => {
-          return (
-            item.record.data.betrokkene.wasPartij === null ||
-            item.record.data.betrokkene.wasPartij === undefined
-          );
-        }),
-      );
-    } else {
-      // Bij OK1 (objecten) flow checken we op klant
-      return store.value.zoekerResults.data.flatMap((paginatedResult) =>
-        paginatedResult.page.filter(
-          (item) => item.record.data.betrokkene.klant === undefined,
-        ),
-      );
-    }
-  }
-  return [];
-});
 </script>
 
 <style lang="scss" scoped>
