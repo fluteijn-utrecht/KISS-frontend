@@ -124,7 +124,7 @@ aside {
   display: flex;
   flex-direction: column;
   background-color: var(--sidebar-color-1);
-  border-right: 2px solid var(--sidebar-color-2);
+  border-right: 1px solid var(--sidebar-color-2);
 
   textarea.utrecht-textarea {
     border: 1px solid var(--sidebar-color-2);
