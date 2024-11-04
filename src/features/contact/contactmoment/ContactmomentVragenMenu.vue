@@ -9,7 +9,6 @@
     <menu class="vragen-menu" v-if="vragen">
       <li v-for="(vraag, idx) in vragen" :key="idx">
         <utrecht-button
-          appearance="subtle-button"
           class="icon-only"
           type="button"
           :disabled="vraag.isCurrent"
@@ -23,7 +22,6 @@
       </li>
       <li>
         <utrecht-button
-          appearance="subtle-button"
           class="icon-after plus new-question icon-only"
           type="button"
           title="Nieuwe vraag"
@@ -72,7 +70,7 @@ div {
 
   display: flex;
   gap: var(--spacing-default);
-  margin-block-start: var(--spacing-default);
+  margin-block-start: var(--spacing-small);
   align-items: baseline;
 }
 
@@ -88,6 +86,11 @@ div {
       background: var(--color-white);
       color: var(--color-headings);
       cursor: not-allowed;
+    }
+
+    &.icon-only {
+      font-weight: normal;
+      border-radius: 0;
     }
   }
 }

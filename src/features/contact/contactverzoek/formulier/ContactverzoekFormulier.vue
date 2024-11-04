@@ -519,7 +519,7 @@ watch(
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-default);
+  gap: var(--spacing-small);
 }
 
 textarea {
@@ -531,8 +531,9 @@ fieldset {
   gap: var(--spacing-extrasmall);
 }
 
-.radio-group > legend {
-  font-size: inherit;
+.radio-group {
+  display: flex;
+  justify-content: space-between;
 }
 
 .utrecht-checkbox-button {

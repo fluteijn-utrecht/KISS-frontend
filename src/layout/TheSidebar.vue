@@ -43,7 +43,7 @@
               <template #tab="{ label }">
                 <span :title="label">Contactverzoek</span>
               </template>
-              <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
+
               <form @submit.prevent>
                 <contactverzoek-formulier
                   v-model="
@@ -159,7 +159,7 @@ aside {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     color: inherit;
-    background-color: var(--color-primary);
+    background-color: var(--sidebar-color-1);
   }
 
   :deep([role="tabpanel"]) {
@@ -177,6 +177,8 @@ aside {
 
   :deep([role="tab"]) {
     --utrecht-focus-outline-offset: -4px;
+
+    text-align: center;
 
     &[aria-selected="true"] {
       color: var(--color-headings);
@@ -220,7 +222,7 @@ menu.finisher {
   }
 
   > .contactmoment-header {
-    padding-block: var(--spacing-small) var(--spacing-default);
+    padding-block: var(--spacing-small);
     padding-inline: var(--spacing-default);
     background-color: var(--sidebar-color-1);
 
