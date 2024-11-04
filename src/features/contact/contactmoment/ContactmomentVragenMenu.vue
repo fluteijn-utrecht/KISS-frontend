@@ -65,8 +65,8 @@ async function startNieuweVraag() {
 
 <style lang="scss" scoped>
 div {
-  --utrecht-heading-3-font-size: 1rem; // ...
-  --utrecht-heading-3-font-weight: normal; // ...
+  --utrecht-heading-3-font-size: 1rem;
+  --utrecht-heading-3-font-weight: normal;
 
   display: flex;
   gap: var(--spacing-default);

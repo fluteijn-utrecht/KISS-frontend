@@ -102,7 +102,7 @@ menu {
   background: var(--color-white);
   border-radius: var(--radius-default);
   box-shadow: var(--shadow-default);
-  inline-size: 17rem; // ...
+  inline-size: 15rem;
 
   li {
     border-block-end: 1px solid var(--color-black);
