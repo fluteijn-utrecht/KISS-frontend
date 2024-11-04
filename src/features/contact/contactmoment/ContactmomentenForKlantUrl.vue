@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import type { PaginatedResult } from "@/services";
 import type { ContactmomentViewModel } from "@/services/openklant2";
-import { useAsync } from "@/services/use-async";
+import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactmomentenOverzicht from "./ContactmomentenOverzicht.vue";
 import { fetchContactmomentenByKlantId } from "./service";
@@ -31,7 +31,7 @@ const {
   data: contactmomenten,
   loading,
   error,
-} = useAsync(() => {
+} = useLoader(() => {
   if (props.klantUrl)
     return fetchContactmomentenByKlantId(
       props.klantUrl,

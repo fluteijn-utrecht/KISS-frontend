@@ -63,7 +63,7 @@ import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import ZaakDeeplink from "@/features/zaaksysteem/components/ZaakDeeplink.vue";
 import { TabList, TabListItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
-import { useAsync } from "@/services/use-async";
+import { useLoader } from "@/services/use-loader";
 import { useOpenKlant2 } from "@/services/openklant2";
 import ContactmomentenForObjectUrl from "@/features/contact/contactmoment/ContactmomentenForObjectUrl.vue";
 
@@ -76,7 +76,7 @@ const zaak = useZaakById(
 const zaakUrl = computed(() =>
   zaak.success && zaak.data.self ? zaak.data.self : "",
 );
-const { data: gebruikKlantInteracatiesApi } = useAsync(() => useOpenKlant2());
+const { data: gebruikKlantInteracatiesApi } = useLoader(() => useOpenKlant2());
 
 const activeTab = ref("");
 

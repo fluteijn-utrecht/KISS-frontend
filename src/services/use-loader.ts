@@ -1,11 +1,22 @@
 import { asyncComputed } from "@vueuse/core";
-import { ref } from "vue";
+import { ref, type Ref } from "vue";
 
-export const useAsync = <T>(
+type UseLoaderReturnType<T> = {
+  loading: Ref<boolean>;
+  error: Ref<any>;
+  data: Ref<T | undefined>;
+};
+
+/**
+ * Wrapper around asyncComputed from vueuse
+ * @param handler: async function
+ * @returns refs for the loading state, error state and data
+ */
+export const useLoader = <T>(
   handler: (signal: AbortSignal) => Promise<T> | undefined,
-) => {
+): UseLoaderReturnType<T> => {
   const loading = ref(false);
-  const error = ref(false);
+  const error = ref();
 
   const data = asyncComputed<T | undefined>(
     (onCancel) => {
@@ -16,8 +27,8 @@ export const useAsync = <T>(
     },
     undefined,
     {
-      onError() {
-        error.value = true;
+      onError(e) {
+        error.value = e;
       },
       evaluating: loading,
     },

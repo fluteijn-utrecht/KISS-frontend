@@ -43,12 +43,14 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
 
 export const fetchZakenPreviewByUrlOrId = (urlOrId: string) => {
   const [url, zaaksysteemId] = urlOrId.includes("/")
-    ? // dit is een url
+    ? // Als je de zaak zoekt bij een contactmoment (OK1), hebben we de volledige url van de zaak.
+      // daaruit kunnen we de zaaksysteemId afleiden
       [
         toRelativeProxyUrl(urlOrId, zakenProxyRoot) || "",
         new URL(urlOrId).origin,
       ]
-    : // dit is een id
+    : // als je de zaak zoekt bij een klantcontact (OK2), hebben we alleen een zaakId.
+      // dan hebben we dus ook geen zaaksysteemId
       [getZaakUrl(urlOrId), ""];
 
   return fetchWithZaaksysteemId(zaaksysteemId, url)

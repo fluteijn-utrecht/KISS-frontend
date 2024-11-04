@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 import type { PaginatedResult } from "@/services";
-import { useAsync } from "@/services/use-async";
+import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
 import { fetchContactverzoekenByKlantId } from "./service";
@@ -32,7 +32,7 @@ const {
   data: contactverzoeken,
   loading,
   error,
-} = useAsync(() => {
+} = useLoader(() => {
   if (props.klantUrl)
     return fetchContactverzoekenByKlantId(
       props.klantUrl,

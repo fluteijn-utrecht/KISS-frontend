@@ -17,7 +17,7 @@
 import { fetchZakenPreviewByUrlOrId } from "../service";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
-import { useAsync } from "@/services/use-async";
+import { useLoader } from "@/services/use-loader";
 
 const props = defineProps<{
   zaakurl: string;
@@ -27,5 +27,5 @@ const {
   data: zaak,
   error,
   loading,
-} = useAsync(() => fetchZakenPreviewByUrlOrId(props.zaakurl));
+} = useLoader(() => fetchZakenPreviewByUrlOrId(props.zaakurl));
 </script>
