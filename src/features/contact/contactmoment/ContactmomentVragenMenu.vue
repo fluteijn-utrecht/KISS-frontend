@@ -70,16 +70,20 @@ div {
 
   display: flex;
   gap: var(--spacing-default);
-  margin-block-start: var(--spacing-small);
+  margin-block-start: var(--spacing-extrasmall);
   align-items: baseline;
 }
 
+/* stylelint-disable custom-property-pattern */
 .vragen-menu {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-small);
 
   button {
+    --utrecht-button-inline-size: 1.5rem;
+    --_utrecht-button-hover-color: var(--color-white);
+
     color: var(--color-white);
 
     &:disabled {
@@ -91,6 +95,10 @@ div {
     &.icon-only {
       font-weight: normal;
       border-radius: 0;
+    }
+
+    &.new-question {
+      border: none;
     }
   }
 }

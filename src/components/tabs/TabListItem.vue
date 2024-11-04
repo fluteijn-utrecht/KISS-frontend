@@ -59,16 +59,15 @@ watchEffect(() => {
   text-decoration: none;
   color: inherit;
   padding-inline: var(--spacing-large);
-  padding-block: var(--spacing-default);
+  padding-block: var(--spacing-small);
 
   &[inert] {
     color: var(--color-grey);
   }
 }
 
-[role="tab"][aria-selected="true"],
-[role="tabpanel"] {
-  background-color: var(--tab-bg, var(--color-secondary));
+[role="tab"]:not([aria-selected="true"]) {
+  background-color: var(--sidebar-color-2);
 }
 
 [role="tabpanel"] {

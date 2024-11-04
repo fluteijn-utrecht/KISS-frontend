@@ -6,6 +6,7 @@
     v-bind="$attrs"
   >
     Nieuw
+    {{ !contactmomentStore.contactmomenten.length ? "contactmoment" : "" }}
   </utrecht-button>
 
   <prompt-modal

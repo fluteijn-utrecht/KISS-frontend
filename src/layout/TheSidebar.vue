@@ -4,7 +4,7 @@
       <li>
         <contactmoment-starter />
       </li>
-      <li>
+      <li v-if="contactmomentStore.contactmomenten.length">
         <contactmoment-switcher />
       </li>
     </menu>
@@ -68,7 +68,6 @@
 
 <script lang="ts" setup>
 import ContactverzoekFormulier from "@/features/contact/contactverzoek/formulier/ContactverzoekFormulier.vue";
-import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import ContactmomentVragenMenu from "@/features/contact/contactmoment/ContactmomentVragenMenu.vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
@@ -122,14 +121,13 @@ watch(
 
 <style lang="scss" scoped>
 aside {
-  background-color: var(--sidebar-color-1);
-  padding-inline: 2px;
   display: flex;
   flex-direction: column;
+  background-color: var(--sidebar-color-1);
+  border-right: 2px solid var(--sidebar-color-2);
 
   textarea.utrecht-textarea {
-    padding: 0;
-    border: none;
+    border: 1px solid var(--sidebar-color-2);
     outline: none;
     flex: 1;
     resize: none;
@@ -150,8 +148,6 @@ aside {
   display: flex;
   flex-direction: column;
 
-  --tab-bg: var(--color-white);
-
   :deep([role="tablist"]) {
     padding: 0;
     justify-items: stretch;
@@ -159,7 +155,6 @@ aside {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     color: inherit;
-    background-color: var(--sidebar-color-1);
   }
 
   :deep([role="tabpanel"]) {
@@ -188,21 +183,24 @@ aside {
 
 menu {
   --utrecht-button-min-inline-size: 100%;
+
+  padding: var(--spacing-default);
 }
 
 menu.starter {
   display: flex;
-  gap: var(--spacing-default);
-  margin-block: var(--spacing-default) var(--spacing-small);
-  margin-inline: var(--spacing-default);
+  column-gap: var(--spacing-default);
+  background-color: var(--sidebar-color-2);
+  min-height: var(--header-min-height);
+
+  .contactmoment-loopt & {
+    min-height: 0;
+    padding-block-end: var(--spacing-small);
+  }
 
   li {
     flex: 1;
   }
-}
-
-menu.finisher {
-  margin: var(--spacing-default);
 }
 
 .within-moment {
@@ -210,10 +208,7 @@ menu.finisher {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--color-white);
   color: var(--color-white);
-
-  // margin-block-start: var(--spacing-default);
 
   > h2 {
     margin-block-start: var(--spacing-small);
@@ -224,7 +219,7 @@ menu.finisher {
   > .contactmoment-header {
     padding-block: var(--spacing-small);
     padding-inline: var(--spacing-default);
-    background-color: var(--sidebar-color-1);
+    background-color: var(--sidebar-color-2);
 
     --utrecht-heading-color: var(--color-white);
 

@@ -114,7 +114,7 @@ const isRedacteur = computed(
 
 <style lang="scss" scoped>
 header {
-  background-color: var(--color-secondary);
+  background-color: var(--color-primary);
   display: grid;
   grid-template-areas:
     "bar bar"

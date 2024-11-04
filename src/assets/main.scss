@@ -20,24 +20,22 @@ body {
 }
 
 .app-layout {
+  --header-min-height: 9rem;
+  --aside-width: 27rem;
+
   position: relative;
   display: grid;
-  grid-template: "aside header" auto "nothing main" 1fr / 28rem 1fr;
+  grid-template:
+    "aside header" var(--header-min-height) "aside main" 1fr / var(
+      --aside-width
+    )
+    1fr;
   height: 100vh;
   overflow: auto;
 
-  &.contactmoment-loopt {
-    grid-template-areas: "aside  header" "aside   main";
-
-    > aside {
-      height: 100vh;
-
-      // min-height: 20rem;
-    }
-  }
-
   &.hide-sidebar {
-    grid-template-areas: "header  header" "nothing   main";
+    grid-template-areas: "header header" "nothing main";
+    grid-template-rows: auto 1fr;
 
     > aside {
       display: none;
@@ -57,8 +55,19 @@ body {
 
 .app-layout > main {
   grid-area: main;
+  position: relative;
   padding: var(--spacing-large);
   padding-inline-end: var(--container-padding);
+
+  // &::before {
+  //   content: "";
+  //   position: absolute;
+  //   top: 0;
+  //   bottom: 0;
+  //   left: calc(var(--aside-width) * -1);
+  //   width: calc(var(--aside-width) - 2px);
+  //   background-color: var(--color-secondary);
+  // }
 }
 
 .utrecht-select {
