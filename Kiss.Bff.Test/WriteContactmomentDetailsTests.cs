@@ -28,8 +28,8 @@ namespace Kiss.Bff.Test
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
             // Arrange
-            var controller = new WriteContactmomentenDetails(dbContext);
-            var validModel = new ContactmomentDetails
+            var controller = new ContactmomentDetailsToevoegen(dbContext);
+            var validModel = new ContactmomentDetailsModel
             {
                 Id = "1",
                 Startdatum = DateTime.Now,
@@ -58,7 +58,7 @@ namespace Kiss.Bff.Test
         {
             // Arrange
             using var dbContext = new BeheerDbContext(_dbContextOptions);
-            var existingEntity = new ContactmomentDetails
+            var existingEntity = new ContactmomentDetailsModel
             {
                 Id = "1",
                 Startdatum = DateTime.Now,
@@ -70,8 +70,8 @@ namespace Kiss.Bff.Test
             dbContext.ContactMomentDetails.Add(existingEntity);
             dbContext.SaveChanges();
 
-            var controller = new WriteContactmomentenDetails(dbContext);
-            var model = new ContactmomentDetails
+            var controller = new ContactmomentDetailsToevoegen(dbContext);
+            var model = new ContactmomentDetailsModel
             {
                 Id = "1",
                 Startdatum = DateTime.Now,

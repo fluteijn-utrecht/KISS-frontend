@@ -92,7 +92,7 @@ namespace Kiss.Bff.Test
         {
             // Arrange
             var cancellationToken = CancellationToken.None;
-            var model = new ContactmomentDetails
+            var model = new ContactmomentDetailsModel
             {
                 Id = "1",
                 Startdatum = DateTimeOffset.Now,
@@ -110,7 +110,7 @@ namespace Kiss.Bff.Test
                 new Claim(ClaimTypes.Email, "test@example.com")
             };
             var user = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
-            var controller = new WriteContactmomentenDetails(dbContextMock.Object)
+            var controller = new ContactmomentDetailsToevoegen(dbContextMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
