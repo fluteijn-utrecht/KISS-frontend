@@ -124,6 +124,10 @@ header {
   grid-template-columns: auto 6rem;
   align-items: center;
 
+  &:has(.search-results) {
+    background-color: var(--color-secondary);
+  }
+
   .log-out {
     margin-inline-start: auto;
   }
