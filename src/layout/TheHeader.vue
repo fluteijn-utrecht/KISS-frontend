@@ -123,9 +123,11 @@ header {
     "nav nav";
   grid-template-columns: auto 6rem;
   align-items: center;
+  min-height: var(--header-min-height);
 
   &:has(.search-results) {
     background-color: var(--color-secondary);
+    min-height: auto;
   }
 
   .log-out {

@@ -25,11 +25,8 @@ body {
 
   position: relative;
   display: grid;
-  grid-template:
-    "aside header" minmax(var(--header-min-height), auto)
-    "aside main" 1fr / var(--aside-width)
-    1fr;
-  min-height: 100vh;
+  grid-template: "aside header" auto "aside main" 1fr / var(--aside-width) 1fr;
+  height: 100vh;
   overflow: auto;
 
   &.hide-sidebar {
@@ -49,6 +46,7 @@ body {
   grid-area: aside;
   position: sticky;
   inset-block: 0 0;
+  height: 100vh;
 }
 
 .app-layout > main {
