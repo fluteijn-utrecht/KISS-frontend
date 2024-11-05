@@ -1,4 +1,5 @@
 ﻿using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,19 +26,19 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
                 entity = new Data.Entities.ContactmomentDetails
                 {
                     Id = model.Id,
-                    Einddatum = model.Einddatum,
-                    EmailadresKcm = User.GetEmail(),
-                    Gespreksresultaat = model.Gespreksresultaat,
-                    SpecifiekeVraag = model.SpecifiekeVraag,
-                    Startdatum = model.Startdatum,
-                    VerantwoordelijkeAfdeling = model.VerantwoordelijkeAfdeling,
-                    Vraag = model.Vraag,
                     Bronnen = new List<ContactmomentDetailsBron>()
                 };
                 await _db.AddAsync(entity, cancellationToken);
             }
 
             entity.Bronnen.Clear();
+            entity.Einddatum = model.Einddatum;
+            entity.EmailadresKcm = User.GetEmail();
+            entity.Gespreksresultaat = model.Gespreksresultaat;
+            entity.SpecifiekeVraag = model.SpecifiekeVraag;
+            entity.Startdatum = model.Startdatum;
+            entity.VerantwoordelijkeAfdeling = model.VerantwoordelijkeAfdeling;
+            entity.Vraag = model.Vraag;
 
             foreach (var bron in model.Bronnen.Select(b => new ContactmomentDetailsBron { Soort = b.Soort, Titel = b.Titel, Url = b.Url }))
             {
