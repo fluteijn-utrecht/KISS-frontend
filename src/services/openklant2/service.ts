@@ -135,13 +135,13 @@ export function mapToContactverzoekViewModel(
             rol: "klant",
             persoonsnaam: x.contactnaam,
             digitaleAdressen: x.expandedDigitaleAdressen || [],
-            wasPartij: x.wasPartij,
+            klant: x.wasPartij?.url,
           },
 
           verantwoordelijkeAfdeling: "", //todo: waar komt dit vandaan?
         },
       },
-    } as ContactverzoekViewmodel;
+    } satisfies ContactverzoekViewmodel;
   });
 
   return viewmodel;

@@ -31,7 +31,7 @@ export interface ContactVerzoekVragenSet {
 // Kan alleen groep of afdeling zijn, medewerker bestaat niet
 export enum TypeOrganisatorischeEenheid {
   Groep = "groep",
-  Afdeling = "afdeling"
+  Afdeling = "afdeling",
 }
 
 export type DigitaalAdres = {
@@ -64,7 +64,6 @@ export type ContactverzoekData = {
     };
     organisatie?: string;
     digitaleAdressen: DigitaalAdres[];
-    wasPartij?: { uuid: string; url: string };
   };
   verantwoordelijkeAfdeling: string;
 };

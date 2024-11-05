@@ -63,7 +63,7 @@ export type ActorApiViewModel = {
 //applicatie types
 export type Betrokkene = {
   uuid: string;
-  wasPartij: { uuid: string; url: string };
+  wasPartij?: { uuid: string; url: string };
 
   digitaleAdressen: Array<{ uuid: string; url: string }>;
   contactnaam: {

@@ -77,8 +77,8 @@ export async function search(
         .then(enrichBetrokkeneWithDigitaleAdressen)
         .then(enrichInterneTakenWithActoren)
         .then(mapToContactverzoekViewModel)
-        // Filter voor OK2: alleen resultaten met 'wasPartij' null of undefined
-        .then((r) => r.filter((x) => !x.record.data.betrokkene.wasPartij))
+        // Filter voor OK2: alleen resultaten zonder 'klant'
+        .then((r) => r.filter((x) => !x.record.data.betrokkene.klant))
     );
   }
   /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie

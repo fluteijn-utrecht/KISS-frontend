@@ -444,7 +444,9 @@ export function mapObjectToContactverzoekViewModel(
 
   return {
     url: item.url,
-    toelichting: data.toelichting || "",
+    toelichting: data.toelichting || undefined, // ALLEEN IN OK2???
+    medewerker: data.medewerker || undefined, // ALLEEN IN OK2???
+    onderwerp: data.toelichting || undefined, // ALLEEN IN OK2???
     record: {
       startAt: record.startAt,
       data: {
@@ -463,10 +465,9 @@ export function mapObjectToContactverzoekViewModel(
           klant: data.betrokkene?.klant || undefined,
           persoonsnaam: data.betrokkene?.persoonsnaam || {},
           digitaleAdressen: data.betrokkene?.digitaleAdressen || [],
-          wasPartij: data.betrokkene?.wasPartij || null,
         },
         verantwoordelijkeAfdeling: data.verantwoordelijkeAfdeling || "",
       },
     },
-  } as ContactverzoekViewmodel;
+  } satisfies ContactverzoekViewmodel;
 }
