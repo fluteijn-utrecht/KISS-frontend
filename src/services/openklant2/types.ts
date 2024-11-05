@@ -8,6 +8,12 @@ export type DigitaalAdresApiViewModel = {
   omschrijving?: string;
 };
 
+export type DigitaalAdresExpandedApiViewModel = DigitaalAdresApiViewModel & {
+  _expand?: {
+    verstrektDoorBetrokkene?: Betrokkene;
+  };
+};
+
 export type ExpandedKlantContactApiViewmodel = {
   uuid: string;
   url: string;
@@ -22,6 +28,7 @@ export type ExpandedKlantContactApiViewmodel = {
       objectId: string;
     };
   }>;
+  gingOverOnderwerpobjecten: { uuid: string; url: string }[];
   _expand: {
     hadBetrokkenen?: Betrokkene[];
     leiddeTotInterneTaken?: InternetaakApiViewModel[];
@@ -65,13 +72,12 @@ export type Betrokkene = {
     voornaam: string;
     voorvoegselAchternaam: string;
   };
-  _expand: {
-    digitaleAdressen?: Array<DigitaalAdresApiViewModel>;
-  };
+  hadKlantcontact?: { uuid: string; url: string };
 };
 
 export type BetrokkeneMetKlantContact = Betrokkene & {
   klantContact: ExpandedKlantContactApiViewmodel;
+  expandedDigitaleAdressen?: DigitaalAdresApiViewModel[];
 };
 
 export interface MedewerkerIdentificatie {

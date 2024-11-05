@@ -4,7 +4,6 @@ import {
   parseJson,
   parsePagination,
   throwIfNotOk,
-  type PaginatedResult,
 } from "@/services";
 
 import {
@@ -25,6 +24,7 @@ import {
   type Partij,
   DigitaalAdresTypes,
   type OnderwerpObjectPostModel,
+  type Betrokkene,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
@@ -35,7 +35,6 @@ const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
 const klantinteractiesKlantcontacten = `${klantinteractiesBaseUrl}/klantcontacten`;
-const klantinteractiesInterneTaken = `${klantinteractiesBaseUrl}/internetaken`;
 const klantinteractiesActoren = `${klantinteractiesBaseUrl}/actoren`;
 const klantinteractiesDigitaleadressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
@@ -54,7 +53,7 @@ export function mapKlantContactToContactmomentViewModel(
     kanaal: klantContact?.kanaal,
     tekst: klantContact?.inhoud,
     objectcontactmomenten:
-      klantContact._expand.gingOverOnderwerpobjecten?.map((o) => ({
+      klantContact._expand?.gingOverOnderwerpobjecten?.map((o) => ({
         objectType: o.onderwerpobjectidentificator.codeObjecttype,
         contactmoment: o.klantcontact.uuid,
         object: o.onderwerpobjectidentificator.objectId,
@@ -72,40 +71,39 @@ export function mapKlantContactToContactmomentViewModel(
 ////////////////////////////////////////////
 // contactmomenten and contactverzoeken
 export async function enrichBetrokkeneWithKlantContact(
-  value: PaginatedResult<BetrokkeneMetKlantContact>,
+  value: Betrokkene[],
   expand?: KlantContactExpand[],
-): Promise<PaginatedResult<BetrokkeneMetKlantContact>> {
-  for (const betrokkene of value.page) {
-    const klantcontacten = await fetchKlantcontacten({
-      hadBetrokkene__uuid: betrokkene.uuid,
+): Promise<BetrokkeneMetKlantContact[]> {
+  for (const betrokkene of value) {
+    const klantContactId = betrokkene.hadKlantcontact?.uuid;
+    if (!klantContactId) {
+      continue;
+    }
+    const klantcontact = await fetchKlantcontact({
+      uuid: klantContactId,
       expand,
     });
-    betrokkene.klantContact = klantcontacten.page[0]; // er is altijd maar 1 contact bij een betrokkeke!
+    (betrokkene as BetrokkeneMetKlantContact).klantContact = klantcontact; // er is altijd maar 1 contact bij een betrokkeke!
   }
-  return value;
+  return value as BetrokkeneMetKlantContact[];
 }
 
 ////////////////////////////////////////////
 // contactverzoeken
 export function filterOutContactmomenten(
-  value: PaginatedResult<BetrokkeneMetKlantContact>,
-): PaginatedResult<BetrokkeneMetKlantContact> {
-  const filtered = value.page.filter(
-    (item) => item?.klantContact?._expand.leiddeTotInterneTaken?.length,
+  value: BetrokkeneMetKlantContact[],
+): BetrokkeneMetKlantContact[] {
+  const filtered = value.filter(
+    (item) => item?.klantContact?._expand?.leiddeTotInterneTaken?.length,
   );
-  return {
-    next: value.next,
-    previous: value.previous,
-    count: value.count - value.page.length + filtered.length, //het totaal aantal verminderd met het aantal uitgefilterde items
-    page: filtered,
-  };
+  return filtered;
 }
 
 export function mapToContactverzoekViewModel(
-  value: PaginatedResult<BetrokkeneMetKlantContact>,
-): PaginatedResult<ContactverzoekViewmodel> {
-  const viewmodel = value.page.map((x) => {
-    const internetaak = x.klantContact._expand.leiddeTotInterneTaken?.[0];
+  value: BetrokkeneMetKlantContact[],
+): ContactverzoekViewmodel[] {
+  const viewmodel = value.map((x) => {
+    const internetaak = x.klantContact._expand?.leiddeTotInterneTaken?.[0];
     if (!internetaak) {
       throw new Error("");
     }
@@ -136,7 +134,7 @@ export function mapToContactverzoekViewModel(
           betrokkene: {
             rol: "klant",
             persoonsnaam: x.contactnaam,
-            digitaleAdressen: x._expand.digitaleAdressen || [],
+            digitaleAdressen: x.expandedDigitaleAdressen || [],
             wasPartij: x.wasPartij,
           },
 
@@ -146,21 +144,13 @@ export function mapToContactverzoekViewModel(
     } as ContactverzoekViewmodel;
   });
 
-  const paginatedContactenviewmodel: PaginatedResult<ContactverzoekViewmodel> =
-    {
-      next: value.next,
-      previous: value.previous,
-      count: value.count,
-      page: viewmodel,
-    };
-
-  return paginatedContactenviewmodel;
+  return viewmodel;
 }
 
 export async function enrichInterneTakenWithActoren(
-  value: PaginatedResult<BetrokkeneMetKlantContact>,
-): Promise<PaginatedResult<BetrokkeneMetKlantContact>> {
-  for (const betrokkeneWithKlantcontact of value.page) {
+  value: BetrokkeneMetKlantContact[],
+): Promise<BetrokkeneMetKlantContact[]> {
+  for (const betrokkeneWithKlantcontact of value) {
     const internetaak =
       betrokkeneWithKlantcontact?.klantContact?._expand
         ?.leiddeTotInterneTaken?.[0];
@@ -203,13 +193,9 @@ export function fetchActor(id: string) {
 }
 
 export async function enrichBetrokkeneWithDigitaleAdressen(
-  value: PaginatedResult<BetrokkeneMetKlantContact>,
-): Promise<PaginatedResult<BetrokkeneMetKlantContact>> {
-  for (const betrokkeneWithKlantcontact of value.page) {
-    if (betrokkeneWithKlantcontact._expand.digitaleAdressen) {
-      continue;
-    }
-    // betrokkeneWithKlantcontact._expand.digitaleAdressen =
+  value: BetrokkeneMetKlantContact[],
+): Promise<BetrokkeneMetKlantContact[]> {
+  for (const betrokkeneWithKlantcontact of value) {
     const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
       (digitaalAdres) => {
         const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
@@ -220,22 +206,41 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
       },
     );
 
-    betrokkeneWithKlantcontact._expand.digitaleAdressen =
+    betrokkeneWithKlantcontact.expandedDigitaleAdressen =
       await Promise.all(fetchTasks);
   }
 
   return value;
 }
 
-export function fetchBetrokkenen(
-  params: { wasPartij__url: string } | { verstrektedigitaalAdres__url: string },
-) {
+export function fetchBetrokkenen(params: { wasPartij__url: string }) {
   const query = new URLSearchParams(params);
-
   return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as BetrokkeneMetKlantContact));
+    .then((p) => parsePagination(p, (x) => x as Betrokkene));
+}
+
+export enum DigitaleAdressenExpand {
+  verstrektDoorBetrokkene = "verstrektDoorBetrokkene",
+  verstrektDoorBetrokkene_hadKlantcontact = "verstrektDoorBetrokkene.hadKlantcontact",
+  verstrektDoorBetrokkene_hadKlantcontact_leiddeTotInterneTaken = "verstrektDoorBetrokkene.hadKlantcontact.leiddeTotInterneTaken",
+}
+export function searchDigitaleAdressen({
+  adres,
+  page = 1,
+  expand = [],
+}: {
+  adres: string;
+  page: number;
+  expand: DigitaleAdressenExpand[];
+}) {
+  const params = new URLSearchParams({ adres, page: page.toString() });
+  expand?.length && params.set("expand", expand.join(","));
+  return fetchLoggedIn(klantinteractiesDigitaleadressen + "?" + params)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => parsePagination(r, (x) => x as DigitaalAdresApiViewModel));
 }
 
 export function saveBetrokkene({
@@ -895,7 +900,7 @@ export function fetchKlantcontact({
   const query = new URLSearchParams();
   expand && query.append("expand", expand.join(","));
 
-  return fetchLoggedIn(`${klantinteractiesKlantcontacten}/${uuid}`)
+  return fetchLoggedIn(`${klantinteractiesKlantcontacten}/${uuid}?${query}`)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) => r as ExpandedKlantContactApiViewmodel);

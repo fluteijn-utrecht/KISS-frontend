@@ -135,18 +135,16 @@ export function fetchContactmomentenByKlantId(
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id })
-      .then((x) =>
-        enrichBetrokkeneWithKlantContact(x, [
-          KlantContactExpand.gingOverOnderwerpobjecten,
-        ]),
-      )
-      .then((paginated) => ({
-        ...paginated,
-        page: paginated.page.map(({ klantContact }) =>
+    return fetchBetrokkenen({ wasPartij__url: id }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ]).then((page) =>
+        page.map(({ klantContact }) =>
           mapKlantContactToContactmomentViewModel(klantContact),
         ),
-      }));
+      ),
+    }));
   }
 
   const searchParams = new URLSearchParams();

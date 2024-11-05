@@ -5,6 +5,7 @@ import {
   parsePagination,
 } from "@/services";
 import {
+  DigitaleAdressenExpand,
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
@@ -12,15 +13,13 @@ import {
   filterOutContactmomenten,
   KlantContactExpand,
   mapToContactverzoekViewModel,
+  searchDigitaleAdressen,
+  type Betrokkene,
   type ContactverzoekViewmodel,
+  type DigitaalAdresExpandedApiViewModel,
 } from "@/services/openklant2";
 import { mapObjectToContactverzoekViewModel } from "@/services/openklant1";
 import type { Contactverzoek } from "./types";
-
-const klantinteractiesProxyRoot = "/api/klantinteracties";
-const klantinteractiesApiRoot = "/api/v1";
-const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesDigitaleAdressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
   const url = new URL(urlStr);
@@ -40,28 +39,42 @@ function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
     });
 }
 
+async function searchOk2Recursive(
+  adres: string,
+  page = 1,
+): Promise<DigitaalAdresExpandedApiViewModel[]> {
+  const paginated = await searchDigitaleAdressen({
+    adres,
+    page,
+    expand: [DigitaleAdressenExpand.verstrektDoorBetrokkene],
+  });
+  if (!paginated.next) return paginated.page;
+  return [...paginated.page, ...(await searchOk2Recursive(adres, page + 1))];
+}
+
 export async function search(
   query: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<Contactverzoek[]> {
   if (gebruikKlantInteractiesApi) {
-    const url = new URL(klantinteractiesDigitaleAdressen, location.origin);
-    url.searchParams.set("adres", query);
+    const adressen = await searchOk2Recursive(query);
 
-    const searchResults = await searchRecursive(url.toString());
-    const enrichedResults = await Promise.all(
-      searchResults.map(async (result: any) => {
-        const contactverzoek = await getContactverzoekenByDigitaalAdresUrl(
-          result.url,
-        );
-        // Filter voor OK2: alleen resultaten met 'wasPartij' null of undefined
-        return contactverzoek.page.filter(
-          (item) => !item.record.data.betrokkene.wasPartij,
-        );
-      }),
+    const betrokkenen = adressen
+      .map((x) => x?._expand?.verstrektDoorBetrokkene)
+      .filter(Boolean) as Betrokkene[];
+
+    const uniqueBetrokkenen = new Map<string, Betrokkene>(
+      betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
     );
 
-    return enrichedResults.flat();
+    return enrichBetrokkeneWithKlantContact(
+      [...uniqueBetrokkenen.values()],
+      [KlantContactExpand.leiddeTotInterneTaken],
+    )
+      .then(filterOutContactmomenten)
+      .then(enrichBetrokkeneWithDigitaleAdressen)
+      .then(enrichInterneTakenWithActoren)
+      .then(mapToContactverzoekViewModel);
   } else {
     const url = new URL("/api/internetaak/api/v2/objects", location.origin);
     url.searchParams.set("ordering", "-record__data__registratiedatum");
@@ -84,34 +97,23 @@ export async function search(
   }
 }
 
-export async function getContactverzoekenByDigitaalAdresUrl(klantUrl: string) {
-  return fetchBetrokkenen({ verstrektedigitaalAdres__url: klantUrl })
-    .then((r) =>
-      enrichBetrokkeneWithKlantContact(r, [
-        KlantContactExpand.leiddeTotInterneTaken,
-      ]),
-    )
-    .then(filterOutContactmomenten)
-    .then(enrichBetrokkeneWithDigitaleAdressen)
-    .then(enrichInterneTakenWithActoren)
-    .then(mapToContactverzoekViewModel);
-}
-
 export function fetchContactverzoekenByKlantId(
   id: string,
   gebruikKlantInteractiesApi: boolean,
 ) {
   if (gebruikKlantInteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id })
-      .then((paginated) =>
-        enrichBetrokkeneWithKlantContact(paginated, [
-          KlantContactExpand.leiddeTotInterneTaken,
-        ]),
-      )
-      .then(filterOutContactmomenten)
-      .then(enrichBetrokkeneWithDigitaleAdressen)
-      .then(enrichInterneTakenWithActoren)
-      .then(mapToContactverzoekViewModel);
+    return fetchBetrokkenen({
+      wasPartij__url: id,
+    }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+        KlantContactExpand.leiddeTotInterneTaken,
+      ])
+        .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then(enrichInterneTakenWithActoren)
+        .then(mapToContactverzoekViewModel),
+    }));
   }
 
   const url = new URL("/api/internetaak/api/v2/objects", location.origin);
