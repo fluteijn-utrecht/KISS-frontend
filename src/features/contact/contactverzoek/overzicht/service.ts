@@ -56,6 +56,7 @@ export async function search(
   query: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<Contactverzoek[]> {
+  // OK2
   if (gebruikKlantInteractiesApi) {
     const adressen = await searchOk2Recursive(query);
 
@@ -79,7 +80,9 @@ export async function search(
         // Filter voor OK2: alleen resultaten met 'wasPartij' null of undefined
         .then((r) => r.filter((x) => !x.record.data.betrokkene.wasPartij))
     );
-  } else {
+  }
+  /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie
+  else {
     const url = new URL("/api/internetaak/api/v2/objects", location.origin);
     url.searchParams.set("ordering", "-record__data__registratiedatum");
     url.searchParams.set("pageSize", "10");
