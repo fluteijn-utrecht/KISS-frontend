@@ -77,7 +77,7 @@ export async function search(
 
     // Filter voor OK1: alleen resultaten zonder 'klant'
     const filteredResults = mappedResults.filter(
-      (item) => item.record.data.betrokkene.klant === undefined,
+      (item) => !item.record.data.betrokkene.klant,
     );
 
     return filteredResults;
