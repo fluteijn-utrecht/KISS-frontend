@@ -1,36 +1,18 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Security.Claims;
-using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Intern.ContactmomentDetails;
+﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Kiss.Bff.Intern.ContactmomentDetails.Features;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiss.Bff.Test
 {
     [TestClass]
     public class ReadContactmomentenDetailsTests : TestHelper
     {
-        private IServiceProvider? _serviceProvider;
-
         [TestInitialize]
         public void Initialize()
         {
             InitializeDatabase();
             SeedTestData();
-
-            var services = new ServiceCollection();
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
-             {
-                new Claim(ClaimTypes.NameIdentifier, "testuser"),
-                new Claim(ClaimTypes.Role, Policies.RedactiePolicy)
-            }));
-            services.AddSingleton<IHttpContextAccessor>(_ => new HttpContextAccessor { HttpContext = new DefaultHttpContext { User = user } });
-            _serviceProvider = services.BuildServiceProvider();
         }
 
         [TestCleanup]
@@ -81,7 +63,7 @@ namespace Kiss.Bff.Test
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
 
-            var contactmoment = result.Value as ContactmomentDetails;
+            var contactmoment = result.Value as ContactmomentDetailsModel;
             Assert.IsNotNull(contactmoment);
             Assert.AreEqual(validId, contactmoment.Id);
         }
