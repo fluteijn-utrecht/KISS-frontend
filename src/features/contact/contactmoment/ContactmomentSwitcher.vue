@@ -95,14 +95,14 @@ details {
 menu {
   position: absolute;
   z-index: 1;
-  right: 0;
+  inset-inline-end: 0;
+  inline-size: 15rem;
   margin-block-start: var(--spacing-small);
   padding-inline: var(--spacing-default);
   padding-block-end: var(--spacing-default);
   background: var(--color-white);
   border-radius: var(--radius-default);
   box-shadow: var(--shadow-default);
-  inline-size: 15rem;
 
   li {
     border-block-end: 1px solid var(--color-black);
