@@ -32,6 +32,7 @@
             </contactmoment-details-context>
           </template>
 
+          <!-- Overgenomen uit BedrijfDetailView.vue, waarom is dit en moet dit erin blijven? -->
           <template v-if="!openKlant2" #contactmoment="{ url }">
             <contactmoment-preview :url="url">
               <template #object="{ object }">
