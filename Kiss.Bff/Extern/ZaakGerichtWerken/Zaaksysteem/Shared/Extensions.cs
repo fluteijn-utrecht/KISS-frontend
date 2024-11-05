@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 
 namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared
@@ -62,6 +63,14 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared
                     yield return new(itemBaseUrl, itemClientId, itemApiKey, deeplinkUrl, deeplinkProperty, nnpId);
                 }
             }
+        }
+
+        public static HttpClient CreateClient(this IHttpClientFactory factory, ZaaksysteemConfig config, ClaimsPrincipal user)
+        {
+            var client = factory.CreateClient();
+            client.BaseAddress = new(config.BaseUrl);
+            client.DefaultRequestHeaders.ApplyZaaksysteemHeaders(config, user);
+            return client;
         }
     }
 }

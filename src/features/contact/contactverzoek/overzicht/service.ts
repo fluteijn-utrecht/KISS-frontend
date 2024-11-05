@@ -10,9 +10,9 @@ import {
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
-  enrichKlantcontactWithInterneTaak,
-  fetchBetrokkene,
+  fetchBetrokkenen,
   filterOutContactmomenten,
+  KlantContactExpand,
   mapToContactverzoekViewModel,
   type ContactverzoekViewmodel,
 } from "@/services/openklant2";
@@ -111,70 +111,42 @@ export async function search(
 }
 
 export async function getContactverzoekenByDigitaalAdresUrl(klantUrl: string) {
-  function getUrl() {
-    const searchParams = new URLSearchParams();
-    searchParams.set("verstrektedigitaalAdres__url", klantUrl);
-    return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
-  }
-
-  return fetchBetrokkene(getUrl())
-    .then(enrichBetrokkeneWithKlantContact)
-    .then(enrichKlantcontactWithInterneTaak)
+  return fetchBetrokkenen({ verstrektedigitaalAdres__url: klantUrl })
+    .then((r) =>
+      enrichBetrokkeneWithKlantContact(r, [
+        KlantContactExpand.leiddeTotInterneTaken,
+      ]),
+    )
     .then(filterOutContactmomenten)
     .then(enrichBetrokkeneWithDigitaleAdressen)
     .then(enrichInterneTakenWithActoren)
     .then(mapToContactverzoekViewModel);
 }
 
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  gebruikKlantInteractiesApi: Ref<boolean | null>,
+export function fetchContactverzoekenByKlantId(
+  id: string,
+  gebruikKlantInteractiesApi: boolean,
 ) {
-  function getUrl() {
-    if (gebruikKlantInteractiesApi.value === null) {
-      return "";
-    }
-
-    if (!id.value) return "";
-
-    if (gebruikKlantInteractiesApi.value === true) {
-      const searchParams = new URLSearchParams();
-      searchParams.set("wasPartij__url", id.value);
-      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
-    } else {
-      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-      url.searchParams.set("ordering", "-record__data__registratiedatum");
-      url.searchParams.set("pageSize", "10");
-      url.searchParams.set(
-        "data_attrs",
-        `betrokkene__klant__exact__${id.value}`,
-      );
-
-      return url.toString();
-    }
+  if (gebruikKlantInteractiesApi) {
+    return fetchBetrokkenen({ wasPartij__url: id })
+      .then((paginated) =>
+        enrichBetrokkeneWithKlantContact(paginated, [
+          KlantContactExpand.leiddeTotInterneTaken,
+        ]),
+      )
+      .then(filterOutContactmomenten)
+      .then(enrichBetrokkeneWithDigitaleAdressen)
+      .then(enrichInterneTakenWithActoren)
+      .then(mapToContactverzoekViewModel);
   }
 
-  const fetchContactverzoeken = (
-    url: string,
-    gebruikKlantinteractiesApi: Ref<boolean | null>,
-  ) => {
-    if (gebruikKlantinteractiesApi.value) {
-      return fetchBetrokkene(url)
-        .then(enrichBetrokkeneWithKlantContact)
-        .then(enrichKlantcontactWithInterneTaak)
-        .then(filterOutContactmomenten)
-        .then(enrichBetrokkeneWithDigitaleAdressen)
-        .then(enrichInterneTakenWithActoren)
-        .then(mapToContactverzoekViewModel);
-    } else {
-      return fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
-    }
-  };
+  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+  url.searchParams.set("ordering", "-record__data__registratiedatum");
+  url.searchParams.set("pageSize", "10");
+  url.searchParams.set("data_attrs", `betrokkene__klant__exact__${id}`);
 
-  return ServiceResult.fromFetcher(getUrl, (u: string) =>
-    fetchContactverzoeken(u, gebruikKlantInteractiesApi),
-  );
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
 }
