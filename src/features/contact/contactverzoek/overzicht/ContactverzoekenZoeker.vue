@@ -22,9 +22,7 @@
           :zoek-termen="undefined"
         />
         <contactverzoeken-overzicht
-          :contactverzoeken="
-            store.zoekerResults.data.flatMap((result) => result.page)
-          "
+          :contactverzoeken="store.zoekerResults.data"
         >
           <template #onderwerp="{ contactmomentUrl }">
             <contactmoment-details-context :url="contactmomentUrl">
@@ -65,7 +63,6 @@ import ContactmomentPreview from "@/features/contact/contactmoment/Contactmoment
 import { useOpenKlant2 } from "@/services/openklant2";
 import { search } from "./service";
 import type { Contactverzoek } from "./types";
-import type { PaginatedResult } from "@/services";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
@@ -80,7 +77,7 @@ const store = ensureState({
         loading: false,
         success: false,
         error: false,
-        data: [] as PaginatedResult<Contactverzoek>[],
+        data: [] as Contactverzoek[],
       },
     };
   },

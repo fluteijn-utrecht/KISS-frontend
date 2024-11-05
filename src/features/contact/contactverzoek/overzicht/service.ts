@@ -1,10 +1,8 @@
 import {
-  ServiceResult,
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
   parsePagination,
-  type PaginatedResult,
 } from "@/services";
 import {
   enrichBetrokkeneWithDigitaleAdressen,
@@ -17,13 +15,11 @@ import {
   type ContactverzoekViewmodel,
 } from "@/services/openklant2";
 import { mapObjectToContactverzoekViewModel } from "@/services/openklant1";
-import { ref, type Ref } from "vue";
 import type { Contactverzoek } from "./types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 const klantinteractiesDigitaleAdressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
@@ -47,7 +43,7 @@ function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
 export async function search(
   query: string,
   gebruikKlantInteractiesApi: boolean,
-): Promise<PaginatedResult<Contactverzoek>[]> {
+): Promise<Contactverzoek[]> {
   if (gebruikKlantInteractiesApi) {
     const url = new URL(klantinteractiesDigitaleAdressen, location.origin);
     url.searchParams.set("adres", query);
@@ -55,27 +51,17 @@ export async function search(
     const searchResults = await searchRecursive(url.toString());
     const enrichedResults = await Promise.all(
       searchResults.map(async (result: any) => {
-        const digitaalAdresUrl = ref(result.url);
         const contactverzoek = await getContactverzoekenByDigitaalAdresUrl(
-          digitaalAdresUrl.value,
+          result.url,
         );
         // Filter voor OK2: alleen resultaten met 'wasPartij' null of undefined
         return contactverzoek.page.filter(
-          (item) =>
-            item.record.data.betrokkene.wasPartij === null ||
-            item.record.data.betrokkene.wasPartij === undefined,
+          (item) => !item.record.data.betrokkene.wasPartij,
         );
       }),
     );
 
-    return [
-      {
-        page: enrichedResults.flat(),
-        next: null,
-        previous: null,
-        count: enrichedResults.flat().length,
-      },
-    ];
+    return enrichedResults.flat();
   } else {
     const url = new URL("/api/internetaak/api/v2/objects", location.origin);
     url.searchParams.set("ordering", "-record__data__registratiedatum");
@@ -87,26 +73,14 @@ export async function search(
 
     const searchResults = await searchRecursive(url.toString());
 
-    const mappedResults = mapObjectToContactverzoekViewModel({
-      next: null,
-      previous: null,
-      count: searchResults.length,
-      results: searchResults,
-    });
+    const mappedResults = searchResults.map(mapObjectToContactverzoekViewModel);
 
     // Filter voor OK1: alleen resultaten zonder 'klant'
-    const filteredResults = mappedResults.page.filter(
+    const filteredResults = mappedResults.filter(
       (item) => item.record.data.betrokkene.klant === undefined,
     );
 
-    return [
-      {
-        page: filteredResults,
-        next: mappedResults.next,
-        previous: mappedResults.previous,
-        count: filteredResults.length,
-      },
-    ];
+    return filteredResults;
   }
 }
 
