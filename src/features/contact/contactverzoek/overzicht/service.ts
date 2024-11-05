@@ -67,14 +67,18 @@ export async function search(
       betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
     );
 
-    return enrichBetrokkeneWithKlantContact(
-      [...uniqueBetrokkenen.values()],
-      [KlantContactExpand.leiddeTotInterneTaken],
-    )
-      .then(filterOutContactmomenten)
-      .then(enrichBetrokkeneWithDigitaleAdressen)
-      .then(enrichInterneTakenWithActoren)
-      .then(mapToContactverzoekViewModel);
+    return (
+      enrichBetrokkeneWithKlantContact(
+        [...uniqueBetrokkenen.values()],
+        [KlantContactExpand.leiddeTotInterneTaken],
+      )
+        .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then(enrichInterneTakenWithActoren)
+        .then(mapToContactverzoekViewModel)
+        // Filter voor OK2: alleen resultaten met 'wasPartij' null of undefined
+        .then((r) => r.filter((x) => !x.record.data.betrokkene.wasPartij))
+    );
   } else {
     const url = new URL("/api/internetaak/api/v2/objects", location.origin);
     url.searchParams.set("ordering", "-record__data__registratiedatum");
