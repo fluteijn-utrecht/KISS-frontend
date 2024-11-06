@@ -5,7 +5,7 @@
       message="Let op, je hebt het contactverzoek niet afgerond. Als je dit contactmoment afsluit, wordt het contactverzoek niet verstuurd."
     />
     <header>
-      <h2>{{ klantInfo?.name || "onbekend" }}</h2>
+      <h2>{{ klantInfo?.name || "Onbekend" }}</h2>
       <p v-if="klantInfo?.contact">{{ klantInfo.contact }}</p>
     </header>
   </article>
@@ -44,6 +44,8 @@ article {
   --utrecht-button-min-inline-size: auto;
 
   h2 {
+    font-size: 1rem;
+    font-weight: normal;
     margin-block-start: 0;
   }
 

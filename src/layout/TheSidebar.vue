@@ -4,7 +4,7 @@
       <li>
         <contactmoment-starter />
       </li>
-      <li>
+      <li v-if="contactmomentStore.contactmomenten.length">
         <contactmoment-switcher />
       </li>
     </menu>
@@ -43,7 +43,7 @@
               <template #tab="{ label }">
                 <span :title="label">Contactverzoek</span>
               </template>
-              <utrecht-heading :level="2">Contactverzoek maken</utrecht-heading>
+
               <form @submit.prevent>
                 <contactverzoek-formulier
                   v-model="
@@ -68,7 +68,6 @@
 
 <script lang="ts" setup>
 import ContactverzoekFormulier from "@/features/contact/contactverzoek/formulier/ContactverzoekFormulier.vue";
-import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import ContactmomentVragenMenu from "@/features/contact/contactmoment/ContactmomentVragenMenu.vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import { ensureState } from "@/stores/create-store";
@@ -122,14 +121,13 @@ watch(
 
 <style lang="scss" scoped>
 aside {
-  background-color: var(--sidebar-color-1);
-  padding-inline: 2px;
   display: flex;
   flex-direction: column;
+  background-color: var(--sidebar-color-1);
+  border-right: 1px solid var(--sidebar-color-2);
 
   textarea.utrecht-textarea {
-    padding: 0;
-    border: none;
+    border: 1px solid var(--sidebar-color-2);
     outline: none;
     flex: 1;
     resize: none;
@@ -150,8 +148,6 @@ aside {
   display: flex;
   flex-direction: column;
 
-  --tab-bg: var(--color-white);
-
   :deep([role="tablist"]) {
     padding: 0;
     justify-items: stretch;
@@ -159,7 +155,6 @@ aside {
     grid-template-columns: 1fr 1fr;
     gap: 0;
     color: inherit;
-    background-color: var(--color-primary);
   }
 
   :deep([role="tabpanel"]) {
@@ -178,6 +173,8 @@ aside {
   :deep([role="tab"]) {
     --utrecht-focus-outline-offset: -4px;
 
+    text-align: center;
+
     &[aria-selected="true"] {
       color: var(--color-headings);
     }
@@ -185,26 +182,25 @@ aside {
 }
 
 menu {
-  align-self: center;
+  --utrecht-button-min-inline-size: 100%;
 
-  --utrecht-button-min-inline-size: 17rem;
+  padding: var(--spacing-default);
 }
 
 menu.starter {
-  margin-block: 4rem var(--spacing-default);
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-default);
+  column-gap: var(--spacing-default);
+  background-color: var(--sidebar-color-2);
+  min-height: var(--header-min-height);
+
+  .contactmoment-loopt & {
+    min-height: 0;
+    padding-block-end: var(--spacing-small);
+  }
 
   li {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    flex: 1;
   }
-}
-
-menu.finisher {
-  margin-block: var(--spacing-large);
 }
 
 .within-moment {
@@ -212,9 +208,7 @@ menu.finisher {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--color-white);
   color: var(--color-white);
-  margin-block-start: var(--spacing-default);
 
   > h2 {
     margin-block-start: var(--spacing-small);
@@ -223,9 +217,9 @@ menu.finisher {
   }
 
   > .contactmoment-header {
-    background-color: var(--color-primary);
-    padding-block: var(--spacing-default) var(--spacing-default);
-    padding-inline: var(--spacing-small);
+    padding-block: var(--spacing-small);
+    padding-inline: var(--spacing-default);
+    background-color: var(--sidebar-color-2);
 
     --utrecht-heading-color: var(--color-white);
 

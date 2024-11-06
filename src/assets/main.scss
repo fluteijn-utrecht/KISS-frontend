@@ -20,24 +20,17 @@ body {
 }
 
 .app-layout {
+  --header-min-height: 9rem;
+  --aside-width: 27rem;
+
   position: relative;
   display: grid;
-  grid-template: "aside header" auto "nothing main" 1fr / 21.25rem 1fr;
+  grid-template: "aside header" auto "aside main" 1fr / var(--aside-width) 1fr;
   height: 100vh;
   overflow: auto;
 
-  &.contactmoment-loopt {
-    grid-template-areas: "aside  header" "aside   main";
-
-    > aside {
-      height: 100vh;
-
-      // min-height: 20rem;
-    }
-  }
-
   &.hide-sidebar {
-    grid-template-areas: "header  header" "nothing   main";
+    grid-template-areas: "header header" "nothing main";
 
     > aside {
       display: none;
@@ -53,6 +46,7 @@ body {
   grid-area: aside;
   position: sticky;
   inset-block: 0 0;
+  height: 100vh;
 }
 
 .app-layout > main {
