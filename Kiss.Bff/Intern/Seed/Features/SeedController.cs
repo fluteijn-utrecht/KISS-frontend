@@ -32,6 +32,14 @@ namespace Kiss.Bff.Intern.Seed.Features
                 await _context.Gespreksresultaten.AnyAsync();
         }
 
+        private static List<T> ReadListFromJsonFile<T>(IWebHostEnvironment environment, string file)
+        {
+            var path = Path.Combine(environment.ContentRootPath, "json/" + file);
+            var json = System.IO.File.ReadAllText(path);
+
+            return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+        }
+
         [HttpGet]
         public async Task<IActionResult> Seed()
         {
@@ -60,18 +68,16 @@ namespace Kiss.Bff.Intern.Seed.Features
                 await _context.Berichten.AddRangeAsync(berichten);
 
                 // skills
-                var skills = new List<Skill>
-                {
-                    new()
-                    {
-                        DateCreated = DateTimeOffset.UtcNow,
-                        Naam = "Skill één"
-                    }
-                };
+                //var skills = new List<Skill>
+                //{
+                //    new()
+                //    {
+                //        DateCreated = DateTimeOffset.UtcNow,
+                //        Naam = "Skill één"
+                //    }
+                //};
 
-                //var path = Path.Combine(_environment.ContentRootPath, "Json/skills.json");
-                //var jsonSkills = System.IO.File.ReadAllText(path);
-                //var skills = JsonSerializer.Deserialize<List<Skill>>(jsonSkills);
+                var skills = ReadListFromJsonFile<Skill>(_environment, "skills.json");
 
                 await _context.Skills.AddRangeAsync(skills);
 

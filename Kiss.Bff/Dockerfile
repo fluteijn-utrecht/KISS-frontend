@@ -51,6 +51,7 @@ RUN dotnet publish "Kiss.Bff.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 FROM base AS final
 WORKDIR /app
 COPY certificates /usr/local/share/ca-certificates
+COPY json .
 RUN update-ca-certificates
 COPY --from=dotnetpublish /app/publish .
 COPY --from=frontendbuild /app/dist ./wwwroot
