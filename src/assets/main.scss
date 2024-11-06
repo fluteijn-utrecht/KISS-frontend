@@ -25,7 +25,9 @@ body {
 
   position: relative;
   display: grid;
-  grid-template: "aside header" auto "aside main" 1fr / var(--aside-width) 1fr;
+  grid-template:
+    "aside header" min-content "aside main" 1fr / var(--aside-width)
+    1fr;
   height: 100vh;
   overflow: auto;
 

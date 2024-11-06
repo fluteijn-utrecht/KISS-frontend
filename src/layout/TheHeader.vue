@@ -127,7 +127,6 @@ header {
 
   &:has(.search-results) {
     background-color: var(--color-secondary);
-    min-height: auto;
   }
 
   .log-out {
