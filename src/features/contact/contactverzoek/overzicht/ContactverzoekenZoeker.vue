@@ -32,7 +32,7 @@
             </contactmoment-details-context>
           </template>
 
-          <!-- Overgenomen uit BedrijfDetailView.vue, waarom is dit en moet dit erin blijven? -->
+          <!-- Bij OK2 zit zaakinformatie al in het overzicht, bij OK1 moet het apart worden opgehaald door het zaakpreview component -->
           <template v-if="!openKlant2" #contactmoment="{ url }">
             <contactmoment-preview :url="url">
               <template #object="{ object }">
