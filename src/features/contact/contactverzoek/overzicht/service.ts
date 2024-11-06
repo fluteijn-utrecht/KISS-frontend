@@ -1,11 +1,11 @@
 import {
-  ServiceResult,
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
   parsePagination,
 } from "@/services";
 import {
+  DigitaleAdressenExpand,
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
@@ -13,66 +13,95 @@ import {
   filterOutContactmomenten,
   KlantContactExpand,
   mapToContactverzoekViewModel,
+  searchDigitaleAdressen,
+  type Betrokkene,
   type ContactverzoekViewmodel,
+  type DigitaalAdresExpandedApiViewModel,
 } from "@/services/openklant2";
-import type { Ref } from "vue";
-
-type SearchParameters = {
-  query: string;
-};
-
-export function getSearchUrl({ query = "" }: SearchParameters) {
-  if (!query) return "";
-
-  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-  url.searchParams.set("ordering", "-record__data__registratiedatum"); //todo: is dit de correcte orderning?
-  url.searchParams.set("pageSize", "10");
-
-  url.searchParams.set(
-    "data_attrs",
-    `betrokkene__digitaleAdressen__icontains__${query}`,
-  ); //todo: kan je in 1 call op email OF telefoonnr zoeken? anders de interface aanpassen zodat duidelijk is dat je maar naar een van beide kan zoeken (bv samenvoegen in 1 zoekveld!)
-
-  return url.toString();
-}
+import { mapObjectToContactverzoekViewModel } from "@/services/openklant1";
+import type { Contactverzoek } from "./types";
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
-  //recursive alle pagina's ophalen.
-  //set de page param van de huidige op te halen pagina
   const url = new URL(urlStr);
   url.searchParams.set("page", page.toString());
 
-  return (
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      //todo: parsePagination toevoegen??
-      .then(async (j) => {
-        if (!Array.isArray(j?.results)) {
-          throw new Error("expected array: " + JSON.stringify(j));
-        }
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(async (j) => {
+      if (!Array.isArray(j?.results)) {
+        throw new Error("Expected array: " + JSON.stringify(j));
+      }
 
-        const result: any[] = [];
-        j.results.forEach((k: any) => {
-          result.push(k);
-        });
-
-        if (!j.next) return result;
-        return await searchRecursive(urlStr, page + 1).then((next) => [
-          ...result,
-          ...next,
-        ]);
-      })
-  );
+      if (!j.next) return j.results;
+      const nextResults = await searchRecursive(urlStr, page + 1);
+      return [...j.results, ...nextResults];
+    });
 }
 
-function search(url: string) {
-  return searchRecursive(url); //todo: sortering???  .then((r) => r.sort(sortKlant));
+async function searchOk2Recursive(
+  adres: string,
+  page = 1,
+): Promise<DigitaalAdresExpandedApiViewModel[]> {
+  const paginated = await searchDigitaleAdressen({
+    adres,
+    page,
+    expand: [DigitaleAdressenExpand.verstrektDoorBetrokkene],
+  });
+  if (!paginated.next) return paginated.page;
+  return [...paginated.page, ...(await searchOk2Recursive(adres, page + 1))];
 }
 
-export function useSearch(params: Ref<SearchParameters>) {
-  const getUrl = () => getSearchUrl(params.value);
-  return ServiceResult.fromFetcher(getUrl, search);
+export async function search(
+  query: string,
+  gebruikKlantInteractiesApi: boolean,
+): Promise<Contactverzoek[]> {
+  // OK2
+  if (gebruikKlantInteractiesApi) {
+    const adressen = await searchOk2Recursive(query);
+
+    const betrokkenen = adressen
+      .map((x) => x?._expand?.verstrektDoorBetrokkene)
+      .filter(Boolean) as Betrokkene[];
+
+    const uniqueBetrokkenen = new Map<string, Betrokkene>(
+      betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
+    );
+
+    return (
+      enrichBetrokkeneWithKlantContact(
+        [...uniqueBetrokkenen.values()],
+        [KlantContactExpand.leiddeTotInterneTaken],
+      )
+        .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then(enrichInterneTakenWithActoren)
+        .then(mapToContactverzoekViewModel)
+        // Filter voor OK2: alleen resultaten zonder 'klant'
+        .then((r) => r.filter((x) => !x.record.data.betrokkene.klant))
+    );
+  }
+  /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie
+  else {
+    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+    url.searchParams.set("ordering", "-record__data__registratiedatum");
+    url.searchParams.set("pageSize", "10");
+    url.searchParams.set(
+      "data_attrs",
+      `betrokkene__digitaleAdressen__icontains__${query}`,
+    );
+
+    const searchResults = await searchRecursive(url.toString());
+
+    const mappedResults = searchResults.map(mapObjectToContactverzoekViewModel);
+
+    // Filter voor OK1: alleen resultaten zonder 'klant'
+    const filteredResults = mappedResults.filter(
+      (item) => !item.record.data.betrokkene.klant,
+    );
+
+    return filteredResults;
+  }
 }
 
 export function fetchContactverzoekenByKlantId(
@@ -80,16 +109,18 @@ export function fetchContactverzoekenByKlantId(
   gebruikKlantInteractiesApi: boolean,
 ) {
   if (gebruikKlantInteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id })
-      .then((paginated) =>
-        enrichBetrokkeneWithKlantContact(paginated, [
-          KlantContactExpand.leiddeTotInterneTaken,
-        ]),
-      )
-      .then(filterOutContactmomenten)
-      .then(enrichBetrokkeneWithDigitaleAdressen)
-      .then(enrichInterneTakenWithActoren)
-      .then(mapToContactverzoekViewModel);
+    return fetchBetrokkenen({
+      wasPartij__url: id,
+    }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+        KlantContactExpand.leiddeTotInterneTaken,
+      ])
+        .then(filterOutContactmomenten)
+        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then(enrichInterneTakenWithActoren)
+        .then(mapToContactverzoekViewModel),
+    }));
   }
 
   const url = new URL("/api/internetaak/api/v2/objects", location.origin);
