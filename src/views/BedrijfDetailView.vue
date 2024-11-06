@@ -21,19 +21,22 @@
         <handelsregister-gegevens v-if="data" :bedrijf="data" />
       </template>
     </tab-list-data-item>
-    <tab-list-data-item
-      label="Contactmomenten"
-      :data="contactmomenten"
-      :disabled="(c) => !c.count"
-    >
-      <template #success="{ data }">
-        <contactmomenten-overzicht :contactmomenten="data.page">
+    <tab-list-item label="Contactmomenten">
+      <template #default="{ setError, setLoading, setDisabled }">
+        <contactmomenten-for-klant-url
+          v-if="gebruikKlantInteracatiesApi != null"
+          :klant-url="klantUrl"
+          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          @load="setDisabled(!$event.count)"
+          @loading="setLoading"
+          @error="setError"
+        >
           <template #object="{ object }">
             <zaak-preview :zaakurl="object.object" />
           </template>
-        </contactmomenten-overzicht>
+        </contactmomenten-for-klant-url>
       </template>
-    </tab-list-data-item>
+    </tab-list-item>
     <tab-list-data-item label="Zaken" :data="zaken" :disabled="(z) => !z.count">
       <template #success="{ data }">
         <zaken-overzicht
@@ -42,13 +45,16 @@
         />
       </template>
     </tab-list-data-item>
-    <tab-list-data-item
-      label="Contactverzoeken"
-      :data="contactverzoeken"
-      :disabled="(c) => !c.page.length"
-    >
-      <template #success="{ data }">
-        <contactverzoeken-overzicht :contactverzoeken="data.page">
+    <tab-list-item label="Contactverzoeken">
+      <template #default="{ setError, setLoading, setDisabled }">
+        <contactverzoeken-for-klant-url
+          v-if="gebruikKlantInteracatiesApi != null"
+          :klant-url="klantUrl"
+          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          @load="setDisabled(!$event?.count)"
+          @loading="setLoading"
+          @error="setError"
+        >
           <template #onderwerp="{ contactmomentUrl }">
             <contactmoment-details-context :url="contactmomentUrl">
               <template #details="{ details }">
@@ -68,9 +74,9 @@
               </template>
             </contactmoment-preview>
           </template>
-        </contactverzoeken-overzicht>
+        </contactverzoeken-for-klant-url>
       </template>
-    </tab-list-data-item>
+    </tab-list-item>
   </tab-list>
 </template>
 
@@ -78,29 +84,26 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { ContactmomentenOverzicht } from "@/features/contact/contactmoment";
 import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
-import { useContactmomentenByKlantId } from "@/features/contact/contactmoment/service";
 import {
   useZakenByKlantBedrijfIdentifier,
   ZakenOverzicht,
 } from "@/features/zaaksysteem";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
-import { TabList, TabListDataItem } from "@/components/tabs";
+import { TabList, TabListDataItem, TabListItem } from "@/components/tabs";
 
-import ContactverzoekenOverzicht from "@/features/contact/contactverzoek/overzicht/ContactverzoekenOverzicht.vue";
 import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import BackLink from "@/components/BackLink.vue";
 import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
-import { useContactverzoekenByKlantId } from "@/features/contact/contactverzoek/overzicht/service";
 import { useOpenKlant2 } from "@/services/openklant2/service";
+import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
+import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
-
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
 
 const klantId = computed(() => props.bedrijfId);
@@ -112,16 +115,6 @@ const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 const currentTab = ref("");
 
 //const contactverzoekenPage = ref(1);
-const contactverzoeken = useContactverzoekenByKlantId(
-  klantUrl,
-  gebruikKlantInteracatiesApi,
-  //contactverzoekenPage,
-);
-
-const contactmomenten = useContactmomentenByKlantId(
-  klantUrl,
-  gebruikKlantInteracatiesApi,
-);
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;

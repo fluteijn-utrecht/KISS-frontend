@@ -133,10 +133,6 @@ aside {
     resize: none;
   }
 
-  [role="tablist"] {
-    height: 3rem;
-  }
-
   #cm-notitieblok {
     height: 100%;
   }
@@ -174,9 +170,14 @@ aside {
     --utrecht-focus-outline-offset: -4px;
 
     text-align: center;
+    padding-block: var(--spacing-small);
 
     &[aria-selected="true"] {
       color: var(--color-headings);
+    }
+
+    &:not([aria-selected="true"]) {
+      background-color: var(--sidebar-color-2);
     }
   }
 }
