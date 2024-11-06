@@ -119,6 +119,72 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.ToTable("VerwerkingsLogs");
                 });
 
+            modelBuilder.Entity("Kiss.Bff.Intern.ContactmomentDetails.Data.Entities.ContactmomentDetails", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Einddatum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EmailadresKcm")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gespreksresultaat")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SpecifiekeVraag")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Startdatum")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VerantwoordelijkeAfdeling")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Vraag")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VerantwoordelijkeAfdeling");
+
+                    b.HasIndex("Vraag");
+
+                    b.ToTable("ContactMomentDetails");
+                });
+
+            modelBuilder.Entity("Kiss.Bff.Intern.ContactmomentDetails.Data.Entities.ContactmomentDetailsBron", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContactmomentDetailsId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Soort")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContactmomentDetailsId");
+
+                    b.ToTable("ContactMomentDetailsBronnen");
+                });
+
             modelBuilder.Entity("Kiss.Bff.Intern.Kanalen.Data.Entities.Kanaal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -230,72 +296,6 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.BronModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ContactmomentDetailsId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Soort")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Titel")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContactmomentDetailsId");
-
-                    b.ToTable("Bronnen");
-                });
-
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.ContactmomentDetailsModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Einddatum")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EmailadresKcm")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gespreksresultaat")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SpecifiekeVraag")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("Startdatum")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("VerantwoordelijkeAfdeling")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vraag")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VerantwoordelijkeAfdeling");
-
-                    b.HasIndex("Vraag");
-
-                    b.ToTable("ContactMomentDetails");
-                });
-
             modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactverzoeken.ContactVerzoekVragenSet", b =>
                 {
                     b.Property<int>("Id")
@@ -358,6 +358,17 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Kiss.Bff.Intern.ContactmomentDetails.Data.Entities.ContactmomentDetailsBron", b =>
+                {
+                    b.HasOne("Kiss.Bff.Intern.ContactmomentDetails.Data.Entities.ContactmomentDetails", "ContactmomentDetails")
+                        .WithMany("Bronnen")
+                        .HasForeignKey("ContactmomentDetailsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ContactmomentDetails");
+                });
+
             modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.BerichtGelezen", b =>
                 {
                     b.HasOne("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", null)
@@ -367,25 +378,14 @@ namespace Kiss.Bff.NieuwsEnWerkinstructies.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.BronModel", b =>
+            modelBuilder.Entity("Kiss.Bff.Intern.ContactmomentDetails.Data.Entities.ContactmomentDetails", b =>
                 {
-                    b.HasOne("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.ContactmomentDetailsModel", "ContactmomentDetails")
-                        .WithMany("Bronnen")
-                        .HasForeignKey("ContactmomentDetailsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ContactmomentDetails");
+                    b.Navigation("Bronnen");
                 });
 
             modelBuilder.Entity("Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities.Bericht", b =>
                 {
                     b.Navigation("Gelezen");
-                });
-
-            modelBuilder.Entity("Kiss.Bff.ZaakGerichtWerken.Contactmomenten.ContactmomentDetailsModel", b =>
-                {
-                    b.Navigation("Bronnen");
                 });
 #pragma warning restore 612, 618
         }

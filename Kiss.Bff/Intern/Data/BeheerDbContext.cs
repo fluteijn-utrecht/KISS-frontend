@@ -72,7 +72,7 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
         public DbSet<ContactmomentDetails> ContactMomentDetails { get; set; } = null!;
-        public DbSet<ContactmomentDetailsBron> Bronnen { get; set; } = null!;
+        public DbSet<ContactmomentDetailsBron> ContactMomentDetailsBronnen { get; set; } = null!;
         public DbSet<ContactVerzoekVragenSet> ContactVerzoekVragenSets { get; set; } = null!;
         public DbSet<Kanaal> Kanalen { get; set; } = null!;
     }
