@@ -1,4 +1,6 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
+using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Intern.Gespreksresultaten.Features;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
@@ -11,13 +13,15 @@ namespace Kiss.Bff.Intern.Seed.Features
     [ApiController]
     [Route("api/seed")]
     [Authorize(Policy = Policies.RedactiePolicy)]
-    public class DataSeedController : ControllerBase
+    public class SeedController : ControllerBase
     {
         private readonly BeheerDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public DataSeedController(BeheerDbContext context)
+        public SeedController(BeheerDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         private async Task<bool> AnyRecordsExistAsync()
@@ -35,7 +39,7 @@ namespace Kiss.Bff.Intern.Seed.Features
             {
                 if (await AnyRecordsExistAsync())
                 {
-                    return BadRequest("Data already exists in the database. Seeding skipped.");
+                    return Conflict("Database is already populated. Seeding skipped.");
                 }
 
                 // berichten
@@ -65,6 +69,10 @@ namespace Kiss.Bff.Intern.Seed.Features
                     }
                 };
 
+                //var path = Path.Combine(_environment.ContentRootPath, "Json/skills.json");
+                //var jsonSkills = System.IO.File.ReadAllText(path);
+                //var skills = JsonSerializer.Deserialize<List<Skill>>(jsonSkills);
+
                 await _context.Skills.AddRangeAsync(skills);
 
                 // links
@@ -78,6 +86,8 @@ namespace Kiss.Bff.Intern.Seed.Features
                         Categorie = "Links"
                     }
                 };
+
+                await _context.Links.AddRangeAsync(links);
 
                 await _context.SaveChangesAsync();
 
@@ -96,10 +106,10 @@ namespace Kiss.Bff.Intern.Seed.Features
             {
                 if (await AnyRecordsExistAsync())
                 {
-                    return BadRequest("Data already exists in the database.");
+                    return Conflict("Database is already populated.");
                 }
 
-                return Ok("No data in the database.");
+                return Ok("Database is not populated.");
             }
             catch (Exception ex)
             {
