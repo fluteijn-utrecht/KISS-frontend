@@ -34,6 +34,10 @@ body {
   &.hide-sidebar {
     grid-template-areas: "header header" "nothing main";
 
+    > header {
+      min-height: initial;
+    }
+
     > aside {
       display: none;
     }
@@ -42,6 +46,7 @@ body {
 
 .app-layout > header {
   grid-area: header;
+  min-height: var(--header-min-height);
 }
 
 .app-layout > aside {
