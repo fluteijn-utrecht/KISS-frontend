@@ -15,7 +15,7 @@ import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
 import { fetchContactverzoekenByKlantId } from "./service";
-import type { Contactverzoek } from "./types";
+import type { ContactverzoekOverzichtItem } from "./types";
 
 const props = defineProps<{
   klantUrl: string;
@@ -23,7 +23,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  load: [data: PaginatedResult<Contactverzoek>];
+  load: [data: PaginatedResult<ContactverzoekOverzichtItem>];
   loading: [data: boolean];
   error: [data: boolean];
 }>();

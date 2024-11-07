@@ -3,6 +3,7 @@ import {
   throwIfNotOk,
   parseJson,
   parsePagination,
+  type PaginatedResult,
 } from "@/services";
 import {
   DigitaleAdressenExpand,
@@ -12,14 +13,16 @@ import {
   fetchBetrokkenen,
   filterOutContactmomenten,
   KlantContactExpand,
-  mapToContactverzoekViewModel,
   searchDigitaleAdressen,
   type Betrokkene,
-  type ContactverzoekViewmodel,
+  type BetrokkeneMetKlantContact,
+  type ContactmomentViewModel,
   type DigitaalAdresExpandedApiViewModel,
 } from "@/services/openklant2";
-import { mapObjectToContactverzoekViewModel } from "@/services/openklant1";
-import type { Contactverzoek } from "./types";
+import { enrichContactverzoekObjectWithContactmoment } from "@/services/openklant1";
+import type { ContactverzoekOverzichtItem } from "./types";
+import type { ContactmomentDetails } from "../../contactmoment";
+import { fullName } from "@/helpers/string";
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
   const url = new URL(urlStr);
@@ -55,7 +58,7 @@ async function searchOk2Recursive(
 export async function search(
   query: string,
   gebruikKlantInteractiesApi: boolean,
-): Promise<Contactverzoek[]> {
+): Promise<ContactverzoekOverzichtItem[]> {
   // OK2
   if (gebruikKlantInteractiesApi) {
     const adressen = await searchOk2Recursive(query);
@@ -68,18 +71,18 @@ export async function search(
       betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
     );
 
-    return (
-      enrichBetrokkeneWithKlantContact(
-        [...uniqueBetrokkenen.values()],
-        [KlantContactExpand.leiddeTotInterneTaken],
-      )
-        .then(filterOutContactmomenten)
-        .then(enrichBetrokkeneWithDigitaleAdressen)
-        .then(enrichInterneTakenWithActoren)
-        .then(mapToContactverzoekViewModel)
-        // Filter voor OK2: alleen resultaten zonder 'klant'
-        .then((r) => r.filter((x) => !x.record.data.betrokkene.klant))
-    );
+    return enrichBetrokkeneWithKlantContact(
+      [...uniqueBetrokkenen.values()],
+      [
+        KlantContactExpand.leiddeTotInterneTaken,
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ],
+    )
+      .then(filterOutContactmomenten)
+      .then(enrichBetrokkeneWithDigitaleAdressen)
+      .then(enrichInterneTakenWithActoren)
+      .then(mapKlantcontactToContactverzoekOverzichtItem)
+      .then(filterOutGeauthenticeerdeContactverzoeken);
   }
   /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie
   else {
@@ -91,23 +94,100 @@ export async function search(
       `betrokkene__digitaleAdressen__icontains__${query}`,
     );
 
-    const searchResults = await searchRecursive(url.toString());
-
-    const mappedResults = searchResults.map(mapObjectToContactverzoekViewModel);
-
-    // Filter voor OK1: alleen resultaten zonder 'klant'
-    const filteredResults = mappedResults.filter(
-      (item) => !item.record.data.betrokkene.klant,
-    );
-
-    return filteredResults;
+    return searchRecursive(url.toString())
+      .then((x) =>
+        Promise.all(x.map(enrichContactverzoekObjectWithContactmoment)),
+      )
+      .then((x) => x.map(mapObjectToContactverzoekOverzichtItem))
+      .then(filterOutGeauthenticeerdeContactverzoeken);
   }
+}
+
+function filterOutGeauthenticeerdeContactverzoeken(
+  value: ContactverzoekOverzichtItem[],
+) {
+  return value.filter((x) => !x.betrokkene?.isGeauthenticeerd);
+}
+
+function mapKlantcontactToContactverzoekOverzichtItem(
+  betrokkeneMetKlantcontact: BetrokkeneMetKlantContact[],
+): ContactverzoekOverzichtItem[] {
+  return betrokkeneMetKlantcontact.map(
+    ({ klantContact, contactnaam, expandedDigitaleAdressen, wasPartij }) => {
+      const internetaak = klantContact._expand?.leiddeTotInterneTaken?.[0];
+      if (!internetaak) {
+        throw new Error("");
+      }
+
+      return {
+        url: internetaak.url,
+        onderwerp: klantContact.onderwerp,
+        toelichtingBijContactmoment: klantContact.inhoud,
+        status: internetaak.status,
+        registratiedatum: klantContact.plaatsgevondenOp,
+        vraag: klantContact.onderwerp,
+        aangemaaktDoor: klantContact.hadBetrokkenActoren?.[0]?.naam || "",
+        behandelaar: internetaak?.actor?.naam,
+        toelichtingVoorCollega: internetaak.toelichting,
+        betrokkene: {
+          persoonsnaam: contactnaam,
+          digitaleAdressen: expandedDigitaleAdressen || [],
+          isGeauthenticeerd: !!wasPartij,
+        },
+        objecten:
+          klantContact?._expand?.gingOverOnderwerpobjecten?.map((x) => ({
+            object: x.onderwerpobjectidentificator.objectId,
+            objectType: x.onderwerpobjectidentificator.codeObjecttype,
+            contactmoment: x.klantcontact.uuid,
+          })) || [],
+      } satisfies ContactverzoekOverzichtItem;
+    },
+  );
+}
+
+function mapObjectToContactverzoekOverzichtItem({
+  contactverzoekObject,
+  contactmoment,
+  details,
+}: {
+  contactverzoekObject: any;
+  contactmoment: ContactmomentViewModel | null;
+  details: ContactmomentDetails | null;
+}): ContactverzoekOverzichtItem {
+  const getVraag = (cd: ContactmomentDetails | null) => {
+    const { vraag, specifiekeVraag } = cd || {};
+    if (!vraag) return specifiekeVraag;
+    if (!specifiekeVraag) return vraag;
+    return `${vraag} (${specifiekeVraag})`;
+  };
+
+  const record = contactverzoekObject.record;
+  const data = record.data;
+
+  return {
+    url: contactverzoekObject.url,
+    onderwerp: data.toelichting || undefined,
+    toelichtingBijContactmoment: contactmoment?.tekst || "",
+    status: data.status || "onbekend",
+    registratiedatum: data.registratiedatum,
+    vraag: getVraag(details) || "",
+    toelichtingVoorCollega: data.toelichting || "",
+    behandelaar: data.actor?.naam || "",
+    betrokkene: {
+      isGeauthenticeerd: !!data.betrokkene?.klant,
+      persoonsnaam: data.betrokkene?.persoonsnaam || {},
+      digitaleAdressen: data.betrokkene?.digitaleAdressen || [],
+    },
+    aangemaaktDoor: fullName(contactmoment?.medewerkerIdentificatie),
+    objecten: contactmoment?.objectcontactmomenten || [],
+  } satisfies ContactverzoekOverzichtItem;
 }
 
 export function fetchContactverzoekenByKlantId(
   id: string,
   gebruikKlantInteractiesApi: boolean,
-) {
+): Promise<PaginatedResult<ContactverzoekOverzichtItem>> {
+  // OK2
   if (gebruikKlantInteractiesApi) {
     return fetchBetrokkenen({
       wasPartij__url: id,
@@ -115,14 +195,16 @@ export function fetchContactverzoekenByKlantId(
       ...paginated,
       page: await enrichBetrokkeneWithKlantContact(paginated.page, [
         KlantContactExpand.leiddeTotInterneTaken,
+        KlantContactExpand.gingOverOnderwerpobjecten,
       ])
         .then(filterOutContactmomenten)
         .then(enrichBetrokkeneWithDigitaleAdressen)
         .then(enrichInterneTakenWithActoren)
-        .then(mapToContactverzoekViewModel),
+        .then(mapKlantcontactToContactverzoekOverzichtItem),
     }));
   }
 
+  // OK1
   const url = new URL("/api/internetaak/api/v2/objects", location.origin);
   url.searchParams.set("ordering", "-record__data__registratiedatum");
   url.searchParams.set("pageSize", "10");
@@ -131,5 +213,11 @@ export function fetchContactverzoekenByKlantId(
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
+    .then((r) =>
+      parsePagination(r, (v) =>
+        enrichContactverzoekObjectWithContactmoment(v).then(
+          mapObjectToContactverzoekOverzichtItem,
+        ),
+      ),
+    );
 }
