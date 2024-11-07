@@ -27,7 +27,7 @@
           v-if="gebruikKlantInteracatiesApi != null"
           :klant-url="klantUrl"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
-          @load="setDisabled(!$event.count)"
+          @load="setDisabled(!$event?.page?.length)"
           @loading="setLoading"
           @error="setError"
         >
@@ -51,7 +51,7 @@
           v-if="gebruikKlantInteracatiesApi != null"
           :klant-url="klantUrl"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
-          @load="setDisabled(!$event?.count)"
+          @load="setDisabled(!$event?.page?.length)"
           @loading="setLoading"
           @error="setError"
         >
