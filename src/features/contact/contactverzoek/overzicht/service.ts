@@ -160,17 +160,17 @@ function mapObjectToContactverzoekOverzichtItem({
     if (!specifiekeVraag) return vraag;
     return `${vraag} (${specifiekeVraag})`;
   };
-
+  const vraag = getVraag(details) || "";
   const record = contactverzoekObject.record;
   const data = record.data;
 
   return {
     url: contactverzoekObject.url,
-    onderwerp: data.toelichting || undefined,
+    onderwerp: vraag,
     toelichtingBijContactmoment: contactmoment?.tekst || "",
     status: data.status || "onbekend",
     registratiedatum: data.registratiedatum,
-    vraag: getVraag(details) || "",
+    vraag,
     toelichtingVoorCollega: data.toelichting || "",
     behandelaar: data.actor?.naam || "",
     betrokkene: {
