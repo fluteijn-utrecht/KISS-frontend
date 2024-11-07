@@ -228,5 +228,10 @@ menu.starter {
       margin-block: var(--spacing-large) var(--spacing-small);
     }
   }
+
+  :deep(.radio-group) {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 </style>

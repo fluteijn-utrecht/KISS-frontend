@@ -534,8 +534,9 @@ fieldset {
 }
 
 .radio-group {
-  display: flex;
-  justify-content: space-between;
+  > legend {
+    font-size: inherit;
+  }
 }
 
 .utrecht-checkbox-button {
