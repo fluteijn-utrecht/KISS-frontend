@@ -1,8 +1,7 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
-using Kiss.Bff.Intern.Gespreksresultaten.Features;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +26,7 @@ namespace Kiss.Bff.Intern.Seed.Features
         private async Task<bool> AnyRecordsExistAsync()
         {
             return await _context.Berichten.AnyAsync() ||
-                await _context.Skills.Where(x => !x.IsDeleted).AnyAsync() ||
+                await _context.Skills.Where(x => !x.IsDeleted).AnyAsync() || // Check ...
                 await _context.Links.AnyAsync() ||
                 await _context.Gespreksresultaten.AnyAsync();
         }
@@ -40,7 +39,7 @@ namespace Kiss.Bff.Intern.Seed.Features
             return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
         }
 
-        [HttpGet]
+        [HttpPost("start")]
         public async Task<IActionResult> Seed()
         {
             try
@@ -51,50 +50,48 @@ namespace Kiss.Bff.Intern.Seed.Features
                 }
 
                 // berichten
-                var berichten = new List<Bericht>
+                var berichten = ReadListFromJsonFile<Bericht>(_environment, "berichten.json");
+
+                foreach (var bericht in berichten)
                 {
-                    new()
-                    {
-                        PublicatieDatum =  DateTimeOffset.UtcNow,
-                        PublicatieEinddatum = DateTimeOffset.UtcNow.AddYears(1),
-                        DateCreated = DateTimeOffset.UtcNow,
-                        Titel = "Nieuws",
-                        Inhoud = "<p>Nieuws</p>",
-                        IsBelangrijk = true,
-                        Type = "Nieuws"
-                    }
-                };
+                    bericht.DateCreated = DateTimeOffset.UtcNow;
+                    bericht.PublicatieDatum = DateTimeOffset.UtcNow;
+                    bericht.PublicatieEinddatum = DateTimeOffset.UtcNow.AddYears(1);
+                }
 
                 await _context.Berichten.AddRangeAsync(berichten);
 
                 // skills
-                //var skills = new List<Skill>
-                //{
-                //    new()
-                //    {
-                //        DateCreated = DateTimeOffset.UtcNow,
-                //        Naam = "Skill één"
-                //    }
-                //};
-
                 var skills = ReadListFromJsonFile<Skill>(_environment, "skills.json");
+
+                foreach (var skill in skills)
+                {
+                    skill.DateCreated = DateTimeOffset.UtcNow;
+                }
 
                 await _context.Skills.AddRangeAsync(skills);
 
                 // links
-                var links = new List<Link>
+                var links = ReadListFromJsonFile<Link>(_environment, "links.json");
+
+                foreach (var link in links)
                 {
-                    new()
-                    {
-                        DateCreated = DateTimeOffset.UtcNow,
-                        Titel = "Link",
-                        Url = "https://www.icatt.nl",
-                        Categorie = "Links"
-                    }
-                };
+                    link.DateCreated = DateTimeOffset.UtcNow;
+                }
 
                 await _context.Links.AddRangeAsync(links);
 
+                // gespreksresultaten
+                var gespreksresultaten = ReadListFromJsonFile<Gespreksresultaat>(_environment, "gespreksresultaten.json");
+
+                foreach (var gespreksresultaat in gespreksresultaten)
+                {
+                    gespreksresultaat.DateCreated = DateTimeOffset.UtcNow;
+                }
+
+                await _context.Gespreksresultaten.AddRangeAsync(gespreksresultaten);
+
+                // save all changes
                 await _context.SaveChangesAsync();
 
                 return Ok("Data seeded successfully.");

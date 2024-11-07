@@ -15,69 +15,23 @@
     >
   </nav>
   <main>
-    <application-message v-if="beheerDbEmpty" messageType="warning">
-      <span>
-        Wilt u KISS vullen met voorbeelddata voor Gespreksresultaten, Skills,
-        Nieuws en Werkinstructies en Links?
-      </span>
-
-      <button
-        type="button"
-        class="utrecht-button start-button"
-        @click="seedData"
-      >
-        Voorbeelddata aanmaken
-      </button>
-    </application-message>
-
-    <router-view v-else />
+    <router-view />
   </main>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from "vue";
+import { watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import { useCurrentUser } from "@/features/login";
-import { toast } from "@/stores/toast";
-import ApplicationMessage from "../../components/ApplicationMessage.vue";
 
 const user = useCurrentUser();
 const router = useRouter();
-
-const beheerDbEmpty = ref(false);
-
-const seedData = async () => {
-  const { status } = await fetch("/api/seed");
-
-  if (status !== 200) {
-    toast({
-      text: "Er is een fout opgetreden bij het vullen van KISS met voorbeelddata.",
-      type: "error",
-    });
-
-    seedCheck();
-  } else {
-    toast({
-      text: "KISS is succesvol gevuld met voorbeelddata.",
-    });
-
-    beheerDbEmpty.value = false;
-  }
-};
-
-const seedCheck = async () => {
-  const { status } = await fetch("/api/seed/check");
-
-  beheerDbEmpty.value = status === 200;
-};
 
 watchEffect(() => {
   if (user.success && user.data.isLoggedIn && !user.data.isRedacteur) {
     router.push("/");
   }
 });
-
-onMounted(() => seedCheck());
 </script>
 
 <style lang="scss" scoped>
@@ -85,16 +39,6 @@ nav {
   display: flex;
   gap: var(--spacing-default);
   margin-bottom: var(--spacing-large);
-}
-
-span {
-  display: block;
-  margin-block-end: var(--spacing-default);
-}
-
-.start-button {
-  --utrecht-button-background-color: var(--color-white);
-  --utrecht-button-color: var(--color-accent-text);
 }
 
 main {

@@ -1,0 +1,16 @@
+[
+  {
+    "Titel": "Nieuws",
+    "Inhoud": "<p>Nieuws</p>",
+    "IsBelangrijk": true,
+    "Skills": [],
+    "Type": "Nieuws"
+  },
+  {
+    "Titel": "Werkinstructie",
+    "Inhoud": "<p>Werkinstructie</p>",
+    "IsBelangrijk": false,
+    "Skills": [],
+    "Type": "Werkinstructie"
+  }
+]
