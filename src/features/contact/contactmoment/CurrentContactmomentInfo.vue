@@ -6,7 +6,6 @@
     />
     <header>
       <h2>{{ klantInfo?.name || "Onbekend" }}</h2>
-      <p v-if="klantInfo?.contact">{{ klantInfo.contact }}</p>
     </header>
   </article>
 </template>
@@ -47,10 +46,6 @@ article {
     font-size: 1rem;
     font-weight: normal;
     margin-block-start: 0;
-  }
-
-  p {
-    color: inherit;
   }
 }
 </style>
