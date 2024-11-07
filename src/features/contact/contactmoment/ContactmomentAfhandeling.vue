@@ -529,6 +529,24 @@ const saveBetrokkeneBijContactverzoek = async (
 ): Promise<string[]> => {
   const betrokkenenUuids: string[] = [];
 
+  if (!vraag.klanten.length) {
+    // voor een contactverzoek zonder klant moet OOK een betrokkene aangemaakt worden
+    const organisatie = contactverzoekData?.betrokkene?.organisatie;
+    const voornaam = contactverzoekData?.betrokkene?.persoonsnaam?.voornaam;
+    const voorvoegselAchternaam =
+      contactverzoekData?.betrokkene?.persoonsnaam?.voorvoegselAchternaam;
+    const achternaam = contactverzoekData?.betrokkene?.persoonsnaam?.achternaam;
+
+    const result = await saveBetrokkene({
+      klantcontactId: klantcontactId,
+      organisatienaam: organisatie,
+      voornaam: voornaam,
+      voorvoegselAchternaam: voorvoegselAchternaam,
+      achternaam: achternaam,
+    });
+    betrokkenenUuids.push(result.uuid);
+  }
+
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {
       const organisatie =

@@ -114,7 +114,7 @@ const isRedacteur = computed(
 
 <style lang="scss" scoped>
 header {
-  background-color: var(--color-secondary);
+  background-color: var(--color-primary);
   display: grid;
   grid-template-areas:
     "bar bar"
@@ -123,6 +123,10 @@ header {
     "nav nav";
   grid-template-columns: auto 6rem;
   align-items: center;
+
+  &:has(.search-results) {
+    background-color: var(--color-secondary);
+  }
 
   .log-out {
     margin-inline-start: auto;
