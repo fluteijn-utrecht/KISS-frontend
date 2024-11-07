@@ -105,19 +105,12 @@ namespace Kiss.Bff.Intern.Seed.Features
         [HttpGet("check")]
         public async Task<IActionResult> SeedCheck()
         {
-            try
+            if (await AnyRecordsExistAsync())
             {
-                if (await AnyRecordsExistAsync())
-                {
-                    return Conflict("Database is already populated.");
-                }
+                return Conflict("Database is already populated.");
+            }
 
-                return Ok("Database is not populated.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
+            return Ok("Database is not populated.");
         }
     }
 }
