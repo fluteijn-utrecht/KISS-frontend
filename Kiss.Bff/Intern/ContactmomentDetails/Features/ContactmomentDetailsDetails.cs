@@ -19,8 +19,17 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
         {
             var contactmoment = await _db.ContactMomentDetails
                 .Where(x => x.Id == id)
-                .ToModel()
-                .AsSplitQuery()
+                .Select(x => new ContactmomentDetailsDetailModel
+                {
+                    Id = x.Id,
+                    Einddatum = x.Einddatum,
+                    EmailadresKcm = x.EmailadresKcm,
+                    Gespreksresultaat = x.Gespreksresultaat,
+                    SpecifiekeVraag = x.SpecifiekeVraag,
+                    Startdatum = x.Startdatum,
+                    VerantwoordelijkeAfdeling = x.VerantwoordelijkeAfdeling,
+                    Vraag = x.Vraag
+                })
                 .FirstOrDefaultAsync(token);
 
             if (contactmoment == null)

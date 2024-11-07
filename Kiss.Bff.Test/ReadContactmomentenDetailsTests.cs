@@ -63,7 +63,7 @@ namespace Kiss.Bff.Test
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
 
-            var contactmoment = result.Value as ContactmomentDetailsModel;
+            var contactmoment = result.Value as ContactmomentDetailsDetailModel;
             Assert.IsNotNull(contactmoment);
             Assert.AreEqual(validId, contactmoment.Id);
         }
