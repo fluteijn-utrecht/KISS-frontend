@@ -47,9 +47,5 @@ article {
     font-weight: normal;
     margin-block-start: 0;
   }
-
-  p {
-    color: inherit;
-  }
 }
 </style>
