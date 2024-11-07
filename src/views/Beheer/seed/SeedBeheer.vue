@@ -1,9 +1,9 @@
 <template>
   <application-message v-if="!populated" messageType="warning">
-    <span>
+    <p>
       Wilt u KISS vullen met voorbeelddata voor Gespreksresultaten, Skills,
       Nieuws en Werkinstructies en Links?
-    </span>
+    </p>
 
     <button type="button" class="utrecht-button start-button" @click="seedData">
       Voorbeelddata aanmaken
@@ -13,8 +13,11 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { toast } from "@/stores/toast";
 import ApplicationMessage from "../../../components/ApplicationMessage.vue";
+
+const router = useRouter();
 
 const populated = ref(true);
 
@@ -35,6 +38,8 @@ const seedData = async () => {
 
     populated.value = true;
   }
+
+  router.push("/Beheer");
 };
 
 const seedCheck = async () => {
@@ -47,9 +52,17 @@ onMounted(() => seedCheck());
 </script>
 
 <style lang="scss" scoped>
-span {
-  display: block;
+article {
+  display: flex;
+  column-gap: var(--spacing-default);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+p {
+  color: var(--color-white);
   margin-block-end: var(--spacing-default);
+  flex: 1;
 }
 
 .start-button {
