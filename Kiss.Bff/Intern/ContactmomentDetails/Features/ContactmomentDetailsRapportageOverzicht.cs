@@ -1,12 +1,11 @@
-﻿using Kiss.Bff.Beheer.Data;
+﻿using System.Globalization;
+using Kiss.Bff.Beheer.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
+namespace Kiss.Bff.Intern.ContactmomentDetails.Features
 {
-
     [ApiController]
     public class ContactmomentDetailsRapportageOverzicht : ControllerBase
     {
@@ -27,8 +26,8 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
         [FromQuery] int pageSize = 5000,
         [FromQuery] int page = 1)
         {
-            if (!DateTime.TryParseExact(from, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime fromDate) ||
-                !DateTime.TryParseExact(to, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime toDate))
+            if (!DateTime.TryParseExact(from, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var fromDate) ||
+                !DateTime.TryParseExact(to, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var toDate))
             {
                 return BadRequest("Invalid date format. Use ISO 8601 format (yyyy-MM-ddTHH:mm:ssZ).");
             }
@@ -43,6 +42,23 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 .OrderByDescending(x => x.Startdatum)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Select(x => new ContactmomentDetailsModel
+                {
+                    Id = x.Id,
+                    Einddatum = x.Einddatum,
+                    EmailadresKcm = x.EmailadresKcm,
+                    Gespreksresultaat = x.Gespreksresultaat,
+                    SpecifiekeVraag = x.SpecifiekeVraag,
+                    Startdatum = x.Startdatum,
+                    VerantwoordelijkeAfdeling = x.VerantwoordelijkeAfdeling,
+                    Vraag = x.Vraag,
+                    Bronnen = x.Bronnen.Select(b => new ContactmomentDetailsBronModel
+                    {
+                        Soort = b.Soort,
+                        Titel = b.Titel,
+                        Url = b.Url
+                    })
+                })
                 .ToListAsync(token);
 
             return Ok(contactmomenten);
@@ -50,8 +66,3 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
 
     }
 }
-
-
-
-
-
