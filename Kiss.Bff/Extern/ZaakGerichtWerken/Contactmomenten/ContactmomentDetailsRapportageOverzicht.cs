@@ -2,6 +2,7 @@
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -52,13 +53,25 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 .Take(pageSize)
                 .ToListAsync(token);
 
-            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path.Value}";
+            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
             string? next = (page * pageSize < totalCount)
-                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page + 1}"
+                ? QueryHelpers.AddQueryString(baseUrl, new Dictionary<string, string?>
+                {
+                    ["from"] = from,
+                    ["to"] = to,
+                    ["pageSize"] = pageSize.ToString(),
+                    ["page"] = (page + 1).ToString()
+                })
                 : null;
 
             string? previous = (page > 1)
-                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page - 1}"
+                ? QueryHelpers.AddQueryString(baseUrl, new Dictionary<string, string?>
+                {
+                    ["from"] = from,
+                    ["to"] = to,
+                    ["pageSize"] = pageSize.ToString(),
+                    ["page"] = (page - 1).ToString()
+                })
                 : null;
 
             var response = new
