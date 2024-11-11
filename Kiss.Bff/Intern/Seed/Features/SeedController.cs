@@ -34,7 +34,7 @@ namespace Kiss.Bff.Intern.Seed.Features
         private async Task<bool> AnyRecordsExistAsync()
         {
             return await _context.Berichten.AnyAsync() ||
-                await _context.Skills.Where(x => !x.IsDeleted).AnyAsync() || // Check ...
+                await _context.Skills.AnyAsync() ||
                 await _context.Links.AnyAsync() ||
                 await _context.Gespreksresultaten.AnyAsync();
         }
