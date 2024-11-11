@@ -1,8 +1,4 @@
-﻿using System.Text.Json;
-using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
-using Kiss.Bff.Beheer.Links.Data.Entities;
-using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
+﻿using Kiss.Bff.Beheer.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +11,24 @@ namespace Kiss.Bff.Intern.Seed.Features
     public class SeedController : ControllerBase
     {
         private readonly BeheerDbContext _context;
-        private readonly IWebHostEnvironment _environment;
+        private readonly BerichtenService _berichtenService;
+        private readonly SkillsService _skillsService;
+        private readonly LinksService _linksService;
+        private readonly GespreksresultatenService _gespreksresultatenService;
 
-        public SeedController(BeheerDbContext context, IWebHostEnvironment environment)
+        public SeedController(
+            BeheerDbContext context,
+            BerichtenService berichtenService,
+            SkillsService skillsService,
+            LinksService linksService,
+            GespreksresultatenService gespreksresultatenService
+        )
         {
             _context = context;
-            _environment = environment;
+            _berichtenService = berichtenService;
+            _skillsService = skillsService;
+            _linksService = linksService;
+            _gespreksresultatenService = gespreksresultatenService;
         }
 
         private async Task<bool> AnyRecordsExistAsync()
@@ -29,14 +37,6 @@ namespace Kiss.Bff.Intern.Seed.Features
                 await _context.Skills.Where(x => !x.IsDeleted).AnyAsync() || // Check ...
                 await _context.Links.AnyAsync() ||
                 await _context.Gespreksresultaten.AnyAsync();
-        }
-
-        private static List<T> ReadListFromJsonFile<T>(IWebHostEnvironment environment, string file)
-        {
-            var path = Path.Combine(environment.ContentRootPath, "json/" + file);
-            var json = System.IO.File.ReadAllText(path);
-
-            return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
         }
 
         [HttpPost("start")]
@@ -50,45 +50,19 @@ namespace Kiss.Bff.Intern.Seed.Features
                 }
 
                 // berichten
-                var berichten = ReadListFromJsonFile<Bericht>(_environment, "berichten.json");
-
-                foreach (var bericht in berichten)
-                {
-                    bericht.DateCreated = DateTimeOffset.UtcNow;
-                    bericht.PublicatieDatum = DateTimeOffset.UtcNow;
-                    bericht.PublicatieEinddatum = DateTimeOffset.UtcNow.AddYears(1);
-                }
-
+                var berichten = _berichtenService.GenerateBerichten();
                 await _context.Berichten.AddRangeAsync(berichten);
 
                 // skills
-                var skills = ReadListFromJsonFile<Skill>(_environment, "skills.json");
-
-                foreach (var skill in skills)
-                {
-                    skill.DateCreated = DateTimeOffset.UtcNow;
-                }
-
+                var skills = _skillsService.GenerateSkills();
                 await _context.Skills.AddRangeAsync(skills);
 
                 // links
-                var links = ReadListFromJsonFile<Link>(_environment, "links.json");
-
-                foreach (var link in links)
-                {
-                    link.DateCreated = DateTimeOffset.UtcNow;
-                }
-
+                var links = _linksService.GenerateLinks();
                 await _context.Links.AddRangeAsync(links);
 
                 // gespreksresultaten
-                var gespreksresultaten = ReadListFromJsonFile<Gespreksresultaat>(_environment, "gespreksresultaten.json");
-
-                foreach (var gespreksresultaat in gespreksresultaten)
-                {
-                    gespreksresultaat.DateCreated = DateTimeOffset.UtcNow;
-                }
-
+                var gespreksresultaten = _gespreksresultatenService.GenerateGespreksresultaten();
                 await _context.Gespreksresultaten.AddRangeAsync(gespreksresultaten);
 
                 // save all changes

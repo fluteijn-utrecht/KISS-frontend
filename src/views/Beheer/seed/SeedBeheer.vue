@@ -1,5 +1,7 @@
 <template>
-  <application-message v-if="!populated" messageType="warning">
+  <simple-spinner v-if="loading" />
+
+  <application-message v-else-if="!populated" messageType="warning">
     <p>
       Wilt u KISS vullen met voorbeelddata voor Gespreksresultaten, Skills,
       Nieuws en Werkinstructies en Links?
@@ -15,14 +17,20 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { toast } from "@/stores/toast";
-import ApplicationMessage from "../../../components/ApplicationMessage.vue";
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
+import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
 const router = useRouter();
 
 const populated = ref(true);
+const loading = ref(false);
 
 const seedData = async () => {
-  const { status } = await fetch("/api/seed/start", { method: "POST" });
+  loading.value = true;
+
+  const { status } = await fetch("/api/seed/start", { method: "POST" }).finally(
+    () => (loading.value = false),
+  );
 
   if (status !== 200) {
     toast({
