@@ -15,8 +15,8 @@ using Kiss.Bff.NieuwsEnWerkinstructies.Features;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Intern.Links.Features;
 using Kiss.Bff.Intern.Gespreksresultaten.Features;
-using Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.Intern.Seed.Features;
+using Kiss.Bff.Intern.ContactmomentDetails.Features;
 
 namespace Kiss.Bff.Test
 {

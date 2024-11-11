@@ -424,7 +424,11 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
+import {
+  useContactmomentStore,
+  type Bron,
+  type Vraag,
+} from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
@@ -456,7 +460,10 @@ import { useOrganisatieIds, useUserStore } from "@/stores/user";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import { nanoid } from "nanoid";
-import { writeContactmomentDetails } from "@/features/contact/contactmoment/write-contactmoment-details";
+import {
+  writeContactmomentDetails,
+  type ContactmomentDetails,
+} from "@/features/contact/contactmoment/write-contactmoment-details";
 import BackLink from "@/components/BackLink.vue";
 import AfdelingenSearch from "@/features/contact/components/AfdelingenSearch.vue";
 import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
@@ -627,6 +634,50 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     Object.assign(contactmoment, contactverzoekData);
   }
 
+  const fullUrl = (url: string) =>
+    url.startsWith("http") ? url : new URL(url, location.origin).toString();
+
+  const cmDetails: ContactmomentDetails = {
+    ...contactmoment,
+    bronnen: [
+      ...vraag.kennisartikelen
+        .filter(({ shouldStore }) => shouldStore)
+        .map(({ kennisartikel: { title, url } }) => ({
+          url: fullUrl(url),
+          titel: title,
+          soort: "kennisartikel",
+        })),
+      ...vraag.werkinstructies
+        .filter(({ shouldStore }) => shouldStore)
+        .map(({ werkinstructie: { title, url } }) => ({
+          url: fullUrl(url),
+          titel: title,
+          soort: "werkinstructie",
+        })),
+      ...vraag.vacs
+        .filter(({ shouldStore }) => shouldStore)
+        .map(({ vac: { title, url } }) => ({
+          url: fullUrl(url),
+          titel: title,
+          soort: "vac",
+        })),
+      ...vraag.nieuwsberichten
+        .filter(({ shouldStore }) => shouldStore)
+        .map(({ nieuwsbericht: { title, url } }) => ({
+          url: fullUrl(url),
+          titel: title,
+          soort: "nieuwsbericht",
+        })),
+      ...vraag.websites
+        .filter(({ shouldStore }) => shouldStore)
+        .map(({ website: { title, url } }) => ({
+          url: fullUrl(url),
+          titel: title,
+          soort: "website",
+        })),
+    ],
+  };
+
   // Openklant2 flow
   if (useKlantInteractiesApi) {
     // 1. klantcontact opslaan
@@ -654,7 +705,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
 
     // 2 //////////////////////
     await writeContactmomentDetails(
-      contactmoment,
+      cmDetails,
       savedKlantContactResult.data?.url,
     );
 
@@ -776,7 +827,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     const savedContactmoment = savedContactmomentResult.data;
 
     const promises = [
-      writeContactmomentDetails(contactmoment, savedContactmoment.url),
+      writeContactmomentDetails(cmDetails, savedContactmoment.url),
       zakenToevoegenAanContactmoment(vraag, savedContactmoment.url),
     ];
 
