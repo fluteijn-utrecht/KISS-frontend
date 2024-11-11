@@ -1,35 +1,18 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Security.Claims;
-using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
+using Kiss.Bff.Intern.ContactmomentDetails.Features;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Kiss.Bff.Test
 {
     [TestClass]
     public class ReadContactmomentenDetailsTests : TestHelper
     {
-        private IServiceProvider? _serviceProvider;
-
         [TestInitialize]
         public void Initialize()
         {
             InitializeDatabase();
             SeedTestData();
-
-            var services = new ServiceCollection();
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
-             {
-                new Claim(ClaimTypes.NameIdentifier, "testuser"),
-                new Claim(ClaimTypes.Role, Policies.RedactiePolicy)
-            }));
-            services.AddSingleton<IHttpContextAccessor>(_ => new HttpContextAccessor { HttpContext = new DefaultHttpContext { User = user } });
-            _serviceProvider = services.BuildServiceProvider();
         }
 
         [TestCleanup]
@@ -43,7 +26,7 @@ namespace Kiss.Bff.Test
         private void SeedTestData()
         {
             using var dbContext = new BeheerDbContext(_dbContextOptions);
-            var contactmoment1 = new ContactmomentDetailsModel
+            var contactmoment1 = new ContactmomentDetails
             {
                 Id = "1",
                 Startdatum = DateTime.Now,
@@ -52,7 +35,7 @@ namespace Kiss.Bff.Test
                 Vraag = "Question 1"
             };
 
-            var contactmoment2 = new ContactmomentDetailsModel
+            var contactmoment2 = new ContactmomentDetails
             {
                 Id = "2",
                 Startdatum = DateTime.Now,
@@ -80,7 +63,7 @@ namespace Kiss.Bff.Test
             Assert.IsNotNull(result);
             Assert.AreEqual(200, result.StatusCode);
 
-            var contactmoment = result.Value as ContactmomentDetailsModel;
+            var contactmoment = result.Value as ContactmomentDetailsDetailModel;
             Assert.IsNotNull(contactmoment);
             Assert.AreEqual(validId, contactmoment.Id);
         }

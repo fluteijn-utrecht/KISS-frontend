@@ -1,6 +1,6 @@
 ﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Faq;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
+using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,13 +31,13 @@ namespace Kiss.Bff.Test
             // Arrange
             var controller = new GetFaq(dbContext);
 
-            var testData = new List<ContactmomentDetailsModel>();
+            var testData = new List<ContactmomentDetails>();
             var topQuestionsCount = 10;
 
             // Add 500 questions
             for (int i = 1; i <= 500; i++)
             {
-                testData.Add(new ContactmomentDetailsModel
+                testData.Add(new ContactmomentDetails
                 {
                     Id = i.ToString(),
                     Vraag = $"Question {i}",
