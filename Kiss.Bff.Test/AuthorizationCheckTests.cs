@@ -16,6 +16,7 @@ using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Intern.Links.Features;
 using Kiss.Bff.Intern.Gespreksresultaten.Features;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten;
+using Kiss.Bff.Intern.Seed.Features;
 
 namespace Kiss.Bff.Test
 {
@@ -41,7 +42,7 @@ namespace Kiss.Bff.Test
             s_factory?.Dispose();
         }
 
-        public static IEnumerable<object[]> GetControllersMethodsWithDefaultAuthorizeAttributes()
+        public static IEnumerable<object[]> GetControllersMethodsWithRedactiePolicyAuthorizeAttribute()
         {
             // Define the controllers and methods to test here
             var controllersWithMethodsToTest = new List<(Type controllerType, string methodName, Type[] parameterTypes)>
@@ -55,6 +56,8 @@ namespace Kiss.Bff.Test
                     (typeof(SkillsController), "PutSkill", new[] { typeof(int), typeof(SkillPutModel), typeof(CancellationToken) }),
                     (typeof(SkillsController), "PostSkill", new[] { typeof(SkillPostModel), typeof(CancellationToken) }),
                     (typeof(GetVerwerkingsLogs), "Get", new Type[0]),
+                    (typeof(SeedController), "SeedStart", new Type[0]),
+                    (typeof(SeedController), "SeedCheck", new Type[0]),
                     // Add more controller, method, and parameter combinations as needed
                 };
 
@@ -79,7 +82,7 @@ namespace Kiss.Bff.Test
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetControllersMethodsWithDefaultAuthorizeAttributes), DynamicDataSourceType.Method)]
+        [DynamicData(nameof(GetControllersMethodsWithRedactiePolicyAuthorizeAttribute), DynamicDataSourceType.Method)]
         public void TestAuthorizeAttribute(Type controllerType, string methodName, Type[] parameterTypes)
         {
             // Manually create an instance of the controller

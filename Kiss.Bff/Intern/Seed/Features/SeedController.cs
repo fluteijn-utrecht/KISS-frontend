@@ -40,7 +40,7 @@ namespace Kiss.Bff.Intern.Seed.Features
         }
 
         [HttpPost("start")]
-        public async Task<IActionResult> Seed()
+        public async Task<IActionResult> SeedStart()
         {
             try
             {
