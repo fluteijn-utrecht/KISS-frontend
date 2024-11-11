@@ -3,10 +3,8 @@ import {
   ServiceResult,
   parsePagination,
   parseJson,
-  type PaginatedResult,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
-import type { Ref } from "vue";
 
 import {
   type Gespreksresultaat,
@@ -216,27 +214,6 @@ export function useContactmomentObject(getUrl: () => string) {
       fetchLoggedIn(u)
         .then(throwIfNotOk)
         .then(parseJson) as Promise<ObjectContactmoment>,
-  );
-}
-
-export function useContactmomentByUrl(getUrl: () => string) {
-  return ServiceResult.fromFetcher(
-    () => {
-      const u = getUrl();
-      if (!u) return "";
-      const url = toRelativeProxyUrl(u, contactmomentenProxyRoot);
-      if (!url) return "";
-      const params = new URLSearchParams({
-        expand: "objectcontactmomenten",
-      });
-      return `${url}?${params}`;
-    },
-    (u) =>
-      fetchLoggedIn(u).then((r) => {
-        if (r.status === 404) return null;
-        throwIfNotOk(r);
-        return r.json() as Promise<ContactmomentViewModel>;
-      }),
   );
 }
 

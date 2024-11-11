@@ -1,8 +1,7 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
+using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -29,8 +28,8 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
             [FromQuery] int pageSize = 5000,
             [FromQuery] int page = 1)
         {
-            if (!DateTime.TryParseExact(from, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime fromDate) ||
-                !DateTime.TryParseExact(to, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime toDate))
+            if (!DateTime.TryParseExact(from, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var fromDate) ||
+                !DateTime.TryParseExact(to, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var toDate))
             {
                 return BadRequest("Invalid date format. Use ISO 8601 format (yyyy-MM-ddTHH:mm:ssZ).");
             }
@@ -40,7 +39,7 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 return BadRequest($"Page size must be between 1 and {MaxPageSize}.");
             }
 
-            Expression<Func<ContactmomentDetailsModel, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
+            Expression<Func<ContactmomentDetails, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
 
             var totalCount = await _db.ContactMomentDetails
                 .Where(dateRangeSelector)
@@ -53,25 +52,13 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 .Take(pageSize)
                 .ToListAsync(token);
 
-            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
+            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path.Value}";
             string? next = (page * pageSize < totalCount)
-                ? QueryHelpers.AddQueryString(baseUrl, new Dictionary<string, string?>
-                {
-                    ["from"] = from,
-                    ["to"] = to,
-                    ["pageSize"] = pageSize.ToString(),
-                    ["page"] = (page + 1).ToString()
-                })
+                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page + 1}"
                 : null;
 
             string? previous = (page > 1)
-                ? QueryHelpers.AddQueryString(baseUrl, new Dictionary<string, string?>
-                {
-                    ["from"] = from,
-                    ["to"] = to,
-                    ["pageSize"] = pageSize.ToString(),
-                    ["page"] = (page - 1).ToString()
-                })
+                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page - 1}"
                 : null;
 
             var response = new

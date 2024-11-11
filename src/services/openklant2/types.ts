@@ -1,5 +1,3 @@
-import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht/types";
-
 //api types
 
 export type DigitaalAdresApiViewModel = {
@@ -229,6 +227,3 @@ export type OnderwerpObjectPostModel = {
   wasKlantcontact: { uuid: string } | null;
   onderwerpobjectidentificator: Identificator;
 };
-
-//todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
-export type ContactverzoekViewmodel = Contactverzoek;

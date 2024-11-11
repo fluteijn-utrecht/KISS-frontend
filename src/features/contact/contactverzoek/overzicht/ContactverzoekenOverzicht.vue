@@ -9,60 +9,53 @@
       </template>
 
       <template
-        v-slot:item="{ item: contactverzoek }: { item: Contactverzoek }"
+        v-slot:item="{
+          item: contactverzoek,
+        }: {
+          item: ContactverzoekOverzichtItem;
+        }"
       >
         <summary>
           <dutch-date
-            v-if="contactverzoek.record.data.registratiedatum"
-            :date="new Date(contactverzoek.record.data.registratiedatum)"
+            v-if="contactverzoek.registratiedatum"
+            :date="new Date(contactverzoek.registratiedatum)"
           />
           <span v-else />
-          <span class="max18char" v-if="contactverzoek.onderwerp"
+          <span class="max18char" :title="contactverzoek.onderwerp"
             >{{ contactverzoek.onderwerp }}
           </span>
-          <span v-else>
-            <slot
-              name="onderwerp"
-              :contactmoment-url="contactverzoek.record.data.contactmoment"
-            >
-            </slot>
-          </span>
-          <span>{{ contactverzoek.record.data.status }}</span>
-          <span>{{ contactverzoek.record.data.actor.naam }}</span>
+          <span>{{ contactverzoek.status }}</span>
+          <span>{{ contactverzoek.behandelaar }}</span>
         </summary>
         <dl>
           <dt>Starttijd</dt>
           <dd>
             <dutch-time
-              v-if="contactverzoek.record.data.registratiedatum"
-              :date="new Date(contactverzoek.record.data.registratiedatum)"
+              v-if="contactverzoek.registratiedatum"
+              :date="new Date(contactverzoek.registratiedatum)"
             />
           </dd>
 
           <dt>Toelichting voor de collega</dt>
           <dd class="preserve-newline">
-            {{ contactverzoek.record.data.toelichting }}
+            {{ contactverzoek.toelichtingVoorCollega }}
           </dd>
 
-          <template
-            v-if="
-              contactverzoek.record.data.betrokkene.persoonsnaam?.achternaam
-            "
-          >
+          <template v-if="contactverzoek.betrokkene?.persoonsnaam?.achternaam">
             <dt>Naam betrokkene</dt>
             <dd>
-              {{ fullName(contactverzoek.record.data.betrokkene.persoonsnaam) }}
+              {{ fullName(contactverzoek.betrokkene.persoonsnaam) }}
             </dd>
           </template>
 
-          <template v-if="contactverzoek.record.data.betrokkene.organisatie">
+          <template v-if="contactverzoek.betrokkene?.organisatie">
             <dt>Organisatie</dt>
-            <dd>{{ contactverzoek.record.data.betrokkene.organisatie }}</dd>
+            <dd>{{ contactverzoek.betrokkene?.organisatie }}</dd>
           </template>
 
           <template
-            v-for="(adres, idx) in contactverzoek.record.data.betrokkene
-              .digitaleAdressen"
+            v-for="(adres, idx) in contactverzoek.betrokkene
+              ?.digitaleAdressen || []"
             :key="idx"
           >
             <dt>
@@ -77,25 +70,27 @@
             </dd>
           </template>
 
-          <!-- 
-            Voor OK1/esuite worden een aantal gegevens uit het contactmometn gehaald.
-            Deze moeten apart worden opgehaald
-          -->
-          <slot
-            name="contactmoment"
-            :url="contactverzoek.record.data.contactmoment"
-          ></slot>
-          <!--
-            voor OK2 zijn deze gegevens reeds in het contactverzoek beschikbaar.
-            todo: voor zaken moet hier tzt nog iets geregeld worden
-          -->
-          <template v-if="contactverzoek.medewerker">
+          <template v-if="contactverzoek.aangemaaktDoor">
             <dt>Aangemaakt door</dt>
-            <dd>{{ contactverzoek.medewerker }}</dd>
+            <dd>{{ contactverzoek.aangemaaktDoor }}</dd>
+          </template>
+          <slot
+            name="object"
+            :object="object"
+            v-for="(object, k) in contactverzoek.objecten ?? []"
+            :key="k"
+          >
+          </slot>
+          <template v-if="contactverzoek?.vraag">
             <dt>Vraag</dt>
-            <dd>{{ contactverzoek.onderwerp }}</dd>
+            <dd>{{ contactverzoek.vraag }}</dd>
+          </template>
+
+          <template v-if="contactverzoek?.toelichtingBijContactmoment">
             <dt>Toelichting</dt>
-            <dd>{{ contactverzoek.toelichting }}</dd>
+            <dd>
+              {{ contactverzoek.toelichtingBijContactmoment }}
+            </dd>
           </template>
         </dl>
       </template>
@@ -108,10 +103,10 @@ import DutchDate from "@/components/DutchDate.vue";
 import DutchTime from "@/components/DutchTime.vue";
 import { fullName } from "@/helpers/string";
 import ExpandableTableList from "@/components/ExpandableTableList.vue";
-import type { Contactverzoek } from "./types";
+import type { ContactverzoekOverzichtItem } from "./types";
 
 defineProps<{
-  contactverzoeken: Contactverzoek[];
+  contactverzoeken: ContactverzoekOverzichtItem[];
 }>();
 
 const capitalizeFirstLetter = (val: string) =>
