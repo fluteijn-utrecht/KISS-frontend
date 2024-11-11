@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Kiss.Bff.Extern.Environment
+namespace Kiss.Bff.Intern.Environment
 {
     [Route("api/environment")]
     [ApiController]

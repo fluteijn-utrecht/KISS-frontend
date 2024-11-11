@@ -10,7 +10,6 @@ import {
   type ContactmomentViewModel,
   type BetrokkeneMetKlantContact,
   type ExpandedKlantContactApiViewmodel,
-  type ContactverzoekViewmodel,
   type ActorApiViewModel,
   type InternetaakPostModel,
   type SaveInterneTaakResponseModel,
@@ -97,54 +96,6 @@ export function filterOutContactmomenten(
     (item) => item?.klantContact?._expand?.leiddeTotInterneTaken?.length,
   );
   return filtered;
-}
-
-export function mapToContactverzoekViewModel(
-  value: BetrokkeneMetKlantContact[],
-): ContactverzoekViewmodel[] {
-  const viewmodel = value.map((x) => {
-    const internetaak = x.klantContact._expand?.leiddeTotInterneTaken?.[0];
-    if (!internetaak) {
-      throw new Error("");
-    }
-
-    return {
-      url: internetaak.url,
-      medewerker:
-        x.klantContact.hadBetrokkenActoren &&
-        x.klantContact.hadBetrokkenActoren.length > 0
-          ? x.klantContact.hadBetrokkenActoren[0].naam
-          : "",
-      onderwerp: x.klantContact.onderwerp,
-      toelichting: x.klantContact.inhoud,
-      record: {
-        startAt: internetaak.toegewezenOp,
-        data: {
-          status: internetaak.status,
-          contactmoment: x.klantContact.url,
-          registratiedatum: x.klantContact.plaatsgevondenOp,
-          datumVerwerkt: internetaak.afgehandeldOp,
-          toelichting: internetaak.toelichting,
-          actor: {
-            naam: internetaak?.actor?.naam,
-            soortActor: internetaak?.actor?.soortActor,
-            identificatie: "",
-          },
-
-          betrokkene: {
-            rol: "klant",
-            persoonsnaam: x.contactnaam,
-            digitaleAdressen: x.expandedDigitaleAdressen || [],
-            klant: x.wasPartij?.url,
-          },
-
-          verantwoordelijkeAfdeling: "", //todo: waar komt dit vandaan?
-        },
-      },
-    } satisfies ContactverzoekViewmodel;
-  });
-
-  return viewmodel;
 }
 
 export async function enrichInterneTakenWithActoren(

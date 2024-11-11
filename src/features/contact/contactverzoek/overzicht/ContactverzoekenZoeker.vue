@@ -24,21 +24,8 @@
         <contactverzoeken-overzicht
           :contactverzoeken="store.zoekerResults.data"
         >
-          <template #onderwerp="{ contactmomentUrl }">
-            <contactmoment-details-context :url="contactmomentUrl">
-              <template #details="{ details }">
-                {{ details?.vraag || details?.specifiekeVraag }}
-              </template>
-            </contactmoment-details-context>
-          </template>
-
-          <!-- Bij OK2 zit zaakinformatie al in het overzicht, bij OK1 moet het apart worden opgehaald door het zaakpreview component -->
-          <template v-if="!openKlant2" #contactmoment="{ url }">
-            <contactmoment-preview :url="url">
-              <template #object="{ object }">
-                <zaak-preview :zaakurl="object.object" />
-              </template>
-            </contactmoment-preview>
+          <template v-for="(_, slotName) in $slots" #[slotName]="props">
+            <slot :name="slotName" v-bind="props"></slot>
           </template>
         </contactverzoeken-overzicht>
       </table>
@@ -59,12 +46,9 @@ import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
 import { ensureState } from "@/stores/create-store";
-import ContactmomentDetailsContext from "@/features/contact/contactmoment/ContactmomentDetailsContext.vue";
-import ContactmomentPreview from "@/features/contact/contactmoment/ContactmomentPreview.vue";
 import { useOpenKlant2 } from "@/services/openklant2";
 import { search } from "./service";
-import type { Contactverzoek } from "./types";
-import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
+import type { ContactverzoekOverzichtItem } from "./types";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 
 const openKlant2 = ref<boolean>(false);
@@ -78,7 +62,7 @@ const store = ensureState({
         loading: false,
         success: false,
         error: false,
-        data: [] as Contactverzoek[],
+        data: [] as ContactverzoekOverzichtItem[],
       },
     };
   },
