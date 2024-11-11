@@ -1,7 +1,9 @@
 ﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
+using Kiss.Bff.Intern.ContactmomentDetails.Features;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -50,15 +52,44 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 .OrderByDescending(x => x.Startdatum)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                      .Select(x => new ContactmomentDetailsModel
+                      {
+                          Id = x.Id,
+                          Einddatum = x.Einddatum,
+                          EmailadresKcm = x.EmailadresKcm,
+                          Gespreksresultaat = x.Gespreksresultaat,
+                          SpecifiekeVraag = x.SpecifiekeVraag,
+                          Startdatum = x.Startdatum,
+                          VerantwoordelijkeAfdeling = x.VerantwoordelijkeAfdeling,
+                          Vraag = x.Vraag,
+                          Bronnen = x.Bronnen.Select(b => new ContactmomentDetailsBronModel
+                          {
+                              Soort = b.Soort,
+                              Titel = b.Titel,
+                              Url = b.Url
+                          })
+                      })
                 .ToListAsync(token);
 
-            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path.Value}";
+            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
             string? next = (page * pageSize < totalCount)
-                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page + 1}"
+                ? QueryHelpers.AddQueryString(baseUrl, new Dictionary<string, string?>
+                {
+                    ["from"] = from,
+                    ["to"] = to,
+                    ["pageSize"] = pageSize.ToString(),
+                    ["page"] = (page + 1).ToString()
+                })
                 : null;
 
             string? previous = (page > 1)
-                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page - 1}"
+                ? QueryHelpers.AddQueryString(baseUrl, new Dictionary<string, string?>
+                {
+                    ["from"] = from,
+                    ["to"] = to,
+                    ["pageSize"] = pageSize.ToString(),
+                    ["page"] = (page - 1).ToString()
+                })
                 : null;
 
             var response = new
