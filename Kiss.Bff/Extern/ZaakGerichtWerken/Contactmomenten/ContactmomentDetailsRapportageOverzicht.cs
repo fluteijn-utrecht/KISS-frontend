@@ -1,8 +1,10 @@
 ﻿using Kiss.Bff.Beheer.Data;
+using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Linq.Expressions;
 
 namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
 {
@@ -20,11 +22,11 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
         [HttpGet("/api/contactmomentendetails")]
         [Authorize(Policy = Policies.ExternSysteemPolicy)]
         public async Task<IActionResult> Get(
-                  [FromQuery] string from,
-                  [FromQuery] string to,
-                  CancellationToken token,
-                  [FromQuery] int pageSize = 5000,
-                  [FromQuery] int page = 1)
+            [FromQuery] string from,
+            [FromQuery] string to,
+            CancellationToken token,
+            [FromQuery] int pageSize = 5000,
+            [FromQuery] int page = 1)
         {
             if (!DateTime.TryParseExact(from, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime fromDate) ||
                 !DateTime.TryParseExact(to, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime toDate))
@@ -37,22 +39,26 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 return BadRequest($"Page size must be between 1 and {MaxPageSize}.");
             }
 
+            Expression<Func<ContactmomentDetailsModel, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
+
             var totalCount = await _db.ContactMomentDetails
-                .Where(x => x.Startdatum >= fromDate && x.Startdatum <= toDate)
+                .Where(dateRangeSelector)
                 .CountAsync(token);
 
             var contactmomenten = await _db.ContactMomentDetails
-                .Where(x => x.Startdatum >= fromDate && x.Startdatum <= toDate)
+                .Where(dateRangeSelector)
                 .OrderByDescending(x => x.Startdatum)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(token);
 
+            string baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path.Value}";
             string? next = (page * pageSize < totalCount)
-                ? $"/api/contactmomentendetails?from={from}&to={to}&pageSize={pageSize}&page={page + 1}"
+                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page + 1}"
                 : null;
+
             string? previous = (page > 1)
-                ? $"/api/contactmomentendetails?from={from}&to={to}&pageSize={pageSize}&page={page - 1}"
+                ? $"{baseUrl}?from={from}&to={to}&pageSize={pageSize}&page={page - 1}"
                 : null;
 
             var response = new
