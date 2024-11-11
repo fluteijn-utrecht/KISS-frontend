@@ -1,6 +1,4 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
-using Kiss.Bff.Intern.ContactmomentDetails.Features;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -8,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq.Expressions;
 
-namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
+namespace Kiss.Bff.Intern.ContactmomentDetails.Features
 {
     [ApiController]
     public class ContactmomentDetailsRapportageOverzicht : ControllerBase
@@ -41,7 +39,7 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
                 return BadRequest($"Page size must be between 1 and {MaxPageSize}.");
             }
 
-            Expression<Func<ContactmomentDetails, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
+            Expression<Func<Data.Entities.ContactmomentDetails, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
 
             var totalCount = await _db.ContactMomentDetails
                 .Where(dateRangeSelector)
