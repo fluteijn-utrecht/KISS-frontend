@@ -456,6 +456,7 @@ export async function enrichContactverzoekObjectWithContactmoment(
     contactmoment: {
       ...(contactmoment ?? {}),
       objectcontactmomenten:
+        // extend lijkt niet te werken op enkel contactmoment endpoint
         contactmoment?.objectcontactmomenten || objects.page,
     },
     details,
