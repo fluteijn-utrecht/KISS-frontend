@@ -434,23 +434,30 @@ export const koppelObject = (data: ContactmomentObject) =>
     body: JSON.stringify(data),
   }).then(throwIfNotOk);
 
-const nullIf404andThrowIfNotOk = (r: Response) => {
-  if (r.status === 404) return null;
-  throwIfNotOk(r);
-  return r;
-};
+const nullForStatusCodes =
+  (...statusCodes: number[]) =>
+  (r: Response) => {
+    if (statusCodes.includes(r.status)) return null;
+    throwIfNotOk(r);
+    return r;
+  };
 
 export async function enrichContactverzoekObjectWithContactmoment(
   contactverzoekObject: any,
 ) {
   const url = contactverzoekObject.record.data.contactmoment;
-  const [contactmoment, details] = await Promise.all([
+  const [contactmoment, details, objects] = await Promise.all([
     fetchContactmomentByUrl(url),
     fetchDetailsByUrl(url),
+    fetchObjectsByContactmomentUrl(url),
   ]);
   return {
     contactverzoekObject,
-    contactmoment,
+    contactmoment: {
+      ...(contactmoment ?? {}),
+      objectcontactmomenten:
+        contactmoment?.objectcontactmomenten || objects.page,
+    },
     details,
   };
 }
@@ -463,7 +470,7 @@ function fetchContactmomentByUrl(url: string) {
   return fetchLoggedIn(
     `${path}?${new URLSearchParams({ expand: "objectcontactmomenten" })}`,
   )
-    .then(nullIf404andThrowIfNotOk)
+    .then(nullForStatusCodes(404, 403))
     .then((r) => r?.json());
 }
 
@@ -471,6 +478,14 @@ function fetchDetailsByUrl(url: string) {
   return fetchLoggedIn(
     `/api/contactmomentdetails?${new URLSearchParams({ id: url })}`,
   )
-    .then(nullIf404andThrowIfNotOk)
+    .then(nullForStatusCodes(404))
     .then((r) => r?.json());
+}
+
+function fetchObjectsByContactmomentUrl(url: string) {
+  return fetchLoggedIn(
+    `${objectcontactmomentenUrl}?${new URLSearchParams({ contactmoment: url })}`,
+  )
+    .then((r) => r?.json())
+    .then((x) => parsePagination(x, (o) => o as unknown));
 }
