@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Kiss.Bff.Intern.Seed.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -116,6 +117,11 @@ try
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .Enrich.FromLogContext());
+
+    builder.Services.AddScoped<BerichtenService>();
+    builder.Services.AddScoped<SkillsService>();
+    builder.Services.AddScoped<LinksService>();
+    builder.Services.AddScoped<GespreksresultatenService>();
 
     var app = builder.Build(); 
 
