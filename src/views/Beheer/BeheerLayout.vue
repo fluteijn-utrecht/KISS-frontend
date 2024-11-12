@@ -9,22 +9,23 @@
     <router-link to="/Beheer/gespreksresultaten"
       >Gespreksresultaten</router-link
     >
-    <router-link to="/Beheer/Kanalen"
-      >Kanalen</router-link
-    >
+    <router-link to="/Beheer/Kanalen">Kanalen</router-link>
     <router-link to="/Beheer/Contactverzoekformulieren"
       >Formulieren contactverzoek</router-link
     >
   </nav>
   <main>
+    <seed-beheer />
+
     <router-view />
   </main>
 </template>
 
 <script setup lang="ts">
-import { useCurrentUser } from "@/features/login";
 import { watchEffect } from "vue";
 import { useRouter } from "vue-router";
+import { useCurrentUser } from "@/features/login";
+import SeedBeheer from "./seed/SeedBeheer.vue";
 
 const user = useCurrentUser();
 const router = useRouter();
@@ -40,6 +41,7 @@ watchEffect(() => {
 nav {
   display: flex;
   gap: var(--spacing-default);
+  margin-bottom: var(--spacing-large);
 }
 
 main {
