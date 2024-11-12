@@ -19,5 +19,12 @@ namespace Kiss.Bff.Intern.Environment
             var useKlantInteracties = _configuration["USE_KLANTINTERACTIES"] ?? "false";
             return Ok(new { useKlantInteracties = bool.Parse(useKlantInteracties) });
         }
+
+        [HttpGet("build-number")]
+        public IActionResult GetBuildNumber()
+        {
+            var buildNumber = _configuration["RELEASE_BUILD_NUMBER"] ?? "N/A";
+            return Ok(new { buildNumber });
+        }
     }
 }

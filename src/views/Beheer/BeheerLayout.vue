@@ -10,25 +10,42 @@
       >Gespreksresultaten</router-link
     >
     <router-link to="/Beheer/Kanalen">Kanalen</router-link>
-    <router-link to="/Beheer/Contactverzoekformulieren"
-      >Formulieren contactverzoek</router-link
-    >
+    <router-link to="/Beheer/Contactverzoekformulieren">
+      Formulieren contactverzoek
+    </router-link>
   </nav>
+
   <main>
     <seed-beheer />
 
     <router-view />
   </main>
+
+  <!-- Test div for "asdf" in the bottom right corner -->
+  <div class="bottom-right">Build: {{ buildNumber }}</div>
 </template>
 
 <script setup lang="ts">
-import { watchEffect } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import { useCurrentUser } from "@/features/login";
 import SeedBeheer from "./seed/SeedBeheer.vue";
 
 const user = useCurrentUser();
 const router = useRouter();
+const buildNumber = ref("Loading...");
+
+onMounted(async () => {
+  try {
+    const response = await fetch("/api/environment/build-number");
+    if (response.ok) {
+      const data = await response.json();
+      buildNumber.value = data.buildNumber;
+    }
+  } catch (error) {
+    buildNumber.value = "Fout bij het laden van het build nummer";
+  }
+});
 
 watchEffect(() => {
   if (user.success && user.data.isLoggedIn && !user.data.isRedacteur) {
@@ -90,5 +107,16 @@ main {
       accent-color: var(--color-primary);
     }
   }
+}
+
+.bottom-right {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #415a77;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
 }
 </style>
