@@ -17,12 +17,8 @@
 
   <main>
     <seed-beheer />
-
     <router-view />
   </main>
-
-  <!-- Test div for "asdf" in the bottom right corner -->
-  <div class="bottom-right">Build: {{ buildNumber }}</div>
 </template>
 
 <script setup lang="ts">
@@ -107,16 +103,5 @@ main {
       accent-color: var(--color-primary);
     }
   }
-}
-
-.bottom-right {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #415a77;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  font-size: 14px;
 }
 </style>

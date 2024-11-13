@@ -20,11 +20,11 @@ namespace Kiss.Bff.Intern.Environment
             return Ok(new { useKlantInteracties = bool.Parse(useKlantInteracties) });
         }
 
-        [HttpGet("build-number")]
-        public IActionResult GetBuildNumber()
+        [HttpGet("image-tag")]
+        public IActionResult GetImageTag()
         {
-            var buildNumber = _configuration["RELEASE_BUILD_NUMBER"] ?? "N/A";
-            return Ok(new { buildNumber });
+            var imageTag = _configuration["imageTag"] ?? "N/A";
+            return Ok(new { imageTag });
         }
     }
 }
