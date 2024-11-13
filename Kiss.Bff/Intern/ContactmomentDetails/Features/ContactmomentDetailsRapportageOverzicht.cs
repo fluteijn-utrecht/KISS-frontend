@@ -31,19 +31,31 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
             if (!DateTime.TryParseExact(from, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var fromDate) ||
                 !DateTime.TryParseExact(to, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var toDate))
             {
-                return BadRequest("Invalid date format. Use ISO 8601 format (yyyy-MM-ddTHH:mm:ssZ).");
+                return BadRequest("Ongeldig datumnotatie. Gebruik de ISO 8601-notatie (yyyy-MM-ddTHH:mm:ssZ).");
             }
 
             if (pageSize < 1 || pageSize > MaxPageSize)
             {
-                return BadRequest($"Page size must be between 1 and {MaxPageSize}.");
+                return BadRequest($"Paginagrootte moet tussen 1 en {MaxPageSize} liggen.");
             }
+
 
             Expression<Func<Data.Entities.ContactmomentDetails, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
 
             var totalCount = await _db.ContactMomentDetails
                 .Where(dateRangeSelector)
                 .CountAsync(token);
+
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            if (page > totalPages && totalCount > 0)
+            {
+                return NotFound(new
+                {
+                    title = $"Ongeldige pagina. Totaal aantal pagina's gaat tot maximaal {totalPages}.",
+                    instance = $"urn:uuid:{Guid.NewGuid()}"
+                });
+            }
 
             var contactmomenten = await _db.ContactMomentDetails
                 .Where(dateRangeSelector)
