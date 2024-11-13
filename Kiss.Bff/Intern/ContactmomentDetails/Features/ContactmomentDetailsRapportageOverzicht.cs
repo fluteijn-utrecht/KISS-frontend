@@ -39,6 +39,10 @@ namespace Kiss.Bff.Intern.ContactmomentDetails.Features
                 return BadRequest($"Paginagrootte moet tussen 1 en {MaxPageSize} liggen.");
             }
 
+            if (page < 1)
+            {
+                return BadRequest("Paginanummer moet minimaal 1 zijn.");
+            }
 
             Expression<Func<Data.Entities.ContactmomentDetails, bool>> dateRangeSelector = x => x.Startdatum >= fromDate && x.Startdatum <= toDate;
 
