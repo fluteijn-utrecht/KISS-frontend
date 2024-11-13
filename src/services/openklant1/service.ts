@@ -456,7 +456,8 @@ export async function enrichContactverzoekObjectWithContactmoment(
     contactmoment: {
       ...(contactmoment ?? {}),
       objectcontactmomenten:
-        // extend lijkt niet te werken op enkel contactmoment endpoint
+        // de esuite voegt de objectcontactmomenten wel toe aan een lijst met contacten,
+        // maar niet aan een enkel contactmoment. daarom halen we ze hier expliciet op
         contactmoment?.objectcontactmomenten || objects.page,
     },
     details,
@@ -468,11 +469,17 @@ function fetchContactmomentByUrl(url: string) {
   if (!path) {
     throw new Error();
   }
-  return fetchLoggedIn(
-    `${path}?${new URLSearchParams({ expand: "objectcontactmomenten" })}`,
-  )
-    .then(nullForStatusCodes(404, 403))
-    .then((r) => r?.json());
+  return (
+    fetchLoggedIn(
+      `${path}?${new URLSearchParams({ expand: "objectcontactmomenten" })}`,
+    )
+      // de esuite heeft een ingewikkelde autorisatiestructuur.
+      // als je niet geautoriseerd bent voor een specifiek contact,
+      // zie je deze netjes in het overzicht maar krijg je een 403 als je het specifieke contact ophaalt.
+      // we willen niet dat de hele lijst met contactverzoeken hier op klapt dus geven in dat scenario null terug.
+      .then(nullForStatusCodes(404, 403))
+      .then((r) => r?.json())
+  );
 }
 
 function fetchDetailsByUrl(url: string) {
