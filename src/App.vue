@@ -17,7 +17,7 @@
           <template #default="{ Component }">
             <back-link-provider>
               <component :is="Component" />
-              <div class="image-tag">{{ imageTag }}</div>
+              <div class="image-tag">Versie {{ imageTag }}</div>
             </back-link-provider>
           </template>
         </router-view>
