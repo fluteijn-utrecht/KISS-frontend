@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.Intern.Environment
 {
@@ -20,11 +21,14 @@ namespace Kiss.Bff.Intern.Environment
             return Ok(new { useKlantInteracties = bool.Parse(useKlantInteracties) });
         }
 
-        [HttpGet("image-tag")]
-        public IActionResult GetImageTag()
+        [HttpGet("versienummer")]
+        public IActionResult GetVersienummer()
         {
-            var imageTag = _configuration["imageTag"] ?? "N/A";
-            return Ok(new { imageTag });
+            var versienummer = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+
+            return Ok(new { versienummer });
         }
     }
 }

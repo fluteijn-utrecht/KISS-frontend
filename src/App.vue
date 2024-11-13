@@ -17,7 +17,7 @@
           <template #default="{ Component }">
             <back-link-provider>
               <component :is="Component" />
-              <div class="image-tag">Versie {{ imageTag }}</div>
+              <div class="versienummer">Versie {{ versienummer }}</div>
             </back-link-provider>
           </template>
         </router-view>
@@ -38,17 +38,17 @@ import BackLinkProvider from "./components/BackLinkProvider.vue";
 
 const contactmomentStore = useContactmomentStore();
 const route = useRoute();
-const imageTag = ref("Loading...");
+const versienummer = ref("Laden...");
 
 onMounted(async () => {
   try {
-    const response = await fetch("/api/environment/image-tag");
+    const response = await fetch("/api/environment/versienummer");
     if (response.ok) {
       const data = await response.json();
-      imageTag.value = data.imageTag;
+      versienummer.value = data.versienummer;
     }
   } catch (error) {
-    imageTag.value = "Fout bij het laden van het image tag";
+    versienummer.value = "Fout bij het laden van het versienummer";
   }
 });
 </script>
