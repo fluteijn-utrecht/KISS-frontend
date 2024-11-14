@@ -16,7 +16,6 @@
   </nav>
 
   <main>
-    <seed-beheer />
     <router-view />
   </main>
 </template>
@@ -25,7 +24,6 @@
 import { watchEffect } from "vue";
 import { useRouter } from "vue-router";
 import { useCurrentUser } from "@/features/login";
-import SeedBeheer from "./seed/SeedBeheer.vue";
 
 const user = useCurrentUser();
 const router = useRouter();
