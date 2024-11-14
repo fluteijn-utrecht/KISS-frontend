@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.Intern.Environment
 {
@@ -18,6 +19,16 @@ namespace Kiss.Bff.Intern.Environment
         {
             var useKlantInteracties = _configuration["USE_KLANTINTERACTIES"] ?? "false";
             return Ok(new { useKlantInteracties = bool.Parse(useKlantInteracties) });
+        }
+
+        [HttpGet("versienummer")]
+        public IActionResult GetVersienummer()
+        {
+            var versienummer = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+
+            return Ok(new { versienummer });
         }
     }
 }
