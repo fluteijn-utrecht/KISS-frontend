@@ -1,134 +1,223 @@
 import {
-  ServiceResult,
   fetchLoggedIn,
   throwIfNotOk,
   parseJson,
   parsePagination,
+  type PaginatedResult,
 } from "@/services";
 import {
+  DigitaleAdressenExpand,
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
-  enrichKlantcontactWithInterneTaak,
-  fetchBetrokkene,
+  fetchBetrokkenen,
   filterOutContactmomenten,
-  mapToContactverzoekViewModel,
-  type ContactverzoekViewmodel,
+  KlantContactExpand,
+  searchDigitaleAdressen,
+  type Betrokkene,
+  type BetrokkeneMetKlantContact,
+  type ContactmomentViewModel,
+  type DigitaalAdresExpandedApiViewModel,
 } from "@/services/openklant2";
-import type { Ref } from "vue";
-
-const klantinteractiesProxyRoot = "/api/klantinteracties";
-const klantinteractiesApiRoot = "/api/v1";
-const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
-
-type SearchParameters = {
-  query: string;
-};
-
-function getSearchUrl({ query = "" }: SearchParameters) {
-  if (!query) return "";
-
-  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-  url.searchParams.set("ordering", "-record__data__registratiedatum"); //todo: is dit de correcte orderning?
-  url.searchParams.set("pageSize", "10");
-
-  url.searchParams.set(
-    "data_attrs",
-    `betrokkene__digitaleAdressen__icontains__${query}`,
-  ); //todo: kan je in 1 call op email OF telefoonnr zoeken? anders de interface aanpassen zodat duidelijk is dat je maar naar een van beide kan zoeken (bv samenvoegen in 1 zoekveld!)
-
-  return url.toString();
-}
+import { enrichContactverzoekObjectWithContactmoment } from "@/services/openklant1";
+import type { ContactverzoekOverzichtItem } from "./types";
+import type { ContactmomentDetails } from "../../contactmoment";
+import { fullName } from "@/helpers/string";
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
-  //recursive alle pagina's ophalen.
-  //set de page param van de huidige op te halen pagina
   const url = new URL(urlStr);
   url.searchParams.set("page", page.toString());
 
-  return (
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      //todo: parsePagination toevoegen??
-      .then(async (j) => {
-        if (!Array.isArray(j?.results)) {
-          throw new Error("expected array: " + JSON.stringify(j));
-        }
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(async (j) => {
+      if (!Array.isArray(j?.results)) {
+        throw new Error("Expected array: " + JSON.stringify(j));
+      }
 
-        const result: any[] = [];
-        j.results.forEach((k: any) => {
-          result.push(k);
-        });
+      if (!j.next) return j.results;
+      const nextResults = await searchRecursive(urlStr, page + 1);
+      return [...j.results, ...nextResults];
+    });
+}
 
-        if (!j.next) return result;
-        return await searchRecursive(urlStr, page + 1).then((next) => [
-          ...result,
-          ...next,
-        ]);
-      })
+async function searchOk2Recursive(
+  adres: string,
+  page = 1,
+): Promise<DigitaalAdresExpandedApiViewModel[]> {
+  const paginated = await searchDigitaleAdressen({
+    adres,
+    page,
+    expand: [DigitaleAdressenExpand.verstrektDoorBetrokkene],
+  });
+  if (!paginated.next) return paginated.page;
+  return [...paginated.page, ...(await searchOk2Recursive(adres, page + 1))];
+}
+
+export async function search(
+  query: string,
+  gebruikKlantInteractiesApi: boolean,
+): Promise<ContactverzoekOverzichtItem[]> {
+  // OK2
+  if (gebruikKlantInteractiesApi) {
+    const adressen = await searchOk2Recursive(query);
+
+    const betrokkenen = adressen
+      .map((x) => x?._expand?.verstrektDoorBetrokkene)
+      .filter(Boolean) as Betrokkene[];
+
+    const uniqueBetrokkenen = new Map<string, Betrokkene>(
+      betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
+    );
+
+    return enrichBetrokkeneWithKlantContact(
+      [...uniqueBetrokkenen.values()],
+      [
+        KlantContactExpand.leiddeTotInterneTaken,
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ],
+    )
+      .then(filterOutContactmomenten)
+      .then(enrichBetrokkeneWithDigitaleAdressen)
+      .then(enrichInterneTakenWithActoren)
+      .then(mapKlantcontactToContactverzoekOverzichtItem)
+      .then(filterOutGeauthenticeerdeContactverzoeken);
+  }
+  /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie
+  else {
+    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+    url.searchParams.set("ordering", "-record__data__registratiedatum");
+    url.searchParams.set("pageSize", "10");
+    url.searchParams.set(
+      "data_attrs",
+      `betrokkene__digitaleAdressen__icontains__${query}`,
+    );
+
+    return searchRecursive(url.toString())
+      .then((x) =>
+        Promise.all(x.map(enrichContactverzoekObjectWithContactmoment)),
+      )
+      .then((x) => x.map(mapObjectToContactverzoekOverzichtItem))
+      .then(filterOutGeauthenticeerdeContactverzoeken);
+  }
+}
+
+function filterOutGeauthenticeerdeContactverzoeken(
+  value: ContactverzoekOverzichtItem[],
+) {
+  return value.filter((x) => !x.betrokkene?.isGeauthenticeerd);
+}
+
+function mapKlantcontactToContactverzoekOverzichtItem(
+  betrokkeneMetKlantcontact: BetrokkeneMetKlantContact[],
+): ContactverzoekOverzichtItem[] {
+  return betrokkeneMetKlantcontact.map(
+    ({ klantContact, contactnaam, expandedDigitaleAdressen, wasPartij }) => {
+      const internetaak = klantContact._expand?.leiddeTotInterneTaken?.[0];
+      if (!internetaak) {
+        throw new Error("");
+      }
+
+      return {
+        url: internetaak.url,
+        onderwerp: klantContact.onderwerp,
+        toelichtingBijContactmoment: klantContact.inhoud,
+        status: internetaak.status,
+        registratiedatum: klantContact.plaatsgevondenOp,
+        vraag: klantContact.onderwerp,
+        aangemaaktDoor: klantContact.hadBetrokkenActoren?.[0]?.naam || "",
+        behandelaar: internetaak?.actor?.naam,
+        toelichtingVoorCollega: internetaak.toelichting,
+        betrokkene: {
+          persoonsnaam: contactnaam,
+          digitaleAdressen: expandedDigitaleAdressen || [],
+          isGeauthenticeerd: !!wasPartij,
+        },
+        objecten:
+          klantContact?._expand?.gingOverOnderwerpobjecten?.map((x) => ({
+            object: x.onderwerpobjectidentificator.objectId,
+            objectType: x.onderwerpobjectidentificator.codeObjecttype,
+            contactmoment: x.klantcontact.uuid,
+          })) || [],
+      } satisfies ContactverzoekOverzichtItem;
+    },
   );
 }
 
-function search(url: string) {
-  return searchRecursive(url); //todo: sortering???  .then((r) => r.sort(sortKlant));
+function mapObjectToContactverzoekOverzichtItem({
+  contactverzoekObject,
+  contactmoment,
+  details,
+}: {
+  contactverzoekObject: any;
+  contactmoment: ContactmomentViewModel | null;
+  details: ContactmomentDetails | null;
+}): ContactverzoekOverzichtItem {
+  const getVraag = (cd: ContactmomentDetails | null) => {
+    const { vraag, specifiekeVraag } = cd || {};
+    if (!vraag) return specifiekeVraag;
+    if (!specifiekeVraag) return vraag;
+    return `${vraag} (${specifiekeVraag})`;
+  };
+  const vraag = getVraag(details) || "";
+  const record = contactverzoekObject.record;
+  const data = record.data;
+
+  return {
+    url: contactverzoekObject.url,
+    onderwerp: vraag,
+    toelichtingBijContactmoment: contactmoment?.tekst || "",
+    status: data.status || "onbekend",
+    registratiedatum: data.registratiedatum,
+    vraag,
+    toelichtingVoorCollega: data.toelichting || "",
+    behandelaar: data.actor?.naam || "",
+    betrokkene: {
+      isGeauthenticeerd: !!data.betrokkene?.klant,
+      persoonsnaam: data.betrokkene?.persoonsnaam || {},
+      digitaleAdressen: data.betrokkene?.digitaleAdressen || [],
+    },
+    aangemaaktDoor: fullName(contactmoment?.medewerkerIdentificatie),
+    objecten: contactmoment?.objectcontactmomenten || [],
+  } satisfies ContactverzoekOverzichtItem;
 }
 
-export function useSearch(params: Ref<SearchParameters>) {
-  const getUrl = () => getSearchUrl(params.value);
-  return ServiceResult.fromFetcher(getUrl, search);
-}
-
-export function useContactverzoekenByKlantId(
-  id: Ref<string>,
-  gebruikKlantInteractiesApi: Ref<boolean | null>,
-) {
-  function getUrl() {
-    if (gebruikKlantInteractiesApi.value === null) {
-      return "";
-    }
-
-    if (!id.value) return "";
-
-    if (gebruikKlantInteractiesApi.value === true) {
-      const searchParams = new URLSearchParams();
-      searchParams.set("wasPartij__url", id.value);
-      return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
-    } else {
-      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-      url.searchParams.set("ordering", "-record__data__registratiedatum");
-      url.searchParams.set("pageSize", "10");
-      url.searchParams.set(
-        "data_attrs",
-        `betrokkene__klant__exact__${id.value}`,
-      );
-
-      return url.toString();
-    }
-  }
-
-  const fetchContactverzoeken = (
-    url: string,
-    gebruikKlantinteractiesApi: Ref<boolean | null>,
-  ) => {
-    if (gebruikKlantinteractiesApi.value) {
-      return fetchBetrokkene(url)
-        .then(enrichBetrokkeneWithKlantContact)
-        .then(enrichKlantcontactWithInterneTaak)
+export function fetchContactverzoekenByKlantId(
+  id: string,
+  gebruikKlantInteractiesApi: boolean,
+): Promise<PaginatedResult<ContactverzoekOverzichtItem>> {
+  // OK2
+  if (gebruikKlantInteractiesApi) {
+    return fetchBetrokkenen({
+      wasPartij__url: id,
+    }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+        KlantContactExpand.leiddeTotInterneTaken,
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ])
         .then(filterOutContactmomenten)
         .then(enrichBetrokkeneWithDigitaleAdressen)
         .then(enrichInterneTakenWithActoren)
-        .then(mapToContactverzoekViewModel);
-    } else {
-      return fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((r) => parsePagination(r, (v) => v as ContactverzoekViewmodel));
-    }
-  };
+        .then(mapKlantcontactToContactverzoekOverzichtItem),
+    }));
+  }
 
-  return ServiceResult.fromFetcher(getUrl, (u: string) =>
-    fetchContactverzoeken(u, gebruikKlantInteractiesApi),
-  );
+  // OK1
+  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+  url.searchParams.set("ordering", "-record__data__registratiedatum");
+  url.searchParams.set("pageSize", "10");
+  url.searchParams.set("data_attrs", `betrokkene__klant__exact__${id}`);
+
+  return fetchLoggedIn(url)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) =>
+      parsePagination(r, (v) =>
+        enrichContactverzoekObjectWithContactmoment(v).then(
+          mapObjectToContactverzoekOverzichtItem,
+        ),
+      ),
+    );
 }

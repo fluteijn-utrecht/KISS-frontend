@@ -4,15 +4,12 @@ import {
   parseJson,
   parsePagination,
   throwIfNotOk,
-  type PaginatedResult,
 } from "@/services";
 
 import {
   type ContactmomentViewModel,
-  type BetrokkeneMetKlantContact as BetrokkeneWithKlantContact,
+  type BetrokkeneMetKlantContact,
   type ExpandedKlantContactApiViewmodel,
-  type ContactverzoekViewmodel,
-  type InternetaakApiViewModel,
   type ActorApiViewModel,
   type InternetaakPostModel,
   type SaveInterneTaakResponseModel,
@@ -26,6 +23,7 @@ import {
   type Partij,
   DigitaalAdresTypes,
   type OnderwerpObjectPostModel,
+  type Betrokkene,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
@@ -36,247 +34,164 @@ const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
 const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
 const klantinteractiesKlantcontacten = `${klantinteractiesBaseUrl}/klantcontacten`;
-const klantinteractiesInterneTaken = `${klantinteractiesBaseUrl}/internetaken`;
 const klantinteractiesActoren = `${klantinteractiesBaseUrl}/actoren`;
 const klantinteractiesDigitaleadressen = `${klantinteractiesBaseUrl}/digitaleadressen`;
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 ////////////////////////////////////////////
 // contactmomenten
-export function mapToContactmomentViewModel(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
+export function mapKlantContactToContactmomentViewModel(
+  klantContact: ExpandedKlantContactApiViewmodel,
 ) {
-  const viewmodel = value.page.map((x) => {
-    const medewerker = x.klantContact?.hadBetrokkenActoren?.find(
-      (x: { soortActor: string }) => x.soortActor === "medewerker",
-    );
-    return {
-      url: x.klantContact.url,
-      registratiedatum: x.klantContact?.plaatsgevondenOp,
-      kanaal: x.klantContact?.kanaal,
-      tekst: x.klantContact?.inhoud,
-      objectcontactmomenten: [], //wordt uitgesteld. besproken in https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/issues/800
-      medewerkerIdentificatie: {
-        identificatie: medewerker?.actorIdentificator?.objectId || "",
-        voorletters: "",
-        achternaam: medewerker?.naam || "",
-        voorvoegselAchternaam: "",
-      },
-    };
-  });
-
-  const paginatedContactenviewmodel: PaginatedResult<ContactmomentViewModel> = {
-    next: value.next,
-    previous: value.previous,
-    count: value.count,
-    page: viewmodel,
+  const medewerker = klantContact.hadBetrokkenActoren?.find(
+    (x) => x.soortActor === "medewerker",
+  );
+  const vm: ContactmomentViewModel = {
+    url: klantContact.url,
+    registratiedatum: klantContact.plaatsgevondenOp,
+    kanaal: klantContact?.kanaal,
+    tekst: klantContact?.inhoud,
+    objectcontactmomenten:
+      klantContact._expand?.gingOverOnderwerpobjecten?.map((o) => ({
+        objectType: o.onderwerpobjectidentificator.codeObjecttype,
+        contactmoment: o.klantcontact.uuid,
+        object: o.onderwerpobjectidentificator.objectId,
+      })) || [],
+    medewerkerIdentificatie: {
+      identificatie: medewerker?.actoridentificator?.objectId || "",
+      voorletters: "",
+      achternaam: medewerker?.naam || "",
+      voorvoegselAchternaam: "",
+    },
   };
-
-  return paginatedContactenviewmodel;
+  return vm;
 }
 
 ////////////////////////////////////////////
 // contactmomenten and contactverzoeken
 export async function enrichBetrokkeneWithKlantContact(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  for (const betrokkene of value.page) {
-    const searchParams = new URLSearchParams();
-    searchParams.set("hadBetrokkene__uuid", betrokkene.uuid);
-    const url = `${klantinteractiesKlantcontacten}?${searchParams.toString()}`;
-
-    await fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((p) => parsePagination(p, (x) => x))
-      .then((d) => {
-        if (d.page.length >= 1) {
-          betrokkene.klantContact = d
-            .page[0] as ExpandedKlantContactApiViewmodel; // er is altijd maar 1 contact bij een betrokkeke!
-        }
-      });
+  value: Betrokkene[],
+  expand?: KlantContactExpand[],
+): Promise<BetrokkeneMetKlantContact[]> {
+  for (const betrokkene of value) {
+    const klantContactId = betrokkene.hadKlantcontact?.uuid;
+    if (!klantContactId) {
+      continue;
+    }
+    const klantcontact = await fetchKlantcontact({
+      uuid: klantContactId,
+      expand,
+    });
+    (betrokkene as BetrokkeneMetKlantContact).klantContact = klantcontact; // er is altijd maar 1 contact bij een betrokkeke!
   }
-  return value;
-}
-
-// te implementeren bij PC-317 Klantcontacten bij een Zaak tonen
-export async function enrichKlantcontactWithZaak(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  throw new Error("not implemented (enrichKlantcontactWithZaak)");
-  // bij het klantcontact zit een lijst onderwerpobjecten
-  // haal daar de zaken uit en voeg deze toe aan
-  // "gingOverOnderwerpobjecten": [
-  //   {
-  //       "uuid": "22c0925d-6b83-4679-b88c-7a8dec7dfda9",
-  //       "url": "https://openklant.dev.kiss-demo.nl/klantinteracties/api/v1/onderwerpobjecten/22c0925d-6b83-4679-b88c-7a8dec7dfda9"
-  //   }
-  // ],
-  return value;
+  return value as BetrokkeneMetKlantContact[];
 }
 
 ////////////////////////////////////////////
 // contactverzoeken
-export async function enrichKlantcontactWithInterneTaak(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  const fetchTasks = value.page.map((value) => {
-    const searchParams = new URLSearchParams();
-    searchParams.set("klantcontact__uuid", value.klantContact.uuid);
-    const url = `${klantinteractiesInterneTaken}?${searchParams.toString()}`;
-    return fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then((p) => parsePagination(p, (x) => x))
-      .then((d) => {
-        if (d.page.length >= 1) {
-          value.klantContact.internetaak = d.page[0] as InternetaakApiViewModel; //we mogen er vanuit gaan dat er 1 'hoofd interen tak' is bj een contact moment.
-          // het model ondersteunt meerdere vervolg contacten, maar daar houden we binnen kiss nog geen rekening mee.
-        }
-      });
-  });
-
-  await Promise.all(fetchTasks);
-
-  return value;
-}
-
 export function filterOutContactmomenten(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): PaginatedResult<BetrokkeneWithKlantContact> {
-  const filtered = value.page.filter((item) => item?.klantContact?.internetaak);
-  return {
-    next: value.next,
-    previous: value.previous,
-    count: value.count - value.page.length + filtered.length, //het totaal aantal verminderd met het aantal uitgefilterde items
-    page: filtered,
-  };
-}
-
-export function mapToContactverzoekViewModel(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): PaginatedResult<ContactverzoekViewmodel> {
-  const viewmodel = value.page.map((x) => {
-    return {
-      url: x.klantContact.internetaak.url,
-      medewerker:
-        x.klantContact.hadBetrokkenActoren &&
-        x.klantContact.hadBetrokkenActoren.length > 0
-          ? x.klantContact.hadBetrokkenActoren[0].naam
-          : "",
-      onderwerp: x.klantContact.onderwerp,
-      toelichting: x.klantContact.inhoud,
-      record: {
-        startAt: x.klantContact.internetaak.toegewezenOp,
-        data: {
-          status: x.klantContact.internetaak.status,
-          contactmoment: x.klantContact.url,
-          registratiedatum: x.klantContact.plaatsgevondenOp,
-          datumVerwerkt: x.klantContact.internetaak.afgehandeldOp,
-          toelichting: x.klantContact.internetaak.toelichting,
-          actor: {
-            naam: x.klantContact.internetaak?.actor?.naam,
-            soortActor: x.klantContact.internetaak?.actor?.soortActor,
-            identificatie: "",
-          },
-
-          betrokkene: {
-            rol: "klant",
-            persoonsnaam: x.contactnaam,
-            digitaleAdressen: x.digitaleAdressenExpanded,
-          },
-
-          verantwoordelijkeAfdeling: "", //todo: waar komt dit vandaan?
-        },
-      },
-    } as ContactverzoekViewmodel;
-  });
-
-  const paginatedContactenviewmodel: PaginatedResult<ContactverzoekViewmodel> =
-    {
-      next: value.next,
-      previous: value.previous,
-      count: value.count,
-      page: viewmodel,
-    };
-
-  return paginatedContactenviewmodel;
+  value: BetrokkeneMetKlantContact[],
+): BetrokkeneMetKlantContact[] {
+  const filtered = value.filter(
+    (item) => item?.klantContact?._expand?.leiddeTotInterneTaken?.length,
+  );
+  return filtered;
 }
 
 export async function enrichInterneTakenWithActoren(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  for (const betrokkeneWithKlantcontact of value.page) {
-    const actoren =
-      betrokkeneWithKlantcontact?.klantContact?.internetaak
-        ?.toegewezenAanActoren;
+  value: BetrokkeneMetKlantContact[],
+): Promise<BetrokkeneMetKlantContact[]> {
+  for (const betrokkeneWithKlantcontact of value) {
+    const internetaak =
+      betrokkeneWithKlantcontact?.klantContact?._expand
+        ?.leiddeTotInterneTaken?.[0];
+
+    if (!internetaak) {
+      continue;
+    }
+
+    const actoren = internetaak.toegewezenAanActoren || [];
 
     //we halen alle actoren op en kiezen dan de eerste medewerker. als er geen medewerkers bij staan de erste organisatie
     //wordt naar verwachting tzt aangepast, dan gaan we gewoon alle actoren bij de internetak tonen
-    const actorenDetails: Array<ActorApiViewModel> = [];
 
-    const actorenFetchTasks = actoren.map((actor) => {
-      const url = `${klantinteractiesActoren}/${actor.uuid}`;
-      return fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((d) => {
-          actorenDetails.push(d as ActorApiViewModel);
-        });
-    });
+    const actorenFetchTasks = actoren.map((actor) => fetchActor(actor.uuid));
 
-    await Promise.all(actorenFetchTasks);
+    const actorenDetails = await Promise.all(actorenFetchTasks);
 
     const medewerkerActor = actorenDetails.find(
       (x) => x.soortActor === "medewerker",
     );
+
     if (medewerkerActor) {
-      betrokkeneWithKlantcontact.klantContact.internetaak.actor =
-        medewerkerActor as ActorApiViewModel;
+      internetaak.actor = medewerkerActor as ActorApiViewModel;
     } else {
       const organisatorischerEenheidActor = actorenDetails.find(
         (x) => x.soortActor === "organisatorische_eenheid",
       );
-      betrokkeneWithKlantcontact.klantContact.internetaak.actor =
-        organisatorischerEenheidActor as ActorApiViewModel;
+      internetaak.actor = organisatorischerEenheidActor as ActorApiViewModel;
     }
   }
 
   return value;
 }
 
+export function fetchActor(id: string) {
+  return fetchLoggedIn(`${klantinteractiesActoren}/${id}`)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((d) => d as ActorApiViewModel);
+}
+
 export async function enrichBetrokkeneWithDigitaleAdressen(
-  value: PaginatedResult<BetrokkeneWithKlantContact>,
-): Promise<PaginatedResult<BetrokkeneWithKlantContact>> {
-  for (const betrokkeneWithKlantcontact of value.page) {
-    betrokkeneWithKlantcontact.digitaleAdressenExpanded = [];
-    const digitaleAdressen = betrokkeneWithKlantcontact?.digitaleAdressen;
+  value: BetrokkeneMetKlantContact[],
+): Promise<BetrokkeneMetKlantContact[]> {
+  for (const betrokkeneWithKlantcontact of value) {
+    const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
+      (digitaalAdres) => {
+        const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
+        return fetchLoggedIn(url)
+          .then(throwIfNotOk)
+          .then(parseJson)
+          .then((d) => d as DigitaalAdresApiViewModel);
+      },
+    );
 
-    const fetchTasks = digitaleAdressen.map((digitaalAdres) => {
-      const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-      return fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then(async (d) => {
-          betrokkeneWithKlantcontact.digitaleAdressenExpanded.push({
-            adres: d.adres,
-            soortDigitaalAdres: d.soortDigitaalAdres,
-            omschrijving: d.omschrijving,
-          });
-        });
-    });
-
-    await Promise.all(fetchTasks);
+    betrokkeneWithKlantcontact.expandedDigitaleAdressen =
+      await Promise.all(fetchTasks);
   }
 
   return value;
 }
 
-export function fetchBetrokkene(url: string) {
-  return fetchLoggedIn(url)
+export function fetchBetrokkenen(params: { wasPartij__url: string }) {
+  const query = new URLSearchParams(params);
+  return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as BetrokkeneWithKlantContact));
+    .then((p) => parsePagination(p, (x) => x as Betrokkene));
+}
+
+export enum DigitaleAdressenExpand {
+  verstrektDoorBetrokkene = "verstrektDoorBetrokkene",
+  verstrektDoorBetrokkene_hadKlantcontact = "verstrektDoorBetrokkene.hadKlantcontact",
+  verstrektDoorBetrokkene_hadKlantcontact_leiddeTotInterneTaken = "verstrektDoorBetrokkene.hadKlantcontact.leiddeTotInterneTaken",
+}
+export function searchDigitaleAdressen({
+  adres,
+  page = 1,
+  expand = [],
+}: {
+  adres: string;
+  page: number;
+  expand: DigitaleAdressenExpand[];
+}) {
+  const params = new URLSearchParams({ adres, page: page.toString() });
+  expand?.length && params.set("expand", expand.join(","));
+  return fetchLoggedIn(klantinteractiesDigitaleadressen + "?" + params)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => parsePagination(r, (x) => x as DigitaalAdresApiViewModel));
 }
 
 export function saveBetrokkene({
@@ -917,3 +832,48 @@ export const postOnderwerpobject = async (data: OnderwerpObjectPostModel) => {
   );
   throwIfNotOk(response);
 };
+
+export enum KlantContactExpand {
+  gingOverOnderwerpobjecten = "gingOverOnderwerpobjecten",
+  hadBetrokkenen = "hadBetrokkenen",
+  hadBetrokkenen_digitaleAdressen = "hadBetrokkenen.digitaleAdressen",
+  leiddeTotInterneTaken = "leiddeTotInterneTaken",
+  omvatteBijlagen = "omvatteBijlagen",
+}
+
+export function fetchKlantcontact({
+  expand,
+  uuid,
+}: {
+  uuid: string;
+  expand?: KlantContactExpand[];
+}) {
+  const query = new URLSearchParams();
+  expand && query.append("expand", expand.join(","));
+
+  return fetchLoggedIn(`${klantinteractiesKlantcontacten}/${uuid}?${query}`)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => r as ExpandedKlantContactApiViewmodel);
+}
+
+export function fetchKlantcontacten({
+  expand,
+  ...params
+}: {
+  onderwerpobject__onderwerpobjectidentificatorObjectId?: string;
+  hadBetrokkene__uuid?: string;
+  expand?: KlantContactExpand[];
+} = {}) {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value),
+  );
+  expand && query.append("expand", expand.join(","));
+
+  return fetchLoggedIn(`${klantinteractiesKlantcontacten}?${query}`)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) =>
+      parsePagination(r, (x) => x as ExpandedKlantContactApiViewmodel),
+    );
+}

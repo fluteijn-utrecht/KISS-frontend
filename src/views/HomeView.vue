@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <seed-beheer />
     <header>
       <utrecht-heading :level="1">Startscherm</utrecht-heading>
     </header>
@@ -116,6 +117,7 @@ import MultiSelect from "@/components/MultiSelect.vue";
 import { useUserStore } from "@/stores/user";
 import { ensureState } from "@/stores/create-store";
 import { type Berichttype, berichtTypes } from "@/features/werkbericht/types";
+import SeedBeheer from "@/features/beheer/SeedBeheer.vue";
 
 const state = ensureState({
   stateId: "HomeView",
@@ -146,8 +148,8 @@ const selectedSkills = computed(() => {
     .filter((x) => userStore.preferences.skills.includes(x.id));
 });
 
-const selectedSkillIds = computed(
-  () => selectedSkills.value?.map(({ id }) => id),
+const selectedSkillIds = computed(() =>
+  selectedSkills.value?.map(({ id }) => id),
 );
 
 function handleSubmit(e: Event) {
