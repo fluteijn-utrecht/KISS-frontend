@@ -17,17 +17,18 @@
           <template #default="{ Component }">
             <back-link-provider>
               <component :is="Component" />
-              <div class="versienummer">Versie {{ versienummer }}</div>
             </back-link-provider>
           </template>
         </router-view>
+        <div v-if="versienummer" class="versienummer">
+          Versie {{ versienummer }}
+        </div>
       </main>
     </div>
   </switchable-store-provider>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import { useContactmomentStore } from "@/stores/contactmoment";
 import TheToastSection from "@/components/TheToastSection.vue";
@@ -35,22 +36,21 @@ import TheSidebar from "./layout/TheSidebar.vue";
 import TheHeader from "./layout/TheHeader.vue";
 import { SwitchableStoreProvider } from "./stores/switchable-store";
 import BackLinkProvider from "./components/BackLinkProvider.vue";
+import { fetchLoggedIn, parseJson, throwIfNotOk } from "./services";
+import { useLoader } from "./services/use-loader";
 
 const contactmomentStore = useContactmomentStore();
 const route = useRoute();
-const versienummer = ref("Laden...");
 
-onMounted(async () => {
-  try {
-    const response = await fetch("/api/environment/versienummer");
-    if (response.ok) {
-      const data = await response.json();
-      versienummer.value = data.versienummer;
-    }
-  } catch (error) {
-    versienummer.value = "Fout bij het laden van het versienummer";
-  }
-});
+const { data: versienummer } = useLoader(() =>
+  fetchLoggedIn("/api/environment/versienummer")
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(
+      ({ versienummer }: { versienummer?: string }) =>
+        versienummer?.split("+")?.[1] || "",
+    ),
+);
 </script>
 
 <style lang="scss">

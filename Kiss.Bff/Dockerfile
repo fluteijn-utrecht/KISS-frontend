@@ -15,6 +15,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS dotnetbuild
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
+COPY .git .git
 COPY Kiss.Bff Kiss.Bff
 WORKDIR "/src/Kiss.Bff"
 RUN dotnet build "Kiss.Bff.csproj" -c Release --no-restore -o /app/build
