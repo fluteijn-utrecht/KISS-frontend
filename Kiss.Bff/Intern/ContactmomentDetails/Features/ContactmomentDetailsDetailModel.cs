@@ -1,14 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
+﻿namespace Kiss.Bff.Intern.ContactmomentDetails.Features
 {
-    public class ContactmomentDetailsModel
+    public class ContactmomentDetailsDetailModel
     {
-        [Required]
         public string Id { get; set; } = default!;
-        [Required]
         public DateTimeOffset Startdatum { get; set; }
-        [Required]
         public DateTimeOffset Einddatum { get; set; }
         public string? Gespreksresultaat { get; set; }
         public string? Vraag { get; set; }
