@@ -1,10 +1,9 @@
 <template>
-  <simple-spinner v-if="loading" />
+  <div v-if="seedLoading">
+    <simple-spinner />
+  </div>
 
-  <application-message
-    v-else-if="!populated && isRedacteur"
-    messageType="warning"
-  >
+  <application-message v-else-if="canSeed" messageType="warning">
     <p>
       Wilt u KISS vullen met voorbeelddata voor Gespreksresultaten, Skills,
       Nieuws en Werkinstructies en Links?
@@ -22,10 +21,10 @@ import { toast } from "@/stores/toast";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import { useCurrentUser } from "@/features/login";
-import { whenever } from "@vueuse/core";
+import { useLoader } from "@/services/use-loader";
+import { fetchLoggedIn } from "@/services";
 
-const populated = ref(true);
-const loading = ref(false);
+const seedLoading = ref(false);
 
 const user = useCurrentUser();
 const isRedacteur = computed(
@@ -33,38 +32,26 @@ const isRedacteur = computed(
 );
 
 const seedData = async () => {
-  loading.value = true;
+  seedLoading.value = true;
 
-  const { status } = await fetch("/api/seed/start", { method: "POST" }).finally(
-    () => (loading.value = false),
-  );
+  const { ok } = await fetchLoggedIn("/api/seed/start", { method: "POST" });
 
-  if (status !== 200) {
+  if (ok) {
+    window.location.reload();
+  } else {
+    seedLoading.value = false;
     toast({
       text: "Er is een fout opgetreden bij het vullen van KISS met voorbeelddata.",
       type: "error",
     });
-
-    seedCheck();
-  } else {
-    toast({
-      text: "KISS is succesvol gevuld met voorbeelddata.",
-    });
-
-    populated.value = true;
   }
-
-  window.location.reload();
 };
 
-const seedCheck = async () => {
-  if (!isRedacteur.value) return;
-  const { status } = await fetch("/api/seed/check");
-
-  populated.value = !(status === 200);
-};
-
-whenever(isRedacteur, seedCheck);
+const { data: canSeed } = useLoader(() => {
+  if (isRedacteur.value) {
+    return fetchLoggedIn("/api/seed/check").then(({ ok }) => ok);
+  }
+});
 </script>
 
 <style lang="scss" scoped>
