@@ -48,7 +48,7 @@ const seedData = async () => {
 
 const { data: canSeed } = useLoader(() => {
   if (isRedacteur.value) {
-    return fetch("/api/seed/check").then((r) => r.ok);
+    return fetch("/api/seed/check").then(({ ok }) => ok);
   }
 });
 </script>
