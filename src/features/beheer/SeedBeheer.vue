@@ -22,6 +22,7 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
 import { useCurrentUser } from "@/features/login";
 import { useLoader } from "@/services/use-loader";
+import { fetchLoggedIn } from "@/services";
 
 const seedLoading = ref(false);
 
@@ -33,7 +34,7 @@ const isRedacteur = computed(
 const seedData = async () => {
   seedLoading.value = true;
 
-  const { ok } = await fetch("/api/seed/start", { method: "POST" });
+  const { ok } = await fetchLoggedIn("/api/seed/start", { method: "POST" });
 
   if (ok) {
     window.location.reload();
@@ -48,7 +49,7 @@ const seedData = async () => {
 
 const { data: canSeed } = useLoader(() => {
   if (isRedacteur.value) {
-    return fetch("/api/seed/check").then(({ ok }) => ok);
+    return fetchLoggedIn("/api/seed/check").then(({ ok }) => ok);
   }
 });
 </script>
