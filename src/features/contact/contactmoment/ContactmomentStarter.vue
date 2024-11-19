@@ -5,7 +5,8 @@
     @click="onStartContactMoment"
     v-bind="$attrs"
   >
-    Nieuw contactmoment
+    Nieuw
+    {{ !contactmomentStore.contactmomenten.length ? "contactmoment" : "" }}
   </utrecht-button>
 
   <prompt-modal
@@ -52,7 +53,7 @@ const onStartContactMoment = async () => {
 
 <style scoped lang="scss">
 .start-button {
-  --utrecht-button-min-inline-size: 15rem;
+  --utrecht-button-min-inline-size: 100%;
   --utrecht-button-background-color: var(--color-accent);
   --utrecht-button-color: var(--color-accent-text);
   --utrecht-button-hover-background-color: var(--color-accent-hover);

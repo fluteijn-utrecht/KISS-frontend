@@ -4,14 +4,17 @@
       role="tab"
       :aria-selected="isActive ? 'true' : 'false'"
       :aria-controls="panelId"
-      :inert="disabled"
+      :inert="isDisabled"
       :href="href"
       :id="tabId"
       :is="is"
       @click.prevent="activate"
     >
       <slot name="tab" :label="label" :is-active="isActive">
-        {{ label }}
+        <div class="data-tab">
+          <span :class="error ? 'alert icon-after' : ''">{{ label }}</span>
+          <simple-spinner class="small-spinner" v-if="loading" />
+        </div>
       </slot>
     </component>
   </teleport>
@@ -23,15 +26,20 @@
     v-show="isActive"
     v-bind="$attrs"
   >
-    <slot :is-active="isActive"></slot>
+    <slot
+      :is-active="isActive"
+      :set-loading="setLoading"
+      :set-error="setError"
+      :set-disabled="setDisabled"
+    ></slot>
   </section>
 </template>
 
 <script setup lang="ts">
 import { nanoid } from "nanoid";
-import { inject, computed, watchEffect } from "vue";
+import { inject, computed, watchEffect, ref } from "vue";
 import { tablistInjectionKey } from "./injection";
-
+import SimpleSpinner from "../SimpleSpinner.vue";
 const props = defineProps<{ disabled?: boolean; label: string }>();
 const tablist = inject(tablistInjectionKey);
 const tabId = nanoid();
@@ -45,8 +53,18 @@ const activate = () => {
   }
 };
 
+const error = ref(false);
+const loading = ref(false);
+const isDisabled = ref(false);
+
+const setError = (v: boolean) => (error.value = v);
+const setLoading = (v: boolean) => (loading.value = v);
+const setDisabled = (v: boolean) => (isDisabled.value = v);
+
+watchEffect(() => (isDisabled.value = props.disabled || false));
+
 watchEffect(() => {
-  if (props.disabled) {
+  if (isDisabled.value) {
     tablist?.unregister(props.label);
   } else {
     tablist?.register(props.label);
@@ -81,5 +99,19 @@ watchEffect(() => {
   :deep(tbody > tr) {
     background: var(--color-white);
   }
+}
+
+.data-tab {
+  position: relative;
+  display: flex;
+  gap: var(--spacing-default);
+}
+
+.small-spinner {
+  --spinner-size: 1em;
+
+  margin: 0;
+  inset: 0;
+  translate: 0 50%;
 }
 </style>
