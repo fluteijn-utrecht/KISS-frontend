@@ -2,7 +2,6 @@
 **/.dockerignore
 **/.env.local
 **/.env.local.example
-**/.git
 **/.github
 **/.gitignore
 **/dist

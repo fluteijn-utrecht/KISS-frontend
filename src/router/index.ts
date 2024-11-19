@@ -150,7 +150,7 @@ const router = createRouter({
       name: "Beheer",
       component: BeheerLayout,
       props: true,
-      meta: {},
+      meta: { hideSidebar: true },
       children: [
         {
           path: "NieuwsEnWerkinstructies",
