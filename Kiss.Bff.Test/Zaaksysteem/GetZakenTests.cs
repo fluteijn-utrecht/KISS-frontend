@@ -74,7 +74,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
                 .Respond(HttpStatusCode.BadRequest);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters long", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
@@ -94,7 +94,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
 
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters long", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
@@ -136,7 +136,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
                 .Respond("application/json", "{\"results\": []}");
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters long", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
@@ -161,7 +161,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
                 .Respond("application/json", "{\"results\": []}");
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, "kvkNummer");
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters long", null, null, "kvkNummer");
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
@@ -181,7 +181,7 @@ namespace Kiss.Bff.Test.Zaaksysteem
                 .Respond("application/json", responseBody);
             var httpClient = new HttpClient(handler);
             var clientFactory = Mock.Of<IHttpClientFactory>(x => x.CreateClient(It.IsAny<string>()) == httpClient);
-            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters", null, null, null);
+            var config = new ZaaksysteemConfig(baseUrl, "ClientId", "Secret of at least X characters long", null, null, null);
 
 
             var sut = new GetZaken(new[] { config }, clientFactory, logger);
