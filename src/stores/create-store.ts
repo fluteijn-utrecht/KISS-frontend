@@ -17,7 +17,9 @@ export type CreateStoreParams<T> = {
   onNewState?: (state: UnwrapRef<T>) => void | Promise<void>;
 };
 
-export type Store<T> = Ref<UnwrapRef<T>> & { reset: () => void };
+export type Store<T> = Ref<UnwrapRef<T>> & {
+  reset: () => void;
+};
 
 export type StoreImplementation = <T>(params: CreateStoreParams<T>) => Store<T>;
 
@@ -30,13 +32,12 @@ export function defaultStoreImplementation<T>({
   let store = storeMap.get(stateId) as Store<T> | undefined;
 
   if (!store) {
-    store = Object.assign(ref(stateFactory()), {
+    store = Object.assign(ref(stateFactory()) as Ref<UnwrapRef<T>>, {
       reset() {
-        if (store) {
-          store.value = stateFactory() as UnwrapRef<T>;
-        }
+        store!.value = stateFactory() as UnwrapRef<T>;
       },
-    });
+    }) as Store<T>;
+
     storeMap.set(stateId, store);
     onNewState?.(store.value);
   } else {
@@ -47,7 +48,7 @@ export function defaultStoreImplementation<T>({
 }
 
 export function provideStoreImplementation(
-  implementation: StoreImplementation
+  implementation: StoreImplementation,
 ) {
   provide(injectionKey, implementation);
 }
