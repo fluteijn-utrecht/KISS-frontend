@@ -44,7 +44,7 @@ namespace Kiss.Bff.Test
         public void GenerateToken_ReturnsValidToken()
         {
             // Arrange
-            var apiKey = "blablaFakeApiKey";
+            var apiKey = "blablaFakeApiKeyblablaFakeApiKey";
             var clientId = "124567890.87654321";
             var userId = "blablaFakeUserId";
             var userRepresentation = "blablaFakeUserRepresentation";
