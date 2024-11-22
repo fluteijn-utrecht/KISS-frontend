@@ -11,7 +11,7 @@ RUN addgroup --group kiss --gid 2000 \
     "kiss" 
 RUN chown kiss:kiss  /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS dotnetbuild
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnetbuild
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
