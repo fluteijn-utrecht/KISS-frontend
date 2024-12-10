@@ -471,7 +471,9 @@ export const saveDigitaleAdressen = async (
       verstrektDoorPartij: null,
       adres: adres.adres,
       soortDigitaalAdres:
-        adres.soortDigitaalAdres === "telefoonnummer" ? "telnr" : "email",
+        adres.soortDigitaalAdres === "telefoonnummer"
+          ? "telefoonnummer"
+          : "email",
       omschrijving: adres.omschrijving || "onbekend",
     };
 
