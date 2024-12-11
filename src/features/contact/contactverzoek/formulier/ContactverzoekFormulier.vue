@@ -472,10 +472,6 @@ watch(
 
 //////////////////////////////////////////////////////
 
-// klantinteracties/api/v1/schema/#tag/digitale-adressen/operation/digitaleadressenCreate
-const TELEFOON_PATTERN =
-  /^(0[8-9]00[0-9]{4,7}|0[1-9][0-9]{8}|\+[0-9]{9,20}|1400|140[0-9]{2,3})$/;
-
 const hasContact = computed(
   () =>
     !!form.value.telefoonnummer1 ||
@@ -483,30 +479,31 @@ const hasContact = computed(
     !!form.value.emailadres,
 );
 
-watch([telEl, hasContact], ([el, hasContact]) => {
-  if (!el) return;
+const noContactMessage =
+  "Vul minimaal een telefoonnummer of een e-mailadres in";
 
-  el.setCustomValidity(
-    hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in",
-  );
-});
+watch(
+  [telEl, hasContact],
+  ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
+);
+
+// klantinteracties/api/v1/schema/#tag/digitale-adressen/operation/digitaleadressenCreate
+const TELEFOON_PATTERN =
+  /^(0[8-9]00[0-9]{4,7}|0[1-9][0-9]{8}|\+[0-9]{9,20}|1400|140[0-9]{2,3})$/;
 
 const handleTelefoonInput = (event: Event) => {
   const el = event.target as HTMLInputElement;
 
-  el.setCustomValidity(
-    !el.value || TELEFOON_PATTERN.test(el.value)
-      ? ""
-      : "Vul een geldig telefoonnummer in.",
-  );
-
-  if (el.name === "Telefoonnummer 1" && !hasContact.value) {
-    el.setCustomValidity(
-      "Vul minimaal een telefoonnummer of een e-mailadres in.",
-    );
-  }
-
   setActive();
+
+  if (!el.value || TELEFOON_PATTERN.test(el.value)) {
+    // telEl: back to custom noContactMessage if applicable, otherwise clear
+    el.setCustomValidity(
+      el === telEl.value && !hasContact.value ? noContactMessage : "",
+    );
+  } else {
+    el.setCustomValidity("Vul een geldig telefoonnummer in.");
+  }
 };
 
 //als de afdeling wijzigt, dan moet de medewerker gereset worden
