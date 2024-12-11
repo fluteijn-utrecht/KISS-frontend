@@ -276,10 +276,9 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
-            type="email"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="setActive"
+            @input="handleEmailInput"
           />
         </label>
       </div>
@@ -504,6 +503,22 @@ const handleTelefoonInput = (event: Event) => {
   } else {
     el.setCustomValidity("Vul een geldig telefoonnummer in.");
   }
+};
+
+// https://github.com/django/django/blob/4.2/django/core/validators.py#L174.Voor
+const EMAIL_PATTERN =
+  /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]{2,63})+|\[[a-fA-F0-9:.]+\])$/;
+
+const handleEmailInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+
+  setActive();
+
+  el.setCustomValidity(
+    !el.value || EMAIL_PATTERN.test(el.value)
+      ? ""
+      : "Vul een geldig emailadres in.",
+  );
 };
 
 //als de afdeling wijzigt, dan moet de medewerker gereset worden
