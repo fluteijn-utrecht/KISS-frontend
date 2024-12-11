@@ -470,10 +470,7 @@ export const saveDigitaleAdressen = async (
       verstrektDoorBetrokkene: { uuid: verstrektDoorBetrokkeneUuid },
       verstrektDoorPartij: null,
       adres: adres.adres,
-      soortDigitaalAdres:
-        adres.soortDigitaalAdres === "telefoonnummer"
-          ? DigitaalAdresTypes.telefoonnummer
-          : DigitaalAdresTypes.email,
+      soortDigitaalAdres: adres.soortDigitaalAdres,
       omschrijving: adres.omschrijving || "onbekend",
     };
 
@@ -488,7 +485,7 @@ const postDigitaalAdres = async (data: {
   verstrektDoorBetrokkene: { uuid: string };
   verstrektDoorPartij?: { uuid: string } | null;
   adres: string;
-  soortDigitaalAdres: string;
+  soortDigitaalAdres: DigitaalAdresTypes | undefined;
   omschrijving: string;
 }): Promise<{ uuid: string; url: string }> => {
   const response = await fetchLoggedIn(klantinteractiesDigitaleadressen, {

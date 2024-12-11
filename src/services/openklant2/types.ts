@@ -2,7 +2,7 @@
 
 export type DigitaalAdresApiViewModel = {
   adres: string;
-  soortDigitaalAdres?: string;
+  soortDigitaalAdres?: DigitaalAdresTypes;
   omschrijving?: string;
 };
 
@@ -163,7 +163,7 @@ export type Contactnaam = {
 export enum DigitaalAdresTypes {
   email = "email",
   telefoonnummer = "telefoonnummer",
-  overig = "overig"
+  overig = "overig",
 }
 
 export type IdentificatorType = {

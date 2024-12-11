@@ -1,3 +1,5 @@
+import type { DigitaalAdresTypes } from "@/services/openklant2";
+
 export interface Vraag {
   description: string;
   questiontype: string;
@@ -36,7 +38,7 @@ export enum TypeOrganisatorischeEenheid {
 
 export type DigitaalAdres = {
   adres: string;
-  soortDigitaalAdres?: string;
+  soortDigitaalAdres?: DigitaalAdresTypes;
   omschrijving?: string;
 };
 
