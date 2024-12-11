@@ -486,7 +486,7 @@ watch(
   ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
 );
 
-// klantinteracties/api/v1/schema/#tag/digitale-adressen/operation/digitaleadressenCreate
+// https://github.com/maykinmedia/open-klant/blob/f231f368c48276ffe429fb7e3105b0ce9f0eb444/src/openklant/utils/validators.py#L26
 const TELEFOON_PATTERN =
   /^(0[8-9]00[0-9]{4,7}|0[1-9][0-9]{8}|\+[0-9]{9,20}|1400|140[0-9]{2,3})$/;
 
@@ -505,7 +505,8 @@ const handleTelefoonInput = (event: Event) => {
   }
 };
 
-// https://github.com/django/django/blob/4.2/django/core/validators.py#L174.Voor
+// https://github.com/django/django/blob/4.2/django/core/validators.py#L174
+// patterns user_regex / domain_regex / literal_regex gecombineerd
 const EMAIL_PATTERN =
   /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]{2,63})+|\[[a-fA-F0-9:.]+\])$/;
 
