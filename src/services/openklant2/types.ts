@@ -166,33 +166,62 @@ export enum DigitaalAdresTypes {
   overig = "overig",
 }
 
+export enum CodeRegister {
+  brp = "brp",
+  hr = "hr",
+  overig = "overig",
+}
+
+export enum CodeObjecttype {
+  natuurlijkPersoon = "natuurlijkPersoon",
+  vestiging = "vestiging",
+  nietNatuurlijkPersoon = "nietNatuurlijkPersoon",
+  overig = "overig",
+}
+
+export enum CodeSoortObjectId {
+  bsn = "bsn",
+  kvkNummer = "kvkNummer",
+  rsin = "rsin",
+  vestigingsnummer = "vestigingsnummer",
+  overig = "overig",
+}
+
 export type IdentificatorType = {
-  codeRegister: string;
-  codeSoortObjectId: string;
-  codeObjecttype: string;
+  codeRegister: CodeRegister;
+  codeSoortObjectId: CodeSoortObjectId;
+  codeObjecttype: CodeObjecttype;
 };
+
+// export const CodeRegister = Object.freeze({
+//   brp: "brp",
+//   hr: "hr",
+//   overig: "overig",
+// });
+
+// type CodeRegister = keyof typeof CodeRegister;
 
 // TODO in toekomstige story: waardes overleggen met Maykin en INFO
 export const identificatorTypes = {
   persoon: {
-    codeRegister: "brp",
-    codeSoortObjectId: "bsn",
-    codeObjecttype: "inp",
+    codeRegister: CodeRegister.brp,
+    codeSoortObjectId: CodeSoortObjectId.bsn,
+    codeObjecttype: CodeObjecttype.natuurlijkPersoon,
   },
   vestiging: {
-    codeRegister: "hr",
-    codeSoortObjectId: "vtn",
-    codeObjecttype: "vst",
+    codeRegister: CodeRegister.hr,
+    codeSoortObjectId: CodeSoortObjectId.vestigingsnummer,
+    codeObjecttype: CodeObjecttype.vestiging,
   },
   nietNatuurlijkPersoonRsin: {
-    codeRegister: "hr",
-    codeSoortObjectId: "rsin",
-    codeObjecttype: "nnp",
+    codeRegister: CodeRegister.hr,
+    codeSoortObjectId: CodeSoortObjectId.rsin,
+    codeObjecttype: CodeObjecttype.nietNatuurlijkPersoon,
   },
   nietNatuurlijkPersoonKvkNummer: {
-    codeRegister: "hr",
-    codeSoortObjectId: "kvk",
-    codeObjecttype: "nnp",
+    codeRegister: CodeRegister.hr,
+    codeSoortObjectId: CodeSoortObjectId.kvkNummer,
+    codeObjecttype: CodeObjecttype.nietNatuurlijkPersoon,
   },
 } satisfies Record<string, IdentificatorType>;
 
