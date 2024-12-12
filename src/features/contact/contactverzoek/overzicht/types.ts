@@ -1,3 +1,5 @@
+import type { DigitaalAdresTypes } from "@/services/openklant2";
+
 export type ContactverzoekOverzichtItem = {
   url: string;
   registratiedatum: string;
@@ -18,7 +20,7 @@ export type ContactverzoekOverzichtItem = {
     organisatie?: string;
     digitaleAdressen: {
       omschrijving?: string;
-      soortDigitaalAdres?: string;
+      soortDigitaalAdres?: DigitaalAdresTypes;
       adres: string;
     }[];
   };

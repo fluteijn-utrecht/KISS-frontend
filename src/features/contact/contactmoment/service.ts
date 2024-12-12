@@ -36,6 +36,7 @@ import {
   isTextareaVraag,
 } from "../components/service";
 import {
+  DigitaalAdresTypes,
   enrichBetrokkeneWithKlantContact,
   fetchBetrokkenen,
   fetchKlantcontacten,
@@ -265,21 +266,21 @@ export function mapContactverzoekData({
     digitaleAdressen.push({
       adres: data.emailadres,
       omschrijving: "e-mailadres",
-      soortDigitaalAdres: "e-mailadres",
+      soortDigitaalAdres: DigitaalAdresTypes.email,
     });
   }
   if (data.telefoonnummer1) {
     digitaleAdressen.push({
       adres: data.telefoonnummer1,
       omschrijving: "telefoonnummer",
-      soortDigitaalAdres: "telefoonnummer",
+      soortDigitaalAdres: DigitaalAdresTypes.telefoonnummer,
     });
   }
   if (data.telefoonnummer2) {
     digitaleAdressen.push({
       adres: data.telefoonnummer2,
       omschrijving: data.omschrijvingTelefoonnummer2 || "telefoonnummer",
-      soortDigitaalAdres: "telefoonnummer",
+      soortDigitaalAdres: DigitaalAdresTypes.telefoonnummer,
     });
   }
 
