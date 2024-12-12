@@ -250,7 +250,7 @@
             type="tel"
             name="Telefoonnummer 1"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="setActive"
+            @input="handleTelefoonInput"
           />
         </label>
         <label class="utrecht-form-label">
@@ -260,7 +260,7 @@
             type="tel"
             name="Telefoonnummer 2"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="setActive"
+            @input="handleTelefoonInput"
           />
         </label>
         <label class="utrecht-form-label">
@@ -276,10 +276,9 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
-            type="email"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="setActive"
+            @input="handleEmailInput"
           />
         </label>
       </div>
@@ -301,7 +300,7 @@ import type {
 } from "@/stores/contactmoment";
 
 import { ActorType } from "@/stores/contactmoment";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -319,6 +318,7 @@ import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
 import GroepenSearch from "./components/GroepenSearch.vue";
 import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import { fetchGroepen } from "./components/groepen";
+import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -472,21 +472,47 @@ watch(
 
 //////////////////////////////////////////////////////
 
-watch(
-  [
-    telEl,
-    () =>
-      !!form.value.telefoonnummer1 ||
-      !!form.value.telefoonnummer2 ||
-      !!form.value.emailadres,
-  ],
-  ([el, hasContact]) => {
-    if (!el) return;
-    el.setCustomValidity(
-      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in",
-    );
-  },
+const hasContact = computed(
+  () =>
+    !!form.value.telefoonnummer1 ||
+    !!form.value.telefoonnummer2 ||
+    !!form.value.emailadres,
 );
+
+const noContactMessage =
+  "Vul minimaal een telefoonnummer of een e-mailadres in";
+
+watch(
+  [telEl, hasContact],
+  ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
+);
+
+const handleTelefoonInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+
+  setActive();
+
+  if (!el.value || TELEFOON_PATTERN.test(el.value)) {
+    // telEl: back to custom noContactMessage if applicable, otherwise clear
+    el.setCustomValidity(
+      el === telEl.value && !hasContact.value ? noContactMessage : "",
+    );
+  } else {
+    el.setCustomValidity("Vul een geldig telefoonnummer in.");
+  }
+};
+
+const handleEmailInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+
+  setActive();
+
+  el.setCustomValidity(
+    !el.value || EMAIL_PATTERN.test(el.value)
+      ? ""
+      : "Vul een geldig emailadres in.",
+  );
+};
 
 //als de afdeling wijzigt, dan moet de medewerker gereset worden
 watch(

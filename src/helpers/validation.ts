@@ -199,3 +199,19 @@ export const vValidate: Directive<HTMLInputElement, ValidatorSetup> = {
     (el as any).removeValidatorSetup?.();
   },
 };
+
+// https://github.com/maykinmedia/open-klant/blob/f231f368c48276ffe429fb7e3105b0ce9f0eb444/src/openklant/utils/validators.py#L26
+export const TELEFOON_PATTERN =
+  /^(0[8-9]00[0-9]{4,7}|0[1-9][0-9]{8}|\+[0-9]{9,20}|1400|140[0-9]{2,3})$/;
+
+// https://github.com/django/django/blob/4.2/django/core/validators.py#L174
+export const EMAIL_PATTERN = new RegExp(
+  "^" +
+    // user_regex (without quoted string)
+    "([-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*)" +
+    "@" +
+    // domain_regex (without literal_regex)
+    "((?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\\.)+(?:[A-Z0-9-]{2,63}(?<!-)))" +
+    "$",
+  "i",
+);
