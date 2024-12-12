@@ -212,7 +212,10 @@ export type Partij = {
   };
   partijIdentificatoren: { uuid: string }[];
   _expand?: {
-    digitaleAdressen?: { adres?: string; soortDigitaalAdres?: string }[];
+    digitaleAdressen?: {
+      adres?: string;
+      soortDigitaalAdres?: DigitaalAdresTypes;
+    }[];
   };
 };
 
