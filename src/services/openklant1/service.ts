@@ -9,7 +9,7 @@ import {
   type ServiceData,
 } from "@/services";
 import { mutate } from "swrv";
-import type { UpdateContactgegevensParams } from "./types";
+import type { ContactmomentObject, UpdateContactgegevensParams } from "./types";
 import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
@@ -17,8 +17,14 @@ import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant1 } from "./types";
 import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven.js";
 import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../openklant2/types.js";
 import type { Klant } from "../openklant/types";
+import { toRelativeProxyUrl } from "@/helpers/url";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
+
+const contactmomentenProxyRoot = "/api/contactmomenten";
+const contactmomentenApiRoot = "/contactmomenten/api/v1";
+const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
+const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
 
 // type FieldParams = {
 //   email: string;
@@ -416,4 +422,78 @@ export function createKlant({
       mutate(idUrl, newKlant);
       return newKlant;
     });
+}
+
+export const koppelObject = (data: ContactmomentObject) =>
+  fetchLoggedIn(objectcontactmomentenUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  }).then(throwIfNotOk);
+
+const nullForStatusCodes =
+  (...statusCodes: number[]) =>
+  (r: Response) => {
+    if (statusCodes.includes(r.status)) return null;
+    throwIfNotOk(r);
+    return r;
+  };
+
+export async function enrichContactverzoekObjectWithContactmoment(
+  contactverzoekObject: any,
+) {
+  const url = contactverzoekObject.record.data.contactmoment;
+  const [contactmoment, details, objects] = await Promise.all([
+    fetchContactmomentByUrl(url),
+    fetchDetailsByUrl(url),
+    fetchObjectsByContactmomentUrl(url),
+  ]);
+  return {
+    contactverzoekObject,
+    contactmoment: {
+      ...(contactmoment ?? {}),
+      objectcontactmomenten:
+        // de esuite voegt de objectcontactmomenten wel toe aan een lijst met contacten,
+        // maar niet aan een enkel contactmoment. daarom halen we ze hier expliciet op
+        contactmoment?.objectcontactmomenten || objects.page,
+    },
+    details,
+  };
+}
+
+function fetchContactmomentByUrl(url: string) {
+  const path = toRelativeProxyUrl(url, contactmomentenProxyRoot);
+  if (!path) {
+    throw new Error();
+  }
+  return (
+    fetchLoggedIn(
+      `${path}?${new URLSearchParams({ expand: "objectcontactmomenten" })}`,
+    )
+      // de esuite heeft een ingewikkelde autorisatiestructuur.
+      // als je niet geautoriseerd bent voor een specifiek contact,
+      // zie je deze netjes in het overzicht maar krijg je een 403 als je het specifieke contact ophaalt.
+      // we willen niet dat de hele lijst met contactverzoeken hier op klapt dus geven in dat scenario null terug.
+      .then(nullForStatusCodes(404, 403))
+      .then((r) => r?.json())
+  );
+}
+
+function fetchDetailsByUrl(url: string) {
+  return fetchLoggedIn(
+    `/api/contactmomentdetails?${new URLSearchParams({ id: url })}`,
+  )
+    .then(nullForStatusCodes(404))
+    .then((r) => r?.json());
+}
+
+function fetchObjectsByContactmomentUrl(url: string) {
+  return fetchLoggedIn(
+    `${objectcontactmomentenUrl}?${new URLSearchParams({ contactmoment: url })}`,
+  )
+    .then((r) => r?.json())
+    .then((x) => parsePagination(x, (o) => o as unknown));
 }

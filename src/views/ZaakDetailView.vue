@@ -27,22 +27,25 @@
       >
         <zaak-documenten :zaak="zaak.data" />
       </tab-list-item>
-      <tab-list-data-item
-        label="Contactmomenten"
-        :data="contactmomenten"
-        :disabled="(c) => !c.count"
-      >
-        <template #success="{ data }">
+      <tab-list-item label="Contactmomenten">
+        <template #default="{ setError, setLoading, setDisabled }">
           <div class="contactmomenten">
             <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
-            <contactmomenten-overzicht :contactmomenten="data.page">
+            <contactmomenten-for-object-url
+              v-if="gebruikKlantInteracatiesApi != undefined && zaakUrl"
+              :object-url="zaakUrl"
+              :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+              @load="setDisabled(!$event.count)"
+              @loading="setLoading"
+              @error="setError"
+            >
               <template #object="{ object }">
-                <zaak-preview :zaakurl="object.object"></zaak-preview>
+                <zaak-preview :zaakurl="object.object" />
               </template>
-            </contactmomenten-overzicht>
+            </contactmomenten-for-object-url>
           </div>
         </template>
-      </tab-list-data-item>
+      </tab-list-item>
     </tab-list>
   </template>
 </template>
@@ -56,14 +59,13 @@ import { useContactmomentStore } from "@/stores/contactmoment";
 import ZaakDocumenten from "@/features/zaaksysteem/components/ZaakDocumenten.vue";
 import ZaakAlgemeen from "@/features/zaaksysteem/components/ZaakAlgemeen.vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
-import {
-  ContactmomentenOverzicht,
-  useContactmomentenByObjectUrl,
-} from "@/features/contact/contactmoment";
 import ZaakPreview from "@/features/zaaksysteem/components/ZaakPreview.vue";
 import ZaakDeeplink from "@/features/zaaksysteem/components/ZaakDeeplink.vue";
-import { TabList, TabListItem, TabListDataItem } from "@/components/tabs";
+import { TabList, TabListItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
+import { useLoader } from "@/services/use-loader";
+import { useOpenKlant2 } from "@/services/openklant2";
+import ContactmomentenForObjectUrl from "@/features/contact/contactmoment/ContactmomentenForObjectUrl.vue";
 
 const props = defineProps<{ zaakId: string; zaaksysteemId: string }>();
 const contactmomentStore = useContactmomentStore();
@@ -74,8 +76,7 @@ const zaak = useZaakById(
 const zaakUrl = computed(() =>
   zaak.success && zaak.data.self ? zaak.data.self : "",
 );
-
-const contactmomenten = useContactmomentenByObjectUrl(zaakUrl);
+const { data: gebruikKlantInteracatiesApi } = useLoader(() => useOpenKlant2());
 
 const activeTab = ref("");
 
@@ -86,6 +87,8 @@ watch(
     contactmomentStore.upsertZaak(
       z,
       contactmomentStore.huidigContactmoment.huidigeVraag,
+      true,
+      props.zaaksysteemId,
     );
   },
   { immediate: true },

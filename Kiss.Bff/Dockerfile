@@ -1,6 +1,6 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://*:8080
@@ -11,15 +11,16 @@ RUN addgroup --group kiss --gid 2000 \
     "kiss" 
 RUN chown kiss:kiss  /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 as dotnetbuild
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dotnetbuild
 WORKDIR /src
 COPY ["Kiss.Bff/Kiss.Bff.csproj", "Kiss.Bff/"]
 RUN dotnet restore "Kiss.Bff/Kiss.Bff.csproj"
+COPY .git .git
 COPY Kiss.Bff Kiss.Bff
 WORKDIR "/src/Kiss.Bff"
 RUN dotnet build "Kiss.Bff.csproj" -c Release --no-restore -o /app/build
 
-FROM dotnetbuild as dotnettest
+FROM dotnetbuild AS dotnettest
 WORKDIR /src
 COPY ["Kiss.Bff.Test/Kiss.Bff.Test.csproj", "Kiss.Bff.Test/"]
 RUN dotnet restore "Kiss.Bff.Test/Kiss.Bff.Test.csproj"
@@ -34,13 +35,13 @@ COPY package*.json .
 RUN npm ci
 COPY . .
 
-FROM frontend as frontendtest
+FROM frontend AS frontendtest
 RUN npm run test:unitci -- --reporter junit --outputFile /testresults/vitest-junit.xml
 
-FROM frontend as frontendbuild
+FROM frontend AS frontendbuild
 RUN npm run build --if-present
 
-FROM scratch as test
+FROM scratch AS test
 COPY --from=dotnettest /testresults/*.trx .
 COPY --from=frontendtest /testresults/*.xml .
 

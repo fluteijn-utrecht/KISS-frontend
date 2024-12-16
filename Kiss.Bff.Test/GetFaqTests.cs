@@ -1,6 +1,6 @@
 ﻿using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.Beheer.Faq;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
+using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

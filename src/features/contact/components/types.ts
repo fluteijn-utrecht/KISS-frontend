@@ -1,3 +1,5 @@
+import type { DigitaalAdresTypes } from "@/services/openklant2";
+
 export interface Vraag {
   description: string;
   questiontype: string;
@@ -31,12 +33,12 @@ export interface ContactVerzoekVragenSet {
 // Kan alleen groep of afdeling zijn, medewerker bestaat niet
 export enum TypeOrganisatorischeEenheid {
   Groep = "groep",
-  Afdeling = "afdeling"
+  Afdeling = "afdeling",
 }
 
 export type DigitaalAdres = {
   adres: string;
-  soortDigitaalAdres?: string;
+  soortDigitaalAdres?: DigitaalAdresTypes;
   omschrijving?: string;
 };
 

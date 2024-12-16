@@ -200,87 +200,88 @@
     </form-fieldset>
 
     <form-fieldset>
-      <form-fieldset-legend>Contact opnemen met</form-fieldset-legend>
-      <label class="utrecht-form-label">
-        <span>Voornaam</span>
-        <input
-          v-model="form.voornaam"
-          type="tel"
-          name="Naam"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>Tussenvoegsel</span>
-        <input
-          v-model="form.voorvoegselAchternaam"
-          type="tel"
-          name="Naam"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>Achternaam</span>
-        <input
-          v-model="form.achternaam"
-          type="tel"
-          name="Naam"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>Organisatie</span>
-        <input
-          v-model="form.organisatie"
-          type="tel"
-          name="Naam"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>Telefoonnummer 1</span>
-        <input
-          ref="telEl"
-          v-model="form.telefoonnummer1"
-          type="tel"
-          name="Telefoonnummer 1"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>Telefoonnummer 2</span>
-        <input
-          v-model="form.telefoonnummer2"
-          type="tel"
-          name="Telefoonnummer 2"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>Omschrijving telefoonnummer 2</span>
-        <input
-          v-model="form.omschrijvingTelefoonnummer2"
-          name="Omschrijving telefoonnummer 2"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
-      <label class="utrecht-form-label">
-        <span>E-mailadres</span>
-        <input
-          v-model="form.emailadres"
-          type="email"
-          name="E-mailadres"
-          class="utrecht-textbox utrecht-textbox--html-input"
-          @input="setActive"
-        />
-      </label>
+      <div class="container">
+        <form-fieldset-legend>Contact opnemen met</form-fieldset-legend>
+        <label class="utrecht-form-label">
+          <span>Voornaam</span>
+          <input
+            v-model="form.voornaam"
+            type="tel"
+            name="Naam"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="setActive"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>Tussenvoegsel</span>
+          <input
+            v-model="form.voorvoegselAchternaam"
+            type="tel"
+            name="Naam"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="setActive"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>Achternaam</span>
+          <input
+            v-model="form.achternaam"
+            type="tel"
+            name="Naam"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="setActive"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>Organisatie</span>
+          <input
+            v-model="form.organisatie"
+            type="tel"
+            name="Naam"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="setActive"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>Telefoonnummer 1</span>
+          <input
+            ref="telEl"
+            v-model="form.telefoonnummer1"
+            type="tel"
+            name="Telefoonnummer 1"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="handleTelefoonInput"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>Telefoonnummer 2</span>
+          <input
+            v-model="form.telefoonnummer2"
+            type="tel"
+            name="Telefoonnummer 2"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="handleTelefoonInput"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>Omschrijving telefoonnummer 2</span>
+          <input
+            v-model="form.omschrijvingTelefoonnummer2"
+            name="Omschrijving telefoonnummer 2"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="setActive"
+          />
+        </label>
+        <label class="utrecht-form-label">
+          <span>E-mailadres</span>
+          <input
+            v-model="form.emailadres"
+            name="E-mailadres"
+            class="utrecht-textbox utrecht-textbox--html-input"
+            @input="handleEmailInput"
+          />
+        </label>
+      </div>
     </form-fieldset>
   </div>
 </template>
@@ -299,7 +300,7 @@ import type {
 } from "@/stores/contactmoment";
 
 import { ActorType } from "@/stores/contactmoment";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -317,6 +318,7 @@ import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
 import GroepenSearch from "./components/GroepenSearch.vue";
 import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import { fetchGroepen } from "./components/groepen";
+import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -470,21 +472,47 @@ watch(
 
 //////////////////////////////////////////////////////
 
-watch(
-  [
-    telEl,
-    () =>
-      !!form.value.telefoonnummer1 ||
-      !!form.value.telefoonnummer2 ||
-      !!form.value.emailadres,
-  ],
-  ([el, hasContact]) => {
-    if (!el) return;
-    el.setCustomValidity(
-      hasContact ? "" : "Vul minimaal een telefoonnummer of een e-mailadres in",
-    );
-  },
+const hasContact = computed(
+  () =>
+    !!form.value.telefoonnummer1 ||
+    !!form.value.telefoonnummer2 ||
+    !!form.value.emailadres,
 );
+
+const noContactMessage =
+  "Vul minimaal een telefoonnummer of een e-mailadres in";
+
+watch(
+  [telEl, hasContact],
+  ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
+);
+
+const handleTelefoonInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+
+  setActive();
+
+  if (!el.value || TELEFOON_PATTERN.test(el.value)) {
+    // telEl: back to custom noContactMessage if applicable, otherwise clear
+    el.setCustomValidity(
+      el === telEl.value && !hasContact.value ? noContactMessage : "",
+    );
+  } else {
+    el.setCustomValidity("Vul een geldig telefoonnummer in.");
+  }
+};
+
+const handleEmailInput = (event: Event) => {
+  const el = event.target as HTMLInputElement;
+
+  setActive();
+
+  el.setCustomValidity(
+    !el.value || EMAIL_PATTERN.test(el.value)
+      ? ""
+      : "Vul een geldig emailadres in.",
+  );
+};
 
 //als de afdeling wijzigt, dan moet de medewerker gereset worden
 watch(
@@ -519,7 +547,7 @@ watch(
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-default);
+  gap: var(--spacing-small);
 }
 
 textarea {
@@ -531,8 +559,10 @@ fieldset {
   gap: var(--spacing-extrasmall);
 }
 
-.radio-group > legend {
-  font-size: inherit;
+.radio-group {
+  > legend {
+    font-size: inherit;
+  }
 }
 
 .utrecht-checkbox-button {

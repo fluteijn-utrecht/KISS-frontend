@@ -5,13 +5,10 @@ import {
   parseJson,
 } from "@/services";
 import { fetchLoggedIn } from "@/services";
-import type { Ref } from "vue";
 
 import {
   type Gespreksresultaat,
-  type ContactmomentObject,
   type Contactmoment,
-  type ZaakContactmoment,
   type ObjectContactmoment,
   type ContactmomentDetails,
   type SaveContactmomentResponseModel,
@@ -39,31 +36,26 @@ import {
   isTextareaVraag,
 } from "../components/service";
 import {
+  DigitaalAdresTypes,
   enrichBetrokkeneWithKlantContact,
-  enrichKlantcontactWithInterneTaak,
-  fetchBetrokkene,
-  mapToContactmomentViewModel,
+  fetchBetrokkenen,
+  fetchKlantcontacten,
+  KlantContactExpand,
+  mapKlantContactToContactmomentViewModel,
   type ContactmomentViewModel,
 } from "@/services/openklant2";
+import type { ZaakDetails } from "@/features/zaaksysteem/types";
+import { voegContactmomentToeAanZaak } from "@/services/openzaak";
+import { koppelObject } from "@/services/openklant1";
 
 //obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
 const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
 const contactmomentDetails = "/api/contactmomentdetails";
-const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
+
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
-
-const zaaksysteemProxyRoot = `/api/zaken`;
-const zaaksysteemApiRoot = `/zaken/api/v1`;
-const zaaksysteemBaseUri = `${zaaksysteemProxyRoot}${zaaksysteemApiRoot}`;
-const zaakcontactmomentUrl = `${zaaksysteemBaseUri}/zaakcontactmomenten`;
-
-const klantinteractiesProxyRoot = "/api/klantinteracties";
-const klantinteractiesApiRoot = "/api/v1";
-const klantinteractiesBaseUrl = `${klantinteractiesProxyRoot}${klantinteractiesApiRoot}`;
-const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 export const saveContactmoment = async (
   data: Contactmoment,
@@ -117,30 +109,6 @@ export const useGespreksResultaten = () => {
   return ServiceResult.fromFetcher("/api/gespreksresultaten", fetchBerichten);
 };
 
-export const koppelObject = (data: ContactmomentObject) =>
-  fetchLoggedIn(objectcontactmomentenUrl, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  }).then(throwIfNotOk);
-
-export const koppelZaakContactmoment = ({
-  zaaksysteemId,
-  url,
-  contactmoment,
-}: ZaakContactmoment) =>
-  fetchLoggedIn(zaakcontactmomentUrl, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ zaaksysteemId, url, contactmoment }),
-  }).then(throwIfNotOk);
-
 export function koppelKlant({
   klantId,
   contactmomentId,
@@ -161,102 +129,33 @@ export function koppelKlant({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-export function koppelBetrokkene({
-  partijId,
-  contactmomentId,
-}: {
-  partijId: string;
-  contactmomentId: string;
-}) {
-  return fetchLoggedIn(klantinteractiesBetrokkenen, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      wasPartij: {
-        uuid: partijId,
-      },
-      hadKlantcontact: {
-        uuid: contactmomentId,
-      },
-      rol: "klant",
-      initiator: true,
-    }),
-  }).then(throwIfNotOk) as Promise<void>;
-}
-
-export function useContactmomentenByKlantId(
-  id: Ref<string>,
-  gebruikKlantinteractiesApi: Ref<boolean | null>,
+export function fetchContactmomentenByKlantId(
+  id: string,
+  gebruikKlantinteractiesApi: boolean,
 ) {
-  //een cackekey is nodig anders wordt alleen de CM's OF de CV's opgehaald
-  //ze beginnen namelijk met dezelfde call naar partij
-  //als die hetzelfde is dan wordt die uit de cache gehaald
+  if (gebruikKlantinteractiesApi) {
+    return fetchBetrokkenen({ wasPartij__url: id }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ]).then((page) =>
+        page.map(({ klantContact }) =>
+          mapKlantContactToContactmomentViewModel(klantContact),
+        ),
+      ),
+    }));
+  }
 
-  //om te voorkomen dat er al data opgehaald wordt voordat de juiste route bekend is, moet de cachekey een lege string retourneren
-  //als er geen cachekey gebruikt wordt, moet de url een lege string retourneren
-  const getCacheKey = () =>
-    gebruikKlantinteractiesApi.value === null
-      ? ""
-      : id.value
-        ? `${id.value}_contactmoment`
-        : "";
+  const searchParams = new URLSearchParams();
+  searchParams.set("klant", id);
+  searchParams.set("ordering", "-registratiedatum");
+  searchParams.set("expand", "objectcontactmomenten");
 
-  const fetchContactmomenten = async (
-    url: string,
-    gebruikKlantinteractiesApi: Ref<boolean | null>,
-  ) => {
-    if (gebruikKlantinteractiesApi.value === null) {
-      return { count: null, page: [] };
-    }
-
-    if (gebruikKlantinteractiesApi.value) {
-      return fetchBetrokkene(url)
-        .then(enrichBetrokkeneWithKlantContact)
-        .then(enrichKlantcontactWithInterneTaak) //necesarry to filter them out
-        .then(mapToContactmomentViewModel);
-    } else {
-      return fetchLoggedIn(url)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-    }
-  };
-
-  return ServiceResult.fromFetcher(
-    () => {
-
-      if (gebruikKlantinteractiesApi.value === null) {
-        return "";
-      }
-
-      if (!id.value) return "";
-
-      // retourneer een url voor openklant 1 OF de klantInteracties api
-      if (gebruikKlantinteractiesApi.value === true) {
-        const searchParams = new URLSearchParams();
-        searchParams.set("wasPartij__url", id.value);
-
-        return `${klantinteractiesBetrokkenen}?${searchParams.toString()}`;
-      } else {
-        const searchParams = new URLSearchParams();
-        searchParams.set("klant", id.value);
-        searchParams.set("ordering", "-registratiedatum");
-        searchParams.set("expand", "objectcontactmomenten");
-        return `${contactmomentenUrl}?${searchParams.toString()}`;
-      }
-    },
-    (u: string) => fetchContactmomenten(u, gebruikKlantinteractiesApi),
-    { getUniqueId: getCacheKey },
-  );
-}
-
-const fetchOk1Contactmomenten = (u: string) =>
-  fetchLoggedIn(u)
+  return fetchLoggedIn(`${contactmomentenUrl}?${searchParams.toString()}`)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
+}
 
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
@@ -275,17 +174,34 @@ export const useContactmomentDetails = (url: () => string) =>
       }),
   );
 
-export function useContactmomentenByObjectUrl(url: Ref<string>) {
-  const getUrl = () => {
-    if (!url.value) return "";
-    const params = new URLSearchParams();
-    params.set("object", url.value);
-    params.set("ordering", "-registratiedatum");
-    params.set("expand", "objectcontactmomenten");
-    return `${contactmomentenUrl}?${params}`;
-  };
+export function fetchContactmomentenByObjectUrl(
+  url: string,
+  gebruikKlantinteractiesApi: boolean,
+) {
+  if (gebruikKlantinteractiesApi) {
+    // OK2
+    const id = url.split("/").at(-1);
+    if (!id) return Promise.reject("missing id");
 
-  return ServiceResult.fromFetcher(getUrl, fetchOk1Contactmomenten);
+    return fetchKlantcontacten({
+      onderwerpobject__onderwerpobjectidentificatorObjectId: id,
+      expand: [KlantContactExpand.gingOverOnderwerpobjecten],
+    }).then((paginated) => ({
+      ...paginated,
+      page: paginated.page.map(mapKlantContactToContactmomentViewModel),
+    }));
+  }
+
+  // OK1
+  const params = new URLSearchParams();
+  params.set("object", url);
+  params.set("ordering", "-registratiedatum");
+  params.set("expand", "objectcontactmomenten");
+
+  return fetchLoggedIn(`${contactmomentenUrl}?${params}`)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
 }
 
 export function useContactmomentObject(getUrl: () => string) {
@@ -299,27 +215,6 @@ export function useContactmomentObject(getUrl: () => string) {
       fetchLoggedIn(u)
         .then(throwIfNotOk)
         .then(parseJson) as Promise<ObjectContactmoment>,
-  );
-}
-
-export function useContactmomentByUrl(getUrl: () => string) {
-  return ServiceResult.fromFetcher(
-    () => {
-      const u = getUrl();
-      if (!u) return "";
-      const url = toRelativeProxyUrl(u, contactmomentenProxyRoot);
-      if (!url) return "";
-      const params = new URLSearchParams({
-        expand: "objectcontactmomenten",
-      });
-      return `${url}?${params}`;
-    },
-    (u) =>
-      fetchLoggedIn(u).then((r) => {
-        if (r.status === 404) return null;
-        throwIfNotOk(r);
-        return r.json() as Promise<ContactmomentViewModel>;
-      }),
   );
 }
 
@@ -371,21 +266,21 @@ export function mapContactverzoekData({
     digitaleAdressen.push({
       adres: data.emailadres,
       omschrijving: "e-mailadres",
-      soortDigitaalAdres: "e-mailadres",
+      soortDigitaalAdres: DigitaalAdresTypes.email,
     });
   }
   if (data.telefoonnummer1) {
     digitaleAdressen.push({
       adres: data.telefoonnummer1,
       omschrijving: "telefoonnummer",
-      soortDigitaalAdres: "telefoonnummer",
+      soortDigitaalAdres: DigitaalAdresTypes.telefoonnummer,
     });
   }
   if (data.telefoonnummer2) {
     digitaleAdressen.push({
       adres: data.telefoonnummer2,
       omschrijving: data.omschrijvingTelefoonnummer2 || "telefoonnummer",
-      soortDigitaalAdres: "telefoonnummer",
+      soortDigitaalAdres: DigitaalAdresTypes.telefoonnummer,
     });
   }
 
@@ -517,4 +412,78 @@ export function mapContactverzoekData({
       digitaleAdressen,
     },
   };
+}
+
+export async function koppelZaakEnContactmoment(
+  zaak: ZaakDetails,
+  contactmomentUrl: string,
+) {
+  // dit is voorlopige, hopelijk tijdelijke, code om uit te proberen of dit een nuttige manier is om met de instabiliteit van openzaak en openklant om te gaan
+  // derhalve bewust nog niet geoptimaliseerd
+  await addContactmomentToZaak(contactmomentUrl, zaak.url, zaak.zaaksysteemId);
+
+  // voorgaande gaat vaak mis, maar geeft dan bijna altijd ten onterechte een error response.
+  // de data is dan wel correct opgeslagen
+  // wellicht een timing issue. voor de zekerheid even wachten
+  try {
+    setTimeout(
+      async () =>
+        await koppelObject({
+          contactmoment: contactmomentUrl,
+          object: zaak.self,
+          objectType: "zaak",
+        }),
+      1000,
+    );
+  } catch (e) {
+    console.log("koppelZaakContactmoment in openklant", e);
+  }
+}
+export async function addContactmomentToZaak(
+  contactmomentUrl: string,
+  zaakUrl: string,
+  zaaksysteemId: string,
+) {
+  try {
+    await voegContactmomentToeAanZaak(
+      {
+        contactmoment: contactmomentUrl,
+        zaak: zaakUrl,
+      },
+      zaaksysteemId,
+    );
+  } catch (e) {
+    try {
+      console.log(
+        "voegContactmomentToeAanZaak in openzaak attempt 1 failed",
+        e,
+      );
+      await voegContactmomentToeAanZaak(
+        {
+          contactmoment: contactmomentUrl,
+          zaak: zaakUrl,
+        },
+        zaaksysteemId,
+      );
+    } catch (e) {
+      try {
+        console.log(
+          "voegContactmomentToeAanZaak in openzaak attempt 2 failed",
+          e,
+        );
+        await voegContactmomentToeAanZaak(
+          {
+            contactmoment: contactmomentUrl,
+            zaak: zaakUrl,
+          },
+          zaaksysteemId,
+        );
+      } catch (e) {
+        console.log(
+          "voegContactmomentToeAanZaak in openzaak attempt 3 failed",
+          e,
+        );
+      }
+    }
+  }
 }

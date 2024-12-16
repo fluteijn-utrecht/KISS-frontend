@@ -1,9 +1,9 @@
 ﻿using Kiss.Bff.Beheer.Gespreksresultaten.Data.Entities;
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
+using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
 using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +46,11 @@ namespace Kiss.Bff.Beheer.Data
             {
                 l.HasIndex(x => x.Vraag);
                 l.HasIndex(x => x.VerantwoordelijkeAfdeling);
+
+                l.HasMany(c => c.Bronnen)
+                    .WithOne(b => b.ContactmomentDetails)
+                    .HasForeignKey(b => b.ContactmomentDetailsId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ContactVerzoekVragenSet>()
@@ -67,6 +72,7 @@ namespace Kiss.Bff.Beheer.Data
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
         public DbSet<VerwerkingsLog> VerwerkingsLogs { get; set; } = null!;
         public DbSet<ContactmomentDetails> ContactMomentDetails { get; set; } = null!;
+        public DbSet<ContactmomentDetailsBron> ContactMomentDetailsBronnen { get; set; } = null!;
         public DbSet<ContactVerzoekVragenSet> ContactVerzoekVragenSets { get; set; } = null!;
         public DbSet<Kanaal> Kanalen { get; set; } = null!;
     }

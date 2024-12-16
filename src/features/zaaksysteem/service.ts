@@ -3,7 +3,6 @@ import {
   parseJson,
   parsePagination,
   ServiceResult,
-  setHeader,
   throwIfNotOk,
   type PaginatedResult,
 } from "@/services";
@@ -22,6 +21,7 @@ import type {
 import type { Ref } from "vue";
 import { mutate } from "swrv";
 import { toRelativeProxyUrl } from "@/helpers/url";
+import { fetchWithZaaksysteemId } from "@/services/openzaak";
 
 const zakenProxyRoot = "/api/zaken";
 
@@ -41,37 +41,27 @@ export const useZakenByBsn = (bsn: Ref<string>) => {
   return ServiceResult.fromFetcher(getUrl, overviewFetcher);
 };
 
-export const useZakenPreviewByUrl = (url: Ref<string>) => {
-  const getUrl = () => {
-    return toRelativeProxyUrl(url.value, zakenProxyRoot) ?? "";
-  };
+export const fetchZakenPreviewByUrlOrId = (urlOrId: string) => {
+  const [url, zaaksysteemId] = urlOrId.includes("/")
+    ? // Als je de zaak zoekt bij een contactmoment (OK1), hebben we de volledige url van de zaak.
+      // daaruit kunnen we de zaaksysteemId afleiden
+      [
+        toRelativeProxyUrl(urlOrId, zakenProxyRoot) || "",
+        new URL(urlOrId).origin,
+      ]
+    : // als je de zaak zoekt bij een klantcontact (OK2), hebben we alleen een zaakId.
+      // dan hebben we dus ook geen zaaksysteemId
+      [getZaakUrl(urlOrId), ""];
 
-  const getZaaksysteemId = () => {
-    const u = url.value;
-    if (!u) return "";
-    const parsed = new URL(u);
-    parsed.pathname = "";
-    return parsed.toString();
-  };
-
-  const fetchPreview = (u: string) => {
-    const zaaksysteemId = getZaaksysteemId();
-    return fetchWithZaaksysteemId(zaaksysteemId, u)
-      .then(throwIfNotOk)
-      .then((x) => x.json())
-      .then((json) =>
-        mapZaakDetailsPreview({
-          ...json,
-          zaaksysteemId,
-        }),
-      );
-  };
-
-  const getUniqueId = () => url.value && `${url.value}_preview`;
-
-  return ServiceResult.fromFetcher(getUrl, fetchPreview, {
-    getUniqueId,
-  });
+  return fetchWithZaaksysteemId(zaaksysteemId, url)
+    .then(throwIfNotOk)
+    .then((x) => x.json())
+    .then((json) =>
+      mapZaakDetailsPreview({
+        ...json,
+        zaaksysteemId: json.zaaksysteemId || zaaksysteemId,
+      }),
+    );
 };
 
 export const useZakenByZaaknummer = (zaaknummer: Ref<string>) => {
@@ -119,7 +109,6 @@ type ZaakBedrijfIdentifier =
 export const useZakenByKlantBedrijfIdentifier = (
   getId: () => ZaakBedrijfIdentifier | undefined,
 ) => {
-
   const getUrl = () => {
     const searchParam = getId();
     if (!searchParam) return "";
@@ -416,17 +405,6 @@ const mapDocument = (rawDocumenten: any, url: string): ZaakDocument | null => {
   };
   return doc;
 };
-
-export function fetchWithZaaksysteemId(
-  zaaksysteemId: string | undefined,
-  url: string,
-  request: RequestInit = {},
-) {
-  if (zaaksysteemId) {
-    setHeader(request, "ZaaksysteemId", zaaksysteemId);
-  }
-  return fetchLoggedIn(url, request);
-}
 
 export function useZaaksysteemDeeplinkConfig(getZaaksysteemId: () => string) {
   const url = "/api/zaaksysteem/deeplinkconfig";

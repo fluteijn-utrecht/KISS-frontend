@@ -1,11 +1,15 @@
-import type { Contactverzoek } from "@/features/contact/contactverzoek/overzicht/types";
-
 //api types
 
 export type DigitaalAdresApiViewModel = {
   adres: string;
-  soortDigitaalAdres?: string;
+  soortDigitaalAdres?: DigitaalAdresTypes;
   omschrijving?: string;
+};
+
+export type DigitaalAdresExpandedApiViewModel = DigitaalAdresApiViewModel & {
+  _expand?: {
+    verstrektDoorBetrokkene?: Betrokkene;
+  };
 };
 
 export type ExpandedKlantContactApiViewmodel = {
@@ -18,11 +22,16 @@ export type ExpandedKlantContactApiViewmodel = {
   hadBetrokkenActoren: Array<{
     soortActor: string;
     naam: string;
-    actorIdentificator: {
+    actoridentificator: {
       objectId: string;
     };
   }>;
-  internetaak: InternetaakApiViewModel;
+  gingOverOnderwerpobjecten: { uuid: string; url: string }[];
+  _expand: {
+    hadBetrokkenen?: Betrokkene[];
+    leiddeTotInterneTaken?: InternetaakApiViewModel[];
+    gingOverOnderwerpobjecten?: OnderwerpObjectPostModel[];
+  };
 };
 
 export type InternetaakApiViewModel = {
@@ -50,20 +59,23 @@ export type ActorApiViewModel = {
 };
 
 //applicatie types
-
-export type BetrokkeneMetKlantContact = {
+export type Betrokkene = {
   uuid: string;
-  wasPartij: { uuid: string; url: string };
-  klantContact: ExpandedKlantContactApiViewmodel;
+  wasPartij?: { uuid: string; url: string };
 
   digitaleAdressen: Array<{ uuid: string; url: string }>;
-  digitaleAdressenExpanded: Array<DigitaalAdresApiViewModel>;
   contactnaam: {
     achternaam: string;
     voorletters: string;
     voornaam: string;
     voorvoegselAchternaam: string;
   };
+  hadKlantcontact?: { uuid: string; url: string };
+};
+
+export type BetrokkeneMetKlantContact = Betrokkene & {
+  klantContact: ExpandedKlantContactApiViewmodel;
+  expandedDigitaleAdressen?: DigitaalAdresApiViewModel[];
 };
 
 export interface MedewerkerIdentificatie {
@@ -80,7 +92,7 @@ export interface ContactmomentViewModel {
   tekst: string;
   objectcontactmomenten: {
     object: string;
-    objectType: "zaak";
+    objectType: string;
     contactmoment: string;
   }[];
   medewerkerIdentificatie: MedewerkerIdentificatie;
@@ -150,7 +162,8 @@ export type Contactnaam = {
 
 export enum DigitaalAdresTypes {
   email = "email",
-  telefoonnummer = "telnr",
+  telefoonnummer = "telefoonnummer",
+  overig = "overig",
 }
 
 export type IdentificatorType = {
@@ -199,9 +212,22 @@ export type Partij = {
   };
   partijIdentificatoren: { uuid: string }[];
   _expand?: {
-    digitaleAdressen?: { adres?: string; soortDigitaalAdres?: string }[];
+    digitaleAdressen?: {
+      adres?: string;
+      soortDigitaalAdres?: DigitaalAdresTypes;
+    }[];
   };
 };
 
-//todo: Contactverzoek type verplaatsen naar hier. o meer specifieke models introduceren
-export type ContactverzoekViewmodel = Contactverzoek;
+export type Identificator = {
+  objectId: string;
+  codeObjecttype: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
+};
+
+export type OnderwerpObjectPostModel = {
+  klantcontact: { uuid: string };
+  wasKlantcontact: { uuid: string } | null;
+  onderwerpobjectidentificator: Identificator;
+};

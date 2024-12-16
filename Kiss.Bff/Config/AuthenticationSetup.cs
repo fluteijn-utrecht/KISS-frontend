@@ -169,7 +169,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = true,
+                        ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
@@ -193,10 +193,11 @@ namespace Microsoft.Extensions.DependencyInjection
                         .RequireRole(redacteurRole)
                         .Build());
 
-
+                //endpoints beschermd met een authorize attribuut, met de policy extrensysteem,
+                //worden geautoriseerd adhv het jwt token scheme
                 options.AddPolicy(Policies.ExternSysteemPolicy, policy =>
                 {
-                    policy.RequireRole("ExternSysteem");
+                    policy.RequireAuthenticatedUser();
                     policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
                 });
 
