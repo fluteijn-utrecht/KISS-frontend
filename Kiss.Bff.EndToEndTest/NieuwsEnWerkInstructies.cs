@@ -186,28 +186,11 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
     public async Task Als_ik_een_belangrijk_bericht_publiceer_komt_deze_bovenaan()
     {
         var titel = $"End to end test {Guid.NewGuid()}";
-        int initialFeatureCount = 0; // Initialize count
+        // Step 1: Get the initial featured indicator count
+        var initialFeatureCount = await GetFeaturedCount();
 
-        // Declare featuredIndicator outside the try block so it's accessible throughout the method
-        var featuredIndicator = Page.Locator(".featured-indicator");
-
-        try
-        {
-            // Step 1: Get the initial featured indicator count (if visible)
-            if (await featuredIndicator.IsVisibleAsync())
-            {
-                var featureText = await featuredIndicator.TextContentAsync();
-                if (int.TryParse(featureText, out var count))
-                {
-                    initialFeatureCount = count;
-                }
-            }
-        }
-        finally
-        {
-            // Step 2: Create a new important message
-            await CreateBericht(titel, true, "");
-        }
+        // Step 2: Create a new important message
+        await CreateBericht(titel, true, "");
 
         try
         {
@@ -231,43 +214,35 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
                 Console.WriteLine("This article does not contain the 'Belangrijk' tag.");
             }
 
+            // Step 5: Get the new featured count
+            var updatedCount = await GetFeaturedCount();
+            Assert.IsTrue(updatedCount >= initialFeatureCount + 1, $"Expected featured count to be at least {initialFeatureCount + 1}, but got {updatedCount}");
 
-            // Step 5: Ensure the featured indicator is now visible
-            await Expect(featuredIndicator).ToBeVisibleAsync();
-
-            // Step 6: Validate that the featured count is now at least 1 or higher than the initial count
-            var updatedFeatureText = await featuredIndicator.TextContentAsync();
-            if (int.TryParse(updatedFeatureText, out var updatedCount))
-            {
-                Assert.IsTrue(updatedCount >= initialFeatureCount + 1, $"Expected featured count to be at least {initialFeatureCount + 1}, but got {updatedCount}");
-            }
-            else
-            {
-                Assert.Fail("Featured indicator did not update with a valid number.");
-            }
-
-            // Step 7: Mark the article as read
+            // Step 6: Mark the article as read
             await firstArticle.GetByRole(AriaRole.Button, new() { Name = "Markeer als gelezen" }).ClickAsync();
 
-            // Step 8: Wait for the response related to the featured count update
-            await Page.WaitForResponseAsync(x => x.Url.Contains("featuredcount"));
-
-            // Step 9: Validate that the featured count is now back to the initial count
-            var reUpdatedFeatureText = await featuredIndicator.TextContentAsync();
-            if (int.TryParse(reUpdatedFeatureText, out var reUpdatedCount))
-            {
-                Assert.IsTrue(reUpdatedCount == initialFeatureCount, $"Expected featured count to be equal to the initial count again, but instead got {reUpdatedCount}");
-            }
-            else
-            {
-                Assert.Fail("Featured indicator did not update with a valid number.");
-            }
+            // Step 7: Validate that the featured count is now back to the initial count
+            var reUpdatedCount = await GetFeaturedCount();
+            Assert.IsTrue(reUpdatedCount == initialFeatureCount, $"Expected featured count to be equal to the initial count {initialFeatureCount} again, but instead got {reUpdatedCount}");
         }
         finally
         {
-            // Step 10: Clean up by deleting the created message
+            // Step 8: Clean up by deleting the created message
             await DeleteBericht(titel);
         }
+    }
+
+    private async Task<int> GetFeaturedCount()
+    {
+        // Declare featuredIndicator outside the try block so it's accessible throughout the method
+        var featuredIndicator = Page.Locator(".featured-indicator");
+        await Page.WaitForResponseAsync(x => x.Url.Contains("featuredcount"));
+        if (await featuredIndicator.IsVisibleAsync())
+        {
+            var featureText = await featuredIndicator.TextContentAsync();
+            return int.Parse(featureText!);
+        }
+        return 0;
     }
 
 
