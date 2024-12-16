@@ -193,15 +193,6 @@ export type IdentificatorType = {
   codeObjecttype: CodeObjecttype;
 };
 
-// export const CodeRegister = Object.freeze({
-//   brp: "brp",
-//   hr: "hr",
-//   overig: "overig",
-// });
-
-// type CodeRegister = keyof typeof CodeRegister;
-
-// TODO in toekomstige story: waardes overleggen met Maykin en INFO
 export const identificatorTypes = {
   persoon: {
     codeRegister: CodeRegister.brp,
