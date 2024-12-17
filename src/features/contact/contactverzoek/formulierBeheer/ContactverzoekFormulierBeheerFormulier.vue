@@ -240,7 +240,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import {
@@ -250,11 +250,20 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { fetchLoggedIn } from "@/services";
 import { toast } from "@/stores/toast";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAfdelingen } from "@/features/contact/components/afdelingen";
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 
 const router = useRouter();
+const route = useRoute();
+
+const isAfdelingen = computed(
+  () => route.name === "FormulierenContactverzoekAfdelingenBeheer",
+);
+const isGroepen = computed(
+  () => route.name === "FormulierenContactverzoekGroepenBeheer",
+);
+
 const props = defineProps<{ id?: string }>();
 
 type Vraag = {
