@@ -4,7 +4,11 @@
       >Formulieren contactverzoek
       {{ isAfdelingen ? "afdelingen" : "groepen" }}</UtrechtHeading
     >
-    <router-link to="/Beheer/Contactverzoekformulier/"> Toevoegen </router-link>
+    <router-link
+      :to="`/Beheer/formulier-contactverzoek-${isAfdelingen ? 'afdelingen' : 'groepen'}/`"
+    >
+      Toevoegen
+    </router-link>
   </div>
   <div v-if="loading"><SimpleSpinner /></div>
   <div v-else class="table-wrapper">
@@ -34,7 +38,7 @@
               <li>
                 <router-link
                   class="icon icon-after icon-only chevron-right"
-                  :to="'/Beheer/Contactverzoekformulier/' + vragenset.id"
+                  :to="`/Beheer/formulier-contactverzoek-${isAfdelingen ? 'afdelingen' : 'groepen'}/${vragenset.id}`"
                   :title="`Details ${vragenset.titel}`"
                 />
               </li>
