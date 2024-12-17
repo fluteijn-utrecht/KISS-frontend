@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace Kiss.Bff.EndToEndTest;
+﻿namespace Kiss.Bff.EndToEndTest;
 
 [TestClass]
 public class NieuwsEnWerkInstructies : BaseTestInitializer
@@ -251,7 +249,7 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
     public async Task Als_ik_een_skill_toevoeg_wordt_deze_vermeld_in_de_filter()
     {
         // Define the new skill name to be added and tested
-        var newSkill = "Test Skill";
+        var newSkill = "Playwright Test Skill";
 
         try
         {
@@ -517,39 +515,18 @@ public class NieuwsEnWerkInstructies : BaseTestInitializer
         // Step 1: Navigate to the Skills management page
         await NavigateToSkillsBeheer();
 
-        // Step 2: Locate the skill item by its name
-        var skillLocator = Page.Locator($"li.listItem:has-text('{skillName}')").First;
+        // Step 2: Locate the skill listitem by its name
+        var skillLocator = Page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = skillName });
 
-        // Step 3: Check if the skill exists
-        if (await skillLocator.CountAsync() > 0)
-        {
-            // Step 4: Click the delete button for the specified skill
-            var deleteButton = skillLocator.Locator("button[title='Verwijderen']").First;
-            await Expect(deleteButton).ToBeVisibleAsync();
-            await Expect(deleteButton).ToBeEnabledAsync();
-            if (await deleteButton.IsVisibleAsync())
-            {
-                // Handle the confirmation dialog
-                Page.Dialog += async (sender, dialog) =>
-                {
-                    await dialog.AcceptAsync(); // Accept the confirmation dialog
-                };
+        // Step 3: Locate the delete button within the listitem
+        var deleteButton = skillLocator.GetByRole(AriaRole.Button).And(Page.GetByTitle("Verwijderen"));
 
-                await deleteButton.ClickAsync(); // Click the delete button
-            }
-            else
-            {
-                throw new Exception("Delete button is not visible.");
-            }
+        // Step 4: Click the delete button and accept the dialog
+        Page.Dialog += Accept;
+        await deleteButton.ClickAsync();
 
-            // Step 7: Verify the skill is no longer present in the list
-            await Expect(skillLocator).ToBeHiddenAsync();
-        }
-        else
-        {
-            // Handle the case where the skill does not exist
-            throw new Exception($"Skill '{skillName}' not found for deletion.");
-        }
+        // Step 5: Verify the skill is no longer present in the list
+        await Expect(skillLocator).ToBeHiddenAsync();
     }
 
     static async void Accept(object? _, IDialog dialog) => await dialog.AcceptAsync();
