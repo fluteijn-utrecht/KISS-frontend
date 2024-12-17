@@ -24,6 +24,7 @@ import {
   DigitaalAdresTypes,
   type OnderwerpObjectPostModel,
   type Betrokkene,
+  CodeSoortObjectId,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
@@ -715,7 +716,7 @@ async function mapPartijToKlant(
       ?.filter((x) => x.adres && x.soortDigitaalAdres === type)
       .map((x) => x.adres || "") || [];
 
-  const getIdentificator = (type: { codeSoortObjectId: string }) =>
+  const getIdentificator = (type: { codeSoortObjectId: CodeSoortObjectId }) =>
     identificatoren?.find(
       (x) =>
         x?.partijIdentificator?.objectId &&
