@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
+namespace Kiss.Bff.Intern.ContactverzoekenVragensets
 {
     public class ContactVerzoekVragenSet
     {

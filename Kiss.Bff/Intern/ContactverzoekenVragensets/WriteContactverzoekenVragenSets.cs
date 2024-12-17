@@ -1,12 +1,9 @@
-﻿using System.Text.Json;
-using System.Threading;
-using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
+﻿using Kiss.Bff.Beheer.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
+namespace Kiss.Bff.Intern.ContactverzoekenVragensets
 {
     [ApiController]
     [Authorize(Policy = Policies.RedactiePolicy)]

@@ -1,5 +1,5 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
+using Kiss.Bff.Intern.ContactverzoekenVragensets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

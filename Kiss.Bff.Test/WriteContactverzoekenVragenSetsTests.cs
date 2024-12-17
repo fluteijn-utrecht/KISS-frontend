@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Kiss.Bff.Beheer.Data;
 using System.Linq;
 using System.Threading;
-using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
+using Kiss.Bff.Intern.ContactverzoekenVragensets;
 
 namespace Kiss.Bff.Test
 {
