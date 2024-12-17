@@ -37,8 +37,8 @@ namespace Kiss.Bff.Intern.ContactverzoekenVragensets
 
             contactVerzoekVragenSet.Titel = model.Titel;
             contactVerzoekVragenSet.JsonVragen = model.JsonVragen;
-            contactVerzoekVragenSet.AfdelingId = model.AfdelingId;
-            contactVerzoekVragenSet.AfdelingNaam = model.AfdelingNaam;
+            contactVerzoekVragenSet.OrganisatorischeEenheidId = model.OrganisatorischeEenheidId;
+            contactVerzoekVragenSet.OrganisatorischeEenheidNaam = model.OrganisatorischeEenheidNaam;
 
             await _db.SaveChangesAsync(cancellationToken);
 

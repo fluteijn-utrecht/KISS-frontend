@@ -9,7 +9,9 @@ namespace Kiss.Bff.Intern.ContactverzoekenVragensets
         [Required]
         public string Titel { get; set; } = default!;
         public string? JsonVragen { get; set; }
-        public string AfdelingId { get; set; } = default!;
-        public string AfdelingNaam { get; set; } = default!;
+        public string OrganisatorischeEenheidId { get; set; } = default!;
+        public string OrganisatorischeEenheidNaam { get; set; } = default!;
+
+        public string OrganisatorischeEenheidSoort { get; set; } = default!;
     }
 }

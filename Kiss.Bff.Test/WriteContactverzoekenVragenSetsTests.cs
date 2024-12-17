@@ -27,8 +27,9 @@ namespace Kiss.Bff.Test
             var model = new ContactVerzoekVragenSet
             {
                 Titel = "Test Titel",
-                AfdelingId = string.Empty,
-                AfdelingNaam = "Test Name"
+                OrganisatorischeEenheidId = string.Empty,
+                OrganisatorischeEenheidNaam = "Test Name",
+                OrganisatorischeEenheidSoort = "afdeling"
             };
 
             // Act
@@ -49,8 +50,9 @@ namespace Kiss.Bff.Test
             var originalModel = new ContactVerzoekVragenSet
             {
                 Titel = "Originele Titel",
-                AfdelingId = string.Empty,
-                AfdelingNaam = "Original Name"
+                OrganisatorischeEenheidId = string.Empty,
+                OrganisatorischeEenheidNaam = "Original Name",
+                OrganisatorischeEenheidSoort = "afdeling"
             };
             dbContext.ContactVerzoekVragenSets.Add(originalModel);
             await dbContext.SaveChangesAsync();
@@ -58,8 +60,9 @@ namespace Kiss.Bff.Test
             var updatedModel = new ContactVerzoekVragenSet
             {
                 Titel = "Geupdaten Titel",
-                AfdelingId = string.Empty,
-                AfdelingNaam = "Updated Name"
+                OrganisatorischeEenheidId = string.Empty,
+                OrganisatorischeEenheidNaam = "Updated Name",
+                OrganisatorischeEenheidSoort = "afdeling"
             };
 
             // Act
@@ -79,8 +82,9 @@ namespace Kiss.Bff.Test
             var model = new ContactVerzoekVragenSet
             {
                 Titel = "Test Titel",
-                AfdelingId = string.Empty,
-                AfdelingNaam = "Test Name"
+                OrganisatorischeEenheidId = string.Empty,
+                OrganisatorischeEenheidNaam = "Test Name",
+                OrganisatorischeEenheidSoort = "afdeling"
             };
             dbContext.ContactVerzoekVragenSets.Add(model);
             await dbContext.SaveChangesAsync();
