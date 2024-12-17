@@ -1,6 +1,9 @@
 <template>
   <div class="header-wrapper">
-    <UtrechtHeading :level="1">Formulieren contactverzoek</UtrechtHeading>
+    <UtrechtHeading :level="1"
+      >Formulieren contactverzoek
+      {{ isAfdelingen ? "afdelingen" : "groepen" }}</UtrechtHeading
+    >
     <router-link to="/Beheer/Contactverzoekformulier/"> Toevoegen </router-link>
   </div>
   <div v-if="loading"><SimpleSpinner /></div>
@@ -44,7 +47,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
@@ -52,6 +56,15 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
+
+const route = useRoute();
+
+const isAfdelingen = computed(
+  () => route.name === "FormulierenContactverzoekAfdelingenBeheer",
+);
+const isGroepen = computed(
+  () => route.name === "FormulierenContactverzoekGroepenBeheer",
+);
 
 type VragenSets = {
   id: number;

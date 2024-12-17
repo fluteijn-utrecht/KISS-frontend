@@ -10,8 +10,11 @@
       >Gespreksresultaten</router-link
     >
     <router-link to="/Beheer/Kanalen">Kanalen</router-link>
-    <router-link to="/Beheer/Contactverzoekformulieren">
-      Formulieren contactverzoek
+    <router-link to="/Beheer/formulieren-contactverzoek-afdelingen">
+      Formulieren contactverzoek afdelingen
+    </router-link>
+    <router-link to="/Beheer/formulieren-contactverzoek-groepen">
+      Formulieren contactverzoek groepen
     </router-link>
   </nav>
 
