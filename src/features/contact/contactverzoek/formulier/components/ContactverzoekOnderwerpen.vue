@@ -28,11 +28,15 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type { ContactVerzoekVragenSet } from "@/features/contact/components/types";
+import type {
+  ContactVerzoekVragenSet,
+  TypeOrganisatorischeEenheid,
+} from "@/features/contact/components/types";
 import { watchEffect } from "vue";
 
 const props = defineProps<{
-  organisatorischeEenheidId?: string; //de afdeling waarvan vragensets getoond mogen worden in de keuzelijst
+  organisatorischeEenheidId?: string; //de organisatorische eenheid waarvan vragensets getoond mogen worden in de keuzelijst
+  organisatorischeEenheidSoort?: TypeOrganisatorischeEenheid; //het soort organisatorische eenheid waarvan vragensets getoond mogen worden in de keuzelijst
   vragenSets: ContactVerzoekVragenSet[]; //alle vragensets
   modelValue?: ContactVerzoekVragenSet; //de (voor)geselecteerde vragenset
   prefill: boolean;
@@ -46,10 +50,13 @@ const emit = defineEmits<{
 //subset van vragensets horende bij de geselecteerde afdeling
 const organisatorischeEenheidVragenSets = computed(() => {
   const selectedOrganisatorischeEenheidId = props.organisatorischeEenheidId;
+  const selectedOrganisatorischeEenheidSoort =
+    props.organisatorischeEenheidSoort;
+
   return props.vragenSets.filter(
     (s) =>
       s.organisatorischeEenheidId == selectedOrganisatorischeEenheidId &&
-      selectedOrganisatorischeEenheidId,
+      s.organisatorischeEenheidSoort == selectedOrganisatorischeEenheidSoort,
   );
 });
 
@@ -62,22 +69,25 @@ watchEffect(() => {
 });
 
 watch(
-  organisatorischeEenheidVragenSets,
-  (v) => {
-    if (v && v.length > 0 && !vragenSetId.value && props.prefill) {
-      vragenSetId.value = v[0].id;
-      emit("update:modelValue", v[0]);
+  [
+    () => props.organisatorischeEenheidId,
+    () => props.organisatorischeEenheidSoort,
+  ],
+  ([vIdNew, vSoortNew], [vIdOld, vSoortOld]) => {
+    if (vIdNew !== vIdOld || vSoortNew !== vSoortOld) {
+      vragenSetId.value = undefined;
+      emit("update:modelValue", undefined);
     }
   },
   { immediate: true },
 );
 
 watch(
-  () => props.organisatorischeEenheidId,
+  organisatorischeEenheidVragenSets,
   (v) => {
-    if (!v) {
-      vragenSetId.value = undefined;
-      emit("update:modelValue", undefined);
+    if (v && v.length > 0 && !vragenSetId.value && props.prefill) {
+      vragenSetId.value = v[0].id;
+      emit("update:modelValue", v[0]);
     }
   },
   { immediate: true },

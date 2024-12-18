@@ -6,6 +6,7 @@ import type {
   TextareaVraag,
   DropdownVraag,
   CheckboxVraag,
+  TypeOrganisatorischeEenheid,
 } from "../../components/types";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
@@ -15,6 +16,7 @@ type ServerContactVerzoekVragenSet = {
   titel: string;
   jsonVragen: string;
   organisatorischeEenheidId: string;
+  organisatorischeEenheidSoort: TypeOrganisatorischeEenheid;
 };
 
 ///////////////////////////////////////////////
@@ -48,6 +50,7 @@ function mapToClientContactVerzoekVragenSets(
       titel: serverData.titel,
       vraagAntwoord: parsedQuestions,
       organisatorischeEenheidId: serverData.organisatorischeEenheidId,
+      organisatorischeEenheidSoort: serverData.organisatorischeEenheidSoort,
     };
   });
 }

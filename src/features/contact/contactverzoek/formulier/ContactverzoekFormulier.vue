@@ -139,6 +139,7 @@
             <contactverzoek-onderwerpen
               :vragenSets="data"
               :organisatorischeEenheidId="organisatorischeEenheidId"
+              :organisatorischeEenheidSoort="organisatorischeEenheidSoort"
               :prefill="!form.vragenSetChanged"
               v-model:modelValue="form.contactVerzoekVragenSet"
               @change="form.vragenSetChanged = true"
@@ -319,6 +320,7 @@ import GroepenSearch from "./components/GroepenSearch.vue";
 import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import { fetchGroepen } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
+import { TypeOrganisatorischeEenheid } from "../../components/types";
 
 const props = defineProps<{
   modelValue: ContactmomentContactVerzoek;
@@ -344,6 +346,17 @@ const organisatorischeEenheidId = computed(() => {
     return form.value?.afdeling?.id;
   } else if (form.value.typeActor === ActorType.groep) {
     return form.value?.groep?.id;
+  }
+
+  return undefined;
+});
+
+// Temp
+const organisatorischeEenheidSoort = computed(() => {
+  if (form.value.typeActor === ActorType.afdeling) {
+    return TypeOrganisatorischeEenheid.Afdeling;
+  } else if (form.value.typeActor === ActorType.groep) {
+    return TypeOrganisatorischeEenheid.Groep;
   }
 
   return undefined;
