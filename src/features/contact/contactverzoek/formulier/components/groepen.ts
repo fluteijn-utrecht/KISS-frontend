@@ -2,6 +2,7 @@ import {
   fetchLoggedIn,
   parseJson,
   parsePagination,
+  ServiceResult,
   throwIfNotOk,
   type PaginatedResult,
 } from "@/services";
@@ -43,3 +44,8 @@ export const groepenFetcher = (url: string): Promise<PaginatedResult<Groep>> =>
 
 export const fetchGroepen = (search: string | undefined, exactMatch: boolean) =>
   groepenFetcher(getGroepenSearchUrl(search, exactMatch));
+
+export function useGroepen(search: () => string | undefined) {
+  const getUrl = () => getGroepenSearchUrl(search(), false);
+  return ServiceResult.fromFetcher(getUrl, groepenFetcher);
+}

@@ -36,13 +36,33 @@
     </label>
 
     <!-- dropdown for afdelingen -->
-    <label class="utrecht-form-label">
+    <label
+      v-if="soort === TypeOrganisatorischeEenheid.Afdeling"
+      class="utrecht-form-label"
+    >
       <span class="required">Afdeling</span>
       <service-data-search
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een afdeling"
         :get-data="useAfdelingen"
+        v-model="selectedOrganisatorischeEenheid"
+        :map-value="(x) => x?.naam"
+        :map-description="(x) => x?.identificatie"
+      />
+    </label>
+
+    <!-- dropdown for groepen -->
+    <label
+      v-else-if="soort === TypeOrganisatorischeEenheid.Groep"
+      class="utrecht-form-label"
+    >
+      <span class="required">Groep</span>
+      <service-data-search
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een groep"
+        :get-data="useGroepen"
         v-model="selectedOrganisatorischeEenheid"
         :map-value="(x) => x?.naam"
         :map-description="(x) => x?.identificatie"
@@ -252,18 +272,15 @@ import { fetchLoggedIn } from "@/services";
 import { toast } from "@/stores/toast";
 import { useRouter } from "vue-router";
 import { useAfdelingen } from "@/features/contact/components/afdelingen";
+import { useGroepen } from "@/features/contact/contactverzoek/formulier/components/groepen";
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
+import { TypeOrganisatorischeEenheid } from "../../components/types";
 
 const router = useRouter();
 
-enum OrganisatorischeEenheidSoort {
-  afdeling = "afdeling",
-  groep = "groep",
-}
-
 const props = defineProps<{
   id?: string;
-  soort: OrganisatorischeEenheidSoort;
+  soort?: TypeOrganisatorischeEenheid;
 }>();
 
 type Vraag = {
@@ -525,7 +542,8 @@ const handleSuccess = () => {
   toast({
     text: "Contactverzoek formulier opgeslagen",
   });
-  router.push("/Beheer/Contactverzoekformulieren/");
+
+  navigateToContactverzoekformulieren();
 };
 
 const setVraagTypeDescription = (type: string) => {
