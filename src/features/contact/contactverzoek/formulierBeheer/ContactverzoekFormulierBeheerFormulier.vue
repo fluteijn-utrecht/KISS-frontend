@@ -34,6 +34,7 @@
         v-model="title"
       />
     </label>
+
     <!-- dropdown for afdelingen -->
     <label class="utrecht-form-label">
       <span class="required">Afdeling</span>
@@ -42,7 +43,7 @@
         :required="true"
         placeholder="Zoek een afdeling"
         :get-data="useAfdelingen"
-        v-model="selectedAfdeling"
+        v-model="selectedOrganisatorischeEenheid"
         :map-value="(x) => x?.naam"
         :map-description="(x) => x?.identificatie"
       />
@@ -283,13 +284,14 @@ type CheckboxVraag = Vraag & {
   options: string[];
 };
 
-type ContactverzoekAfdeling = {
+type ContactverzoekOrganisatorischeEenheid = {
   id: string;
   identificatie: string;
   naam: string;
 };
 
-const selectedAfdeling = ref<ContactverzoekAfdeling>();
+const selectedOrganisatorischeEenheid =
+  ref<ContactverzoekOrganisatorischeEenheid>();
 const selectedVraag = ref("Vraag toevoegen");
 const title = ref("");
 const vragen = ref<Vraag[]>([]);
@@ -300,8 +302,9 @@ const submit = async () => {
   try {
     const payload = {
       Titel: title.value,
-      AfdelingId: selectedAfdeling.value?.id,
-      AfdelingNaam: selectedAfdeling.value?.naam,
+      OrganisatorischeEenheidId: selectedOrganisatorischeEenheid.value?.id,
+      OrganisatorischeEenheidNaam: selectedOrganisatorischeEenheid.value?.naam,
+      OrganisatorischeEenheidSoort: props.soort,
       JsonVragen: JSON.stringify(generatedSchema, null, 2),
     };
 
@@ -453,9 +456,9 @@ async function load() {
       const data = await response.json();
 
       title.value = data.titel;
-      selectedAfdeling.value = {
-        id: data.afdelingId,
-        naam: data.afdelingNaam,
+      selectedOrganisatorischeEenheid.value = {
+        id: data.organisatorischeEenheidId,
+        naam: data.organisatorischeEenheidNaam,
         identificatie: data.identificatie,
       };
       vragen.value = ToSchemaFromVragen(JSON.parse(data.jsonVragen));
