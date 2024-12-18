@@ -257,11 +257,16 @@ import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 const router = useRouter();
 const route = useRoute();
 
-const isAfdelingen = computed(
-  () => route.name === "FormulierenContactverzoekAfdelingenBeheer",
-);
-const isGroepen = computed(
-  () => route.name === "FormulierenContactverzoekGroepenBeheer",
+enum OrganisatorischeEenheidSoort {
+  afdeling = "afdeling",
+  groep = "groep",
+}
+
+const organisatorischeEenheidSoort = computed<OrganisatorischeEenheidSoort>(
+  () =>
+    route.name === "FormulierenContactverzoekAfdelingenBeheer"
+      ? OrganisatorischeEenheidSoort.afdeling
+      : OrganisatorischeEenheidSoort.groep,
 );
 
 const props = defineProps<{ id?: string }>();

@@ -2,10 +2,10 @@
   <div class="header-wrapper">
     <UtrechtHeading :level="1"
       >Formulieren contactverzoek
-      {{ isAfdelingen ? "afdelingen" : "groepen" }}</UtrechtHeading
+      {{ organisatorischeEenheidSoort }}en</UtrechtHeading
     >
     <router-link
-      :to="`/Beheer/formulier-contactverzoek-${isAfdelingen ? 'afdelingen' : 'groepen'}/`"
+      :to="`/Beheer/formulier-contactverzoek-${organisatorischeEenheidSoort}/`"
     >
       Toevoegen
     </router-link>
@@ -16,14 +16,14 @@
       <thead>
         <tr>
           <th>Titel</th>
-          <th>Afdeling</th>
+          <th>{{ organisatorischeEenheidSoort }}</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="vragenset in vragenSets" :key="vragenset.id">
           <td class="wrap">{{ vragenset.titel }}</td>
-          <td>{{ vragenset.afdelingNaam }}</td>
+          <td>{{ vragenset.organisatorischeEenheidNaam }}</td>
           <td class="actions">
             <ul>
               <li>
@@ -38,7 +38,7 @@
               <li>
                 <router-link
                   class="icon icon-after icon-only chevron-right"
-                  :to="`/Beheer/formulier-contactverzoek-${isAfdelingen ? 'afdelingen' : 'groepen'}/${vragenset.id}`"
+                  :to="`/Beheer/formulier-contactverzoek-${organisatorischeEenheidSoort}/${vragenset.id}`"
                   :title="`Details ${vragenset.titel}`"
                 />
               </li>
@@ -63,19 +63,25 @@ import { fetchLoggedIn } from "@/services";
 
 const route = useRoute();
 
-const isAfdelingen = computed(
-  () => route.name === "FormulierenContactverzoekAfdelingenBeheer",
-);
-const isGroepen = computed(
-  () => route.name === "FormulierenContactverzoekGroepenBeheer",
+enum OrganisatorischeEenheidSoort {
+  afdeling = "afdeling",
+  groep = "groep",
+}
+
+const organisatorischeEenheidSoort = computed<OrganisatorischeEenheidSoort>(
+  () =>
+    route.name === "FormulierenContactverzoekAfdelingenBeheer"
+      ? OrganisatorischeEenheidSoort.afdeling
+      : OrganisatorischeEenheidSoort.groep,
 );
 
 type VragenSets = {
   id: number;
   titel: string;
   jsonVragen?: string;
-  afdelingId?: string;
-  afdelingNaam: string;
+  organisatorischeEenheidId?: string;
+  organisatorischeEenheidNaam: string;
+  organisatorischeEenheidSoort: OrganisatorischeEenheidSoort;
 };
 
 const loading = ref<boolean>(true);
