@@ -36,7 +36,7 @@ import { watchEffect } from "vue";
 
 const props = defineProps<{
   organisatorischeEenheidId?: string; //de organisatorische eenheid waarvan vragensets getoond mogen worden in de keuzelijst
-  organisatorischeEenheidSoort?: TypeOrganisatorischeEenheid; //het soort organisatorische eenheid waarvan vragensets getoond mogen worden in de keuzelijst
+  organisatorischeEenheidSoort?: TypeOrganisatorischeEenheid;
   vragenSets: ContactVerzoekVragenSet[]; //alle vragensets
   modelValue?: ContactVerzoekVragenSet; //de (voor)geselecteerde vragenset
   prefill: boolean;
@@ -73,8 +73,14 @@ watch(
     () => props.organisatorischeEenheidId,
     () => props.organisatorischeEenheidSoort,
   ],
-  ([vIdNew, vSoortNew], [vIdOld, vSoortOld]) => {
-    if (vIdNew !== vIdOld || vSoortNew !== vSoortOld) {
+  ([vIdNew, vSoortNew], [, vSoortOld]) => {
+    if (!vIdNew) {
+      vragenSetId.value = undefined;
+      emit("update:modelValue", undefined);
+    }
+
+    if (vSoortNew !== vSoortOld) {
+      // TODO: set vragenSetId vSoortNew
       vragenSetId.value = undefined;
       emit("update:modelValue", undefined);
     }
