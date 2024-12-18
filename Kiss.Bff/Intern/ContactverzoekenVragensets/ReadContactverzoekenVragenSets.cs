@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Kiss.Bff.Intern.ContactverzoekenVragensets
 {
     [ApiController]
+    [Route("api/contactverzoekvragensets")]
     public class ReadContactverzoekenVragenSets : ControllerBase
     {
         private readonly BeheerDbContext _db;
@@ -14,15 +15,15 @@ namespace Kiss.Bff.Intern.ContactverzoekenVragensets
             _db = db;
         }
 
-        [HttpGet("/api/contactverzoekvragensets")]
-        public async Task<IActionResult> Get(CancellationToken cancellationToken)
+        [HttpGet("{soort}")]
+        public async Task<IActionResult> Get(string soort, CancellationToken cancellationToken)
         {
-            var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets.ToListAsync(cancellationToken);
+            var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets.Where(x => x.OrganisatorischeEenheidSoort == soort).ToListAsync(cancellationToken);
 
             return Ok(contactVerzoekVragenSets);
         }
 
-        [HttpGet("/api/contactverzoekvragensets/{id:int}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var contactVerzoekVragenSet = await _db.ContactVerzoekVragenSets.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);

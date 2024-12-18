@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -97,21 +97,29 @@ const showError = () => {
 async function load() {
   loading.value = true;
   try {
-    const response = await fetchLoggedIn("/api/contactverzoekvragensets");
+    const response = await fetchLoggedIn(
+      `/api/contactverzoekvragensets/${organisatorischeEenheidSoort.value}`,
+    );
+
     if (response.status > 300) {
       showError();
       return;
     }
+
     const jsonData: any[] = await response.json();
+
     vragenSets.value = jsonData
       .map((x) => ({
         ...x,
         id: Number(x.id),
-        dateCreated: new Date(x.dateCreated),
-        dateUpdated: x.dateUpdated && new Date(x.dateUpdated),
-        publicatiedatum: new Date(x.publicatiedatum),
+        // ??
+        // dateCreated: new Date(x.dateCreated),
+        // dateUpdated: x.dateUpdated && new Date(x.dateUpdated),
+        // publicatiedatum: new Date(x.publicatiedatum),
       }))
       .sort((a, b) => a.titel.localeCompare(b.titel));
+
+    console.log(vragenSets.value);
   } catch {
     showError();
   } finally {
@@ -151,9 +159,7 @@ const confirmVerwijder = (id: number) => {
   }
 };
 
-onMounted(() => {
-  load();
-});
+watchEffect(() => load());
 </script>
 
 <style scoped lang="scss">
