@@ -15,18 +15,18 @@ namespace Kiss.Bff.Intern.ContactverzoekenVragensets
         }
 
         [HttpGet("api/contactverzoekvragensets")]
-        public async Task<IActionResult> Get([FromQuery] string soort, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get([FromQuery] string? soort, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(soort) || (soort != "afdeling" && soort != "groep"))
+            if (string.IsNullOrWhiteSpace(soort) || soort == "afdeling" || soort == "groep")
             {
-                return BadRequest();
-            }
-            
-            var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets
-                .Where(x => x.OrganisatorischeEenheidSoort == soort)
+                var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets
+                .Where(x => string.IsNullOrEmpty(soort) || x.OrganisatorischeEenheidSoort == soort)
                 .ToListAsync(cancellationToken);
 
-            return Ok(contactVerzoekVragenSets);
+                return Ok(contactVerzoekVragenSets);
+            }
+            
+            return BadRequest();
         }
 
         [HttpGet("api/contactverzoekvragensets/{id:int}")]

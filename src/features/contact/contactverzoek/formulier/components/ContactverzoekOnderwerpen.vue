@@ -1,7 +1,10 @@
 <template>
   <label
     class="utrecht-form-label"
-    v-if="afdelingVragenSets && afdelingVragenSets.length > 0"
+    v-if="
+      organisatorischeEenheidVragenSets &&
+      organisatorischeEenheidVragenSets.length > 0
+    "
   >
     <span>Onderwerp</span>
 
@@ -13,7 +16,7 @@
     >
       <option value="" selected>Geen</option>
       <option
-        v-for="item in afdelingVragenSets"
+        v-for="item in organisatorischeEenheidVragenSets"
         :key="item.id"
         :value="item.id"
       >
@@ -29,7 +32,7 @@ import type { ContactVerzoekVragenSet } from "@/features/contact/components/type
 import { watchEffect } from "vue";
 
 const props = defineProps<{
-  afdelingId?: string; //de afdeling waarvan vragensets getoond mogen worden in de keuzelijst
+  organisatorischeEenheidId?: string; //de afdeling waarvan vragensets getoond mogen worden in de keuzelijst
   vragenSets: ContactVerzoekVragenSet[]; //alle vragensets
   modelValue?: ContactVerzoekVragenSet; //de (voor)geselecteerde vragenset
   prefill: boolean;
@@ -41,10 +44,12 @@ const emit = defineEmits<{
 }>();
 
 //subset van vragensets horende bij de geselecteerde afdeling
-const afdelingVragenSets = computed(() => {
-  const selectedAfdelingId = props.afdelingId;
+const organisatorischeEenheidVragenSets = computed(() => {
+  const selectedOrganisatorischeEenheidId = props.organisatorischeEenheidId;
   return props.vragenSets.filter(
-    (s) => s.afdelingId == selectedAfdelingId && selectedAfdelingId,
+    (s) =>
+      s.organisatorischeEenheidId == selectedOrganisatorischeEenheidId &&
+      selectedOrganisatorischeEenheidId,
   );
 });
 
@@ -57,7 +62,7 @@ watchEffect(() => {
 });
 
 watch(
-  afdelingVragenSets,
+  organisatorischeEenheidVragenSets,
   (v) => {
     if (v && v.length > 0 && !vragenSetId.value && props.prefill) {
       vragenSetId.value = v[0].id;
@@ -68,7 +73,7 @@ watch(
 );
 
 watch(
-  () => props.afdelingId,
+  () => props.organisatorischeEenheidId,
   (v) => {
     if (!v) {
       vragenSetId.value = undefined;

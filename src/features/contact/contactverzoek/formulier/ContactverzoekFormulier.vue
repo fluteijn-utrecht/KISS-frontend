@@ -138,7 +138,7 @@
             <!-- Dropdown for selecting Onderwerp -->
             <contactverzoek-onderwerpen
               :vragenSets="data"
-              :afdelingId="form?.afdeling?.id"
+              :organisatorischeEenheidId="organisatorischeEenheidId"
               :prefill="!form.vragenSetChanged"
               v-model:modelValue="form.contactVerzoekVragenSet"
               @change="form.vragenSetChanged = true"
@@ -338,6 +338,17 @@ watch(
   { immediate: true },
 );
 
+// Temp
+const organisatorischeEenheidId = computed(() => {
+  if (form.value.typeActor === ActorType.afdeling) {
+    return form.value?.afdeling?.id;
+  } else if (form.value.typeActor === ActorType.groep) {
+    return form.value?.groep?.id;
+  }
+
+  return undefined;
+});
+
 const setActive = () => {
   form.value.isActive = true;
 };
@@ -350,6 +361,8 @@ const onUpdateAfdeling = () => {
 };
 
 const onUpdateGroep = () => {
+  form.value.contactVerzoekVragenSet = undefined;
+  form.value.vragenSetChanged = false;
   medewerker.value = undefined;
   setActive();
 };

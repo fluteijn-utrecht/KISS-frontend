@@ -14,7 +14,7 @@ type ServerContactVerzoekVragenSet = {
   id: number;
   titel: string;
   jsonVragen: string;
-  afdelingId: string;
+  organisatorischeEenheidId: string;
 };
 
 ///////////////////////////////////////////////
@@ -47,7 +47,7 @@ function mapToClientContactVerzoekVragenSets(
       id: serverData.id,
       titel: serverData.titel,
       vraagAntwoord: parsedQuestions,
-      afdelingId: serverData.afdelingId,
+      organisatorischeEenheidId: serverData.organisatorischeEenheidId,
     };
   });
 }

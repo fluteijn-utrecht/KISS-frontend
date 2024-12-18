@@ -27,7 +27,7 @@ export interface ContactVerzoekVragenSet {
   id: number;
   titel: string;
   vraagAntwoord: Vraag[];
-  afdelingId: string;
+  organisatorischeEenheidId: string;
 }
 
 // Kan alleen groep of afdeling zijn, medewerker bestaat niet
