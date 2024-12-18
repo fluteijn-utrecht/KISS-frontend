@@ -1,12 +1,9 @@
 <template>
   <div class="header-wrapper">
     <UtrechtHeading :level="1"
-      >Formulieren contactverzoek
-      {{ organisatorischeEenheidSoort }}en</UtrechtHeading
+      >Formulieren contactverzoek {{ soort }}en</UtrechtHeading
     >
-    <router-link
-      :to="`/Beheer/formulier-contactverzoek-${organisatorischeEenheidSoort}/`"
-    >
+    <router-link :to="`/Beheer/formulier-contactverzoek-${soort}/`">
       Toevoegen
     </router-link>
   </div>
@@ -16,7 +13,7 @@
       <thead>
         <tr>
           <th>Titel</th>
-          <th>{{ organisatorischeEenheidSoort }}</th>
+          <th>{{ soort }}</th>
           <th></th>
         </tr>
       </thead>
@@ -38,7 +35,7 @@
               <li>
                 <router-link
                   class="icon icon-after icon-only chevron-right"
-                  :to="`/Beheer/formulier-contactverzoek-${organisatorischeEenheidSoort}/${vragenset.id}`"
+                  :to="`/Beheer/formulier-contactverzoek-${soort}/${vragenset.id}`"
                   :title="`Details ${vragenset.titel}`"
                 />
               </li>
@@ -51,8 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
-import { useRoute } from "vue-router";
+import { ref, watch } from "vue";
 import {
   Heading as UtrechtHeading,
   Button as UtrechtButton,
@@ -61,19 +57,12 @@ import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { toast } from "@/stores/toast";
 import { fetchLoggedIn } from "@/services";
 
-const route = useRoute();
+const props = defineProps<{ soort: OrganisatorischeEenheidSoort }>();
 
 enum OrganisatorischeEenheidSoort {
   afdeling = "afdeling",
   groep = "groep",
 }
-
-const organisatorischeEenheidSoort = computed<OrganisatorischeEenheidSoort>(
-  () =>
-    route.name === "FormulierenContactverzoekAfdelingenBeheer"
-      ? OrganisatorischeEenheidSoort.afdeling
-      : OrganisatorischeEenheidSoort.groep,
-);
 
 type VragenSets = {
   id: number;
@@ -98,7 +87,7 @@ async function load() {
   loading.value = true;
   try {
     const response = await fetchLoggedIn(
-      `/api/contactverzoekvragensets/?soort=${organisatorischeEenheidSoort.value}`,
+      `/api/contactverzoekvragensets/?soort=${props.soort}`,
     );
 
     if (response.status > 300) {
@@ -157,7 +146,11 @@ const confirmVerwijder = (id: number) => {
   }
 };
 
-watchEffect(() => load());
+watch(
+  () => props.soort,
+  () => load(),
+  { immediate: true },
+);
 </script>
 
 <style scoped lang="scss">

@@ -11,7 +11,6 @@
   <template v-if="loading"> <simple-spinner /></template>
   <div>
     <pre>
- 
       Hier kan je een template maken voor een contactverzoek. Houd er rekening mee dat
       dit template een aanvulling is op de standaard vragen.
       Deze hoef je hier dus niet toe te voegen. De standaardvragen zijn: 
@@ -240,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useConfirmDialog } from "@vueuse/core";
 import PromptModal from "@/components/PromptModal.vue";
 import {
@@ -250,26 +249,21 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { fetchLoggedIn } from "@/services";
 import { toast } from "@/stores/toast";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { useAfdelingen } from "@/features/contact/components/afdelingen";
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
 
 const router = useRouter();
-const route = useRoute();
 
 enum OrganisatorischeEenheidSoort {
   afdeling = "afdeling",
   groep = "groep",
 }
 
-const organisatorischeEenheidSoort = computed<OrganisatorischeEenheidSoort>(
-  () =>
-    route.name === "FormulierenContactverzoekAfdelingenBeheer"
-      ? OrganisatorischeEenheidSoort.afdeling
-      : OrganisatorischeEenheidSoort.groep,
-);
-
-const props = defineProps<{ id?: string }>();
+const props = defineProps<{
+  id?: string;
+  soort: OrganisatorischeEenheidSoort;
+}>();
 
 type Vraag = {
   id: number;
@@ -547,7 +541,7 @@ const setVraagTypeDescription = (type: string) => {
 };
 
 const navigateToContactverzoekformulieren = () => {
-  router.push("/Beheer/Contactverzoekformulieren/");
+  router.push(`/Beheer/formulieren-contactverzoek-${props.soort}/`);
 };
 
 const revealCancelDialog = () => {
