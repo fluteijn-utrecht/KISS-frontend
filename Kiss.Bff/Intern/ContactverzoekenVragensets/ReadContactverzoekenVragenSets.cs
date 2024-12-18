@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Kiss.Bff.Intern.ContactverzoekenVragensets
 {
     [ApiController]
-    [Route("api/contactverzoekvragensets")]
     public class ReadContactverzoekenVragenSets : ControllerBase
     {
         private readonly BeheerDbContext _db;
@@ -15,15 +14,22 @@ namespace Kiss.Bff.Intern.ContactverzoekenVragensets
             _db = db;
         }
 
-        [HttpGet("{soort}")]
-        public async Task<IActionResult> Get(string soort, CancellationToken cancellationToken)
+        [HttpGet("api/contactverzoekvragensets")]
+        public async Task<IActionResult> Get([FromQuery] string soort, CancellationToken cancellationToken)
         {
-            var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets.Where(x => x.OrganisatorischeEenheidSoort == soort).ToListAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(soort) || (soort != "afdeling" && soort != "groep"))
+            {
+                return BadRequest();
+            }
+            
+            var contactVerzoekVragenSets = await _db.ContactVerzoekVragenSets
+                .Where(x => x.OrganisatorischeEenheidSoort == soort)
+                .ToListAsync(cancellationToken);
 
             return Ok(contactVerzoekVragenSets);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("api/contactverzoekvragensets/{id:int}")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var contactVerzoekVragenSet = await _db.ContactVerzoekVragenSets.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);

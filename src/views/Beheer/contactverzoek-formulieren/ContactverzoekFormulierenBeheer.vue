@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -98,7 +98,7 @@ async function load() {
   loading.value = true;
   try {
     const response = await fetchLoggedIn(
-      `/api/contactverzoekvragensets/${organisatorischeEenheidSoort.value}`,
+      `/api/contactverzoekvragensets/?soort=${organisatorischeEenheidSoort.value}`,
     );
 
     if (response.status > 300) {
@@ -118,8 +118,6 @@ async function load() {
         // publicatiedatum: new Date(x.publicatiedatum),
       }))
       .sort((a, b) => a.titel.localeCompare(b.titel));
-
-    console.log(vragenSets.value);
   } catch {
     showError();
   } finally {
