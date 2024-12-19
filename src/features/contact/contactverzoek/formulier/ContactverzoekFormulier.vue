@@ -142,8 +142,6 @@
               :vragenSets="data"
               v-model:contactVerzoekVragenSet="form.contactVerzoekVragenSet"
               v-model:vragenSetId="form.vragenSetId"
-              :prefill="!form.vragenSetChanged"
-              @change="form.vragenSetChanged = true"
             />
 
             <!-- Dynamic fields based on selected Onderwerp -->
@@ -355,14 +353,14 @@ const setActive = () => {
 
 const onUpdateAfdeling = () => {
   // form.value.contactVerzoekVragenSet = undefined;
-  form.value.vragenSetChanged = false;
+  // form.value.vragenSetChanged = false;
   medewerker.value = undefined;
   setActive();
 };
 
 const onUpdateGroep = () => {
   // form.value.contactVerzoekVragenSet = undefined;
-  form.value.vragenSetChanged = false;
+  // form.value.vragenSetChanged = false;
   medewerker.value = undefined;
   setActive();
 };

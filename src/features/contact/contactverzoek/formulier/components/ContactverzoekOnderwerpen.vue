@@ -36,13 +36,11 @@ const props = defineProps<{
   vragenSets: ContactVerzoekVragenSet[]; // alle vragensets
   contactVerzoekVragenSet?: ContactVerzoekVragenSet; // de (voor)geselecteerde vragenset
   vragenSetId?: number;
-  prefill: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "update:contactVerzoekVragenSet", v?: ContactVerzoekVragenSet): void;
   (e: "update:vragenSetId", v?: number): void;
-  (e: "change"): void;
 }>();
 
 //subset van vragensets horende bij de geselecteerde afdeling
@@ -61,7 +59,10 @@ const vragenSetIdMap = new Map();
 watch(
   organisatorischeEenheidVragenSets,
   (value) => {
-    const mapId = vragenSetIdMap.get(props.organisatorischeEenheidSoort) ?? 0;
+    const mapId = vragenSetIdMap.get(props.organisatorischeEenheidSoort);
+
+    // TODO: vragenSetId.value
+    console.log(`vragenSetId`, vragenSetId.value, vragenSetIdMap, mapId);
 
     // reset if no sets
     if (!value.length) {
@@ -71,8 +72,8 @@ watch(
       return;
     }
 
-    // prefill if set changed
-    if (props.prefill) {
+    // TODO: prefill if set changed
+    if (!mapId && !vragenSetId.value) {
       vragenSetId.value = value[0].id;
       emit("update:contactVerzoekVragenSet", value[0]);
 
@@ -82,26 +83,26 @@ watch(
     }
 
     // map set to id of soort
-    if (mapId >= 0) {
+    if (mapId) {
       vragenSetId.value = mapId;
-
       emit(
         "update:contactVerzoekVragenSet",
         value.find((set) => set.id === mapId),
       );
+
+      return;
     }
   },
   { immediate: true },
 );
 
 const setOnderwerp = () => {
-  //wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken en emitten
+  // wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken en emitten
   const vragenset = props.vragenSets.find((x) => {
     return x.id === vragenSetId.value;
   });
 
   emit("update:contactVerzoekVragenSet", vragenset);
-  emit("change");
 
   vragenSetIdMap.set(props.organisatorischeEenheidSoort, vragenSetId.value);
 };
