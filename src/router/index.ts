@@ -17,12 +17,6 @@ import {
 } from "vue-router";
 //import ContactverzoekenDetailView from "@/views/ContactverzoekenDetailView.vue";
 
-// TODO
-export enum TypeOrganisatorischeEenheid {
-  Groep = "groep",
-  Afdeling = "afdeling",
-}
-
 const NieuwsEnWerkinstructiesBeheer = () =>
   import(
     "@/views/Beheer/nieuws-en-werkinstructies/NieuwsEnWerkinstructiesBeheer.vue"
@@ -214,7 +208,7 @@ const router = createRouter({
           path: "formulieren-contactverzoek-afdeling",
           name: "FormulierenContactverzoekAfdelingenBeheer",
           component: ContactverzoekFormulierenBeheer,
-          props: { soort: TypeOrganisatorischeEenheid.Afdeling },
+          props: { soort: "afdeling" },
           meta: {},
         },
         {
@@ -223,7 +217,7 @@ const router = createRouter({
           component: ContactverzoekFormulierBeheer,
           props: (route) => ({
             ...route.params,
-            soort: TypeOrganisatorischeEenheid.Afdeling,
+            soort: "afdeling",
           }),
           meta: {},
         },
@@ -231,7 +225,7 @@ const router = createRouter({
           path: "formulieren-contactverzoek-groep",
           name: "FormulierenContactverzoekGroepenBeheer",
           component: ContactverzoekFormulierenBeheer,
-          props: { soort: TypeOrganisatorischeEenheid.Groep },
+          props: { soort: "groep" },
           meta: {},
         },
         {
@@ -240,7 +234,7 @@ const router = createRouter({
           component: ContactverzoekFormulierBeheer,
           props: (route) => ({
             ...route.params,
-            soort: TypeOrganisatorischeEenheid.Groep,
+            soort: "groep",
           }),
           meta: {},
         },

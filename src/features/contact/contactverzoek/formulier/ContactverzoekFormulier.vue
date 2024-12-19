@@ -137,11 +137,12 @@
           <template #success="{ data }">
             <!-- Dropdown for selecting Onderwerp -->
             <contactverzoek-onderwerpen
+              :organisatorischeEenheidId="soort && form[soort]?.id"
+              :organisatorischeEenheidSoort="soort"
               :vragenSets="data"
-              :organisatorischeEenheidId="organisatorischeEenheidId"
-              :organisatorischeEenheidSoort="organisatorischeEenheidSoort"
+              v-model:contactVerzoekVragenSet="form.contactVerzoekVragenSet"
+              v-model:vragenSetId="form.vragenSetId"
               :prefill="!form.vragenSetChanged"
-              v-model:modelValue="form.contactVerzoekVragenSet"
               @change="form.vragenSetChanged = true"
             />
 
@@ -330,6 +331,14 @@ const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
 const medewerker = ref<ContactVerzoekMedewerker>();
 
+// cast to TypeOrganisatorischeEenheid
+const soort = computed(() =>
+  form.value.typeActor === ActorType.afdeling ||
+  form.value.typeActor === ActorType.groep
+    ? Object.values(TypeOrganisatorischeEenheid)[form.value.typeActor]
+    : undefined,
+);
+
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
   () => props.modelValue,
@@ -340,41 +349,19 @@ watch(
   { immediate: true },
 );
 
-// Temp
-const organisatorischeEenheidId = computed(() => {
-  if (form.value.typeActor === ActorType.afdeling) {
-    return form.value?.afdeling?.id;
-  } else if (form.value.typeActor === ActorType.groep) {
-    return form.value?.groep?.id;
-  }
-
-  return undefined;
-});
-
-// Temp
-const organisatorischeEenheidSoort = computed(() => {
-  if (form.value.typeActor === ActorType.afdeling) {
-    return TypeOrganisatorischeEenheid.Afdeling;
-  } else if (form.value.typeActor === ActorType.groep) {
-    return TypeOrganisatorischeEenheid.Groep;
-  }
-
-  return undefined;
-});
-
 const setActive = () => {
   form.value.isActive = true;
 };
 
 const onUpdateAfdeling = () => {
-  form.value.contactVerzoekVragenSet = undefined;
+  // form.value.contactVerzoekVragenSet = undefined;
   form.value.vragenSetChanged = false;
   medewerker.value = undefined;
   setActive();
 };
 
 const onUpdateGroep = () => {
-  form.value.contactVerzoekVragenSet = undefined;
+  // form.value.contactVerzoekVragenSet = undefined;
   form.value.vragenSetChanged = false;
   medewerker.value = undefined;
   setActive();
