@@ -6,7 +6,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies;
 public class Scenarios : BaseTestInitializer
 {
     [TestMethod]
-    public async Task Scenario1()
+    public async Task Scenario01()
     {
         await Step("Given there is at least 1 nieuwsbericht");
         await using var news = await Page.CreateBericht(new() { Titel = "Playwright test nieuwsbericht", BerichtType = BerichtType.Nieuws });
@@ -25,7 +25,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario2()
+    public async Task Scenario02()
     {
         await Step("Given there is at least 1 important message");
         await using var testbericht = await Page.CreateBericht(new() { Titel = "Playwright test bericht belangrijk", IsBelangrijk = true });
@@ -39,7 +39,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario3()
+    public async Task Scenario03()
     {
         await Step("Given there is at least 1 nieuwsbericht");
         await using var testbericht = await Page.CreateBericht(new() { Titel = "Playwright test bericht", Inhoud = "Inhoud die we gaan verbergen" });
@@ -63,7 +63,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario4()
+    public async Task Scenario04()
     {
         var newsArticles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
 
@@ -96,7 +96,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario5()
+    public async Task Scenario05()
     {
         var newSection = Page.GetNieuwsSection();
         var newsArticles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
@@ -137,7 +137,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario6()
+    public async Task Scenario06()
     {
         await Step("Given there are at least 20 werkinstructies");
         var berichtRequests = Enumerable.Range(1, 20)
@@ -176,7 +176,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario7()
+    public async Task Scenario07()
     {
         await Step("Given there are at least 20 werkinstructies");
         var berichtRequests = Enumerable.Range(1, 20)
@@ -221,7 +221,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario8()
+    public async Task Scenario08()
     {
         await Step("Given there is a nieuwsbericht that is read");
         await using var bericht = await Page.CreateBericht(new (){ Titel = "Bericht playwright gelezen/ongelezen", Inhoud = "Text to look for" });
@@ -245,7 +245,7 @@ public class Scenarios : BaseTestInitializer
     }
 
     [TestMethod]
-    public async Task Scenario9()
+    public async Task Scenario09()
     {
         await Step("Given there are at least two skills");
         await using var skill1 = await Page.CreateSkill(Guid.NewGuid().ToString());
@@ -271,6 +271,24 @@ public class Scenarios : BaseTestInitializer
         var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
         await Expect(articles).ToHaveCountAsync(1);
         await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = berichtWithSkill1.Titel })).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
+    public async Task Scenario10()
+    {
+        await Step("Given there is a skill that is not linked to any article");
+        await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
+
+        await Step("And the user is on the HOME Page");
+        await Page.GotoAsync("/");
+
+        await Step("When the user selects the skill from the filter options");
+        await Page.GetSkillsSummaryElement().ClickAsync();
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill1.Naam }).CheckAsync();
+
+        await Step("Then no articles are visible");
+        var articles = Page.GetByRole(AriaRole.Article);
+        await Expect(articles).ToBeHiddenAsync();
     }
 
     //[TestMethod]
