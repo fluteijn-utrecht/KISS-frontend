@@ -20,9 +20,10 @@
 
             await beheerlink.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
 
-            while (await berichtenlink.GetAttributeAsync("aria-current") != "page")
+            if (await berichtenlink.GetAttributeAsync("aria-current") != "page")
             {
                 await berichtenlink.ClickAsync();
+                await page.GetByRole(AriaRole.Heading, new() { Name = "Berichten" }).WaitForAsync();
             }
         }
 
@@ -39,9 +40,10 @@
 
             await beheerlink.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
 
-            while (await skillslink.GetAttributeAsync("aria-current") != "page")
+            if (await skillslink.GetAttributeAsync("aria-current") != "page")
             {
                 await skillslink.ClickAsync();
+                await page.GetByRole(AriaRole.Heading, new() { Name = "Skills" }).WaitForAsync();
             }
         }
 
