@@ -287,6 +287,8 @@ public class Scenarios : BaseTestInitializer
         await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam }).CheckAsync();
 
         await Step("Then no articles are visible");
+        // wait until the spinner is gone
+        await Expect(Page.Locator(".spinner")).ToBeHiddenAsync();
         var articles = Page.GetByRole(AriaRole.Article);
         await Expect(articles).ToBeHiddenAsync();
     }
