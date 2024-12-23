@@ -291,41 +291,6 @@ public class Scenarios : BaseTestInitializer
         await Expect(articles).ToBeHiddenAsync();
     }
 
-    //[TestMethod]
-    //public async Task Als_ik_skill_filters_selecteer_worden_de_nieuwberichten_hierop_gefilterd()
-    //{
-    //    // Example: Test filtering by skill
-    //    var categorieFilterSection = Page.Locator("details").Filter(new() { HasText = "Filter op categorie" });
-    //    await Expect(categorieFilterSection).ToBeVisibleAsync();
-    //    await categorieFilterSection.Locator("summary").ClickAsync();
-    //    var algemeenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Algemeen" });
-    //    var belastingenCheckbox = categorieFilterSection.GetByRole(AriaRole.Checkbox, new() { Name = "Belastingen" });
-
-    //    await algemeenCheckbox.CheckAsync();
-    //    await belastingenCheckbox.CheckAsync();
-
-    //    // Verify results are filtered
-    //    var articles = Page.GetByRole(AriaRole.Article);
-    //    await Expect(articles.First).ToBeVisibleAsync();
-
-    //    var resultCount = await articles.CountAsync();
-
-    //    Assert.IsTrue(resultCount > 0, "Expected to find articles after filtering by skills.");
-
-    //    // Loop through each article and verify it contains at least one of the selected skills
-    //    for (var i = 0; i < resultCount; i++)
-    //    {
-    //        var article = articles.Nth(i);
-    //        var algemeenSkill = article.Locator("small.category-Algemeen");
-    //        var belastingenSkill = article.Locator("small.category-Belastingen");
-    //        await Expect(algemeenSkill.Or(belastingenSkill).First).ToBeVisibleAsync();
-    //    }
-
-    //    // Reset filters
-    //    await algemeenCheckbox.UncheckAsync();
-    //    await belastingenCheckbox.UncheckAsync();
-    //}
-
     // Dit test Stap 2. 8. 9. 10. 15. 
     //[TestMethod]
     //public async Task Als_ik_een_oud_bericht_update_komt_deze_bovenaan()
