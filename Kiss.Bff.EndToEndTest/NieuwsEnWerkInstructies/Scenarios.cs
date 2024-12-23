@@ -263,7 +263,7 @@ public class Scenarios : BaseTestInitializer
         await Step("And the user is on the HOME Page");
         await Page.GotoAsync("/");
 
-        await Step("When the user selects the first skill");
+        await Step("When the user selects the first skill from the filter options");
         await Page.GetSkillsSummaryElement().ClickAsync();
         await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill1.Naam }).CheckAsync();
 
