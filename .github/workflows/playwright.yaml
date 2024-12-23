@@ -38,3 +38,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./Kiss.Bff.EndToEndTest/bin/Debug/net8.0/playwright-traces # directory of your reports
         publish_branch: gh-pages/e2e # deploying to gh-pages branch
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
