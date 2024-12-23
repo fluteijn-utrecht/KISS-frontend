@@ -220,7 +220,7 @@ public class Scenarios : BaseTestInitializer
 
         await Step("And no additional werkinstructies are displayed");
         var nextPageFirstArticleContent = await articles.First.TextContentAsync();
-        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
+        Assert.AreEqual(initialFirstArticleContent, nextPageFirstArticleContent);
     }
 
 
