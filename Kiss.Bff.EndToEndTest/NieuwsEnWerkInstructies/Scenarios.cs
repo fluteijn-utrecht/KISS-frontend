@@ -220,6 +220,30 @@ public class Scenarios : BaseTestInitializer
         await Expect(articles.First).ToMatchAriaSnapshotAsync(initialFirstArticleAriaSnapshot);
     }
 
+    [TestMethod]
+    public async Task Scenario8()
+    {
+        await Step("Given there is a nieuwsbericht that is read");
+        await using var bericht = await Page.CreateBericht(new (){ Titel = "Bericht playwright gelezen/ongelezen", Inhoud = "Text to look for" });
+        await Page.GotoAsync("/");
+        var article = Page.GetBerichtOnHomePage(bericht);
+        var articleBody = article.GetByText(bericht.Inhoud);
+        var markeerGelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als gelezen"));
+        var markeerOngelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als ongelezen"));
+        var articleHeading = article.GetByRole(AriaRole.Heading);
+        await markeerGelezenButton.ClickAsync();
+        await Expect(articleBody).ToBeHiddenAsync();
+
+        await Step("And the user is on the HOME Page");
+        await Page.GotoAsync("/");
+
+        await Step("When the user clicks the 'Markeer als ongelezen' button");
+        await markeerOngelezenButton.ClickAsync();
+
+        await Step("Then content of the nieuwsbericht is visible");
+        await Expect(article).ToContainTextAsync(bericht.Inhoud);
+    }
+
 
     //[TestMethod]
     //public async Task Als_ik_skill_filters_selecteer_worden_de_nieuwberichten_hierop_gefilterd()

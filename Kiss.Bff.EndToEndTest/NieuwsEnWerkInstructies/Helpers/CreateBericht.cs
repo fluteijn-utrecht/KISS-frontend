@@ -47,6 +47,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
         public static async Task<Bericht> CreateBericht(this IPage page, CreateBerichtRequest request)
         {
+            request = request with { Inhoud = !string.IsNullOrWhiteSpace(request.Inhoud) ? request.Inhoud : request.Titel };
             await page.NavigateToNieuwsWerkinstructiesBeheer();
             var toevoegenLink = page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
             await toevoegenLink.ClickAsync();
@@ -54,7 +55,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
             await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(request.Titel);
 
-            await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(!string.IsNullOrWhiteSpace(request.Inhoud) ? request.Inhoud : request.Titel);
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(request.Inhoud);
 
             if (request.IsBelangrijk)
             {
@@ -101,6 +102,8 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
     internal record class Bericht(IPage Page) : CreateBerichtRequest, IAsyncDisposable
     {
+        public required new string Inhoud { get; init; }
+
         public async ValueTask DisposeAsync()
         {
             await Page.NavigateToNieuwsWerkinstructiesBeheer();
@@ -132,7 +135,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
     internal record class CreateBerichtRequest()
     {
         public required string Titel { get; init; }
-        public string? Inhoud { get; init; }
+        public virtual string? Inhoud { get; init; }
         public bool IsBelangrijk { get; init; }
         public string? Skill { get; init; }
         public BerichtType BerichtType { get; init; } = BerichtType.Nieuws;
