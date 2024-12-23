@@ -78,7 +78,7 @@ public class Scenarios : BaseTestInitializer
         await Step("When the user navigates through the HOME Page");
         await Page.GotoAsync("/");
 
-        var initialFirstArticleContent = await newsArticles.First.TextContentAsync();
+        var initialFirstArticleAriaSnapshot = await newsArticles.First.AriaSnapshotAsync();
 
         await Step("And clicks on the \"Next\" button to go to the next page");
         var nextPageButton = Page.GetNieuwsSection().Locator("[rel='next']").First;
@@ -86,8 +86,7 @@ public class Scenarios : BaseTestInitializer
 
         await Step("Then the user should see 10 new articles on the next page");
         await Expect(newsArticles).ToHaveCountAsync(10);
-        var nextPageFirstArticleContent = await newsArticles.First.TextContentAsync();
-        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
+        await Expect(newsArticles.First).Not.ToMatchAriaSnapshotAsync(initialFirstArticleAriaSnapshot);
 
         await Step("And the current page number should be 2");
         var currentPageButton = Page.GetNieuwsSection().Locator("[aria-current=page]");
@@ -99,6 +98,7 @@ public class Scenarios : BaseTestInitializer
     [TestMethod]
     public async Task Scenario5()
     {
+        var newSection = Page.GetNieuwsSection();
         var newsArticles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
 
         await Step("Given there are at least 20 nieuwsberichten");
@@ -117,9 +117,9 @@ public class Scenarios : BaseTestInitializer
         await Step("And is on page 2 with 10 articles displayed");
         var nextPageButton = Page.GetNieuwsSection().Locator("[rel='next']").First;
         await nextPageButton.ClickAsync();
-        await Expect(Page.GetNieuwsSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(10);
+        await Expect(newsArticles).ToHaveCountAsync(10);
 
-        var initialFirstArticleContent = await newsArticles.First.TextContentAsync();
+        var intialAriaSnapshot = await newsArticles.First.AriaSnapshotAsync();
 
         await Step("When the user clicks on the \"Previous\" button");
         var previousPageButton = Page.GetNieuwsSection().Locator("[rel='prev']").First;
@@ -127,8 +127,7 @@ public class Scenarios : BaseTestInitializer
 
         await Step("Then the user should see 10 different articles on the first page");
         await Expect(newsArticles).ToHaveCountAsync(10);
-        var nextPageFirstArticleContent = await newsArticles.First.TextContentAsync();
-        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
+        await Expect(newsArticles.First).Not.ToMatchAriaSnapshotAsync(intialAriaSnapshot);
 
         await Step("And the current page number should be 1");
         var currentPageButton = Page.GetNieuwsSection().Locator("[aria-current=page]");
@@ -159,7 +158,7 @@ public class Scenarios : BaseTestInitializer
         await nextPageButton.ClickAsync();
         await Expect(articles).ToHaveCountAsync(10);
 
-        var initialFirstArticleContent = await articles.First.TextContentAsync();
+        var intialFirstArticleAriaSnapshot = await articles.First.AriaSnapshotAsync();
 
         await Step("When the user clicks on the \"Previous\" button");
         var previousPageButton = Page.GetWerkinstructiesSection().Locator("[rel='prev']").First;
@@ -167,8 +166,7 @@ public class Scenarios : BaseTestInitializer
 
         await Step("Then the user should see 10 different werkinstructies on the first page");
         await Expect(articles).ToHaveCountAsync(10);
-        var nextPageFirstArticleContent = await articles.First.TextContentAsync();
-        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
+        await Expect(articles.First).Not.ToMatchAriaSnapshotAsync(intialFirstArticleAriaSnapshot);
 
         await Step("And the current page number should be 1");
         var currentPageButton = Page.GetWerkinstructiesSection().Locator("[aria-current=page]");
@@ -208,7 +206,7 @@ public class Scenarios : BaseTestInitializer
             await werkinstructies.First.WaitForAsync();
         }
 
-        var initialFirstArticleContent = await articles.First.TextContentAsync();
+        var initialFirstArticleAriaSnapshot = await articles.First.AriaSnapshotAsync();
 
         await Step("When the user clicks on the \"Next\" button");
 
@@ -219,8 +217,7 @@ public class Scenarios : BaseTestInitializer
         await Step("Then the user remains on the last page");
 
         await Step("And no additional werkinstructies are displayed");
-        var nextPageFirstArticleContent = await articles.First.TextContentAsync();
-        Assert.AreEqual(initialFirstArticleContent, nextPageFirstArticleContent);
+        await Expect(articles.First).ToMatchAriaSnapshotAsync(initialFirstArticleAriaSnapshot);
     }
 
 
