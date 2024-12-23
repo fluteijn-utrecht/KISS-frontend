@@ -20,7 +20,7 @@
 
             await beheerlink.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
 
-            if (await berichtenlink.GetAttributeAsync("aria-current") != "page")
+            while (await berichtenlink.GetAttributeAsync("aria-current") != "page")
             {
                 await berichtenlink.ClickAsync();
             }
@@ -39,7 +39,7 @@
 
             await beheerlink.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
 
-            if (await skillslink.GetAttributeAsync("aria-current") != "page")
+            while (await skillslink.GetAttributeAsync("aria-current") != "page")
             {
                 await skillslink.ClickAsync();
             }
