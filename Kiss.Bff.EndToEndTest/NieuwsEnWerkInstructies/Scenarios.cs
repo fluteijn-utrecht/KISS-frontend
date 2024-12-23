@@ -8,10 +8,16 @@ public class Scenarios : BaseTestInitializer
     [TestMethod]
     public async Task Scenario1()
     {
-        await Step("When navigates through the HOME Page");
+        await Step("Given there is at least 1 nieuwsbericht");
+        await using var news = await Page.CreateBericht(new() { Titel = "Playwright test nieuwsbericht", BerichtType = BerichtType.Nieuws });
+
+        await Step("And there is at least 1 werkinstructie");
+        await using var werkbericht = await Page.CreateBericht(new() { Titel = "Playwright test werkinstructie", BerichtType = BerichtType.Werkinstructie });
+
+        await Step("When the user navigates to the HOME Page");
         await Page.GotoAsync("/");
 
-        await Step("Then nieuws items are displayed");
+        await Step("Then nieuwsberichten are displayed");
         await Expect(Page.GetNieuwsSection().GetByRole(AriaRole.Article).First).ToBeVisibleAsync();
 
         await Step("And werkinstructies are displayed");
@@ -21,13 +27,13 @@ public class Scenarios : BaseTestInitializer
     [TestMethod]
     public async Task Scenario2()
     {
-        await Step("Given there is an important message");
+        await Step("Given there is at least 1 important message");
         await using var testbericht = await Page.CreateBericht(new() { Titel = "Playwright test bericht belangrijk", IsBelangrijk = true });
 
         await Step("When navigates through the HOME Page");
         await Page.GotoAsync("/");
 
-        await Step("Then count of the important messages displayed in the News and Instructions tabs.");
+        await Step("Then the count of the important messages is displayed in the News and Instructions tabs.");
         var count = await GetFeaturedCount();
         Assert.AreNotEqual(0, count);
     }
@@ -35,96 +41,100 @@ public class Scenarios : BaseTestInitializer
     [TestMethod]
     public async Task Scenario3()
     {
-        await Step("Given there is a nieuws item");
-
+        await Step("Given there is at least 1 nieuwsbericht");
         await using var testbericht = await Page.CreateBericht(new() { Titel = "Playwright test bericht", Inhoud = "Inhoud die we gaan verbergen" });
         var article = Page.GetBerichtOnHomePage(testbericht);
         var markeerGelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als gelezen"));
         var markeerOngelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als ongelezen"));
         var body = article.GetByText(testbericht.Inhoud!);
 
-        await Step("When navigates through the HOME Page");
+        await Step("When the user navigates through the HOME Page");
         await Page.GotoAsync("/");
 
-        await Step("And clicks on the book icon next to the news icon");
+        await Step("And clicks on the book icon within the nieuwsbericht card ");
         await markeerGelezenButton.ClickAsync();
 
-        await Step("Then button changes to 'markeer ongelezen'");
+        await Step("Then the button title on hover changes to 'markeer ongelezen'");
         await Expect(markeerGelezenButton).ToBeHiddenAsync();
         await Expect(markeerOngelezenButton).ToBeVisibleAsync();
 
-        await Step("And only title is displayed ");
+        await Step("And the body of the nieuwsbericht is hidden");
         await Expect(body).ToBeHiddenAsync();
     }
 
     [TestMethod]
     public async Task Scenario4()
     {
-        await Step("Given there are at least 20 news articles");
+        var newsArticles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
+
+        await Step("Given there are at least 20 nieuwsberichten");
         var berichtRequests = Enumerable.Range(1, 20)
             .Select(x => new CreateBerichtRequest
             {
                 Titel = "Playwright test bericht " + x
             });
-
         await using var berichten = await Page.CreateBerichten(berichtRequests);
 
-        await Step("When navigates through the HOME Page");
+        await Step("When the user navigates through the HOME Page");
         await Page.GotoAsync("/");
 
-        // Locate the 'Nieuws' section
-        await Expect(Page.GetNieuwsSection()).ToBeVisibleAsync();
-        // Locate the 'Next' page button using the pagination structure
-        var nextPageButton = Page.GetNieuwsSection().Locator("[rel='next']").First;
+        var initialFirstArticleContent = await newsArticles.First.TextContentAsync();
 
         await Step("And clicks on the \"Next\" button to go to the next page");
+        var nextPageButton = Page.GetNieuwsSection().Locator("[rel='next']").First;
         await nextPageButton.ClickAsync();
 
-        await Step("Then should see 10 new articles on the next page");
-        await Expect(Page.GetNieuwsSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(10);
+        await Step("Then the user should see 10 new articles on the next page");
+        await Expect(newsArticles).ToHaveCountAsync(10);
+        var nextPageFirstArticleContent = await newsArticles.First.TextContentAsync();
+        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
 
         await Step("And the current page number should be 2");
         var currentPageButton = Page.GetNieuwsSection().Locator("[aria-current=page]");
         var page2Button = Page.GetNieuwsSection().GetByLabel("Pagina 2");
-        await Expect(currentPageButton.And(page2Button)).ToBeVisibleAsync();
+        var aButtonThatIsTheCurrentPageAndHasLabelPagina2 = currentPageButton.And(page2Button);
+        await Expect(aButtonThatIsTheCurrentPageAndHasLabelPagina2).ToBeVisibleAsync();
     }
 
     [TestMethod]
     public async Task Scenario5()
     {
-        await Step("Given there are at least 20 news articles");
+        var newsArticles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
+
+        await Step("Given there are at least 20 nieuwsberichten");
         var berichtRequests = Enumerable.Range(1, 20)
             .Select(x => new CreateBerichtRequest
             {
                 Titel = "Playwright test bericht " + x
             });
-
         await using var berichten = await Page.CreateBerichten(berichtRequests);
 
-        await Step("And is on the HOME Page");
+        await Step("And the user is on the HOME page");
         await Page.GotoAsync("/");
-
         await Expect(Page.GetNieuwsSection()).ToBeVisibleAsync();
 
         // Locate the 'Next' page button using the pagination structure
-        var nextPageButton = Page.GetNieuwsSection().Locator("[rel='next']").First;
         await Step("And is on page 2 with 10 articles displayed");
+        var nextPageButton = Page.GetNieuwsSection().Locator("[rel='next']").First;
         await nextPageButton.ClickAsync();
         await Expect(Page.GetNieuwsSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(10);
 
-        await Step("When clicks on the \"Previous\" button");
+        var initialFirstArticleContent = await newsArticles.First.TextContentAsync();
+
+        await Step("When the user clicks on the \"Previous\" button");
         var previousPageButton = Page.GetNieuwsSection().Locator("[rel='prev']").First;
         await previousPageButton.ClickAsync();
 
-        await Step("Then should see 10 new articles on the next page");
-        await Expect(Page.GetNieuwsSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(10);
+        await Step("Then the user should see 10 different articles on the first page");
+        await Expect(newsArticles).ToHaveCountAsync(10);
+        var nextPageFirstArticleContent = await newsArticles.First.TextContentAsync();
+        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
 
         await Step("And the current page number should be 1");
         var currentPageButton = Page.GetNieuwsSection().Locator("[aria-current=page]");
         var page1Button = Page.GetNieuwsSection().GetByLabel("Pagina 1");
-        var currentPageButtonWithPage1Text = currentPageButton.And(page1Button);
-
-        await Expect(currentPageButtonWithPage1Text).ToBeVisibleAsync();
+        var aButtonThatIsTheCurrentPageAndHasLabelPagina1 = currentPageButton.And(page1Button);
+        await Expect(aButtonThatIsTheCurrentPageAndHasLabelPagina1).ToBeVisibleAsync();
     }
 
     [TestMethod]
@@ -137,32 +147,34 @@ public class Scenarios : BaseTestInitializer
                 Titel = "Playwright test bericht " + x,
                 BerichtType = BerichtType.Werkinstructie
             });
-
         await using var berichten = await Page.CreateBerichten(berichtRequests);
+        var articles = Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article);
 
-        await Step("And is on the HOME Page");
+        await Step("And the user is on the HOME Page");
         await Page.GotoAsync("/");
         await Expect(Page.GetWerkinstructiesSection()).ToBeVisibleAsync();
 
-        // Locate the 'Next' page button using the pagination structure
+        await Step("And is on page 2 with 10 werkinstructies displayed");
         var nextPageButton = Page.GetWerkinstructiesSection().Locator("[rel='next']").First;
-        await Step("And is on page 2 with 10 articles displayed");
         await nextPageButton.ClickAsync();
-        await Expect(Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(10);
+        await Expect(articles).ToHaveCountAsync(10);
 
-        await Step("When clicks on the \"Previous\" button");
+        var initialFirstArticleContent = await articles.First.TextContentAsync();
+
+        await Step("When the user clicks on the \"Previous\" button");
         var previousPageButton = Page.GetWerkinstructiesSection().Locator("[rel='prev']").First;
         await previousPageButton.ClickAsync();
 
-        await Step("Then should see 10 new articles on the next page");
-        await Expect(Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(10);
+        await Step("Then the user should see 10 different werkinstructies on the first page");
+        await Expect(articles).ToHaveCountAsync(10);
+        var nextPageFirstArticleContent = await articles.First.TextContentAsync();
+        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
 
         await Step("And the current page number should be 1");
         var currentPageButton = Page.GetWerkinstructiesSection().Locator("[aria-current=page]");
         var page1Button = Page.GetWerkinstructiesSection().GetByLabel("Pagina 1");
-        var currentPageButtonWithPage1Text = currentPageButton.And(page1Button);
-
-        await Expect(currentPageButtonWithPage1Text).ToBeVisibleAsync();
+        var aButtonThatIsTheCurrentPageAndHasLabelPagina1 = currentPageButton.And(page1Button);
+        await Expect(aButtonThatIsTheCurrentPageAndHasLabelPagina1).ToBeVisibleAsync();
     }
 
     [TestMethod]
@@ -177,16 +189,17 @@ public class Scenarios : BaseTestInitializer
             });
 
         await using var berichten = await Page.CreateBerichten(berichtRequests);
+        var articles = Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article);
 
-        await Step("And is on the HOME Page");
+        await Step("And the user is on the HOME Page");
         await Page.GotoAsync("/");
         await Expect(Page.GetWerkinstructiesSection()).ToBeVisibleAsync();
 
         // Locate the 'Next' page button using the pagination structure
         var nextPageButton = Page.GetWerkinstructiesSection().Locator("[rel='next']").First;
         var werkinstructies = Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article);
-        
-        await Step("And is on the last page of articles");
+
+        await Step("And is on the last page of werkinstructies");
 
         // keep clicking on the next page button until it's disabled
         while (!await IsDisabledPage(nextPageButton))
@@ -195,13 +208,19 @@ public class Scenarios : BaseTestInitializer
             await werkinstructies.First.WaitForAsync();
         }
 
-        await Step("When clicks on the \"Next\" button");
+        var initialFirstArticleContent = await articles.First.TextContentAsync();
+
+        await Step("When the user clicks on the \"Next\" button");
 
         await Assert.ThrowsExceptionAsync<TimeoutException>(
             () => nextPageButton.ClickAsync(new() { Timeout = 1000 }),
             "Expected the button to not be clickable, but it was");
 
-        await Step("Then should remain on the last page");
+        await Step("Then the user remains on the last page");
+
+        await Step("And no additional werkinstructies are displayed");
+        var nextPageFirstArticleContent = await articles.First.TextContentAsync();
+        Assert.AreNotEqual(initialFirstArticleContent, nextPageFirstArticleContent);
     }
 
 
