@@ -284,7 +284,7 @@ public class Scenarios : BaseTestInitializer
 
         await Step("When the user selects the skill from the filter options");
         await Page.GetSkillsSummaryElement().ClickAsync();
-        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill1.Naam }).CheckAsync();
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam }).CheckAsync();
 
         await Step("Then no articles are visible");
         var articles = Page.GetByRole(AriaRole.Article);
