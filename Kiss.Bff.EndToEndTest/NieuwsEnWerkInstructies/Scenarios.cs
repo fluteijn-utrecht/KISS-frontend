@@ -244,6 +244,34 @@ public class Scenarios : BaseTestInitializer
         await Expect(article).ToContainTextAsync(bericht.Inhoud);
     }
 
+    [TestMethod]
+    public async Task Scenario9()
+    {
+        await Step("Given there are at least two skills");
+        await using var skill1 = await Page.CreateSkill(Guid.NewGuid().ToString());
+        await using var skill2 = await Page.CreateSkill(Guid.NewGuid().ToString());
+
+        await Step("And there is exactly one nieuwsbericht related to the first skill");
+        await using var berichtWithSkill1 = await Page.CreateBericht(new CreateBerichtRequest { Titel = Guid.NewGuid().ToString(), Skill = skill1.Naam });
+
+        await Step("And there is exactly one nieuwsbericht related to the second skill");
+        await using var berichtWithSkill2 = await Page.CreateBericht(new CreateBerichtRequest { Titel = Guid.NewGuid().ToString() });
+
+        await Step("And there is at least one nieuwsbericht without a relation to any skill");
+        await using var berichtWithoutSkill = await Page.CreateBericht(new CreateBerichtRequest { Titel = Guid.NewGuid().ToString(), Skill = skill2.Naam });
+
+        await Step("And the user is on the HOME Page");
+        await Page.GotoAsync("/");
+
+        await Step("When the user selects the first skill");
+        await Page.GetSkillsSummaryElement().ClickAsync();
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill1.Naam }).CheckAsync();
+
+        await Step("Then only the article related to the first skill is visible");
+        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
+        await Expect(articles).ToHaveCountAsync(1);
+        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = berichtWithSkill1.Titel })).ToBeVisibleAsync();
+    }
 
     //[TestMethod]
     //public async Task Als_ik_skill_filters_selecteer_worden_de_nieuwberichten_hierop_gefilterd()
@@ -564,96 +592,10 @@ public class Scenarios : BaseTestInitializer
         }
     }
 
-    private async Task NavigateToNieuwsWerkinstructiesBeheer()
-    {
-        var beheerlink = Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" });
-        var berichtenlink = Page.GetByRole(AriaRole.Link, new() { Name = "Nieuws en werkinstructies" });
-
-        await Expect(beheerlink.Or(berichtenlink).First).ToBeVisibleAsync();
-
-        if (await beheerlink.IsVisibleAsync())
-        {
-            await beheerlink.ClickAsync();
-        }
-
-        await Expect(beheerlink).ToBeVisibleAsync(new() { Visible = false });
-
-        if (await berichtenlink.GetAttributeAsync("aria-current") != "page")
-        {
-            await berichtenlink.ClickAsync();
-        }
-    }
-
-    private async Task NavigateToSkillsBeheer()
-    {
-        var beheerlink = Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" });
-        var skillslink = Page.GetByRole(AriaRole.Link, new() { Name = "Skills" });
-
-        await Expect(beheerlink.Or(skillslink).First).ToBeVisibleAsync();
-
-        if (await beheerlink.IsVisibleAsync())
-        {
-            await beheerlink.ClickAsync();
-        }
-
-        await Expect(beheerlink).ToBeVisibleAsync(new() { Visible = false });
-
-        if (await skillslink.GetAttributeAsync("aria-current") != "page")
-        {
-            await skillslink.ClickAsync();
-        }
-    }
-
-    private async Task CreateBericht(string titel, bool isBelangrijk, string skill, TimeSpan? publishDateOffset = null)
-    {
-        await NavigateToNieuwsWerkinstructiesBeheer();
-        var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
-        await toevoegenLink.ClickAsync();
-        await Page.GetByRole(AriaRole.Radio, new() { Name = "Nieuws" }).CheckAsync();
-
-        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(titel);
-
-        // Fill in the content area
-        await Page.Locator(".ck-content").WaitForAsync();
-        await Page.Locator("textarea").FillAsync(titel);
-
-        if (isBelangrijk)
-        {
-            await Page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" }).CheckAsync();
-        }
-
-        if (!string.IsNullOrEmpty(skill))
-        {
-            var skillCheckbox = Page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
-            await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
-        }
-
-        // Use the current time as the base publish date
-        var publishDate = DateTime.Now;
-
-        // Apply the provided offset to the publish date
-        if (publishDateOffset.HasValue)
-        {
-            publishDate = publishDate.Add(publishDateOffset.Value);
-        }
-
-        // Set the publish date in the input field
-        var publishDateInput = Page.Locator("#publicatieDatum");
-        await publishDateInput.FillAsync(publishDate.ToString("yyyy-MM-ddTHH:mm"));
-
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
-
-        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
-    }
-
     private async Task UpdateBericht(string oldTitle, string newTitle)
     {
         // Navigate to the news management page
-        await NavigateToNieuwsWerkinstructiesBeheer();
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         // Find the news item by its old title
         var nieuwsRows = Page.GetByRole(AriaRole.Row)
@@ -672,74 +614,6 @@ public class Scenarios : BaseTestInitializer
         await Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" }).ClickAsync();
         await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
     }
-
-
-    private async Task DeleteBericht(string titel)
-    {
-        await NavigateToNieuwsWerkinstructiesBeheer();
-        var nieuwsRows = Page.GetByRole(AriaRole.Row)
-            .Filter(new()
-            {
-                Has = Page.GetByRole(AriaRole.Cell, new() { Name = "Nieuws" }).First
-            })
-            .Filter(new()
-            {
-                Has = Page.GetByRole(AriaRole.Cell, new() { Name = titel, Exact = false }).First
-            });
-
-        var deleteButton = nieuwsRows.GetByTitle("Verwijder").First;
-
-        Page.Dialog += Accept;
-        await deleteButton.ClickAsync();
-        Page.Dialog -= Accept;
-        await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
-    }
-
-    private async Task CreateSkill(string skillName)
-    {
-        // Step 1: Navigate to the "Skills" beheer page
-        await NavigateToSkillsBeheer();
-
-        // Step 2: Click on the "Toevoegen" button to add a new skill
-        var toevoegenLink = Page.GetByRole(AriaRole.Link, new() { Name = "toevoegen" });
-        await toevoegenLink.ClickAsync();
-
-        // Step 3: Fill in the skill name in the input field
-        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Naam" }).FillAsync(skillName);
-
-        // Step 4: Locate and click the "Opslaan" button to save the new skill
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-
-        // Ensure that the save button is visible and enabled before clicking
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
-
-        // Step 5: Optionally verify that the new skill has been added
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Skills" })).ToBeVisibleAsync();
-    }
-
-    private async Task DeleteSkill(string skillName)
-    {
-        // Step 1: Navigate to the Skills management page
-        await NavigateToSkillsBeheer();
-
-        // Step 2: Locate the skill listitem by its name
-        var skillLocator = Page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = skillName });
-
-        // Step 3: Locate the delete button within the listitem
-        var deleteButton = skillLocator.GetByRole(AriaRole.Button).And(Page.GetByTitle("Verwijderen"));
-
-        // Step 4: Click the delete button and accept the dialog
-        Page.Dialog += Accept;
-        await deleteButton.ClickAsync();
-
-        // Step 5: Verify the skill is no longer present in the list
-        await Expect(skillLocator).ToBeHiddenAsync();
-    }
-
-    static async void Accept(object? _, IDialog dialog) => await dialog.AcceptAsync();
 
     private async Task<bool> IsDisabledPage(ILocator locator)
     {

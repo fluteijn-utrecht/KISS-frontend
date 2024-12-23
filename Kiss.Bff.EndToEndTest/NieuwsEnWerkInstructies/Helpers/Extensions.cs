@@ -25,5 +25,28 @@
                 await berichtenlink.ClickAsync();
             }
         }
+
+        public static async Task NavigateToSkillsBeheer(this IPage page)
+        {
+            var beheerlink = page.GetByRole(AriaRole.Link, new() { Name = "Beheer" });
+            var skillslink = page.GetByRole(AriaRole.Link, new() { Name = "Skills" });
+            await beheerlink.Or(skillslink).First.WaitForAsync();
+
+            if (await beheerlink.IsVisibleAsync())
+            {
+                await beheerlink.ClickAsync();
+            }
+
+            await beheerlink.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+
+            if (await skillslink.GetAttributeAsync("aria-current") != "page")
+            {
+                await skillslink.ClickAsync();
+            }
+        }
+
+        public static ILocator GetSummaryElement(this IPage page) => page.Locator("summary");
+        public static ILocator GetSkillsSummaryElement(this IPage page) => page.GetSummaryElement().Filter(new () { HasText = "Filter op categorie" });
+        public static ILocator GetSkillsFieldset(this IPage page) => page.GetByRole(AriaRole.Group, new() { Name = "Filter op categorie" });
     }
 }
