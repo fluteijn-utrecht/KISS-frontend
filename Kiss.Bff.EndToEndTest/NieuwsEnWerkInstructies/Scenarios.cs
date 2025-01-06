@@ -606,7 +606,13 @@ public class Scenarios : BaseTestInitializer
 
         var classes = await locator.GetAttributeAsync("class");
         if (classes == null) return false;
-        // we always have a next page link, but sometimes it is disabled. TO DO: use disabled attribute so we don't have to rely on classes
+        // when the page is disabled it doesn't get a disabled attribute.
+        // TODO: research if there is a better pattern for this that is compatible with the den haag pagination component:
+        // https://nl-design-system.github.io/denhaag/?path=/docs/react-navigation-pagination--docs
+        // Note that their component renders invalid html: a button with a rel attribute.
+        // this might serve as a source of inspiration:
+        // https://design.homeoffice.gov.uk/components?name=Pagination
+        // https://design-system.w3.org/components/pagination.html
         return classes.Contains("denhaag-pagination__link--disabled")
             || classes.Contains("denhaag-pagination__link--current");
     }

@@ -1,11 +1,17 @@
 ﻿using System.Collections.Concurrent;
-using System.Drawing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 
 namespace Kiss.Bff.EndToEndTest
 {
+    /// <summary>
+    /// Inherit this class in each test class. This does the following:<br/>
+    /// 1. Makes sure the user is logged in before each test starts<br/>
+    /// 2. Makes sure Playwright records traces for each test<br/>
+    /// 3. Exposes a <see cref="Step(string)"/> method to define test steps. These show up in the Playwright traces and in the test report.<br/>
+    /// 4. Builds a html test report after all tests in a test class are done.
+    /// We upload these to <a href="https://klantinteractie-servicesysteem.github.io/KISS-frontend/">github pages</a>
+    /// </summary>
     [TestClass]
     public class BaseTestInitializer : PageTest
     {
@@ -17,21 +23,29 @@ namespace Kiss.Bff.EndToEndTest
             .Build();
 
         private static readonly UniqueOtpHelper s_uniqueOtpHelper = new(GetRequiredConfig("TestSettings:TEST_TOTP_SECRET"));
-        private static readonly ConcurrentDictionary<string, string> s_testsHtml = [];
-
+        
+        // this is used to build a test report for each test
+        private static readonly ConcurrentDictionary<string, string> s_testReports = [];
 
         private readonly List<string> _steps = [];
 
+        /// <summary>
+        /// This is run before each test
+        /// </summary>
+        /// <returns></returns>
         [TestInitialize]
         public virtual async Task TestInitialize()
         {
+            // log in with azure ad
             var username = GetRequiredConfig("TestSettings:TEST_USERNAME");
             var password = GetRequiredConfig("TestSettings:TEST_PASSWORD");
 
             var loginHelper = new AzureAdLoginHelper(Page, username, password, s_uniqueOtpHelper);
             await loginHelper.LoginAsync();
+            // store the cookie so we stay logged in in each test
             await Context.StorageStateAsync(new() { Path = StoragePath });
 
+            // start tracing. we do this AFTER logging in so the password doesn't end up in the tracing
             await Context.Tracing.StartAsync(new()
             {
                 Title = $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}",
@@ -39,30 +53,39 @@ namespace Kiss.Bff.EndToEndTest
                 Snapshots = true,
                 Sources = true,
             });
-
-            Console.WriteLine(TestContext.TestName);
         }
 
+        /// <summary>
+        /// Start a test step. This ends up in the test report and as group in the playwright tracing
+        /// </summary>
+        /// <param name="description"></param>
+        /// <returns></returns>
         protected async Task Step(string description)
         {
             await Context.Tracing.GroupEndAsync();
             await Context.Tracing.GroupAsync(description);
-            Console.WriteLine(description);
             _steps.Add(description);
         }
 
+        /// <summary>
+        /// This is run after each test
+        /// </summary>
+        /// <returns></returns>
         [TestCleanup]
         public async Task TestCleanup()
         {
+            // if we are in a group, end it
             await Context.Tracing.GroupEndAsync();
             var fileName = $"{TestContext.FullyQualifiedTestClassName}.{TestContext.TestName}.zip";
             var fullPath = Path.Combine(Environment.CurrentDirectory, "playwright-traces", fileName);
 
+            // stop tracing and save a zip file in the output directory
             await Context.Tracing.StopAsync(new()
             {
                 Path = fullPath
             });
 
+            // build a html report containing the test steps and a link to the playwright traces viewer
             var html = $"""
             <div data-outcome="{TestContext.CurrentTestOutcome}">
                 <h2>{TestContext.TestName}</h2>
@@ -75,12 +98,17 @@ namespace Kiss.Bff.EndToEndTest
             </div>
             """;
 
-            s_testsHtml.TryAdd(TestContext.TestName!, html);
+            s_testReports.TryAdd(TestContext.TestName!, html);
         }
 
+        /// <summary>
+        /// This is run after all tests in a test class are done
+        /// </summary>
+        /// <returns></returns>
         [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
         public static async Task ClassCleanup()
         {
+            // combine the reports for each test in a single html file
             var html = $$"""
             <!DOCTYPE html>
             <html lang="en">
@@ -94,7 +122,7 @@ namespace Kiss.Bff.EndToEndTest
             </head>
             <body>
                 <main>
-                    {{string.Join("", s_testsHtml.OrderBy(x=> x.Key).Select(x=> x.Value))}}
+                    {{string.Join("", s_testReports.OrderBy(x=> x.Key).Select(x=> x.Value))}}
                 </main>
             </body>
             """;
