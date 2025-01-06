@@ -1,10 +1,10 @@
 ﻿namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 {
-    internal static class Extensions
+    internal static class Locators
     {
         public static ILocator GetNieuwsSection(this IPage page) => page.Locator("section").Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = "Nieuws" }) });
         public static ILocator GetWerkinstructiesSection(this IPage page) => page.Locator("section").Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = "Werkinstructies" }) });
-        public static ILocator GetBerichtOnHomePage(this IPage page, Bericht bericht) => page.GetByRole(AriaRole.Article).Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = bericht.Titel }) });
+        public static ILocator GetBerichtOnHomePage(this IPage page, Bericht bericht) => page.GetByRole(AriaRole.Article).Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = bericht.Title }) });
 
         public static async Task NavigateToNieuwsWerkinstructiesBeheer(this IPage page)
         {

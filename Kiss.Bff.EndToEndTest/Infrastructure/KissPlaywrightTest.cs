@@ -13,12 +13,12 @@ namespace Kiss.Bff.EndToEndTest
     /// We upload these to <a href="https://klantinteractie-servicesysteem.github.io/KISS-frontend/">github pages</a>
     /// </summary>
     [TestClass]
-    public class BaseTestInitializer : PageTest
+    public class KissPlaywrightTest : PageTest
     {
         private const string StoragePath = "./auth.json";
 
         private static readonly IConfiguration s_configuration = new ConfigurationBuilder()
-            .AddUserSecrets<BaseTestInitializer>()
+            .AddUserSecrets<KissPlaywrightTest>()
             .AddEnvironmentVariables()
             .Build();
 

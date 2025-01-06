@@ -47,17 +47,17 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
         public static async Task<Bericht> CreateBericht(this IPage page, CreateBerichtRequest request)
         {
-            request = request with { Inhoud = !string.IsNullOrWhiteSpace(request.Inhoud) ? request.Inhoud : request.Titel };
+            request = request with { Body = !string.IsNullOrWhiteSpace(request.Body) ? request.Body : request.Title };
             await page.NavigateToNieuwsWerkinstructiesBeheer();
             var toevoegenLink = page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
             await toevoegenLink.ClickAsync();
             await page.GetByRole(AriaRole.Radio, new() { Name = request.BerichtType.ToString() }).CheckAsync();
 
-            await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(request.Titel);
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(request.Title);
 
-            await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(request.Inhoud);
+            await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(request.Body);
 
-            if (request.IsBelangrijk)
+            if (request.IsImportant)
             {
                 await page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" }).CheckAsync();
             }
@@ -90,11 +90,11 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             await page.GetByRole(AriaRole.Table).WaitForAsync();
             return new(page)
             {
-                IsBelangrijk = request.IsBelangrijk,
-                Titel = request.Titel,
+                IsImportant = request.IsImportant,
+                Title = request.Title,
                 PublishDateOffset = request.PublishDateOffset,
                 Skill = request.Skill,
-                Inhoud = request.Inhoud,
+                Inhoud = request.Body,
                 BerichtType = request.BerichtType,
             };
         }
@@ -115,7 +115,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 })
                 .Filter(new()
                 {
-                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = Titel, Exact = true }).First
+                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = Title, Exact = true }).First
                 });
 
             var deleteButton = nieuwsRows.GetByTitle("Verwijder").First;
@@ -136,9 +136,9 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
     internal record class CreateBerichtRequest()
     {
-        public required string Titel { get; init; }
-        public virtual string? Inhoud { get; init; }
-        public bool IsBelangrijk { get; init; }
+        public required string Title { get; init; }
+        public virtual string? Body { get; init; }
+        public bool IsImportant { get; init; }
         public string? Skill { get; init; }
         public BerichtType BerichtType { get; init; } = BerichtType.Nieuws;
 
