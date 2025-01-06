@@ -22,7 +22,7 @@ type ServerContactVerzoekVragenSet = {
 ///////////////////////////////////////////////
 //vragensets
 
-function fetchVragenSets(url: string) {
+export async function fetchVragenSets(url: string) {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((response) => response.json())

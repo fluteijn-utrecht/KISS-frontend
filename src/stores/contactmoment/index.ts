@@ -1,3 +1,4 @@
+import { toRaw } from "vue";
 import type {
   Medewerker,
   Website,
@@ -10,7 +11,12 @@ import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { defineStore } from "pinia";
 import { createSession, type Session } from "../switchable-store";
 export * from "./types";
-import type { ContactVerzoekVragenSet } from "@/features/contact/components/types";
+import type {
+  ContactVerzoekVragenSet,
+  TypeOrganisatorischeEenheid,
+} from "@/features/contact/components/types";
+import { fetchVragenSets } from "@/features/contact/contactverzoek/formulier/service";
+
 export type ContactmomentZaak = {
   zaak: ZaakDetails;
   shouldStore: boolean;
@@ -95,7 +101,8 @@ export type ContactmomentContactVerzoek = {
   interneToelichting?: string;
   vragenSetId?: number;
   contactVerzoekVragenSet?: ContactVerzoekVragenSet;
-  vragenSetChanged: boolean;
+  vragenSets: ContactVerzoekVragenSet[];
+  vragenSetIdMap: Map<TypeOrganisatorischeEenheid, number | undefined>;
   isActive?: boolean;
 };
 
@@ -140,58 +147,11 @@ export interface Vraag {
   afdeling?: Afdeling;
 }
 
-function initVraag(): Vraag {
-  return {
-    zaken: [],
-    notitie: "",
-    contactverzoek: {
-      url: "",
-      isMedewerker: undefined,
-      typeActor: ActorType.afdeling,
-      afdeling: undefined,
-      groep: undefined,
-      medewerker: undefined,
-      organisatorischeEenheidVanMedewerker: undefined,
-      telefoonnummer1: "",
-      telefoonnummer2: "",
-      omschrijvingTelefoonnummer2: "",
-      emailadres: "",
-      interneToelichting: "",
-      isActive: false,
-      contactVerzoekVragenSet: undefined,
-      vragenSetChanged: false,
-    },
-    startdatum: new Date().toISOString(),
-    kanaal: "",
-    gespreksresultaat: "",
-    klanten: [],
-    medewerkers: [],
-    websites: [],
-    kennisartikelen: [],
-    nieuwsberichten: [],
-    werkinstructies: [],
-    vacs: [],
-    vraag: undefined,
-    specifiekevraag: "",
-    afdeling: undefined,
-  };
-}
-
 export interface ContactmomentState {
   vragen: Vraag[];
   huidigeVraag: Vraag;
   session: Session;
   route: string;
-}
-
-function initContactmoment(): ContactmomentState {
-  const vraag = initVraag();
-  return {
-    vragen: [vraag],
-    huidigeVraag: vraag,
-    session: createSession(),
-    route: "",
-  };
 }
 
 function mapKlantToContactverzoek(
@@ -212,6 +172,7 @@ interface ContactmomentenState {
   contactmomenten: ContactmomentState[];
   huidigContactmoment: ContactmomentState | undefined;
   contactmomentLoopt: boolean;
+  vragenSets: ContactVerzoekVragenSet[];
 }
 
 export const useContactmomentStore = defineStore("contactmoment", {
@@ -220,6 +181,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       contactmomentLoopt: false,
       contactmomenten: [],
       huidigContactmoment: undefined,
+      vragenSets: [],
     } as ContactmomentenState;
   },
   getters: {
@@ -230,11 +192,69 @@ export const useContactmomentStore = defineStore("contactmoment", {
     },
   },
   actions: {
-    start() {
-      const newMoment = initContactmoment();
+    initVraag(): Vraag {
+      return {
+        zaken: [],
+        notitie: "",
+        contactverzoek: {
+          url: "",
+          isMedewerker: undefined,
+          typeActor: ActorType.afdeling,
+          afdeling: undefined,
+          groep: undefined,
+          medewerker: undefined,
+          organisatorischeEenheidVanMedewerker: undefined,
+          telefoonnummer1: "",
+          telefoonnummer2: "",
+          omschrijvingTelefoonnummer2: "",
+          emailadres: "",
+          interneToelichting: "",
+          isActive: false,
+          contactVerzoekVragenSet: undefined,
+          vragenSets: structuredClone(toRaw(this.vragenSets)),
+          vragenSetIdMap: new Map(),
+        },
+        startdatum: new Date().toISOString(),
+        kanaal: "",
+        gespreksresultaat: "",
+        klanten: [],
+        medewerkers: [],
+        websites: [],
+        kennisartikelen: [],
+        nieuwsberichten: [],
+        werkinstructies: [],
+        vacs: [],
+        vraag: undefined,
+        specifiekevraag: "",
+        afdeling: undefined,
+      };
+    },
+    initContactmoment(): ContactmomentState {
+      const vraag = this.initVraag();
+
+      return {
+        vragen: [vraag],
+        huidigeVraag: vraag,
+        session: createSession(),
+        route: "",
+      };
+    },
+    async start() {
+      await this.loadVragenSets();
+
+      const newMoment = this.initContactmoment();
       this.contactmomenten.unshift(newMoment);
       this.switchContactmoment(newMoment);
       this.contactmomentLoopt = true;
+    },
+    async loadVragenSets() {
+      try {
+        this.vragenSets = await fetchVragenSets(
+          "/api/contactverzoekvragensets",
+        );
+      } catch {
+        this.vragenSets = [];
+      }
     },
     switchContactmoment(contactmoment: ContactmomentState) {
       if (!this.contactmomenten.includes(contactmoment)) return;
@@ -242,7 +262,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       contactmoment.session.enable();
     },
     startNieuweVraag() {
-      const nieuweVraag = initVraag();
+      const nieuweVraag = this.initVraag();
       const { huidigContactmoment } = this;
       if (!huidigContactmoment) return;
 
