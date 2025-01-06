@@ -173,6 +173,7 @@ interface ContactmomentenState {
   huidigContactmoment: ContactmomentState | undefined;
   contactmomentLoopt: boolean;
   vragenSets: ContactVerzoekVragenSet[];
+  loading: boolean;
 }
 
 export const useContactmomentStore = defineStore("contactmoment", {
@@ -182,6 +183,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       contactmomenten: [],
       huidigContactmoment: undefined,
       vragenSets: [],
+      loading: false,
     } as ContactmomentenState;
   },
   getters: {
@@ -248,12 +250,18 @@ export const useContactmomentStore = defineStore("contactmoment", {
       this.contactmomentLoopt = true;
     },
     async loadVragenSets() {
+      if (this.vragenSets.length) return;
+
+      this.loading = true;
+
       try {
         this.vragenSets = await fetchVragenSets(
           "/api/contactverzoekvragensets",
         );
       } catch {
         this.vragenSets = [];
+      } finally {
+        this.loading = false;
       }
     },
     switchContactmoment(contactmoment: ContactmomentState) {
