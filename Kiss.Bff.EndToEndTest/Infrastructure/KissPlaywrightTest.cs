@@ -115,10 +115,10 @@ namespace Kiss.Bff.EndToEndTest
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src https://unpkg.com/simpledotcss@2.3.3/simple.min.css 'sha256-kZS4Ytg58npMuRkQ/J+zM+WLW6n1befhcf5YgPVHdEE=';">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src https://unpkg.com/simpledotcss@2.3.3/simple.min.css 'sha256-l0D//z1BZPnhAdIJ0lA8dsfuil0AB4xBpnOa/BhNVoU=';">
                 <title>Playwright traces</title>
                 <link rel="stylesheet" href="https://unpkg.com/simpledotcss@2.3.3/simple.min.css" integrity="sha384-Cxvt41nwdtHMOjpCqr+FaCybNL58LeIc0vPSLR4KlFSCBrHTb095iJbbw+hDTklQ" crossorigin="anonymous">
-                <style>[data-outcome=Failed]{color: var(--code)}</style>
+                <style>[data-outcome=Failed]{color: var(--code)}[data-outcome=Inconclusive]{color: var(--text-light);font-style: italic;}[data-outcome=Inconclusive] a{display:none}</style>
             </head>
             <body>
                 <main>
