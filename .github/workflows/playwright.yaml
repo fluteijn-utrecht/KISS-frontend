@@ -50,7 +50,7 @@ jobs:
         # directory of your reports
         path: './Kiss.Bff.EndToEndTest/bin/Debug/net8.0/playwright-traces'
   deploy:
-    if: ${{ always() }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
     needs: test
     environment:
       name: github-pages
