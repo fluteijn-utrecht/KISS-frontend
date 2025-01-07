@@ -12,6 +12,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 if (berichten.Count == 0) return;
                 await page.Context.Tracing.GroupEndAsync();
                 await page.Context.Tracing.GroupAsync("Cleanup berichten");
+                await page.Context.Tracing.GroupAsync("Start cleanup");
                 foreach (var item in berichten)
                 {
                     try
@@ -94,7 +95,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 Title = request.Title,
                 PublishDateOffset = request.PublishDateOffset,
                 Skill = request.Skill,
-                Inhoud = request.Body,
+                Body = request.Body,
                 BerichtType = request.BerichtType,
             };
         }
@@ -102,10 +103,11 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
     internal record class Bericht(IPage Page) : CreateBerichtRequest, IAsyncDisposable
     {
-        public required new string Inhoud { get; init; }
+        public required new string Body { get; init; }
 
         public async ValueTask DisposeAsync()
         {
+            await Page.Context.Tracing.GroupEndAsync();
             await Page.Context.Tracing.GroupAsync("Cleanup artikel");
             await Page.NavigateToNieuwsWerkinstructiesBeheer();
             var nieuwsRows = Page.GetByRole(AriaRole.Row)
@@ -124,7 +126,6 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 await deleteButton.ClickAsync();
             }
             await Page.GetByRole(AriaRole.Table).WaitForAsync();
-            await Page.Context.Tracing.GroupEndAsync();
         }
     }
 

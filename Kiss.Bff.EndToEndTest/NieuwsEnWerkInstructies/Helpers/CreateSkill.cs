@@ -45,6 +45,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
         public async ValueTask DisposeAsync()
         {
+            await Page.Context.Tracing.GroupEndAsync();
             await Page.Context.Tracing.GroupAsync("Cleanup skill");
             // Step 1: Navigate to the Skills management page
             await Page.NavigateToSkillsBeheer();

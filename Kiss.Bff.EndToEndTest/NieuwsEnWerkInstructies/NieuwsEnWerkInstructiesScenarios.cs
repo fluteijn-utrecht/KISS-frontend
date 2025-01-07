@@ -47,7 +47,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         var article = Page.GetBerichtOnHomePage(testbericht);
         var markeerGelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als gelezen"));
         var markeerOngelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als ongelezen"));
-        var body = article.GetByText(testbericht.Inhoud!);
+        var body = article.GetByText(testbericht.Body!);
 
         await Step("When the user navigates to the HOME Page");
         await Page.GotoAsync("/");
@@ -228,7 +228,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await using var bericht = await Page.CreateBericht(new() { Title = "Bericht playwright gelezen/ongelezen", Body = "Text to look for" });
         await Page.GotoAsync("/");
         var article = Page.GetBerichtOnHomePage(bericht);
-        var articleBody = article.GetByText(bericht.Inhoud);
+        var articleBody = article.GetByText(bericht.Body);
         var markeerGelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als gelezen"));
         var markeerOngelezenButton = article.GetByRole(AriaRole.Button).And(article.GetByTitle("Markeer als ongelezen"));
         var articleHeading = article.GetByRole(AriaRole.Heading);
@@ -242,7 +242,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await markeerOngelezenButton.ClickAsync();
 
         await Step("Then content of the nieuwsbericht is visible");
-        await Expect(article).ToContainTextAsync(bericht.Inhoud);
+        await Expect(article).ToContainTextAsync(bericht.Body);
     }
 
     [TestMethod]
