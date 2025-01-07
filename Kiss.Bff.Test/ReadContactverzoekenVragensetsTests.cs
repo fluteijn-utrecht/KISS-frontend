@@ -58,7 +58,7 @@ namespace Kiss.Bff.Test
             await dbContext.SaveChangesAsync();
 
             // Act
-            var result = await controller.Get(CancellationToken.None) as OkObjectResult;
+            var result = await controller.Get("afdeling", CancellationToken.None) as OkObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
@@ -77,7 +77,7 @@ namespace Kiss.Bff.Test
             var controller = new ReadContactverzoekenVragenSets(dbContext);
 
             // Act
-            var result = await controller.Get(CancellationToken.None) as OkObjectResult;
+            var result = await controller.Get("afdeling", CancellationToken.None) as OkObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
