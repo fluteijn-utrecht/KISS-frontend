@@ -43,13 +43,15 @@ jobs:
         'TestSettings:TEST_PASSWORD': '${{ secrets.PLAYWRIGHT_PASSWORD }}'
         'TestSettings:TEST_TOTP_SECRET': ${{ secrets.PLAYWRIGHT_TOTP_SECRET }}
         'TestSettings:TEST_BASE_URL': ${{ secrets.PLAYWRIGHT_BASE_URL }}
-    - name: Upload artifact
-      if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
-      uses: actions/upload-pages-artifact@v3
-      with:
-        # directory of your reports
-        path: './Kiss.Bff.EndToEndTest/bin/Debug/net8.0/playwright-traces'
-    - name: Deploy to GitHub Pages
-      if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
-      id: deployment
-      uses: actions/deploy-pages@v4
+
+  deploy:
+    if: ${{ always() }}
+    needs: test
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
