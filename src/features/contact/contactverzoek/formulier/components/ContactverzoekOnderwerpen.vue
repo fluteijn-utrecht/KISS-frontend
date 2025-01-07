@@ -44,7 +44,7 @@ const contactVerzoekVragenSet = useModel(props, "contactVerzoekVragenSet");
 
 const vragenSetId = ref<number>();
 
-//subset van vragensets horende bij de geselecteerde afdeling
+// subset van vragensets horende bij de geselecteerde organisatorische eenheid
 const organisatorischeEenheidVragenSets = computed(() => {
   return vragenSets.value.filter(
     (s) =>
@@ -66,7 +66,7 @@ watch(
 
     const mapId = vragenSetIdMap.value.get(props.organisatorischeEenheidSoort);
 
-    // get vragenSet by vragenSetId of organisatorischeEenheidSoort, else prefill with first
+    // get vragenSet by mapped vragenSetId van een organisatorische eenheid, anders prefill with first
     if (mapId !== undefined) {
       contactVerzoekVragenSet.value = value.find((set) => set.id === mapId);
       vragenSetId.value = mapId;
