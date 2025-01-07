@@ -299,21 +299,39 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a unique text (uuid)");
 
+        var uniqueTitle = Guid.NewGuid().ToString();
+
         await Step("Given there is exactly 1 werkinstructie with this text in the title");
 
+        var werkbericht = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
+       
         await Step("And there is exactly 1 nieuwsbericht with this text in the title");
+        
+        var nieuws = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
 
         await Step("And the user is on the HOME Page");
 
+        await Page.GotoAsync("/");
+        
         await Step("When the user selects 'Nieuws' from the filter dropdown");
+
+        await Page.GetWerkberichtType().SelectOptionAsync("Nieuws");
 
         await Step("And searches for the unique text");
 
+        await Page.GetHomeSearch().FillAsync(uniqueTitle);
+        await Page.GetHomeSearch().PressAsync("Enter");
+
+
         await Step("Then exactly one news article should be displayed");
+
+        await Expect(Page.GetSearchResult().GetByRole(AriaRole.Article)).ToHaveCountAsync(1);
 
         await Step("And no work instructions should be visible");
 
-        Assert.Inconclusive("Not implemented yet");
+        await Expect(Page.GetWerkinstructiesSection()).ToBeHiddenAsync();
+
+      
     }
 
     [TestMethod]
