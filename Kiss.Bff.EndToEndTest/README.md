@@ -4,7 +4,7 @@ These tests are scheduled to run on Github Actions. [An html report](https://kla
 ## Run/debug the tests locally
 1. In Visual Studio, right click the `Kiss.Bff.EndToEndTest` project and select `Manage user secrets`
 1. Fill in the following values:
-```json
+```jsonc
 {
   "TestSettings": {
     "TEST_BASE_URL": "", // a valid base url for an environment where an instance of kiss is running
