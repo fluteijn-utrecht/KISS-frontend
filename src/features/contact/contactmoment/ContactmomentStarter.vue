@@ -62,7 +62,7 @@ const onStartContactMoment = async () => {
 
 <style scoped lang="scss">
 .spinner-container {
-  color: #fff;
+  color: var(--color-white);
 }
 
 .start-button {

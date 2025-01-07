@@ -99,7 +99,6 @@ export type ContactmomentContactVerzoek = {
   omschrijvingTelefoonnummer2?: string;
   emailadres?: string;
   interneToelichting?: string;
-  vragenSetId?: number;
   contactVerzoekVragenSet?: ContactVerzoekVragenSet;
   vragenSets: ContactVerzoekVragenSet[];
   vragenSetIdMap: Map<TypeOrganisatorischeEenheid, number | undefined>;

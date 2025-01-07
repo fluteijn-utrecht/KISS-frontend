@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useModel, watch } from "vue";
+import { computed, ref, useModel, watch } from "vue";
 import type {
   ContactVerzoekVragenSet,
   TypeOrganisatorischeEenheid,
@@ -36,13 +36,13 @@ const props = defineProps<{
   vragenSets: ContactVerzoekVragenSet[]; // alle vragensets
   vragenSetIdMap: Map<TypeOrganisatorischeEenheid, number | undefined>; // map van vragenSetIds op organisatorischeEenheidSoort
   contactVerzoekVragenSet?: ContactVerzoekVragenSet; // de (voor)geselecteerde vragenset
-  vragenSetId?: number; // id van de geselecteerde vragenset
 }>();
 
 const vragenSets = useModel(props, "vragenSets");
 const vragenSetIdMap = useModel(props, "vragenSetIdMap");
 const contactVerzoekVragenSet = useModel(props, "contactVerzoekVragenSet");
-const vragenSetId = useModel(props, "vragenSetId");
+
+const vragenSetId = ref<number>();
 
 //subset van vragensets horende bij de geselecteerde afdeling
 const organisatorischeEenheidVragenSets = computed(() => {

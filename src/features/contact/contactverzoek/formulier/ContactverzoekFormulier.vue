@@ -140,7 +140,6 @@
           v-model:vragenSets="vragenSets"
           v-model:vragenSetIdMap="vragenSetIdMap"
           v-model:contactVerzoekVragenSet="form.contactVerzoekVragenSet"
-          v-model:vragenSetId="form.vragenSetId"
         />
 
         <!-- Dynamic fields based on selected Onderwerp -->
