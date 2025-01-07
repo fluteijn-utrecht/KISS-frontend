@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.Configuration;
 
 
@@ -88,11 +89,11 @@ namespace Kiss.Bff.EndToEndTest
             // build a html report containing the test steps and a link to the playwright traces viewer
             var html = $"""
             <div data-outcome="{TestContext.CurrentTestOutcome}">
-                <h2>{TestContext.TestName}</h2>
+                <h2>{HtmlEncoder.Default.Encode(TestContext.TestName ?? "")}</h2>
                 <a target="_blank" href="https://trace.playwright.dev/?trace=https://klantinteractie-servicesysteem.github.io/KISS-frontend/{fileName}">Playwright tracing</a>
                 <p>Steps:</p>
                 <ol>{string.Join("", _steps.Select(step => $"""
-                    <li>{step}</li>
+                    <li>{HtmlEncoder.Default.Encode(step)}</li>
                 """))}
                 </ol>
             </div>
