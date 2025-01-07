@@ -51,6 +51,7 @@ jobs:
         path: './Kiss.Bff.EndToEndTest/bin/Debug/net8.0/playwright-traces'
   deploy:
     if: ${{ always() }}
+    needs: test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
