@@ -404,7 +404,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
           kennisartikel: {
             //search type kennisartikel
             ...kennisartikel,
-            afdeling: kennisartikel.afdelingen?.[0]?.afdelingNaam?.trim(),
+            afdeling: kennisartikel.afdelingen?.[0]?.afdelingnaam?.trim(),
           },
           shouldStore: true,
         };

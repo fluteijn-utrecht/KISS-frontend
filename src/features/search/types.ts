@@ -41,7 +41,7 @@ export type Kennisartikel = {
 export type Vac = {
   vraag: string;
   antwoord: string;
-  afdelingen?: Afdeling[];
+  afdelingen?: VacAfdeling[];
 };
 
 export type Nieuwsbericht = {
@@ -54,4 +54,6 @@ export type Werkinstructie = {
   title: string;
 };
 
-export type Afdeling = { afdelingNaam: string };
+export type Afdeling = { afdelingnaam: string };
+
+export type VacAfdeling = { afdelingNaam: string };
