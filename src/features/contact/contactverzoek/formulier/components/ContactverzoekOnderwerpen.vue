@@ -36,19 +36,17 @@ const props = defineProps<{
   vragenSets: ContactVerzoekVragenSet[]; // alle vragensets
   vragenSetIdMap: Map<TypeOrganisatorischeEenheid, number | undefined>; // map van vragenSetIds op organisatorischeEenheidSoort
   contactVerzoekVragenSet?: ContactVerzoekVragenSet; // de (voor)geselecteerde vragenset
-  vragenSetId?: number;
+  vragenSetId?: number; // id van de geselecteerde vragenset
 }>();
 
-const emit = defineEmits<{
-  (e: "update:contactVerzoekVragenSet", v?: ContactVerzoekVragenSet): void;
-  (e: "update:vragenSetId", v?: number): void;
-}>();
-
+const vragenSets = useModel(props, "vragenSets");
+const vragenSetIdMap = useModel(props, "vragenSetIdMap");
+const contactVerzoekVragenSet = useModel(props, "contactVerzoekVragenSet");
 const vragenSetId = useModel(props, "vragenSetId");
 
 //subset van vragensets horende bij de geselecteerde afdeling
 const organisatorischeEenheidVragenSets = computed(() => {
-  return props.vragenSets.filter(
+  return vragenSets.value.filter(
     (s) =>
       s.organisatorischeEenheidId == props.organisatorischeEenheidId &&
       s.organisatorischeEenheidSoort == props.organisatorischeEenheidSoort,
@@ -60,47 +58,39 @@ watch(
   (value) => {
     // clear if no soort or empty set
     if (!props.organisatorischeEenheidSoort || !value.length) {
+      contactVerzoekVragenSet.value = undefined;
       vragenSetId.value = undefined;
-
-      emit("update:contactVerzoekVragenSet", undefined);
 
       return;
     }
 
-    const mapId = props.vragenSetIdMap.get(props.organisatorischeEenheidSoort);
+    const mapId = vragenSetIdMap.value.get(props.organisatorischeEenheidSoort);
 
     // get vragenSet by vragenSetId of organisatorischeEenheidSoort, else prefill with first
     if (mapId !== undefined) {
+      contactVerzoekVragenSet.value = value.find((set) => set.id === mapId);
       vragenSetId.value = mapId;
-
-      emit(
-        "update:contactVerzoekVragenSet",
-        value.find((set) => set.id === mapId),
-      );
     } else {
+      contactVerzoekVragenSet.value = value[0];
       vragenSetId.value = value[0].id;
 
-      emit("update:contactVerzoekVragenSet", value[0]);
-
-      props.vragenSetIdMap.set(props.organisatorischeEenheidSoort, value[0].id);
+      vragenSetIdMap.value.set(props.organisatorischeEenheidSoort, value[0].id);
     }
   },
   { immediate: true },
 );
 
 const setOnderwerp = () => {
-  // wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken en emitten
-  const vragenset = props.vragenSets.find(
+  if (!props.organisatorischeEenheidSoort) return;
+
+  // wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken
+  contactVerzoekVragenSet.value = vragenSets.value.find(
     (set) => set.id === vragenSetId.value,
   );
 
-  emit("update:contactVerzoekVragenSet", vragenset);
-
-  if (props.organisatorischeEenheidSoort) {
-    props.vragenSetIdMap.set(
-      props.organisatorischeEenheidSoort,
-      vragenSetId.value,
-    );
-  }
+  vragenSetIdMap.value.set(
+    props.organisatorischeEenheidSoort,
+    vragenSetId.value,
+  );
 };
 </script>

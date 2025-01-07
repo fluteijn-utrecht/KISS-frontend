@@ -137,8 +137,8 @@
         <contactverzoek-onderwerpen
           :organisatorischeEenheidId="soort && form[soort]?.id"
           :organisatorischeEenheidSoort="soort"
-          :vragenSets="modelValue.vragenSets"
-          :vragenSetIdMap="modelValue.vragenSetIdMap"
+          v-model:vragenSets="vragenSets"
+          v-model:vragenSetIdMap="vragenSetIdMap"
           v-model:contactVerzoekVragenSet="form.contactVerzoekVragenSet"
           v-model:vragenSetId="form.vragenSetId"
         />
@@ -296,7 +296,7 @@ import type {
 } from "@/stores/contactmoment";
 
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, watch } from "vue";
+import { computed, ref, useModel, watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -315,12 +315,23 @@ import { fetchGroepen } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
 import { TypeOrganisatorischeEenheid } from "../../components/types";
 
-const props = defineProps<{
-  modelValue: ContactmomentContactVerzoek;
-}>();
+const props = defineProps<{ modelValue: ContactmomentContactVerzoek }>();
+const model = useModel(props, "modelValue");
+
+const useModelProperty = <K extends keyof ContactmomentContactVerzoek>(
+  key: K,
+) =>
+  computed({
+    get: () => model.value[key],
+    set: (v) => {
+      model.value = { ...props.modelValue, [key]: v };
+    },
+  });
+
+const vragenSets = useModelProperty("vragenSets");
+const vragenSetIdMap = useModelProperty("vragenSetIdMap");
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
-
 const medewerker = ref<ContactVerzoekMedewerker>();
 
 // cast to TypeOrganisatorischeEenheid
