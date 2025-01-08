@@ -151,7 +151,7 @@ const router = createRouter({
       path: "/beheer",
       name: "Beheer",
       component: BeheerLayout,
-      props: true,
+      props: () => ({}), // Don't pass params to BeheerLayout
       meta: { hideSidebar: true },
       children: [
         {
