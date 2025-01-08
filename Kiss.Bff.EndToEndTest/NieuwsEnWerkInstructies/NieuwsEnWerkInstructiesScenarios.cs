@@ -315,12 +315,12 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         
         await Step("When the user selects 'Nieuws' from the filter dropdown");
 
-        await Page.GetWerkberichtType().SelectOptionAsync("Nieuws");
+        await Page.GetWerkberichtTypeSelector().SelectOptionAsync("Nieuws");
 
         await Step("And searches for the unique text");
 
-        await Page.GetHomeSearch().FillAsync(uniqueTitle);
-        await Page.GetHomeSearch().PressAsync("Enter");
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(uniqueTitle);
+        await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
 
 
         await Step("Then exactly one news article should be displayed");
