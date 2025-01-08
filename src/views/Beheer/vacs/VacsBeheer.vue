@@ -20,9 +20,8 @@ import { fetchLoggedIn, parseJson, parsePagination } from "@/services";
 import type { Vac } from "@/features/search/types";
 
 const vacs = ref<Vac[]>();
-
-const loading = ref<boolean>(true);
-const error = ref<boolean>(false);
+const loading = ref(true);
+const error = ref(false);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapVac = (x: any): Vac => ({
@@ -49,7 +48,7 @@ const fetchAllVacs = async (url: string): Promise<Vac[]> => {
   return page;
 };
 
-const load = async () => {
+onMounted(() => {
   loading.value = true;
 
   fetchAllVacs("/api/vacs/api/v2/objects")
@@ -59,7 +58,5 @@ const load = async () => {
     )
     .catch(() => (error.value = true))
     .finally(() => (loading.value = false));
-};
-
-onMounted(() => load());
+});
 </script>
