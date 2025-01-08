@@ -361,31 +361,73 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there are at least 3 skills");
 
+        var skill1 = Guid.NewGuid().ToString();
+        var skill2 = Guid.NewGuid().ToString();
+        var skill3 = Guid.NewGuid().ToString();
+
+        await Page.CreateSkill(skill1);
+        await Page.CreateSkill(skill2);
+        await Page.CreateSkill(skill3);
+
         await Step("And there is exactly one nieuwsbericht related to the first skill");
+        string uniqueTitle = Guid.NewGuid().ToString();
+        var nieuws1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws , Skill= skill1});
+
 
         await Step("And there is exactly one werkinstructie related to the first skill");
+         uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill1 });
 
         await Step("And there is exactly one nieuwsbericht related to the second skill");
+       
+        uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill2 });
 
         await Step("And there is exactly one werkinstructie related to the second skill");
+      
+        uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill2 });
 
         await Step("And there is exactly one nieuwsbericht related to the third skill");
+      
+        uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill3 });
 
         await Step("And there is exactly one werkinstructie related to the third skill");
+      
+        uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill3 });
 
         await Step("And there is at least one nieuwsbericht without a relation to any skill");
+       
+        uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
 
         await Step("And there is at least one werkinstructie without a relation to any skill");
+        
+        uniqueTitle = Guid.NewGuid().ToString();
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And the user is on the HOME Page");
 
+        await Page.GotoAsync("/");
+
         await Step("When the user selects the first skill from the filter options");
 
+        await Page.GetSkillsSummaryElement().ClickAsync();
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill1 }).CheckAsync();
+
+
         await Step("And the user selects the second skill from the filter options");
+         
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill2 }).CheckAsync();
 
         await Step("Then only the two nieuwsberichten and werkinstructies related to the first and second skill are visible");
+              
+        await Expect(Page.GetNieuwsSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(2);
+        await Expect(Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article)).ToHaveCountAsync(2);
 
-        Assert.Inconclusive("Not implemented yet");
+
     }
 
     [TestMethod]
