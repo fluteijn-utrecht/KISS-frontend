@@ -39,6 +39,7 @@ export type Kennisartikel = {
 };
 
 export type Vac = {
+  uuid: string;
   vraag: string;
   antwoord: string;
   afdelingen?: VacAfdeling[];

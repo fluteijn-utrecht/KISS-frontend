@@ -13,6 +13,8 @@
     <router-link to="/Beheer/Contactverzoekformulieren">
       Formulieren contactverzoek
     </router-link>
+
+    <router-link to="/Beheer/vacs"> Vacs </router-link>
   </nav>
 
   <main>
