@@ -6,7 +6,7 @@
   <div v-else-if="error">Er is een fout opgetreden.</div>
 
   <ul v-else>
-    <li v-for="vac in result?.page" :key="vac.uuid" class="listItem">
+    <li v-for="vac in vacs" :key="vac.uuid" class="listItem">
       <router-link :to="'/Beheer/vac/' + vac.uuid">{{ vac.vraag }}</router-link>
 
       <utrecht-button
@@ -26,16 +26,10 @@ import {
   Button as UtrechtButton,
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
-import {
-  fetchLoggedIn,
-  parseJson,
-  parsePagination,
-  throwIfNotOk,
-  type PaginatedResult,
-} from "@/services";
+import { fetchLoggedIn, parseJson, parsePagination } from "@/services";
 import type { Vac } from "@/features/search/types";
 
-const result = ref<PaginatedResult<Vac>>();
+const vacs = ref<Vac[]>();
 
 const loading = ref<boolean>(true);
 const error = ref<boolean>(false);
@@ -47,21 +41,31 @@ const mapVac = (x: any): Vac => ({
   antwoord: x.record.data.antwoord,
 });
 
+const fetchAllVacs = async (url: string): Promise<Vac[]> => {
+  const { page, next } = await fetchLoggedIn(url)
+    .then(parseJson)
+    .then((json) => parsePagination(json, mapVac));
+
+  if (next) {
+    const { searchParams } = new URL(next);
+
+    return [
+      ...page,
+      ...(await fetchAllVacs(`${url}?page=${searchParams.get("page")}`)),
+    ];
+  }
+
+  return page;
+};
+
 const load = async () => {
   loading.value = true;
 
-  result.value = await fetchLoggedIn("/api/vacs/api/v2/objects")
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((json) => parsePagination(json, mapVac))
+  fetchAllVacs("/api/vacs/api/v2/objects")
+    .then((results) => (vacs.value = results))
+    .catch(() => (error.value = true))
     .finally(() => (loading.value = false));
 };
 
 onMounted(() => load());
 </script>
-
-<style scoped lang="scss">
-li h2 {
-  margin-block-start: var(--spacing-large);
-}
-</style>
