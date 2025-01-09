@@ -365,48 +365,50 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         var skill2 = Guid.NewGuid().ToString();
         var skill3 = Guid.NewGuid().ToString();
 
-        await Page.CreateSkill(skill1);
-        await Page.CreateSkill(skill2);
-        await Page.CreateSkill(skill3);
+        await using var skillItem1 = await Page.CreateSkill(skill1);
+        await using var skillItem2 = await Page.CreateSkill(skill2);
+        await using var skillItem3 = await Page.CreateSkill(skill3);
 
         await Step("And there is exactly one nieuwsbericht related to the first skill");
+
         string uniqueTitle = Guid.NewGuid().ToString();
-        var nieuwsWithSkill1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill1 });
+        await using var nieuwsWithSkill1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill1 });
 
 
         await Step("And there is exactly one werkinstructie related to the first skill");
+        
         uniqueTitle = Guid.NewGuid().ToString();
-        var werkberichtWithSkill1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill1 });
+        await using var werkberichtWithSkill1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill1 });
 
         await Step("And there is exactly one nieuwsbericht related to the second skill");
 
         uniqueTitle = Guid.NewGuid().ToString();
-        var nieuwsWithSkill2 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill2 });
+        await using var nieuwsWithSkill2 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill2 });
 
         await Step("And there is exactly one werkinstructie related to the second skill");
 
         uniqueTitle = Guid.NewGuid().ToString();
-        var werkberichtWithSkill2 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill2 });
+        await using var werkberichtWithSkill2 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill2 });
 
         await Step("And there is exactly one nieuwsbericht related to the third skill");
 
         uniqueTitle = Guid.NewGuid().ToString();
-        var nieuwsWithSkill3 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill3 });
+        await using var nieuwsWithSkill3 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill3 });
 
         await Step("And there is exactly one werkinstructie related to the third skill");
 
         uniqueTitle = Guid.NewGuid().ToString();
-        var werkberichtWithSkill3 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill3 });
+        await using var werkberichtWithSkill3 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill3 });
 
         await Step("And there is at least one nieuwsbericht without a relation to any skill");
 
         uniqueTitle = Guid.NewGuid().ToString();
-        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+        await using var nieuwsWithSkill4 =  await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
 
         await Step("And there is at least one werkinstructie without a relation to any skill");
 
         uniqueTitle = Guid.NewGuid().ToString();
-        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
+        await using var werkberichtWithSkill4 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And the user is on the HOME Page");
 
