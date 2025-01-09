@@ -418,8 +418,8 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("Then exactly one nieuwsbericht and exactly one werkinstructie are visible");
 
-        await Expect(Page.GetSearchResultByWerkberichtType("Werkinstructie")).ToHaveCountAsync(1);
-        await Expect(Page.GetSearchResultByWerkberichtType("Nieuws")).ToHaveCountAsync(1);
+        await Expect(Page.GetSearchResultFilteredByType("Werkinstructie")).ToHaveCountAsync(1);
+        await Expect(Page.GetSearchResultFilteredByType("Nieuws")).ToHaveCountAsync(1);
 
 
     }
