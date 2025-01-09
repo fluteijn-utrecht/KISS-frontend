@@ -396,12 +396,12 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         var uniqueTitle = Guid.NewGuid().ToString();
 
         await Step("Given there is exactly one nieuwsbericht with that text as the title");
-        
-        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+
+        await using var nieuwsbericht = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
         
         await Step("And there is exactly one werkinstructie with that text as the title");
 
-        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
+        await using var werkinstructie = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And the user is on the HOME Page");
 
