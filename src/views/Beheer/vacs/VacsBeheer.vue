@@ -20,7 +20,7 @@ import { fetchLoggedIn, parseJson, parsePagination } from "@/services";
 import type { Vac } from "@/features/search/types";
 
 const vacs = ref<Vac[]>();
-const loading = ref(true);
+const loading = ref(false);
 const error = ref(false);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
