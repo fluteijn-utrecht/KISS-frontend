@@ -447,11 +447,16 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        await using var nieuws = await Page.CreateBericht(new() { Title =  Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.GotoAsync("/");
 
         await Step("Then the nieuwsbericht should be displayed in a list");
 
-        Assert.Inconclusive("Not implemented yet");
+        var nieuwsSection = Page.GetNieuwsSection();
+        await Expect(nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeVisibleAsync();
     }
 
     [TestMethod]
