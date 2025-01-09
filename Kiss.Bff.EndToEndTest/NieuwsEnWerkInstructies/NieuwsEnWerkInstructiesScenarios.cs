@@ -413,29 +413,51 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a unique text (uuid)");
 
+        var uniqueTitle = Guid.NewGuid().ToString();
+        var otherText = Guid.NewGuid().ToString();
+
         await Step("Given there is exactly one nieuwsbericht with that text as the title");
+
+        await using var nieuws1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
 
         await Step("And there is exactly one werkinstructie with that text as the title");
 
+        await using var werkinstructie1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
+
         await Step("And there is at least one nieuwsbericht without that text");
+
+        await using var nieuws2 = await Page.CreateBericht(new() { Title = otherText, BerichtType = BerichtType.Nieuws });
 
         await Step("And there is at least one werkinstructie without that text");
 
+        await using var werkinstructie2 = await Page.CreateBericht(new() { Title = otherText, BerichtType = BerichtType.Werkinstructie });
+
         await Step("And the user is on the HOME Page");
+
+        await Page.GotoAsync("/");
 
         await Step("And has selected 'Alle' from the filter dropdown");
 
+        await Page.GetWerkberichtTypeSelector().SelectOptionAsync("Alle");
+
         await Step("And has searched for the unique text");
+
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(uniqueTitle);
 
         await Step("When the user clicks on the close icon in the search bar");
 
+        await Page.GetNieuwsAndWerkinstructiesSearch().ClearAsync();
+     
         await Step("Then at least two werkinstructies should be visible");
+
+        Assert.IsTrue((await Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article).CountAsync()) >= 2, "at least two werkinstructies should be visible");
 
         await Step("And at least two nieuwsberichten should be visible");
 
-        Assert.Inconclusive("Not implemented yet");
-    }
+        Assert.IsTrue((await Page.GetNieuwsSection().GetByRole(AriaRole.Article).CountAsync()) >= 2, "at least two nieuwsberichten should be visible");
+        
 
+    }
     [TestMethod]
     public void Scenario16()
     {
