@@ -9,7 +9,7 @@ import {
 
 export interface Groep {
   id: string;
-  // ?? afdelingId: string;
+  afdelingId?: string;
   identificatie: string;
   naam: string;
 }
@@ -31,7 +31,7 @@ export const getGroepenSearchUrl = (
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapGroep = (x: any): Groep => ({
   id: x.uuid,
-  // ?? afdelingId: x.afdelingId,
+  afdelingId: x.afdelingId,
   naam: x.record.data.naam,
   identificatie: x.record.data.identificatie,
 });
