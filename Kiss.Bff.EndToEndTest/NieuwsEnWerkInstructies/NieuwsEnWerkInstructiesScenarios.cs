@@ -393,19 +393,35 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a unique text (uuid)");
 
-        await Step("Given there is exactly one nieuwsbericht with that text as the title");
+        var uniqueTitle = Guid.NewGuid().ToString();
 
+        await Step("Given there is exactly one nieuwsbericht with that text as the title");
+        
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+        
         await Step("And there is exactly one werkinstructie with that text as the title");
+
+        await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And the user is on the HOME Page");
 
+        await Page.GotoAsync("/");
+
         await Step("When the user selects 'Alle' from the filter dropdown");
+
+        await Page.GetWerkberichtTypeSelector().SelectOptionAsync("Alle");
 
         await Step("And searches for the unique text");
 
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(uniqueTitle);
+        await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
+
         await Step("Then exactly one nieuwsbericht and exactly one werkinstructie are visible");
 
-        Assert.Inconclusive("Not implemented yet");
+        await Expect(Page.GetSearchResultByWerkberichtType("Werkinstructie")).ToHaveCountAsync(1);
+        await Expect(Page.GetSearchResultByWerkberichtType("Nieuws")).ToHaveCountAsync(1);
+
+
     }
 
     [TestMethod]
