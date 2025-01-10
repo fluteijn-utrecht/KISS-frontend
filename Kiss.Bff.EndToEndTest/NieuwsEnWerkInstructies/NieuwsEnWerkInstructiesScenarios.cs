@@ -491,13 +491,24 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
+        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill=skill.Naam });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("When the user clicks on the arrow button of the nieuwsbericht");
 
+        var selectedNieuws = Page.GetRowByValue(nieuw.Title);
+
+        await selectedNieuws.GetByRole(AriaRole.Link).ClickAsync();
+
         await Step("Then the Type, Titel, Inhoud, Publicatiedatum, Publicatie-einddatum and Skills of the nieuwsbericht are visible in a details screen");
 
-        Assert.Inconclusive("Not implemented yet");
+        await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
+        await Expect(Page.Locator(".ck-editor__main").GetByRole(AriaRole.Paragraph)).ToContainTextAsync(nieuw.Body);
+        await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
     }
 
     [TestMethod]
