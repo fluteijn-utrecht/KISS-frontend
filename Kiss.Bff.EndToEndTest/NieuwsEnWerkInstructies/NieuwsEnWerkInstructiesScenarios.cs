@@ -459,15 +459,32 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("When user clicks on the delete icon of the nieuwsbericht in the list");
 
+        var nieuwsRow = Page.GetRowByValue(nieuws.Title);                  
+             
         await Step("And confirms a pop-up window with the message ‘Weet u zeker dat u dit bericht wilt verwijderen?’");
+
+        var deleteButton = nieuwsRow.GetByTitle("Verwijder").First;
+
+        using (var _ = Page.AcceptAllDialogs())
+        {
+            await deleteButton.ClickAsync();
+        }
 
         await Step("Then the nieuwsbericht is no longer in the list");
 
-        Assert.Inconclusive("Not implemented yet");
+        var deletedRow = Page.GetRowByValue(nieuws.Title); 
+
+        await Expect(deletedRow).ToBeHiddenAsync();
+
+
     }
 
     [TestMethod]
