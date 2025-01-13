@@ -165,7 +165,7 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
   return value;
 }
 
-export function fetchBetrokkenen(params: { wasPartij__url: string }) {
+export function fetchBetrokkenen(params: { wasPartij__url: string, pageSize: string }) {
   const query = new URLSearchParams(params);
   return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
     .then(throwIfNotOk)
@@ -517,18 +517,18 @@ export const fetchKlantByIdOk2 = (uuid: string) => {
 export function findKlantByIdentifier(
   query:
     | {
-        vestigingsnummer: string;
-      }
+      vestigingsnummer: string;
+    }
     | {
-        rsin: string;
-        kvkNummer?: string;
-      }
+      rsin: string;
+      kvkNummer?: string;
+    }
     | {
-        bsn: string;
-      }
+      bsn: string;
+    }
     | {
-        kvkNummer: string;
-      },
+      kvkNummer: string;
+    },
 ): Promise<Klant | null> {
   const expand = "digitaleAdressen";
   let soortPartij,
@@ -577,18 +577,18 @@ export function findKlantByIdentifier(
 export async function createKlant(
   parameters:
     | {
-        vestigingsnummer: string;
-      }
+      vestigingsnummer: string;
+    }
     | {
-        rsin: string;
-        kvkNummer?: string;
-      }
+      rsin: string;
+      kvkNummer?: string;
+    }
     | {
-        bsn: string;
-      }
+      bsn: string;
+    }
     | {
-        kvkNummer: string;
-      },
+      kvkNummer: string;
+    },
 ) {
   let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
   if ("bsn" in parameters) {
@@ -746,13 +746,13 @@ async function mapPartijToKlant(
 export function searchKlantenByDigitaalAdres(
   query:
     | {
-        telefoonnummer: string;
-        partijType: PartijTypes;
-      }
+      telefoonnummer: string;
+      partijType: PartijTypes;
+    }
     | {
-        email: string;
-        partijType: PartijTypes;
-      },
+      email: string;
+      partijType: PartijTypes;
+    },
 ) {
   let key: DigitaalAdresTypes, value: string;
 

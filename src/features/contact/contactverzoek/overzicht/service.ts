@@ -190,6 +190,7 @@ export function fetchContactverzoekenByKlantId(
   // OK2
   if (gebruikKlantInteractiesApi) {
     return fetchBetrokkenen({
+      pageSize: "100",
       wasPartij__url: id,
     }).then(async (paginated) => ({
       ...paginated,
