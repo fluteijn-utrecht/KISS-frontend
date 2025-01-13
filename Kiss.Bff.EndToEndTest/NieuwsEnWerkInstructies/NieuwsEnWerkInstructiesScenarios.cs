@@ -604,23 +604,46 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
+        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
+        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+
         await Step("And the news detail screen is displayed");
 
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
+        await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
+
+
         await Step("When the user checks the ‘belangrijk’ checkbox");
+        
+        await Page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" }).CheckAsync();
+
 
         await Step("And clicks on the submit button");
 
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
+
         await Step("And navigates to the home screen of the KISS environment");
+
+        await Page.GotoAsync("/");
 
         await Step("And navigates to the page containing the nieuwsbericht selected earlier");
 
         await Step("Then the nieuwsbericht should be displayed with the ‘belangrijk’ flag");
 
-        Assert.Inconclusive("Not implemented yet");
+       
     }
 
     [TestMethod]
