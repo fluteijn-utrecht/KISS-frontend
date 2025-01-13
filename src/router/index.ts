@@ -149,7 +149,7 @@ const router = createRouter({
       path: "/beheer",
       name: "Beheer",
       component: BeheerLayout,
-      props: true,
+      props: () => ({}), // Don't pass params to BeheerLayout
       meta: { hideSidebar: true },
       children: [
         {
@@ -205,16 +205,37 @@ const router = createRouter({
           meta: {},
         },
         {
-          path: "Contactverzoekformulieren",
-          name: "ContactverzoekformulierenBeheer",
+          path: "formulieren-contactverzoek-afdeling",
+          name: "FormulierenContactverzoekAfdelingenBeheer",
           component: ContactverzoekFormulierenBeheer,
+          props: { soort: "afdeling" },
           meta: {},
         },
         {
-          path: "Contactverzoekformulier/:id?",
-          name: "Contactverzoekformulier",
+          path: "formulier-contactverzoek-afdeling/:id?",
+          name: "FormulierContactverzoekAfdelingenBeheer",
           component: ContactverzoekFormulierBeheer,
-          props: true,
+          props: (route) => ({
+            ...route.params,
+            soort: "afdeling",
+          }),
+          meta: {},
+        },
+        {
+          path: "formulieren-contactverzoek-groep",
+          name: "FormulierenContactverzoekGroepenBeheer",
+          component: ContactverzoekFormulierenBeheer,
+          props: { soort: "groep" },
+          meta: {},
+        },
+        {
+          path: "formulier-contactverzoek-groep/:id?",
+          name: "FormulierContactverzoekGroepenBeheer",
+          component: ContactverzoekFormulierBeheer,
+          props: (route) => ({
+            ...route.params,
+            soort: "groep",
+          }),
           meta: {},
         },
         {

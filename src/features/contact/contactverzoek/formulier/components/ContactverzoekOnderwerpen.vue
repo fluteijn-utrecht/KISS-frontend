@@ -1,7 +1,7 @@
 <template>
   <label
     class="utrecht-form-label"
-    v-if="afdelingVragenSets && afdelingVragenSets.length > 0"
+    v-if="organisatorischeEenheidVragenSets.length > 0"
   >
     <span>Onderwerp</span>
 
@@ -11,9 +11,9 @@
       v-model="vragenSetId"
       @change="setOnderwerp"
     >
-      <option value="" selected>Geen</option>
+      <option :value="0">Geen</option>
       <option
-        v-for="item in afdelingVragenSets"
+        v-for="item in organisatorischeEenheidVragenSets"
         :key="item.id"
         :value="item.id"
       >
@@ -24,66 +24,73 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import type { ContactVerzoekVragenSet } from "@/features/contact/components/types";
-import { watchEffect } from "vue";
+import { computed, ref, useModel, watch } from "vue";
+import type {
+  ContactVerzoekVragenSet,
+  TypeOrganisatorischeEenheid,
+} from "@/features/contact/components/types";
 
 const props = defineProps<{
-  afdelingId?: string; //de afdeling waarvan vragensets getoond mogen worden in de keuzelijst
-  vragenSets: ContactVerzoekVragenSet[]; //alle vragensets
-  modelValue?: ContactVerzoekVragenSet; //de (voor)geselecteerde vragenset
-  prefill: boolean;
+  organisatorischeEenheidId?: string; // de organisatorische eenheid waarvan vragensets getoond mogen worden in de keuzelijst
+  organisatorischeEenheidSoort?: TypeOrganisatorischeEenheid;
+  vragenSets: ContactVerzoekVragenSet[]; // alle vragensets
+  vragenSetIdMap: Map<TypeOrganisatorischeEenheid, number | undefined>; // map van vragenSetIds op organisatorischeEenheidSoort
+  contactVerzoekVragenSet?: ContactVerzoekVragenSet; // de (voor)geselecteerde vragenset
 }>();
 
-const emit = defineEmits<{
-  (e: "update:modelValue", v?: ContactVerzoekVragenSet): void;
-  (e: "change"): void;
-}>();
+const vragenSets = useModel(props, "vragenSets");
+const vragenSetIdMap = useModel(props, "vragenSetIdMap");
+const contactVerzoekVragenSet = useModel(props, "contactVerzoekVragenSet");
 
-//subset van vragensets horende bij de geselecteerde afdeling
-const afdelingVragenSets = computed(() => {
-  const selectedAfdelingId = props.afdelingId;
-  return props.vragenSets.filter(
-    (s) => s.afdelingId == selectedAfdelingId && selectedAfdelingId,
+const vragenSetId = ref<number>();
+
+// subset van vragensets horende bij de geselecteerde organisatorische eenheid
+const organisatorischeEenheidVragenSets = computed(() => {
+  return vragenSets.value.filter(
+    (s) =>
+      s.organisatorischeEenheidId == props.organisatorischeEenheidId &&
+      s.organisatorischeEenheidSoort == props.organisatorischeEenheidSoort,
   );
 });
 
-//tbv modelbinding van de (voor)gekozen vragenset
-const vragenSetId = ref<number | undefined>();
-
-watchEffect(() => {
-  //eerder gekozen waarde voorselecteren
-  vragenSetId.value = props.modelValue?.id;
-});
-
 watch(
-  afdelingVragenSets,
-  (v) => {
-    if (v && v.length > 0 && !vragenSetId.value && props.prefill) {
-      vragenSetId.value = v[0].id;
-      emit("update:modelValue", v[0]);
-    }
-  },
-  { immediate: true },
-);
-
-watch(
-  () => props.afdelingId,
-  (v) => {
-    if (!v) {
+  organisatorischeEenheidVragenSets,
+  (value) => {
+    // clear if no soort or empty set
+    if (!props.organisatorischeEenheidSoort || !value.length) {
+      contactVerzoekVragenSet.value = undefined;
       vragenSetId.value = undefined;
-      emit("update:modelValue", undefined);
+
+      return;
+    }
+
+    const mapId = vragenSetIdMap.value.get(props.organisatorischeEenheidSoort);
+
+    // get vragenSet by mapped vragenSetId van een organisatorische eenheid, anders prefill with first
+    if (mapId !== undefined) {
+      contactVerzoekVragenSet.value = value.find((set) => set.id === mapId);
+      vragenSetId.value = mapId;
+    } else {
+      contactVerzoekVragenSet.value = value[0];
+      vragenSetId.value = value[0].id;
+
+      vragenSetIdMap.value.set(props.organisatorischeEenheidSoort, value[0].id);
     }
   },
   { immediate: true },
 );
 
 const setOnderwerp = () => {
-  //wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken en emitten
-  const vragenset = props.vragenSets.find((x) => {
-    return x.id === vragenSetId?.value;
-  });
-  emit("update:modelValue", vragenset);
-  emit("change");
+  if (!props.organisatorischeEenheidSoort) return;
+
+  // wanneer een item uit de lijst gekozen is, de bijbehorende vragenset opzoeken
+  contactVerzoekVragenSet.value = vragenSets.value.find(
+    (set) => set.id === vragenSetId.value,
+  );
+
+  vragenSetIdMap.value.set(
+    props.organisatorischeEenheidSoort,
+    vragenSetId.value,
+  );
 };
 </script>
