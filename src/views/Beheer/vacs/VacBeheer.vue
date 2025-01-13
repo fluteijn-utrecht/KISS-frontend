@@ -15,6 +15,21 @@
 
         <label class="utrecht-form-label" for="antwoord">Antwoord</label>
         <ck-editor v-model="vac.record.data.antwoord" required />
+
+        <fieldset>
+          <legend>Afdelingen</legend>
+          <ul>
+            <li v-for="(value, key) in vac.record.data.afdelingen" :key="key">
+              <label for="naam" class="utrecht-form-label"
+                ><span>Naam</span>
+                <input
+                  class="utrecht-textbox utrecht-textbox--html-input"
+                  type="text"
+                  v-model="value.afdelingNaam"
+              /></label>
+            </li>
+          </ul>
+        </fieldset>
       </template>
 
       <template #formMenuListItems>
@@ -42,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -57,8 +72,8 @@ import { toast } from "@/stores/toast";
 
 type VacObject = {
   record: {
-    data: Vac;
     startAt: string;
+    data: Vac;
     index?: number;
     correctionFor?: number;
   };
@@ -67,18 +82,42 @@ type VacObject = {
 const vacObjectenUrl = "/api/vacs/api/v2/objects";
 
 const props = defineProps<{ uuid?: string }>();
-
 const router = useRouter();
+
+const afdelingen = Array.from({ length: 5 }, () => ({ afdelingNaam: "" }));
+const trefwoorden = Array.from({ length: 10 }, () => ({ trefwoord: "" }));
 
 const vac = ref<VacObject>({
   record: {
+    startAt: new Date().toISOString().substring(0, 10),
     data: {
       vraag: "",
       antwoord: "",
+      afdelingen,
+      toelichting: "",
+      trefwoorden,
     },
-    startAt: new Date().toISOString().substring(0, 10), // ...
   },
 });
+
+watch(
+  () => ({
+    afdelingenData: vac.value.record.data.afdelingen,
+    trefwoordenData: vac.value.record.data.trefwoorden,
+  }),
+  ({ afdelingenData, trefwoordenData }) => {
+    vac.value.record.data.afdelingen = [
+      ...(afdelingenData || []),
+      ...afdelingen,
+    ].slice(0, afdelingen.length);
+
+    vac.value.record.data.trefwoorden = [
+      ...(trefwoordenData || []),
+      ...trefwoorden,
+    ].slice(0, trefwoorden.length);
+  },
+  { once: true },
+);
 
 const loading = ref(false);
 const error = ref(false);
@@ -101,18 +140,26 @@ const handleSuccess = () => {
 const submit = async () => {
   loading.value = true;
 
-  if (props.uuid) {
-    // Check correctionFor...
-    vac.value = {
-      ...vac.value,
-      ...{
-        record: {
-          ...vac.value.record,
-          correctionFor: vac.value.record.index,
+  vac.value = {
+    ...vac.value,
+    ...{
+      record: {
+        ...vac.value.record,
+        data: {
+          ...vac.value.record.data,
+          afdelingen: vac.value.record.data.afdelingen?.filter(
+            (afdeling) => afdeling.afdelingNaam.trim().length,
+          ),
+          trefwoorden: vac.value.record.data.trefwoorden?.filter(
+            (trefwoord) => trefwoord.trefwoord.trim().length,
+          ),
+          status: "actief",
+          doelgroep: "eu-burger",
         },
+        correctionFor: props.uuid ? vac.value.record.index : undefined, // required for PUT
       },
-    };
-  }
+    },
+  };
 
   const result = await fetchLoggedIn(
     `${vacObjectenUrl}/${props.uuid ? props.uuid : ""}`,
