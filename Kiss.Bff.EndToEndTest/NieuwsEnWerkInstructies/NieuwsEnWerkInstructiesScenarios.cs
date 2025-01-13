@@ -505,21 +505,46 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
+         var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
+        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+
         await Step("And the news detail screen is displayed");
+
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
+        await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
         await Step("When the user updates the title section of news");
 
+        var updatedTitle = Guid.NewGuid().ToString();
+        await Page.GetByLabel("Titel").FillAsync(updatedTitle);
+
         await Step("And clicks on the submit button");
+
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
 
         await Step("Then the updated news title is displayed in Berichten screen");
 
-        await Step("And the “Gewijzigd op” field gets updated with the latest time");
+      
+        await Expect(Page.GetTableCell(1,1)).ToHaveTextAsync(updatedTitle);
 
-        Assert.Inconclusive("Not implemented yet");
+        await Step("And the “Gewijzigd op” field gets updated with the latest time");
+       
+        var dat= await Page.GetTableCell(5, 1).InnerTextAsync();
+       
+        await Expect(Page.GetTableCell(5, 1)).ToHaveTextAsync(DateTime.Now.ToString("dd-MM-yyyy, HH:mm"));
     }
 
     [TestMethod]
