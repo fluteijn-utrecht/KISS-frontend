@@ -500,14 +500,15 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user clicks on the arrow button of the nieuwsbericht");
 
-        var selectedNieuws = Page.GetRowByValue(nieuw.Title);
-
-        await selectedNieuws.GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("Then the Type, Titel, Inhoud, Publicatiedatum, Publicatie-einddatum and Skills of the nieuwsbericht are visible in a details screen");
 
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
         await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
         await Expect(Page.Locator(".ck-editor__main").GetByRole(AriaRole.Paragraph)).ToContainTextAsync(nieuw.Body);
+        await Expect(Page.Locator("#publicatieDatum")).ToHaveValueAsync(nieuw.PublicatieDatum.ToString("yyyy-MM-ddTHH:mm"));
+        await Expect(Page.GetByLabel("Publicatie-einddatum")).ToHaveValueAsync(nieuw.PublicatieEinddatum.ToString("yyyy-MM-ddTHH:mm"));
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
     }
 

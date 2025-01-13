@@ -94,6 +94,8 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 IsImportant = request.IsImportant,
                 Title = request.Title,
                 PublishDateOffset = request.PublishDateOffset,
+                PublicatieDatum= publishDate,
+                PublicatieEinddatum = publishDate.AddYears(1),
                 Skill = request.Skill,
                 Body = request.Body,
                 BerichtType = request.BerichtType,
@@ -104,7 +106,8 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
     internal record class Bericht(IPage Page) : CreateBerichtRequest, IAsyncDisposable
     {
         public required new string Body { get; init; }
-
+        public DateTime PublicatieDatum { get; init; } 
+        public DateTime PublicatieEinddatum { get; init; }
         public async ValueTask DisposeAsync()
         {
             await Page.Context.Tracing.GroupEndAsync();
