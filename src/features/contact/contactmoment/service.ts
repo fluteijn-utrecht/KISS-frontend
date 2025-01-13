@@ -134,7 +134,7 @@ export function fetchContactmomentenByKlantId(
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id }).then(async (paginated) => ({
+    return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(async (paginated) => ({
       ...paginated,
       page: await enrichBetrokkeneWithKlantContact(paginated.page, [
         KlantContactExpand.gingOverOnderwerpobjecten,
@@ -307,11 +307,11 @@ export function mapContactverzoekData({
 
   const vragenToelichting =
     data.contactVerzoekVragenSet &&
-    data.contactVerzoekVragenSet.vraagAntwoord &&
-    data.contactVerzoekVragenSet.vraagAntwoord.length
+      data.contactVerzoekVragenSet.vraagAntwoord &&
+      data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-          data.contactVerzoekVragenSet.vraagAntwoord,
-        )
+        data.contactVerzoekVragenSet.vraagAntwoord,
+      )
       : "";
 
   let verantwoordelijkheAfdeling = "";
