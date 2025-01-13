@@ -1,9 +1,11 @@
 <template>
   <utrecht-heading :level="1">Vacs</utrecht-heading>
 
-  <div v-if="loading"><SimpleSpinner /></div>
+  <simple-spinner v-if="loading" />
 
-  <div v-else-if="error">Er is een fout opgetreden.</div>
+  <div v-else-if="error">
+    Er is een fout opgetreden bij het ophalen van de Vacs.
+  </div>
 
   <ul v-else>
     <li v-for="vac in vacs" :key="vac.uuid" class="listItem">
@@ -54,9 +56,11 @@ onMounted(() => {
   fetchAllVacs("/api/vacs/api/v2/objects")
     .then(
       (results) =>
-        (vacs.value = results.sort((a, b) => a.vraag.localeCompare(b.vraag))),
+        (vacs.value = results.sort((a, b) =>
+          a.vraag ? a.vraag.localeCompare(b.vraag) : -1,
+        )),
     )
-    .catch(() => (error.value = true))
+    .catch(() => error.value)
     .finally(() => (loading.value = false));
 });
 </script>

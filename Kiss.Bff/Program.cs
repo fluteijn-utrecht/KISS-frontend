@@ -112,7 +112,7 @@ try
     builder.Services.AddInterneTaakProxy(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"], builder.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"], builder.Configuration["INTERNE_TAAK_CLIENT_ID"], builder.Configuration["INTERNE_TAAK_CLIENT_SECRET"], builder.Configuration["INTERNE_TAAK_TYPE_VERSION"]);
     builder.Services.AddAfdelingenProxy(builder.Configuration["AFDELINGEN_BASE_URL"], builder.Configuration["AFDELINGEN_TOKEN"], builder.Configuration["AFDELINGEN_OBJECT_TYPE_URL"], builder.Configuration["AFDELINGEN_CLIENT_ID"], builder.Configuration["AFDELINGEN_CLIENT_SECRET"]);
     builder.Services.AddGroepenProxy(builder.Configuration["GROEPEN_BASE_URL"], builder.Configuration["GROEPEN_TOKEN"], builder.Configuration["GROEPEN_OBJECT_TYPE_URL"], builder.Configuration["GROEPEN_CLIENT_ID"], builder.Configuration["GROEPEN_CLIENT_SECRET"]);
-    builder.Services.AddVacsProxy(builder.Configuration["VACS_BASE_URL"], builder.Configuration["VACS_TOKEN"], builder.Configuration["VACS_OBJECT_TYPE_URL"], builder.Configuration["VACS_TYPE_VERSION"]);
+    builder.Services.AddVacsProxy(builder.Configuration["VAC_OBJECTEN_BASE_URL"], builder.Configuration["VAC_OBJECTEN_TOKEN"], builder.Configuration["VAC_OBJECT_TYPE_URL"], builder.Configuration["VAC_OBJECT_TYPE_VERSION"]);
 
     builder.Services.AddKlantinteracties(builder.Configuration["KLANTINTERACTIES_BASE_URL"], builder.Configuration["KLANTINTERACTIES_TOKEN"]);
 
