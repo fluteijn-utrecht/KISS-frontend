@@ -133,69 +133,64 @@
 
     <form-fieldset>
       <div class="container">
-        <service-data-wrapper :data="vragenSets">
-          <template #success="{ data }">
-            <!-- Dropdown for selecting Onderwerp -->
-            <contactverzoek-onderwerpen
-              :vragenSets="data"
-              :afdelingId="form?.afdeling?.id"
-              :prefill="!form.vragenSetChanged"
-              v-model:modelValue="form.contactVerzoekVragenSet"
-              @change="form.vragenSetChanged = true"
-            />
+        <!-- Dropdown for selecting Onderwerp -->
+        <contactverzoek-onderwerpen
+          :organisatorischeEenheidId="soort && form[soort]?.id"
+          :organisatorischeEenheidSoort="soort"
+          v-model:vragenSets="vragenSets"
+          v-model:vragenSetIdMap="vragenSetIdMap"
+          v-model:contactVerzoekVragenSet="form.contactVerzoekVragenSet"
+        />
 
-            <!-- Dynamic fields based on selected Onderwerp -->
-            <template v-if="form.contactVerzoekVragenSet">
-              <template
-                v-for="(item, index) in form.contactVerzoekVragenSet
-                  .vraagAntwoord"
-                :key="index"
+        <!-- Dynamic fields based on selected Onderwerp -->
+        <template v-if="form.contactVerzoekVragenSet">
+          <template
+            v-for="(item, index) in form.contactVerzoekVragenSet.vraagAntwoord"
+            :key="index"
+          >
+            <label class="utrecht-form-label">
+              <span>{{ item.description }}</span>
+              <input
+                v-if="isInputVraag(item)"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                type="text"
+                v-model="item.input"
+                @input="setActive"
+              />
+              <textarea
+                v-if="isTextareaVraag(item)"
+                class="utrecht-textarea"
+                v-model="item.textarea"
+                @input="setActive"
+              ></textarea>
+              <select
+                v-if="isDropdownVraag(item)"
+                class="utrecht-select"
+                v-model="item.selectedDropdown"
+                @input="setActive"
               >
-                <label class="utrecht-form-label">
-                  <span>{{ item.description }}</span>
+                <option v-for="option in item.options" :key="option">
+                  {{ option }}
+                </option>
+              </select>
+              <div v-if="isCheckboxVraag(item)">
+                <label
+                  class="utrecht-checkbox-button"
+                  v-for="(option, optionIndex) in item.options"
+                  :key="option"
+                >
                   <input
-                    v-if="isInputVraag(item)"
-                    class="utrecht-textbox utrecht-textbox--html-input"
-                    type="text"
-                    v-model="item.input"
-                    @input="setActive"
+                    class="utrecht-checkbox-button"
+                    type="checkbox"
+                    :value="option"
+                    v-model="item.selectedCheckbox[optionIndex]"
                   />
-                  <textarea
-                    v-if="isTextareaVraag(item)"
-                    class="utrecht-textarea"
-                    v-model="item.textarea"
-                    @input="setActive"
-                  ></textarea>
-                  <select
-                    v-if="isDropdownVraag(item)"
-                    class="utrecht-select"
-                    v-model="item.selectedDropdown"
-                    @input="setActive"
-                  >
-                    <option v-for="option in item.options" :key="option">
-                      {{ option }}
-                    </option>
-                  </select>
-                  <div v-if="isCheckboxVraag(item)">
-                    <label
-                      class="utrecht-checkbox-button"
-                      v-for="(option, optionIndex) in item.options"
-                      :key="option"
-                    >
-                      <input
-                        class="utrecht-checkbox-button"
-                        type="checkbox"
-                        :value="option"
-                        v-model="item.selectedCheckbox[optionIndex]"
-                      />
-                      {{ option }}
-                    </label>
-                  </div>
+                  {{ option }}
                 </label>
-              </template>
-            </template>
+              </div>
+            </label>
           </template>
-        </service-data-wrapper>
+        </template>
       </div>
     </form-fieldset>
 
@@ -300,13 +295,11 @@ import type {
 } from "@/stores/contactmoment";
 
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, watch } from "vue";
+import { computed, ref, useModel, watch } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
-import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import { useVragenSets } from "./service";
 import {
   isInputVraag,
   isTextareaVraag,
@@ -319,14 +312,34 @@ import GroepenSearch from "./components/GroepenSearch.vue";
 import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import { fetchGroepen } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
+import { TypeOrganisatorischeEenheid } from "../../components/types";
 
-const props = defineProps<{
-  modelValue: ContactmomentContactVerzoek;
-}>();
+const props = defineProps<{ modelValue: ContactmomentContactVerzoek }>();
+const model = useModel(props, "modelValue");
+
+const useModelProperty = <K extends keyof ContactmomentContactVerzoek>(
+  key: K,
+) =>
+  computed({
+    get: () => model.value[key],
+    set: (v) => {
+      model.value = { ...props.modelValue, [key]: v };
+    },
+  });
+
+const vragenSets = useModelProperty("vragenSets");
+const vragenSetIdMap = useModelProperty("vragenSetIdMap");
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
-
 const medewerker = ref<ContactVerzoekMedewerker>();
+
+// cast to TypeOrganisatorischeEenheid
+const soort = computed(() =>
+  form.value.typeActor === ActorType.afdeling ||
+  form.value.typeActor === ActorType.groep
+    ? Object.values(TypeOrganisatorischeEenheid)[form.value.typeActor]
+    : undefined,
+);
 
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
@@ -343,8 +356,6 @@ const setActive = () => {
 };
 
 const onUpdateAfdeling = () => {
-  form.value.contactVerzoekVragenSet = undefined;
-  form.value.vragenSetChanged = false;
   medewerker.value = undefined;
   setActive();
 };
@@ -364,7 +375,6 @@ const onTypeActorSelected = () => {
 };
 
 const telEl = ref<HTMLInputElement>();
-const vragenSets = useVragenSets();
 
 /////////////////////////////////////////////////////////
 
