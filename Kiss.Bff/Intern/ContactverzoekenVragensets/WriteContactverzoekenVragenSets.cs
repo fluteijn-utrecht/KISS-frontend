@@ -1,12 +1,9 @@
-﻿using System.Text.Json;
-using System.Threading;
-using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
+﻿using Kiss.Bff.Beheer.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
+namespace Kiss.Bff.Intern.ContactverzoekenVragensets
 {
     [ApiController]
     [Authorize(Policy = Policies.RedactiePolicy)]
@@ -40,8 +37,8 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactverzoeken
 
             contactVerzoekVragenSet.Titel = model.Titel;
             contactVerzoekVragenSet.JsonVragen = model.JsonVragen;
-            contactVerzoekVragenSet.AfdelingId = model.AfdelingId;
-            contactVerzoekVragenSet.AfdelingNaam = model.AfdelingNaam;
+            contactVerzoekVragenSet.OrganisatorischeEenheidId = model.OrganisatorischeEenheidId;
+            contactVerzoekVragenSet.OrganisatorischeEenheidNaam = model.OrganisatorischeEenheidNaam;
 
             await _db.SaveChangesAsync(cancellationToken);
 
