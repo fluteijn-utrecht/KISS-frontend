@@ -18,7 +18,7 @@
 - Contactverzoekformuliertjes / vragensetjes óók voor groepen #954
 - Pagesize meegeven bij ophalen contactverzoeken en contactmomenten #896
 - VAC items vindbaar maken voor beheer #1004
-  - **warning** nieuwe Environment Variabelen nodig: `VAC_OBJECTEN_BASE_URL`, `VAC_OBJECT_TYPE_URL` , `VAC_OBJECT_TYPE_VERSION`
+  - **warning** nieuwe Environment Variabelen nodig: `VAC_OBJECTEN_BASE_URL`, `VAC_OBJECT_TYPE_URL` , `VAC_OBJECT_TYPE_VERSION`, `VAC_OBJECTEN_TOKEN`
  Zie ook geupdate installatiehandleiding en Handleiding beheer [in de Documentatie](https://kiss-klantinteractie-servicesysteem.readthedocs.io/en/vX.X.X/) 
 
 
