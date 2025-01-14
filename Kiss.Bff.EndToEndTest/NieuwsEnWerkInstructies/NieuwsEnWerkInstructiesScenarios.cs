@@ -550,15 +550,32 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("When user clicks on the delete icon of the nieuwsbericht in the list");
 
+        var nieuwsRow = Page.GetBeheerRowByValue(nieuws.Title);                  
+             
         await Step("And confirms a pop-up window with the message ‘Weet u zeker dat u dit bericht wilt verwijderen?’");
+
+        var deleteButton = nieuwsRow.GetByTitle("Verwijder").First;
+
+        using (var _ = Page.AcceptAllDialogs())
+        {
+            await deleteButton.ClickAsync();
+        }
 
         await Step("Then the nieuwsbericht is no longer in the list");
 
-        Assert.Inconclusive("Not implemented yet");
+        var deletedRow = Page.GetBeheerRowByValue(nieuws.Title); 
+
+        await Expect(deletedRow).ToBeHiddenAsync();
+
+
     }
 
     [TestMethod]
@@ -566,15 +583,29 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 werkinstructie");
 
+        var werkinstructie = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("When user clicks on the delete icon of the werkinstructie in the list");
 
+        var werkinstructieRow = Page.GetBeheerRowByValue(werkinstructie.Title);
+
         await Step("And confirms a pop-up window with the message ‘Weet u zeker dat u dit bericht wilt verwijderen?’");
 
-        await Step("Then the werkinstructie is no longer in the list");
+        var deleteButton = werkinstructieRow.GetByTitle("Verwijder").First;
 
-        Assert.Inconclusive("Not implemented yet");
+        using (var _ = Page.AcceptAllDialogs())
+        {
+            await deleteButton.ClickAsync();
+        }
+
+        await Step("Then the werkinstructie is no longer in the list");
+         
+        await Expect(Page.GetBeheerRowByValue(werkinstructie.Title)).ToBeHiddenAsync();
+
     }
 
     [TestMethod]
@@ -591,7 +622,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user clicks on the arrow button of the nieuwsbericht");
 
-        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("Then the Type, Titel, Inhoud, Publicatiedatum, Publicatie-einddatum and Skills of the nieuwsbericht are visible in a details screen");
         
@@ -617,7 +648,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
-        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("And the news detail screen is displayed");
 
@@ -663,7 +694,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
-        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("And the news detail screen is displayed");
 
@@ -703,7 +734,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
-        await Page.GetRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("And the news detail screen is displayed");
 
