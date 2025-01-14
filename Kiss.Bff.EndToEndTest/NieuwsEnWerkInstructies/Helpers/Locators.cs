@@ -13,5 +13,5 @@
         public static ILocator GetSearchResult(this IPage page) => page.Locator("section").Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = "Zoekresultaten" }) });
         public static ILocator GetSearchResultFilteredByType(this IPage page,string type) => page.GetSearchResult().GetByRole(AriaRole.Article).Filter(new() { Has = page.Locator("small", new() { HasText = type }) });
 
-    }
+    } 
 }
