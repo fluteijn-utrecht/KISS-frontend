@@ -11,6 +11,8 @@
         public static ILocator GetWerkberichtTypeSelector(this IPage page) => page.Locator($"#werkbericht-type-input");
         public static ILocator GetNieuwsAndWerkinstructiesSearch(this IPage page) => page.Locator($"#search-input"); 
         public static ILocator GetSearchResult(this IPage page) => page.Locator("section").Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = "Zoekresultaten" }) });
+        public static ILocator GetSearchResultFilteredByType(this IPage page,string type) => page.GetSearchResult().GetByRole(AriaRole.Article).Filter(new() { Has = page.Locator("small", new() { HasText = type }) });
+
         public static ILocator GetBeheerRowByValue(this IPage page, string title) => page.GetByRole(AriaRole.Row)
                       .Filter(new()
                       {
