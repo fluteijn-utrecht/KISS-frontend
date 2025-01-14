@@ -10,8 +10,14 @@
   <template v-else>
     <beheer-form @submit="submit">
       <template #formFields>
-        <label class="utrecht-form-label" for="vraag">Vraag</label>
-        <ck-editor v-model="vac.record.data.vraag" required />
+        <label class="utrecht-form-label"
+          ><span>Vraag</span>
+          <input
+            class="utrecht-textbox utrecht-textbox--html-input"
+            type="text"
+            v-model="vac.record.data.vraag"
+            required
+        /></label>
 
         <label class="utrecht-form-label" for="antwoord">Antwoord</label>
         <ck-editor v-model="vac.record.data.antwoord" required />
@@ -20,12 +26,30 @@
           <legend>Afdelingen</legend>
           <ul>
             <li v-for="(value, key) in vac.record.data.afdelingen" :key="key">
-              <label for="naam" class="utrecht-form-label"
-                ><span>Naam</span>
+              <label class="utrecht-form-label"
+                ><span>Afdeling {{ key + 1 }}</span>
                 <input
                   class="utrecht-textbox utrecht-textbox--html-input"
                   type="text"
                   v-model="value.afdelingNaam"
+              /></label>
+            </li>
+          </ul>
+        </fieldset>
+
+        <label class="utrecht-form-label" for="toelichting">Toelichting</label>
+        <ck-editor v-model="vac.record.data.toelichting" />
+
+        <fieldset>
+          <legend>Trefwoorden</legend>
+          <ul>
+            <li v-for="(value, key) in vac.record.data.trefwoorden" :key="key">
+              <label class="utrecht-form-label"
+                ><span>Trefwoord {{ key + 1 }}</span>
+                <input
+                  class="utrecht-textbox utrecht-textbox--html-input"
+                  type="text"
+                  v-model="value.trefwoord"
               /></label>
             </li>
           </ul>
@@ -84,6 +108,9 @@ const vacObjectenUrl = "/api/vacs/api/v2/objects";
 const props = defineProps<{ uuid?: string }>();
 const router = useRouter();
 
+const loading = ref(false);
+const error = ref(false);
+
 const afdelingen = Array.from({ length: 5 }, () => ({ afdelingNaam: "" }));
 const trefwoorden = Array.from({ length: 10 }, () => ({ trefwoord: "" }));
 
@@ -100,27 +127,25 @@ const vac = ref<VacObject>({
   },
 });
 
+// Update afdelingen and trefwoorden with fetched data while remaining array length
 watch(
   () => ({
-    afdelingenData: vac.value.record.data.afdelingen,
-    trefwoordenData: vac.value.record.data.trefwoorden,
+    afdelingData: vac.value.record.data.afdelingen,
+    trefwoordData: vac.value.record.data.trefwoorden,
   }),
-  ({ afdelingenData, trefwoordenData }) => {
+  ({ afdelingData, trefwoordData }) => {
     vac.value.record.data.afdelingen = [
-      ...(afdelingenData || []),
+      ...(afdelingData || []),
       ...afdelingen,
     ].slice(0, afdelingen.length);
 
     vac.value.record.data.trefwoorden = [
-      ...(trefwoordenData || []),
+      ...(trefwoordData || []),
       ...trefwoorden,
     ].slice(0, trefwoorden.length);
   },
   { once: true },
 );
-
-const loading = ref(false);
-const error = ref(false);
 
 const showError = () => {
   toast({
@@ -140,25 +165,29 @@ const handleSuccess = () => {
 const submit = async () => {
   loading.value = true;
 
-  vac.value = {
-    ...vac.value,
-    ...{
-      record: {
-        ...vac.value.record,
-        data: {
-          ...vac.value.record.data,
-          afdelingen: vac.value.record.data.afdelingen?.filter(
-            (afdeling) => afdeling.afdelingNaam.trim().length,
-          ),
-          trefwoorden: vac.value.record.data.trefwoorden?.filter(
-            (trefwoord) => trefwoord.trefwoord.trim().length,
-          ),
-          status: "actief",
-          doelgroep: "eu-burger",
+  const createPayload = () => {
+    const body = {
+      ...vac.value,
+      ...{
+        record: {
+          ...vac.value.record,
+          data: {
+            ...vac.value.record.data,
+            afdelingen: vac.value.record.data.afdelingen?.filter(
+              (afdeling) => afdeling.afdelingNaam.trim().length,
+            ),
+            trefwoorden: vac.value.record.data.trefwoorden?.filter(
+              (trefwoord) => trefwoord.trefwoord.trim().length,
+            ),
+            status: "actief",
+            doelgroep: "eu-burger",
+          },
+          correctionFor: props.uuid ? vac.value.record.index : undefined,
         },
-        correctionFor: props.uuid ? vac.value.record.index : undefined, // required for PUT
       },
-    },
+    };
+
+    return JSON.stringify(body);
   };
 
   const result = await fetchLoggedIn(
@@ -168,7 +197,7 @@ const submit = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(vac.value),
+      body: createPayload(),
     },
   ).finally(() => (loading.value = false));
 

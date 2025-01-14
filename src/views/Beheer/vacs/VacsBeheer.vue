@@ -56,9 +56,7 @@ onMounted(() => {
   fetchAllVacs("/api/vacs/api/v2/objects")
     .then(
       (results) =>
-        (vacs.value = results.sort((a, b) =>
-          a.vraag ? a.vraag.localeCompare(b.vraag) : -1,
-        )),
+        (vacs.value = results.sort((a, b) => a.vraag.localeCompare(b.vraag))),
     )
     .catch(() => error.value)
     .finally(() => (loading.value = false));
