@@ -1,4 +1,6 @@
-﻿using Kiss.Bff.EndToEndTest.Helpers;
+﻿using System;
+using System.Reflection.Emit;
+using Kiss.Bff.EndToEndTest.Helpers;
 using Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers;
 
 namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies;
@@ -634,13 +636,25 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
+        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill=skill.Naam , Body= Guid.NewGuid().ToString()});
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("When the user clicks on the arrow button of the nieuwsbericht");
 
-        await Step("Then the Type, Titel, Inhoud, Publicatiedatum, Publicatie-einddatum and Skills of the nieuwsbericht are visible in a details screen");
+        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
 
-        Assert.Inconclusive("Not implemented yet");
+        await Step("Then the Type, Titel, Inhoud, Publicatiedatum, Publicatie-einddatum and Skills of the nieuwsbericht are visible in a details screen");
+        
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
+        await Expect(Page.Locator("label:text('Inhoud') + div")).ToContainTextAsync(nieuw.Body);
+        await Expect(Page.Locator("#publicatieDatum")).ToHaveValueAsync(nieuw.PublicatieDatum.ToString("yyyy-MM-ddTHH:mm"));
+        await Expect(Page.GetByLabel("Publicatie-einddatum")).ToHaveValueAsync(nieuw.PublicatieEinddatum.ToString("yyyy-MM-ddTHH:mm"));
+        await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
     }
 
     [TestMethod]
