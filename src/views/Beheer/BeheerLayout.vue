@@ -16,6 +16,8 @@
     <router-link to="/Beheer/formulieren-contactverzoek-groep">
       Formulieren contactverzoek groepen
     </router-link>
+
+    <router-link to="/Beheer/vacs"> Vacs </router-link>
   </nav>
 
   <main>
