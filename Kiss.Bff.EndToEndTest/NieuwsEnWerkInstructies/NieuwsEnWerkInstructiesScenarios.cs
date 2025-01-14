@@ -467,7 +467,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When user clicks on the delete icon of the nieuwsbericht in the list");
 
-        var nieuwsRow = Page.GetRowByValue(nieuws.Title);                  
+        var nieuwsRow = Page.GetBeheerRowByValue(nieuws.Title);                  
              
         await Step("And confirms a pop-up window with the message ‘Weet u zeker dat u dit bericht wilt verwijderen?’");
 
@@ -480,7 +480,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("Then the nieuwsbericht is no longer in the list");
 
-        var deletedRow = Page.GetRowByValue(nieuws.Title); 
+        var deletedRow = Page.GetBeheerRowByValue(nieuws.Title); 
 
         await Expect(deletedRow).ToBeHiddenAsync();
 
