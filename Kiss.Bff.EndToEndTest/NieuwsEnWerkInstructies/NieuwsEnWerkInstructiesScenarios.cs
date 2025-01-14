@@ -341,21 +341,37 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a unique text (uuid)");
 
+        var uniqueTitle = Guid.NewGuid().ToString();
+
         await Step("Given there is exactly 1 werkinstructie with this text in the title");
+
+        await using var werkbericht = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And there is exactly 1 nieuwsbericht with this text in the title");
 
+        await using var nieuws = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+       
         await Step("And the user is on the HOME Page");
 
-        await Step("When the user selects 'Werkinstructie' from the filter dropdown");
+        await Page.GotoAsync("/");
 
+        await Step("When the user selects 'Werkinstructie' from the filter dropdown");
+        
+        await Page.GetWerkberichtTypeSelector().SelectOptionAsync("Werkinstructie");
+ 
         await Step("And searches for the unique text");
+
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(uniqueTitle);
+        await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
 
         await Step("Then exactly 1 work instruction should be displayed");
 
+        await Expect(Page.GetSearchResult().GetByRole(AriaRole.Article)).ToHaveCountAsync(1);
+
         await Step("And no news articles should be visible");
 
-        Assert.Inconclusive("Not implemented yet");
+        await Expect(Page.GetNieuwsSection()).ToBeHiddenAsync();
+
     }
 
     [TestMethod]
@@ -363,31 +379,84 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there are at least 3 skills");
 
+        var skill1 = Guid.NewGuid().ToString();
+        var skill2 = Guid.NewGuid().ToString();
+        var skill3 = Guid.NewGuid().ToString();
+
+        await using var skillItem1 = await Page.CreateSkill(skill1);
+        await using var skillItem2 = await Page.CreateSkill(skill2);
+        await using var skillItem3 = await Page.CreateSkill(skill3);
+
         await Step("And there is exactly one nieuwsbericht related to the first skill");
 
+        string uniqueTitle = Guid.NewGuid().ToString();
+        await using var nieuwsWithSkill1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill1 });
+
+
         await Step("And there is exactly one werkinstructie related to the first skill");
+        
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var werkberichtWithSkill1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill1 });
 
         await Step("And there is exactly one nieuwsbericht related to the second skill");
 
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var nieuwsWithSkill2 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill2 });
+
         await Step("And there is exactly one werkinstructie related to the second skill");
+
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var werkberichtWithSkill2 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill2 });
 
         await Step("And there is exactly one nieuwsbericht related to the third skill");
 
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var nieuwsWithSkill3 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws, Skill = skill3 });
+
         await Step("And there is exactly one werkinstructie related to the third skill");
+
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var werkberichtWithSkill3 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie, Skill = skill3 });
 
         await Step("And there is at least one nieuwsbericht without a relation to any skill");
 
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var nieuwsWithSkill4 =  await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+
         await Step("And there is at least one werkinstructie without a relation to any skill");
+
+        uniqueTitle = Guid.NewGuid().ToString();
+        await using var werkberichtWithSkill4 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And the user is on the HOME Page");
 
+        await Page.GotoAsync("/");
+
         await Step("When the user selects the first skill from the filter options");
+
+        await Page.GetSkillsSummaryElement().ClickAsync();
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill1 }).CheckAsync();
+
 
         await Step("And the user selects the second skill from the filter options");
 
-        await Step("Then only the two nieuwsberichten and werkinstructies related to the first and second skill are visible");
+        await Page.GetSkillsFieldset().GetByRole(AriaRole.Checkbox, new() { Name = skill2 }).CheckAsync();
 
-        Assert.Inconclusive("Not implemented yet");
+        await Step("Then only the two nieuwsberichten and werkinstructies related to the first and second skill are visible");
+        
+        var nieuwsSection = Page.GetNieuwsSection();
+        var werkinstructiesSection = Page.GetWerkinstructiesSection();
+
+        await Expect(nieuwsSection.GetByRole(AriaRole.Article)).ToHaveCountAsync(2);
+        await Expect(nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuwsWithSkill1.Title })).ToBeVisibleAsync();
+        await Expect(nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuwsWithSkill2.Title })).ToBeVisibleAsync();
+        await Expect(nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuwsWithSkill3.Title })).ToBeHiddenAsync();
+
+        await Expect(werkinstructiesSection.GetByRole(AriaRole.Article)).ToHaveCountAsync(2);
+        await Expect(werkinstructiesSection.GetByRole(AriaRole.Heading, new() { Name = werkberichtWithSkill1.Title })).ToBeVisibleAsync();
+        await Expect(werkinstructiesSection.GetByRole(AriaRole.Heading, new() { Name = werkberichtWithSkill2.Title })).ToBeVisibleAsync();
+        await Expect(werkinstructiesSection.GetByRole(AriaRole.Heading, new() { Name = werkberichtWithSkill3.Title })).ToBeHiddenAsync();
+
     }
 
     [TestMethod]
@@ -395,19 +464,35 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a unique text (uuid)");
 
+        var uniqueTitle = Guid.NewGuid().ToString();
+
         await Step("Given there is exactly one nieuwsbericht with that text as the title");
 
+        await using var nieuwsbericht = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+        
         await Step("And there is exactly one werkinstructie with that text as the title");
+
+        await using var werkinstructie = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
 
         await Step("And the user is on the HOME Page");
 
+        await Page.GotoAsync("/");
+
         await Step("When the user selects 'Alle' from the filter dropdown");
+
+        await Page.GetWerkberichtTypeSelector().SelectOptionAsync("Alle");
 
         await Step("And searches for the unique text");
 
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(uniqueTitle);
+        await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
+
         await Step("Then exactly one nieuwsbericht and exactly one werkinstructie are visible");
 
-        Assert.Inconclusive("Not implemented yet");
+        await Expect(Page.GetSearchResultFilteredByType("Werkinstructie")).ToHaveCountAsync(1);
+        await Expect(Page.GetSearchResultFilteredByType("Nieuws")).ToHaveCountAsync(1);
+
+
     }
 
     [TestMethod]
@@ -415,29 +500,51 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a unique text (uuid)");
 
+        var uniqueTitle = Guid.NewGuid().ToString();
+        var otherText = Guid.NewGuid().ToString();
+
         await Step("Given there is exactly one nieuwsbericht with that text as the title");
+
+        await using var nieuws1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
 
         await Step("And there is exactly one werkinstructie with that text as the title");
 
+        await using var werkinstructie1 = await Page.CreateBericht(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
+
         await Step("And there is at least one nieuwsbericht without that text");
+
+        await using var nieuws2 = await Page.CreateBericht(new() { Title = otherText, BerichtType = BerichtType.Nieuws });
 
         await Step("And there is at least one werkinstructie without that text");
 
+        await using var werkinstructie2 = await Page.CreateBericht(new() { Title = otherText, BerichtType = BerichtType.Werkinstructie });
+
         await Step("And the user is on the HOME Page");
+
+        await Page.GotoAsync("/");
 
         await Step("And has selected 'Alle' from the filter dropdown");
 
+        await Page.GetWerkberichtTypeSelector().SelectOptionAsync("Alle");
+
         await Step("And has searched for the unique text");
+
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(uniqueTitle);
 
         await Step("When the user clicks on the close icon in the search bar");
 
+        await Page.GetNieuwsAndWerkinstructiesSearch().ClearAsync();
+     
         await Step("Then at least two werkinstructies should be visible");
+
+        Assert.IsTrue((await Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article).CountAsync()) >= 2, "at least two werkinstructies should be visible");
 
         await Step("And at least two nieuwsberichten should be visible");
 
-        Assert.Inconclusive("Not implemented yet");
-    }
+        Assert.IsTrue((await Page.GetNieuwsSection().GetByRole(AriaRole.Article).CountAsync()) >= 2, "at least two nieuwsberichten should be visible");
+        
 
+    }
     [TestMethod]
     public void Scenario16()
     {
@@ -449,11 +556,16 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
+        await using var nieuws = await Page.CreateBericht(new() { Title =  Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
+
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+
+        await Page.GotoAsync("/");
 
         await Step("Then the nieuwsbericht should be displayed in a list");
 
-        Assert.Inconclusive("Not implemented yet");
+        var nieuwsSection = Page.GetNieuwsSection();
+        await Expect(nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeVisibleAsync();
     }
 
     [TestMethod]
