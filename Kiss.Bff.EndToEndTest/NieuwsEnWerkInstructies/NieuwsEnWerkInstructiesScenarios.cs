@@ -834,19 +834,41 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
+
         await Step("When the user clicks on the “Toevoegen” button");
+
+        await Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" }).ClickAsync();
 
         await Step("And selects ‘Nieuws’  as ‘Type’");
 
+        await Page.GetByRole(AriaRole.Radio, new() { Name = "Nieuws" }).CheckAsync();
+
         await Step("And fills in the ‘Titel’ and ‘Inhoud’ fields");
+
+        var title = Guid.NewGuid().ToString();
+        var body = Guid.NewGuid().ToString();
+
+        await Page.GetByLabel("Titel").FillAsync(title);
+        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(body);
+
 
         await Step("And clicks on the submit button");
 
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
+
         await Step("And navigates to the page containing the nieuwsbericht created earlier ");
+
+        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(title);
 
         await Step("Then the nieuwsbericht should be displayed");
 
-        Assert.Inconclusive("Not implemented yet");
+        await Expect(Page.GetBeheerRowByValue(title)).ToBeVisibleAsync();
+
     }
 
     [TestMethod]
