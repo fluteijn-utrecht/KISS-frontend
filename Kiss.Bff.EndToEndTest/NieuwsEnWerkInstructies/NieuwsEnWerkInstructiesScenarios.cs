@@ -730,10 +730,14 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Page.GotoAsync("/");
 
         await Step("And navigates to the page containing the nieuwsbericht selected earlier");
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(nieuw.Title);
+        await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
 
         await Step("Then the nieuwsbericht should be displayed with the ‘belangrijk’ flag");
 
-       
+        await Expect(Page.GetSearchResultFilteredByType("Nieuws")).ToHaveCountAsync(1);
+        await Expect(Page.GetSearchResultFilteredByType("Nieuws").GetByText("Belangrijk")).ToBeVisibleAsync();
+
     }
 
     [TestMethod]
