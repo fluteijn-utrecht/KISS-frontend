@@ -9,21 +9,20 @@
 
   <ul v-else>
     <li v-for="vac in vacs" :key="vac.uuid" class="listItem">
-      <router-link :to="'/Beheer/vac/' + vac.uuid">{{ vac.vraag }}</router-link>
+      <router-link :to="'/Beheer/vac/' + vac.uuid">{{
+        vac.vraag || "__"
+      }}</router-link>
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import { fetchLoggedIn, parseJson, parsePagination } from "@/services";
 import type { Vac } from "@/features/search/types";
-
-const vacs = ref<Vac[]>();
-const loading = ref(false);
-const error = ref(false);
+import { useLoader } from "@/services/use-loader";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapVac = (x: any): Vac => ({
@@ -50,15 +49,11 @@ const fetchAllVacs = async (url: string): Promise<Vac[]> => {
   return page;
 };
 
-onMounted(() => {
-  loading.value = true;
+const {
+  data: vacs,
+  loading,
+  error,
+} = useLoader<Vac[]>(() => fetchAllVacs("/api/vacs/api/v2/objects"));
 
-  fetchAllVacs("/api/vacs/api/v2/objects")
-    .then(
-      (results) =>
-        (vacs.value = results.sort((a, b) => a.vraag.localeCompare(b.vraag))),
-    )
-    .catch(() => error.value)
-    .finally(() => (loading.value = false));
-});
+watch(vacs, (value) => value?.sort((a, b) => a.vraag.localeCompare(b.vraag)));
 </script>
