@@ -685,11 +685,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
+       await using var bericht = await Page.OnSaveBericht();
 
         await Step("Then the updated news title is displayed in Berichten screen");
 
@@ -707,7 +703,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("Given there is at least 1 nieuwsbericht");
 
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
@@ -731,11 +727,9 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Page.GetByLabel("Publicatiedatum").FillAsync(updatedPublicatieDatum.ToString("yyyy-MM-ddTHH:mm"));
 
         await Step("And clicks on the submit button");
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
+
+       await using var bericht = await Page.OnSaveBericht();
+
         await Step("Then the nieuwsbericht with the updated Publicatiedatum is displayed in the Berichten screen");
 
         await Expect(Page.GetBeheerTableCell(3, 1)).ToHaveTextAsync(updatedPublicatieDatum.ToString("dd-MM-yyyy, HH:mm"));
@@ -748,7 +742,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("Given there is at least 1 nieuwsbericht");
 
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
@@ -772,11 +766,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
+       await using var bericht = await Page.OnSaveBericht();
 
         await Step("And navigates to the home screen of the KISS environment");
 
@@ -818,11 +808,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
+       await using var bericht = await Page.OnSaveBericht();
 
         await Step("Then the nieuwsbericht is displayed in Berichten");
 
@@ -855,11 +841,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
+        await using var bericht = await Page.OnSaveBericht();
 
         await Step("And navigates to the page containing the nieuwsbericht created earlier ");
 
@@ -897,11 +879,8 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
+       await using var bericht = await Page.OnSaveBericht();
+
         await Step("Then the werkinstructie is displayed in Berichten");
 
         await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(title); 
