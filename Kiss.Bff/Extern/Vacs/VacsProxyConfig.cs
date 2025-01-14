@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using Kiss.Bff.InterneTaak;
 using Microsoft.AspNetCore.Authorization;
 using Yarp.ReverseProxy.Transforms;
 
