@@ -1,83 +1,88 @@
 <template>
-  <utrecht-heading :level="1">Vac</utrecht-heading>
+  <utrecht-heading :level="1"
+    >Vac {{ props.uuid ? "bewerken" : "toevoegen" }}</utrecht-heading
+  >
 
   <simple-spinner v-if="loading" />
 
-  <div v-else-if="error">
-    Er is een fout opgetreden bij het ophalen van de Vac.
-  </div>
+  <p v-else-if="error">Er is een fout opgetreden bij het ophalen van de Vac.</p>
 
-  <template v-else>
-    <beheer-form @submit="submit">
-      <template #formFields>
-        <label class="utrecht-form-label"
-          ><span>Vraag</span>
-          <input
-            class="utrecht-textbox utrecht-textbox--html-input"
-            type="text"
-            v-model="vac.record.data.vraag"
-            required
-        /></label>
+  <beheer-form @submit="submit" v-else>
+    <template #formFields>
+      <label class="utrecht-form-label"
+        ><span>Vraag *</span>
 
-        <label class="utrecht-form-label" for="antwoord">Antwoord</label>
-        <ck-editor v-model="vac.record.data.antwoord" required />
+        <input
+          class="utrecht-textbox utrecht-textbox--html-input"
+          type="text"
+          v-model="vac.record.data.vraag"
+          required
+      /></label>
 
-        <fieldset>
-          <legend>Afdelingen</legend>
-          <ul>
-            <li v-for="(value, key) in vac.record.data.afdelingen" :key="key">
-              <label class="utrecht-form-label"
-                ><span>Afdeling {{ key + 1 }}</span>
-                <input
-                  class="utrecht-textbox utrecht-textbox--html-input"
-                  type="text"
-                  v-model="value.afdelingNaam"
-              /></label>
-            </li>
-          </ul>
-        </fieldset>
+      <label class="utrecht-form-label" for="antwoord">Antwoord *</label>
+      <ck-editor v-model="vac.record.data.antwoord" required />
 
-        <label class="utrecht-form-label" for="toelichting">Toelichting</label>
-        <ck-editor v-model="vac.record.data.toelichting" />
+      <label class="utrecht-form-label" for="toelichting">Toelichting</label>
+      <ck-editor v-model="vac.record.data.toelichting" />
 
-        <fieldset>
-          <legend>Trefwoorden</legend>
-          <ul>
-            <li v-for="(value, key) in vac.record.data.trefwoorden" :key="key">
-              <label class="utrecht-form-label"
-                ><span>Trefwoord {{ key + 1 }}</span>
-                <input
-                  class="utrecht-textbox utrecht-textbox--html-input"
-                  type="text"
-                  v-model="value.trefwoord"
-              /></label>
-            </li>
-          </ul>
-        </fieldset>
-      </template>
+      <fieldset>
+        <legend>Afdelingen</legend>
 
-      <template #formMenuListItems>
-        <li>
-          <router-link
-            to="/Beheer/vacs/"
-            class="utrecht-button utrecht-button--secondary-action"
+        <ul>
+          <li
+            v-for="(value, key) in vac.record.data.afdelingen"
+            :key="`afdeling_${key}`"
           >
-            Annuleren
-          </router-link>
-        </li>
+            <label class="utrecht-form-label">
+              <input
+                class="utrecht-textbox utrecht-textbox--html-input"
+                type="text"
+                v-model="value.afdelingNaam"
+                :aria-label="`Afdeling ${key + 1}`"
+            /></label>
+          </li>
+        </ul>
+      </fieldset>
 
-        <li>
-          <utrecht-button
-            appearance="primary-action-button"
-            type="submit"
-            @click="submit"
+      <fieldset>
+        <legend>Trefwoorden</legend>
+
+        <ul>
+          <li
+            v-for="(value, key) in vac.record.data.trefwoorden"
+            :key="`trefwoord_${key}`"
           >
-            Opslaan
-          </utrecht-button>
-        </li>
-      </template>
-    </beheer-form>
-  </template>
+            <label class="utrecht-form-label">
+              <input
+                class="utrecht-textbox utrecht-textbox--html-input"
+                type="text"
+                v-model="value.trefwoord"
+                :aria-label="`Trefwoord ${key + 1}`"
+            /></label>
+          </li>
+        </ul>
+      </fieldset>
+
+      <p>Velden met (*) zijn verplicht</p>
+    </template>
+
+    <template #formMenuListItems>
+      <li>
+        <router-link
+          to="/Beheer/vacs/"
+          class="utrecht-button utrecht-button--secondary-action"
+        >
+          Annuleren
+        </router-link>
+      </li>
+
+      <li>
+        <utrecht-button appearance="primary-action-button" type="submit">
+          Opslaan
+        </utrecht-button>
+      </li>
+    </template>
+  </beheer-form>
 </template>
 
 <script setup lang="ts">
@@ -127,7 +132,7 @@ const vac = ref<VacObject>({
   },
 });
 
-// Update afdelingen and trefwoorden with fetched data while remaining array length
+// Update with fetched data while remaining array length
 watch(
   () => ({
     afdelingData: vac.value.record.data.afdelingen,
@@ -216,3 +221,22 @@ onMounted(() => {
     .finally(() => (loading.value = false));
 });
 </script>
+
+<style lang="scss" scoped>
+fieldset {
+  legend {
+    color: var(--utrecht-form-label-color);
+    font-size: var(--utrecht-form-label-font-size);
+    font-weight: var(--utrecht-form-label-font-weight);
+    margin-block-end: var(--spacing-default);
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-default);
+    list-style: disc;
+    padding-inline-start: var(--spacing-default);
+  }
+}
+</style>
