@@ -11,10 +11,10 @@
         public static ILocator GetWerkberichtTypeSelector(this IPage page) => page.Locator($"#werkbericht-type-input");
         public static ILocator GetNieuwsAndWerkinstructiesSearch(this IPage page) => page.Locator($"#search-input"); 
         public static ILocator GetSearchResult(this IPage page) => page.Locator("section").Filter(new() { Has = page.GetByRole(AriaRole.Heading, new() { Name = "Zoekresultaten" }) });
-        public static ILocator GetRowByValue(this IPage page, string title) => page.GetByRole(AriaRole.Row)
-              .Filter(new()
-              {
-                  Has = page.GetByRole(AriaRole.Cell, new() { Name = title, Exact = true }).First
-              });
+        public static ILocator GetBeheerRowByValue(this IPage page, string title) => page.GetByRole(AriaRole.Row)
+                      .Filter(new()
+                      {
+                          Has = page.GetByRole(AriaRole.Cell, new() { Name = title, Exact = true }).First
+                      });
     }
 }
