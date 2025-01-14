@@ -18,12 +18,11 @@
 - Contactverzoekformuliertjes / vragensetjes óók voor groepen #954
 - Pagesize meegeven bij ophalen contactverzoeken en contactmomenten #896
 - VAC items vindbaar maken voor beheer #1004
-  - **warning** nieuwe Environment Variabelen nodig: `VAC_OBJECTEN_BASE_URL`, `VAC_OBJECT_TYPE_URL` , `VAC_OBJECT_TYPE_VERSION`, `VAC_OBJECTEN_TOKEN`
- Zie ook geupdate installatiehandleiding en Handleiding beheer [in de Documentatie](https://kiss-klantinteractie-servicesysteem.readthedocs.io/en/vX.X.X/) 
-
 
 ### Warnings and deployment notes
-
+Zie installatiehandleiding voor instructies
+- Nieuwe Environment Variabelen nodig: `VAC_OBJECTEN_BASE_URL`, `VAC_OBJECT_TYPE_URL` , `VAC_OBJECT_TYPE_VERSION`, `VAC_OBJECTEN_TOKEN` 
+- Minimale lengte van secrets is verhoogd van 16 naar 32 tekens
   
 ### Bugfixes
 
@@ -43,4 +42,4 @@
  - Upgrade vue-router from 4.4.0 to 4.4.5 PR #931
  - Upgrade dompurify from 2.5.5 to 2.5.7  PR #965
  - Upgrade .Net naar v8 PR #968
-   - **Warning**: minimale lengte van secrets is verhoogd van 16 naar 32 tekens
+  
