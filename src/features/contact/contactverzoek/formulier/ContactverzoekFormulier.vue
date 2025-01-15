@@ -10,7 +10,6 @@
           :value="ActorType.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @change="onTypeActorSelected"
         />
         Afdeling
       </label>
@@ -20,7 +19,6 @@
           :value="ActorType.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @change="onTypeActorSelected"
         />
         Groep
       </label>
@@ -30,7 +28,6 @@
           :value="ActorType.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @change="onTypeActorSelected"
         />
         Medewerker
       </label>
@@ -46,7 +43,6 @@
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een afdeling"
-        @update:model-value="onUpdateAfdeling"
       />
     </label>
 
@@ -58,7 +54,6 @@
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een groep"
-        @update:model-value="onUpdateGroep"
       />
     </label>
     <label
@@ -74,7 +69,7 @@
       <span class="">Medewerker</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="medewerker"
+        v-model="form.medewerker"
         :filter-field="
           form.typeActor == ActorType.afdeling
             ? 'Smoelenboek.afdelingen.afdelingnaam'
@@ -87,7 +82,6 @@
             ? form.afdeling?.naam
             : form.groep?.naam
         "
-        @update:model-value="onUpdateMedewerker"
         :required="false"
         :isDisabled="
           (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
@@ -102,7 +96,7 @@
     </label>
 
     <label
-      v-if="form.typeActor === ActorType.medewerker && medewerker"
+      v-if="form.typeActor === ActorType.medewerker && form.medewerker"
       for="groep"
       class="utrecht-form-label"
     >
@@ -289,11 +283,7 @@ export default {
 
 <script lang="ts" setup>
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
-import type {
-  ContactVerzoekMedewerker,
-  ContactmomentContactVerzoek,
-} from "@/stores/contactmoment";
-
+import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
 import { ActorType } from "@/stores/contactmoment";
 import { computed, ref, useModel, watch } from "vue";
 import {
@@ -331,7 +321,6 @@ const vragenSets = useModelProperty("vragenSets");
 const vragenSetIdMap = useModelProperty("vragenSetIdMap");
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
-const medewerker = ref<ContactVerzoekMedewerker>();
 
 // cast to TypeOrganisatorischeEenheid
 const soort = computed(() =>
@@ -344,10 +333,7 @@ const soort = computed(() =>
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
   () => props.modelValue,
-  (v) => {
-    form.value = v;
-    medewerker.value = form.value.medewerker;
-  },
+  (v) => (form.value = v),
   { immediate: true },
 );
 
@@ -355,24 +341,23 @@ const setActive = () => {
   form.value.isActive = true;
 };
 
-const onUpdateAfdeling = () => {
-  medewerker.value = undefined;
-  setActive();
-};
+// als afdeling, groep of typeActor wijzigt, dan moet de medewerker gereset worden
+watch(
+  () => ({
+    afdeling: form.value.afdeling,
+    groep: form.value.groep,
+    typeActor: form.value.typeActor,
+  }),
+  () => {
+    form.value.medewerker = undefined;
+    setActive();
+  },
+);
 
-const onUpdateGroep = () => {
-  medewerker.value = undefined;
-  setActive();
-};
-
-const onUpdateMedewerker = () => {
-  form.value.medewerker = medewerker.value;
-  setActive();
-};
-
-const onTypeActorSelected = () => {
-  medewerker.value = undefined;
-};
+watch(
+  () => form.value.medewerker,
+  () => setActive(),
+);
 
 const telEl = ref<HTMLInputElement>();
 
@@ -523,34 +508,6 @@ const handleEmailInput = (event: Event) => {
       : "Vul een geldig emailadres in.",
   );
 };
-
-//als de afdeling wijzigt, dan moet de medewerker gereset worden
-watch(
-  () => form.value.afdeling,
-  (n, o) => {
-    if (n != o) {
-      form.value.medewerker = undefined;
-    }
-    setActive();
-  },
-);
-
-//als de groep wijzigt, moet de medewerker reset worden
-watch(
-  () => form.value.groep,
-  () => {
-    form.value.medewerker = undefined;
-    setActive();
-  },
-);
-
-watch(
-  () => form.value.medewerker,
-  () => {
-    form.value.isMedewerker = true;
-    setActive();
-  },
-);
 </script>
 
 <style lang="scss" scoped>
