@@ -78,7 +78,6 @@ export enum ActorType {
 
 export type ContactmomentContactVerzoek = {
   url?: string;
-  isMedewerker?: true;
 
   //een cv kan zijn voor
   // - een afdeling + optioneel een medewerker
@@ -199,7 +198,6 @@ export const useContactmomentStore = defineStore("contactmoment", {
         notitie: "",
         contactverzoek: {
           url: "",
-          isMedewerker: undefined,
           typeActor: ActorType.afdeling,
           afdeling: undefined,
           groep: undefined,
