@@ -95,7 +95,7 @@ import {
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import CkEditor from "@/components/ckeditor";
 import BeheerForm from "@/components/beheer/BeheerForm.vue";
-import { fetchLoggedIn, parseJson } from "@/services";
+import { fetchLoggedIn, parseJson, throwIfNotOk } from "@/services";
 import type { Vac } from "@/features/search/types";
 import { toast } from "@/stores/toast";
 
@@ -215,6 +215,7 @@ onMounted(() => {
   loading.value = true;
 
   fetchLoggedIn(`${vacObjectenUrl}/${props.uuid}`)
+    .then(throwIfNotOk)
     .then(parseJson)
     .then((result: VacObject) => (vac.value = result))
     .catch(() => (error.value = true))
