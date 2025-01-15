@@ -1,5 +1,14 @@
 <template>
-  <utrecht-heading :level="1">Vacs</utrecht-heading>
+  <div class="header-wrapper">
+    <utrecht-heading :level="1">Vacs</utrecht-heading>
+
+    <router-link
+      to="/Beheer/vac/"
+      title="Toevoegen"
+      class="utrecht-button utrecht-button--primary-action icon icon-after plus icon-only"
+    >
+    </router-link>
+  </div>
 
   <simple-spinner v-if="loading" />
 
