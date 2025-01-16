@@ -915,12 +915,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And navigates to the page containing the werkinstructie created earlier ");
 
-        await Page.GetBeheerRowByValue(nieuws.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(title).GetByRole(AriaRole.Link).ClickAsync();
  
         await Step("Then the werkinstructie should be displayed");
 
-        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuws.Title);
-        await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
+        await Expect(Page.GetByLabel("Titel")).ToHaveValueAsync(title); 
     
  
     }
