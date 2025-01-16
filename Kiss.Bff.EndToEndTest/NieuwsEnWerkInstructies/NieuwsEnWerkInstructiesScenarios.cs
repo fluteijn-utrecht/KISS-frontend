@@ -748,7 +748,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("Given there is at least 1 nieuwsbericht");
 
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
