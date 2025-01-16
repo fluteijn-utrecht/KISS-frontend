@@ -62,6 +62,7 @@ main {
 
 :deep(.listItem) {
   display: flex;
+  column-gap: var(--spacing-default);
   justify-content: space-between;
   align-items: center;
   padding-block: var(--spacing-small);
