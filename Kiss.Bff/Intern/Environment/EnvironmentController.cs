@@ -24,8 +24,8 @@ namespace Kiss.Bff.Intern.Environment
         [HttpGet("use-vacs")]
         public IActionResult GetUseVacs()
         {
-            var useVacs = _configuration["USE_VACS"] ?? "false";
-            return Ok(new { useVacs = bool.Parse(useVacs) });
+            return bool.TryParse(_configuration["USE_VACS"] ?? "false", out var useVacs) ?
+                (IActionResult) Ok(new { useVacs }) : Ok(new { useVacs = false });
         }
 
         [HttpGet("versienummer")]
