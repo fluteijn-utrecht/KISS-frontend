@@ -662,7 +662,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("Given there is at least 1 nieuwsbericht");
 
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-         var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
@@ -670,25 +670,24 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
-        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuws.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("And the news detail screen is displayed");
 
-        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuws.Title);
         await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
         await Step("When the user updates the title section of news");
 
-        var updatedTitle = Guid.NewGuid().ToString();
+        var updatedTitle = nieuws.Title+"_Updated";
         await Page.GetByLabel("Titel").FillAsync(updatedTitle);
-
+         
         await Step("And clicks on the submit button");
 
-       await using var bericht = await Page.OnSaveBericht();
+        await Page.OnSaveBericht();
 
         await Step("Then the updated news title is displayed in Berichten screen");
-
       
         await Expect(Page.GetBeheerTableCell(1,1)).ToHaveTextAsync(updatedTitle);
 
@@ -703,7 +702,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("Given there is at least 1 nieuwsbericht");
 
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-        var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        await using var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
@@ -728,7 +727,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-       await using var bericht = await Page.OnSaveBericht();
+        await Page.OnSaveBericht();
 
         await Step("Then the nieuwsbericht with the updated Publicatiedatum is displayed in the Berichten screen");
 
@@ -742,7 +741,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("Given there is at least 1 nieuwsbericht");
 
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-        var nieuw = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
@@ -750,11 +749,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
-        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuws.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("And the news detail screen is displayed");
 
-        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuws.Title);
         await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
@@ -766,14 +765,14 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-       await using var bericht = await Page.OnSaveBericht();
+        await Page.OnSaveBericht();
 
         await Step("And navigates to the home screen of the KISS environment");
 
         await Page.GotoAsync("/");
 
         await Step("And navigates to the page containing the nieuwsbericht selected earlier");
-        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(nieuw.Title);
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(nieuws.Title);
         await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
 
         await Step("Then the nieuwsbericht should be displayed with the ‘belangrijk’ flag");

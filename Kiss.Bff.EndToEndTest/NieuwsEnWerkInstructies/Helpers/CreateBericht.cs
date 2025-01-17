@@ -142,7 +142,9 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 })
                 .Filter(new()
                 {
-                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = Title, Exact = true }).First
+                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = Title, Exact = true }).First.Or(
+                      Page.GetByRole(AriaRole.Cell, new() { Name = $"{Title}_Updated", Exact = true }).First)
+
                 });
 
             var deleteButton = nieuwsRows.GetByTitle("Verwijder").First;
