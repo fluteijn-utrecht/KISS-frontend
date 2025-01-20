@@ -38,6 +38,7 @@ const config: EditorConfig = {
     "undo",
     "redo",
   ],
+  licenseKey: "GPL",
 };
 </script>
 
