@@ -391,6 +391,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       if (!huidigeVraag.contactverzoek.isActive) {
+        huidigeVraag.contactverzoek.typeActor = ActorType.medewerker;
         huidigeVraag.contactverzoek.medewerker = medewerker;
       }
 
@@ -405,7 +406,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
             voornaam: medewerker.voornaam,
             voorvoegselAchternaam: medewerker.voorvoegselAchternaam,
             achternaam: medewerker.achternaam,
-            emailadres: medewerker.contact.emails
+            emailadres: medewerker.contact?.emails
               ? medewerker.contact.emails[0].email
               : "",
             url,

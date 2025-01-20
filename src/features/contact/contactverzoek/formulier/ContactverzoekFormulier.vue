@@ -337,11 +337,10 @@ watch(
   { immediate: true },
 );
 
-const setActive = () => {
-  form.value.isActive = true;
-};
+const setActive = () => (form.value.isActive = true);
 
-// als afdeling, groep of typeActor wijzigt, dan moet de medewerker gereset worden
+// als afdeling, groep of typeActor vanuit (actief) formulier wordt gewijzigd, dan medewerker resetten
+// maar als formulier nog niet actief is, moeten typeActor en medewerker zonder reset vooringevuld kunnen worden
 watch(
   () => ({
     afdeling: form.value.afdeling,
@@ -349,7 +348,10 @@ watch(
     typeActor: form.value.typeActor,
   }),
   () => {
-    form.value.medewerker = undefined;
+    if (form.value.isActive) {
+      form.value.medewerker = undefined;
+    }
+
     setActive();
   },
 );
