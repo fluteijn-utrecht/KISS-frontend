@@ -70,11 +70,9 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 if (request.Skill.Contains(","))
                     skills.AddRange(request.Skill.Split(","));
                 else
-                        skills.Add(request.Skill);
-                
+                        skills.Add(request.Skill);            
 
-
-                    foreach (var skill in skills)
+                     foreach (var skill in skills)
                     {
                         var skillCheckbox = page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
                         await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked

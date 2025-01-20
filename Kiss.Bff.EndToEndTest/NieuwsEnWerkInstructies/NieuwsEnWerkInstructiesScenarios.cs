@@ -824,7 +824,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user clicks on the “Toevoegen” button");
 
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Link , new() { Name = "Toevoegen" }).ClickAsync();
 
         await Step("And selects ‘Nieuws’  as ‘Type’");
 
@@ -1001,7 +1001,6 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Page.GotoAsync("/");
 
-
         await Step("And browses through all pages of the Nieuws section");
 
         var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
@@ -1030,7 +1029,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("Then the nieuwsbericht should be visible");
 
-        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeHiddenAsync();
+        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeVisibleAsync();
 
 
     }
@@ -1044,7 +1043,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await using var skill2 = await Page.CreateSkill(Guid.NewGuid().ToString());
         await using var skill3 = await Page.CreateSkill(Guid.NewGuid().ToString());
 
-        await using var bericht = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = $"{skill1.Naam},{skill2.Naam},{skill3.Naam}" });
+        await using var niewus = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = $"{skill1.Naam},{skill2.Naam},{skill3.Naam}" });
 
         await Step("When the user navigates to the HOME Page");
 
@@ -1054,13 +1053,17 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter(new()
         {
-            Has = Page.GetByRole(AriaRole.Heading, new() { Name = bericht.Title }).First
+            Has = Page.GetByRole(AriaRole.Heading, new() { Name = niewus.Title }).First
         });
        
         await Step("Then the nieuwsbericht should be displayed with the corresponding skills as labels");
        
         await Expect(articles).ToBeVisibleAsync();
-        await Expect(articles.Locator(".skills-container").Locator("small")).ToHaveCountAsync(3);
+
+        await Expect(articles.Locator(".skills-container").Locator("small")).ToHaveCountAsync(3);       
+        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill1.Naam }) })).ToBeVisibleAsync();
+        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill2.Naam }) })).ToBeVisibleAsync();
+        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill3.Naam }) })).ToBeVisibleAsync();
 
     }
 
@@ -1072,7 +1075,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await using var skill1 = await Page.CreateSkill(Guid.NewGuid().ToString());
         await using var skill2 = await Page.CreateSkill(Guid.NewGuid().ToString());
 
-        await using var bericht = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie, Skill = $"{skill1.Naam},{skill2.Naam}" });
+        await using var werkinstructie = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie, Skill = $"{skill1.Naam},{skill2.Naam}" });
 
         await Step("When the user navigates to the HOME Page");
 
@@ -1080,11 +1083,19 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And browses through all pages of the Nieuws section");
 
-        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
-         
+        var articles = Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article).Filter(new()
+        {
+            Has = Page.GetByRole(AriaRole.Heading, new() { Name = werkinstructie.Title }).First
+        });
+
         await Step("Then the werkinstructie should be displayed with the corresponding skills as labels");
 
-        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = bericht.Title })).ToBeVisibleAsync();
-        
+        await Expect(articles).ToBeVisibleAsync();
+
+        await Expect(articles.Locator(".skills-container").Locator("small")).ToHaveCountAsync(2);
+        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill1.Naam }) })).ToBeVisibleAsync();
+        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill2.Naam }) })).ToBeVisibleAsync();
+
+
     }
 }
