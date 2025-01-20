@@ -19,7 +19,7 @@
   <ul v-else>
     <li v-for="vac in vacs" :key="vac.uuid" class="listItem">
       <router-link :to="'/Beheer/vac/' + vac.uuid">{{
-        vac.vraag || "__"
+        vac.vraag.trim() || "__"
       }}</router-link>
 
       <utrecht-button

@@ -17,7 +17,7 @@
       Contactverzoekformulieren groepen
     </router-link>
 
-    <router-link v-if="useVacs" to="/Beheer/vacs">Vacs</router-link>
+    <router-link v-if="useVacs" to="/Beheer/vacs">VACs</router-link>
   </nav>
 
   <main>
