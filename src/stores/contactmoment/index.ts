@@ -35,7 +35,7 @@ export interface Afdeling {
 
 export interface Groep {
   id: string;
-  afdelingId: string;
+  afdelingId?: string;
   identificatie: string;
   naam: string;
 }
@@ -391,21 +391,22 @@ export const useContactmomentStore = defineStore("contactmoment", {
       const { huidigeVraag } = huidigContactmoment;
 
       if (!huidigeVraag.contactverzoek.isActive) {
+        huidigeVraag.contactverzoek.typeActor = ActorType.medewerker;
         huidigeVraag.contactverzoek.medewerker = medewerker;
       }
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
-        (m) => m.medewerker.id === medewerker.id,
+        (m) => m.medewerker.id === medewerker.identificatie,
       );
 
       if (newMedewerkerIndex === -1) {
         huidigeVraag.medewerkers.push({
           medewerker: {
-            id: medewerker.id,
+            id: medewerker.identificatie,
             voornaam: medewerker.voornaam,
             voorvoegselAchternaam: medewerker.voorvoegselAchternaam,
             achternaam: medewerker.achternaam,
-            emailadres: medewerker.contact.emails
+            emailadres: medewerker.contact?.emails
               ? medewerker.contact.emails[0].email
               : "",
             url,
