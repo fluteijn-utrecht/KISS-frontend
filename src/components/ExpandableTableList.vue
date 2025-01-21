@@ -12,6 +12,8 @@
 </template>
 
 <script lang="ts" setup>
+// TODO we now render a ul within a table, this is not valid HTML
+// let's try to refactor this, possibly to a regular table with expandable extra rows
 import { computed } from "vue";
 import { ref } from "vue";
 
