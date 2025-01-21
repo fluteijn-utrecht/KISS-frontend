@@ -101,12 +101,15 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 BerichtType = request.BerichtType,
             };
         }
-        public static async Task<Bericht> OnSaveBericht(this IPage page)
+        public static async Task OnSaveBericht(this IPage page, Bericht? bericht = null)
         {
-            
+          
           var title=  await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).TextContentAsync() ?? string.Empty;
           var body = await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).TextContentAsync() ?? string.Empty;
           var berichtType = await page.GetByRole(AriaRole.Radio, new() { Name = BerichtType.Nieuws.ToString() }).IsCheckedAsync() ? BerichtType.Nieuws : BerichtType.Werkinstructie;
+
+            if (bericht != null)
+                bericht = bericht with { Title = title };
 
             var opslaanKnop = page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
             while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
@@ -115,12 +118,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             }
 
             await page.GetByRole(AriaRole.Table).WaitForAsync();
-            return new(page)
-            { 
-                Title = title,
-                Body = body,
-                BerichtType = berichtType
-            };
+          
         }
 
     }
@@ -142,9 +140,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 })
                 .Filter(new()
                 {
-                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = Title, Exact = true }).First.Or(
-                      Page.GetByRole(AriaRole.Cell, new() { Name = $"{Title}_Updated", Exact = true }).First)
-
+                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = Title, Exact = true }).First
                 });
 
             var deleteButton = nieuwsRows.GetByTitle("Verwijder").First;

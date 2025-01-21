@@ -680,12 +680,12 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user updates the title section of news");
 
-        var updatedTitle = nieuws.Title+"_Updated";
+        var updatedTitle = Guid.NewGuid().ToString();
         await Page.GetByLabel("Titel").FillAsync(updatedTitle);
          
         await Step("And clicks on the submit button");
 
-        await Page.OnSaveBericht();
+         await Page.OnSaveBericht(nieuws);
 
         await Step("Then the updated news title is displayed in Berichten screen");
       
