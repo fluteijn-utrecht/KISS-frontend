@@ -1,4 +1,5 @@
-﻿ 
+﻿
+using System.Runtime.InteropServices;
 using Kiss.Bff.EndToEndTest.Helpers;
 using Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers;
 
@@ -679,20 +680,26 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
         await Step("When the user updates the title section of news");
-
+        
         var updatedTitle = Guid.NewGuid().ToString();
         await Page.GetByLabel("Titel").FillAsync(updatedTitle);
-         
+
         await Step("And clicks on the submit button");
 
-         await Page.OnSaveBericht(nieuws);
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
+
+        await Page.GetByRole(AriaRole.Table).WaitForAsync();
 
         await Step("Then the updated news title is displayed in Berichten screen");
-      
-        await Expect(Page.GetBeheerTableCell(1,1)).ToHaveTextAsync(updatedTitle);
 
-        await Step("And the “Gewijzigd op” field gets updated with the latest time"); 
-       
+        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(updatedTitle);
+
+        await Step("And the “Gewijzigd op” field gets updated with the latest time");
+
         await Expect(Page.GetBeheerTableCell(5, 1)).ToHaveTextAsync(DateTime.Now.ToString("dd-MM-yyyy, HH:mm"));
     }
 
@@ -715,7 +722,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the news detail screen is displayed");
 
-        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.GetByLabel("Titel")).ToHaveValueAsync(nieuw.Title);
         await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
@@ -727,7 +734,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        await Page.OnSaveBericht();
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
 
         await Step("Then the nieuwsbericht with the updated Publicatiedatum is displayed in the Berichten screen");
 
@@ -753,7 +764,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the news detail screen is displayed");
 
-        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuws.Title);
+        await Expect(Page.GetByLabel("Titel")).ToHaveValueAsync(nieuws.Title);
         await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
@@ -765,7 +776,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And clicks on the submit button");
 
-        await Page.OnSaveBericht();
+        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+        {
+            await opslaanKnop.ClickAsync();
+        }
 
         await Step("And navigates to the home screen of the KISS environment");
 
