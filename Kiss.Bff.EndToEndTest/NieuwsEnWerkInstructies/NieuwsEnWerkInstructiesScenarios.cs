@@ -788,68 +788,30 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
-        await Page.NavigateToNieuwsWerkinstructiesBeheer();
-
-        await Step("When the user clicks on the “Toevoegen” button");
-
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" }).ClickAsync();
-
-        await Step("And selects ‘Nieuws’  as ‘Type’");
-
-        await Page.GetByRole(AriaRole.Radio, new() { Name = "Nieuws" }).CheckAsync();
-
-        await Step("And fills in the ‘Titel’ and ‘Inhoud’ fields");
-
-        var title = Guid.NewGuid().ToString();
-        var body = Guid.NewGuid().ToString();
-
-        await Page.GetByLabel("Titel").FillAsync(title); 
-        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(body);
-
-        await Step("And clicks on the submit button");
-
-       await using var bericht = await Page.OnSaveBericht();
+        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
 
         await Step("Then the nieuwsbericht is displayed in Berichten");
 
-        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(title); 
+        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(nieuws.Title);
+        await Expect(Page.GetBeheerTableCell(2, 1)).ToHaveTextAsync(BerichtType.Nieuws.ToString());
     }
 
     [TestMethod]
     public async Task Scenario25()
     {
-        await Step("Given the user is on the Nieuws and werkinstructiesscreen available under Beheer");
+        await Step("Given there is at least 1 Werkinstructie");
 
-        await Page.NavigateToNieuwsWerkinstructiesBeheer();
-
-        await Step("When the user clicks on the “Toevoegen” button");
-
-        await Page.GetByRole(AriaRole.Link , new() { Name = "Toevoegen" }).ClickAsync();
-
-        await Step("And selects ‘Nieuws’  as ‘Type’");
-
-        await Page.GetByRole(AriaRole.Radio, new() { Name = "Nieuws" }).CheckAsync();
-
-        await Step("And fills in the ‘Titel’ and ‘Inhoud’ fields");
-
-        var title = Guid.NewGuid().ToString();
-        var body = Guid.NewGuid().ToString();
-
-        await Page.GetByLabel("Titel").FillAsync(title);
-        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(body);
-
-
-        await Step("And clicks on the submit button");
-
-        await using var bericht = await Page.OnSaveBericht();
+        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
 
         await Step("And navigates to the page containing the nieuwsbericht created earlier ");
 
-        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(title);
+        await Page.GetBeheerRowByValue(nieuws.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("Then the nieuwsbericht should be displayed");
 
-        await Expect(Page.GetBeheerRowByValue(title)).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" })).ToHaveValueAsync(nieuws.Title);
+        await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync(); 
+
 
     }
 
@@ -858,32 +820,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
-        await Page.NavigateToNieuwsWerkinstructiesBeheer();
-
-        await Step("When the user clicks on the “Toevoegen” button");
-
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" }).ClickAsync();
-
-        await Step("And selects ‘Werkinstructie’  as ‘Type’");
-
-        await Page.GetByRole(AriaRole.Radio, new() { Name = "Werkinstructie" }).CheckAsync();
-
-        await Step("And fills in the ‘Titel’ and ‘Inhoud’ fields");
-
-        var title = Guid.NewGuid().ToString();
-        var body = Guid.NewGuid().ToString();
-
-        await Page.GetByLabel("Titel").FillAsync(title);
-        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(body);
-
-
-        await Step("And clicks on the submit button");
-
-       await using var bericht = await Page.OnSaveBericht();
+        await using var werkinstructie = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie });
 
         await Step("Then the werkinstructie is displayed in Berichten");
 
-        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(title); 
+        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(werkinstructie.Title); 
     }
 
     [TestMethod]
@@ -891,37 +832,19 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
-        await Page.NavigateToNieuwsWerkinstructiesBeheer();
-
-        await Step("When the user clicks on the “Toevoegen” button");
-
-        await Page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" }).ClickAsync();
-
-        await Step("And selects Werkinstructieas ‘Type’");
-
-        await Page.GetByRole(AriaRole.Radio, new() { Name = "Werkinstructie" }).CheckAsync();
-
-        await Step("And fills in the ‘Titel’ and ‘Inhoud’ fields");
-
-        var title = Guid.NewGuid().ToString();
-        var body = Guid.NewGuid().ToString();
-
-        await Page.GetByLabel("Titel").FillAsync(title);
-        await Page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(body);
-
-        await Step("And clicks on the submit button");
-
-        await using var nieuws = await Page.OnSaveBericht();
+        await using var werkbericht = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie });
 
         await Step("And navigates to the page containing the werkinstructie created earlier ");
 
-        await Page.GetBeheerRowByValue(title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(werkbericht.Title).GetByRole(AriaRole.Link).ClickAsync();
  
         await Step("Then the werkinstructie should be displayed");
 
-        await Expect(Page.GetByLabel("Titel")).ToHaveValueAsync(title); 
-    
- 
+        await Expect(Page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" })).ToHaveValueAsync(werkbericht.Title);
+        await Expect(Page.GetByText(BerichtType.Werkinstructie.ToString(), new() { Exact = true })).ToBeCheckedAsync();
+
+
+
     }
 
     [TestMethod]
