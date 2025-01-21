@@ -17,7 +17,7 @@
       Contactverzoekformulieren groepen
     </router-link>
 
-    <router-link v-if="useVacs" to="/Beheer/vacs">Vacs</router-link>
+    <router-link v-if="useVacs" to="/Beheer/vacs">VACs</router-link>
   </nav>
 
   <main>
@@ -62,6 +62,7 @@ main {
 
 :deep(.listItem) {
   display: flex;
+  column-gap: var(--spacing-default);
   justify-content: space-between;
   align-items: center;
   padding-block: var(--spacing-small);

@@ -1,11 +1,11 @@
 <template>
   <utrecht-heading :level="1"
-    >Vac {{ props.uuid ? "bewerken" : "toevoegen" }}</utrecht-heading
+    >VAC {{ props.uuid ? "bewerken" : "toevoegen" }}</utrecht-heading
   >
 
   <simple-spinner v-if="loading" />
 
-  <p v-else-if="error">Er is een fout opgetreden bij het ophalen van de Vac.</p>
+  <p v-else-if="error">Er is een fout opgetreden bij het ophalen van de VAC.</p>
 
   <beheer-form @submit="submit" v-else>
     <template #formFields>
