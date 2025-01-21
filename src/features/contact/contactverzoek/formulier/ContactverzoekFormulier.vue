@@ -10,6 +10,7 @@
           :value="ActorType.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
+          @change="onUpdateActorAfdelingOrGroep"
         />
         Afdeling
       </label>
@@ -19,6 +20,7 @@
           :value="ActorType.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
+          @change="onUpdateActorAfdelingOrGroep"
         />
         Groep
       </label>
@@ -28,6 +30,7 @@
           :value="ActorType.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
+          @change="onUpdateActorAfdelingOrGroep"
         />
         Medewerker
       </label>
@@ -38,7 +41,8 @@
     >
       <span class="required">Afdeling</span>
       <afdelingen-search
-        v-model="form.afdeling"
+        :model-value="form.afdeling"
+        @update:model-value="onUpdateAfdeling"
         :exact-match="true"
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
@@ -49,7 +53,8 @@
     <label v-if="form.typeActor === ActorType.groep" class="utrecht-form-label">
       <span class="required">Groep</span>
       <groepen-search
-        v-model="form.groep"
+        :model-value="form.groep"
+        @update:model-value="onUpdateGroep"
         :exact-match="true"
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
@@ -69,7 +74,8 @@
       <span class="">Medewerker</span>
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="form.medewerker"
+        :model-value="form.medewerker"
+        @update:model-value="onUpdateMedewerker"
         :filter-field="
           form.typeActor == ActorType.afdeling
             ? 'Smoelenboek.afdelingen.afdelingnaam'
@@ -283,7 +289,10 @@ export default {
 
 <script lang="ts" setup>
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
-import type { ContactmomentContactVerzoek } from "@/stores/contactmoment";
+import type {
+  ContactmomentContactVerzoek,
+  ContactVerzoekMedewerker,
+} from "@/stores/contactmoment";
 import { ActorType } from "@/stores/contactmoment";
 import { computed, ref, useModel, watch } from "vue";
 import {
@@ -299,8 +308,11 @@ import {
 import ContactverzoekOnderwerpen from "./components/ContactverzoekOnderwerpen.vue";
 import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
 import GroepenSearch from "./components/GroepenSearch.vue";
-import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
-import { fetchGroepen } from "./components/groepen";
+import {
+  fetchAfdelingen,
+  type Afdeling,
+} from "@/features/contact/components/afdelingen";
+import { fetchGroepen, type Groep } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
 import { TypeOrganisatorischeEenheid } from "../../components/types";
 
@@ -339,27 +351,31 @@ watch(
 
 const setActive = () => (form.value.isActive = true);
 
-// als afdeling, groep of typeActor vanuit (actief) formulier wordt gewijzigd, dan medewerker resetten
-// maar als formulier nog niet actief is, moeten typeActor en medewerker zonder reset vooringevuld kunnen worden
-watch(
-  () => ({
-    afdeling: form.value.afdeling,
-    groep: form.value.groep,
-    typeActor: form.value.typeActor,
-  }),
-  () => {
-    if (form.value.isActive) {
-      form.value.medewerker = undefined;
-    }
+// i.v.m. voorinvullen medewerker/typeActor is activeren vh formulier losgekoppeld van model
+// afdeling en groep volgen zelfde patroon maar worden (vooralsnog) niet vooringevuld
+const onUpdateAfdeling = (afdeling?: Afdeling) => {
+  form.value.afdeling = afdeling;
 
-    setActive();
-  },
-);
+  onUpdateActorAfdelingOrGroep();
+};
 
-watch(
-  () => form.value.medewerker,
-  () => setActive(),
-);
+const onUpdateGroep = (groep?: Groep) => {
+  form.value.groep = groep;
+
+  onUpdateActorAfdelingOrGroep();
+};
+
+const onUpdateMedewerker = (medewerker?: ContactVerzoekMedewerker) => {
+  form.value.medewerker = medewerker;
+
+  setActive();
+};
+
+const onUpdateActorAfdelingOrGroep = () => {
+  form.value.medewerker = undefined;
+
+  setActive();
+};
 
 const telEl = ref<HTMLInputElement>();
 

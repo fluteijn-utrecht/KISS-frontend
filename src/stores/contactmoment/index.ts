@@ -35,7 +35,7 @@ export interface Afdeling {
 
 export interface Groep {
   id: string;
-  afdelingId: string;
+  afdelingId?: string;
   identificatie: string;
   naam: string;
 }
@@ -396,13 +396,13 @@ export const useContactmomentStore = defineStore("contactmoment", {
       }
 
       const newMedewerkerIndex = huidigeVraag.medewerkers.findIndex(
-        (m) => m.medewerker.id === medewerker.id,
+        (m) => m.medewerker.id === medewerker.identificatie,
       );
 
       if (newMedewerkerIndex === -1) {
         huidigeVraag.medewerkers.push({
           medewerker: {
-            id: medewerker.id,
+            id: medewerker.identificatie,
             voornaam: medewerker.voornaam,
             voorvoegselAchternaam: medewerker.voorvoegselAchternaam,
             achternaam: medewerker.achternaam,
