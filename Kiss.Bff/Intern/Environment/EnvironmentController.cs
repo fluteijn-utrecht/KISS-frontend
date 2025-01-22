@@ -28,6 +28,13 @@ namespace Kiss.Bff.Intern.Environment
                 (IActionResult) Ok(new { useVacs }) : Ok(new { useVacs = false });
         }
 
+        [HttpGet("use-medewerkeremail")]
+        public IActionResult GetUseMedewerkerEmail()
+        {
+            return bool.TryParse(_configuration["USE_MEDEWERKEREMAIL"] ?? "false", out var useMedewerkeremail) ?
+                (IActionResult)Ok(new { useMedewerkeremail }) : Ok(new { useMedewerkeremail = false });
+        }
+
         [HttpGet("versienummer")]
         public IActionResult GetVersienummer()
         {

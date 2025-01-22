@@ -68,6 +68,8 @@ export interface ContactVerzoekMedewerker {
   achternaam?: string;
   afdelingen: MedewerkerAfdelingen[];
   groepen: MedewerkerGroepen[];
+  // ...
+  emailadres?: string;
 }
 
 export enum ActorType {
