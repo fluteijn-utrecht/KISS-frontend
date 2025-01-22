@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Kiss.Bff.Intern.Seed.Features;
 using Kiss.Bff.Vacs;
+using Kiss.Bff.Extern.ZaakGerichtWerken.KlantContacten;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,8 @@ try
 
     builder.Services.AddHttpClient();
 
+    builder.Services.AddKlantContactConfig(builder.Configuration, out var contactRegisterStatus);
+    builder.Configuration["ContactRegisterStatus"] = contactRegisterStatus;
     builder.Services.AddZaaksystemen(builder.Configuration);
 
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
