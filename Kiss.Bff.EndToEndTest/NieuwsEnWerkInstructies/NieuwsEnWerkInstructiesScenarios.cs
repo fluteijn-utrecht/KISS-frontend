@@ -756,11 +756,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And the user has clicked on the arrow button of the nieuwsbericht");
 
-        await Page.GetBeheerRowByValue(nieuw.Title).GetByRole(AriaRole.Link).ClickAsync();
+        await Page.GetBeheerRowByValue(nieuws.Title).GetByRole(AriaRole.Link).ClickAsync();
 
         await Step("And the news detail screen is displayed");
 
-        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuw.Title);
+        await Expect(Page.Locator("#titel")).ToHaveValueAsync(nieuws.Title);
         await Expect(Page.GetByText("Nieuws", new() { Exact = true })).ToBeCheckedAsync();
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
@@ -783,7 +783,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Page.GotoAsync("/");
 
         await Step("And navigates to the page containing the nieuwsbericht selected earlier");
-        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(nieuw.Title);
+        await Page.GetNieuwsAndWerkinstructiesSearch().FillAsync(nieuws.Title);
         await Page.GetNieuwsAndWerkinstructiesSearch().PressAsync("Enter");
 
         await Step("Then the nieuwsbericht should be displayed with the ‘belangrijk’ flag");
