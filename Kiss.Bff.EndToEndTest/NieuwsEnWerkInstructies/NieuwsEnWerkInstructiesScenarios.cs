@@ -661,9 +661,9 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     public async Task Scenario21()
     {
         await Step("Given there is at least 1 nieuwsbericht");
-
+        var intialTitle = Guid.NewGuid().ToString();
         await using var skill = await Page.CreateSkill(Guid.NewGuid().ToString());
-        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
+        await using var nieuws = await Page.CreateBericht(new() { Title = intialTitle, BerichtType = BerichtType.Nieuws, Skill = skill.Naam });
 
         await Step("And the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
@@ -680,23 +680,20 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = skill.Naam })).ToBeCheckedAsync();
 
         await Step("When the user updates the title section of news");
+
+        nieuws.Title = Guid.NewGuid().ToString();
+        await Page.GetByLabel("Titel").FillAsync(nieuws.Title);
         
-        var updatedTitle = Guid.NewGuid().ToString();
-        await Page.GetByLabel("Titel").FillAsync(updatedTitle);
 
         await Step("And clicks on the submit button");
 
-        var opslaanKnop = Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
-        while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
-        {
-            await opslaanKnop.ClickAsync();
-        }
-
+         
+        await nieuws.UpdateAsync(intialTitle);
         await Page.GetByRole(AriaRole.Table).WaitForAsync();
 
         await Step("Then the updated news title is displayed in Berichten screen");
 
-        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(updatedTitle);
+        await Expect(Page.GetBeheerTableCell(1, 1)).ToHaveTextAsync(nieuws.Title);
 
         await Step("And the “Gewijzigd op” field gets updated with the latest time");
 

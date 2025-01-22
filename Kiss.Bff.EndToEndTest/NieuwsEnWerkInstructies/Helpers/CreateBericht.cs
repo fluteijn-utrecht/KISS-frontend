@@ -104,28 +104,74 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
       
     }
 
-    internal record class Bericht(IPage Page) : CreateBerichtRequest, IAsyncDisposable
+    internal class Bericht :  IAsyncDisposable
     {
-        public required new string Body { get; init; }
-        public DateTime PublicatieDatum { get; init; }
-        public DateTime PublicatieEinddatum { get; init; }
+        private readonly IPage _page;
+        
+        public Bericht(IPage page)
+        {
+            _page = page;
+        }
+        public required string Title { get; set; }
+        public string Body { get; set; } = string.Empty;
+        public DateTime PublicatieDatum { get; set; }
+        public DateTime PublicatieEinddatum { get; set; }
+        public new bool IsImportant { get; set; }
+        public new string? Skill { get; set; }
+        public new BerichtType BerichtType { get; set; }
+        public new TimeSpan? PublishDateOffset { get; set; }
+
+        public async Task UpdateAsync(string title)
+        {
+            await _page.NavigateToNieuwsWerkinstructiesBeheer();
+            var row = _page.GetBeheerRowByValue(title);
+            await row.GetByRole(AriaRole.Link).ClickAsync();
+
+            // Update fields
+            await _page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(Title);
+            await _page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(Body);
+            
+            var belangrijk = _page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" });
+            if (IsImportant)
+                await belangrijk.CheckAsync();
+            else
+                await belangrijk.UncheckAsync();
+
+            if (!string.IsNullOrEmpty(Skill))
+            {
+                var skillCheckbox = _page.GetByRole(AriaRole.Checkbox, new() { Name = Skill });
+                await skillCheckbox.CheckAsync();
+            }
+
+            await _page.GetByLabel("Publicatiedatum").FillAsync(PublicatieDatum.ToString("yyyy-MM-ddTHH:mm"));
+            await _page.GetByLabel("Publicatie-einddatum").FillAsync(PublicatieEinddatum.ToString("yyyy-MM-ddTHH:mm"));
+
+            var opslaanKnop = _page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
+            while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
+            {
+                await opslaanKnop.ClickAsync();
+            }
+
+            await _page.GetByRole(AriaRole.Table).WaitForAsync();
+        }
+
         public async ValueTask DisposeAsync()
         {
-            await Page.Context.Tracing.GroupEndAsync();
-            await Page.Context.Tracing.GroupAsync("Cleanup artikel");
-            await Page.NavigateToNieuwsWerkinstructiesBeheer();
-            var nieuwsRows = Page.GetByRole(AriaRole.Row)
+            await _page.Context.Tracing.GroupEndAsync();
+            await _page.Context.Tracing.GroupAsync("Cleanup artikel");
+            await _page.NavigateToNieuwsWerkinstructiesBeheer();
+            var nieuwsRows = _page.GetByRole(AriaRole.Row)
                 .Filter(new()
                 {
-                    Has = Page.GetByRole(AriaRole.Cell, new() { Name = PublicatieDatum.ToString("dd-MM-yyyy, HH:mm"), Exact = true }).First
+                    Has = _page.GetByRole(AriaRole.Cell, new() { Name = PublicatieDatum.ToString("dd-MM-yyyy, HH:mm"), Exact = true }).First
                 });
 
             var deleteButton = nieuwsRows.GetByTitle("Verwijder").First;
-            using (var _ = Page.AcceptAllDialogs())
+            using (var _ = _page.AcceptAllDialogs())
             {
                 await deleteButton.ClickAsync();
             }
-            await Page.GetByRole(AriaRole.Table).WaitForAsync();
+            await _page.GetByRole(AriaRole.Table).WaitForAsync();
         }
     }
 
