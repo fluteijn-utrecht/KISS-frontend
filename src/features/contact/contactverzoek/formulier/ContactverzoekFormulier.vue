@@ -85,13 +85,13 @@
       ]"
     >
       <span class="">{{
-        useMedewerkeremail ? "Email medewerker" : "Medewerker"
+        useMedewerkeremail ? "Emailadres medewerker" : "Medewerker"
       }}</span>
 
       <input
         v-if="useMedewerkeremail"
         v-model="medewerkeremail"
-        name="Email medewerker"
+        name="Emailadres medewerker"
         type="email"
         class="utrecht-textbox utrecht-textbox--html-input"
         :disabled="
@@ -413,11 +413,7 @@ const onUpdateActorAfdelingOrGroep = () => {
 
 const medewerkeremail = computed({
   get: () => form.value.medewerker?.emailadres,
-  set: (value) =>
-    (form.value.medewerker = {
-      ...(form.value.medewerker || { user: "", afdelingen: [], groepen: [] }), // ...
-      ...{ emailadres: value },
-    }),
+  set: (value) => (form.value.medewerker = { emailadres: value }),
 });
 
 const { data: useMedewerkeremail, loading } = useLoader(() =>
@@ -593,6 +589,12 @@ fieldset {
 .radio-group {
   > legend {
     font-size: inherit;
+  }
+
+  // styling with only two radios, override space-between
+  &:has(> label:nth-of-type(2):last-of-type) {
+    justify-content: flex-start;
+    gap: var(--spacing-default);
   }
 }
 

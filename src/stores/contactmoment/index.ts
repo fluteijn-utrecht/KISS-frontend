@@ -60,17 +60,16 @@ export interface MedewerkerGroepen {
   groepsnaam: string;
 }
 
-export interface ContactVerzoekMedewerker {
+export type ContactVerzoekMedewerker = Partial<{
   user: string;
-  identificatie?: string;
-  voornaam?: string;
-  voorvoegselAchternaam?: string;
-  achternaam?: string;
+  identificatie: string;
+  voornaam: string;
+  voorvoegselAchternaam: string;
+  achternaam: string;
   afdelingen: MedewerkerAfdelingen[];
   groepen: MedewerkerGroepen[];
-  // ...
-  emailadres?: string;
-}
+  emailadres: string;
+}>;
 
 export enum ActorType {
   "afdeling",
