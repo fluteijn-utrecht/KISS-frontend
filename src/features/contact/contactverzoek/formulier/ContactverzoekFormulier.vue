@@ -320,6 +320,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
 import type {
   ContactmomentContactVerzoek,
