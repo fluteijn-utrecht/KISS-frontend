@@ -70,14 +70,13 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 if (request.Skill.Contains(","))
                     skills.AddRange(request.Skill.Split(","));
                 else
-                        skills.Add(request.Skill);            
+                    skills.Add(request.Skill);
 
-                     foreach (var skill in skills)
-                    {
-                        var skillCheckbox = page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
-                        await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
-                    }
-                 
+                foreach (var skill in skills)
+                {
+                    var skillCheckbox = page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
+                    await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
+                }
             }
 
             // Use the current time as the base publish date
@@ -115,12 +114,12 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 BerichtType = request.BerichtType,
             };
         }
+
         public static async Task<Bericht> OnSaveBericht(this IPage page)
         {
-            
-          var title=  await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).TextContentAsync() ?? string.Empty;
-          var body = await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).TextContentAsync() ?? string.Empty;
-          var berichtType = await page.GetByRole(AriaRole.Radio, new() { Name = BerichtType.Nieuws.ToString() }).IsCheckedAsync() ? BerichtType.Nieuws : BerichtType.Werkinstructie;
+            var title = await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).TextContentAsync() ?? string.Empty;
+            var body = await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).TextContentAsync() ?? string.Empty;
+            var berichtType = await page.GetByRole(AriaRole.Radio, new() { Name = BerichtType.Nieuws.ToString() }).IsCheckedAsync() ? BerichtType.Nieuws : BerichtType.Werkinstructie;
 
             var opslaanKnop = page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
             while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
@@ -130,13 +129,12 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
             await page.GetByRole(AriaRole.Table).WaitForAsync();
             return new(page)
-            { 
+            {
                 Title = title,
                 Body = body,
                 BerichtType = berichtType
             };
         }
-
     }
 
     internal record class Bericht(IPage Page) : CreateBerichtRequest, IAsyncDisposable
