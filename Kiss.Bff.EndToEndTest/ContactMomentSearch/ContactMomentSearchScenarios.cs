@@ -17,18 +17,16 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         {
             await Step("When user starts a new contactmoment");
 
-            await Page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" }).ClickAsync();
+            await Page.NavigateToContactMomentAsync();
 
             await Step("Perform the search");
-            
-            var searchButton = Page.Locator("form").Filter(new() { HasText = "Achternaam Geboortedatum" }).GetByRole(AriaRole.Button);
-            await Page.GetByRole(AriaRole.Textbox, new() { Name = "Achternaam" }).FillAsync("Burck");
-            await Page.GetByLabel("Geboortedatum").FillAsync("17-11-1952");
-            await searchButton.ClickAsync();
 
+            await Page.Personen_LastNameInput().FillAsync("Burck");
+            await Page.Personen_BirthDateInput().FillAsync("17-11-1952");
+            await Page.PersonenFirst_SearchButton().ClickAsync();
+             
             await Step("Verify navigation to the Persoonsinformatie page");
 
-            await Page.WaitForNavigationAsync();
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
         
         }
@@ -40,21 +38,18 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step("When user starts a new contactmoment");
 
-            await Page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" }).ClickAsync();
+            await Page.NavigateToContactMomentAsync();
 
             await Step("Perform the search");
 
-            var searchButton = Page.Locator("form").Filter(new() { HasText = "Achternaam Geboortedatum" }).GetByRole(AriaRole.Button);
-            await Page.GetByRole(AriaRole.Textbox, new() { Name = "Achternaam" }).FillAsync("TestDB");
-            await Page.GetByLabel("Geboortedatum").FillAsync("11-12-1990");
-            await searchButton.ClickAsync();
+            await Page.Personen_LastNameInput().FillAsync("TestDB");
+            await Page.Personen_BirthDateInput().FillAsync("11-12-1990");
+            await Page.PersonenFirst_SearchButton().ClickAsync();
 
             await Step("Check for the error message");
            
             await  Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
- 
 
-             
         }
 
         #endregion

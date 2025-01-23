@@ -8,56 +8,18 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
 {
     internal static class Locators
     {
-        // Get the Last Name input field
-        public static ILocator GetLastNameInputAsync(this IPage page)
-        {
-            return page.GetByRole(AriaRole.Textbox, new() { Name = "achternaam" });
-        }
+         public static ILocator Personen_LastNameInput(this IPage page) =>
+            page.GetByRole(AriaRole.Textbox, new() { Name = "Achternaam" });
 
-        // Get the Date of Birth input field
-        public static ILocator GetDOBInputAsync(this IPage page)
-        {
-            return  page.GetByRole(AriaRole.Textbox, new() { Name = "geboortedatum" });
-        }
+         public static ILocator Personen_BirthDateInput(this IPage page) =>
+            page.GetByRole(AriaRole.Textbox, new() { Name = "Geboortedatum" });
 
-        // Get the BSN input field
-        public static ILocator GetBSNInputAsync(this IPage page)
-        {
-            return  page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
-        }
-
-        // Get the Postcode input field
-        public static ILocator GetPostcodeInputAsync(this IPage page)
-        {
-            return  page.GetByRole(AriaRole.Textbox, new() { Name = "postcode" });
-        }
-
-        // Get the Huisnummer input field
-        public static ILocator GetHuisnummerInputAsync(this IPage page)
-        {
-            return page.GetByRole(AriaRole.Textbox, new() { Name = "huisnummer" });
-        }
-
-        // Get the Search button
-        public static ILocator GetSearchButtonAsync(this IPage page)
-        {
-            return  page.GetByRole(AriaRole.Button, new() { Name = "searchButton" });
-        }
-
-        // Get the error message element
-        public static ILocator GetErrorMessageAsync(this IPage page)
-        {
-            return  page.GetByRole(AriaRole.Alert);
-        }
-
-        // Get all the results list items
-        public static  ILocator GetResultsListAsync(this IPage page)
-        {
-            return page.GetByRole(AriaRole.Listitem);
-        }
-
+         public static ILocator PersonenFirst_SearchButton(this IPage page) =>
+           page.Locator("form").Filter(new () { HasText = "Achternaam Geboortedatum" }).GetByRole(AriaRole.Button);
+          
+       
     }
-      
 
-    }
+    
+}
 
