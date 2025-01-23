@@ -327,7 +327,7 @@ import type {
   ContactVerzoekMedewerker,
 } from "@/stores/contactmoment";
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, useModel, watch } from "vue";
+import { computed, ref, useModel, watch, watchEffect } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -347,7 +347,6 @@ import {
 } from "@/features/contact/components/afdelingen";
 import { fetchGroepen, type Groep } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
-import { useCustomValidity } from "@/helpers/use-custom-validity";
 import { TypeOrganisatorischeEenheid } from "../../components/types";
 import { fetchLoggedIn, useLoader } from "@/services";
 
@@ -563,6 +562,30 @@ const validateEmailInput = (input: HTMLInputElement) => {
       ? ""
       : "Vul een geldig emailadres in.",
   );
+};
+
+// potential generic validation helper function, for now keep it in component scope
+// see comments https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/pull/1028
+const useCustomValidity = (inputTypeValidatorMap: {
+  [key: string]: (input: HTMLInputElement) => void;
+}) => {
+  const formRef = ref<HTMLElement>();
+
+  const queryInputs = (type: string) =>
+    (formRef.value?.querySelectorAll(`[type='${type}']`) ||
+      []) as NodeListOf<HTMLInputElement>;
+
+  const setCustomValidity = () =>
+    Object.entries(inputTypeValidatorMap).forEach(([type, validator]) =>
+      queryInputs(type).forEach((input) => validator(input)),
+    );
+
+  watchEffect(() => setCustomValidity());
+
+  return {
+    formRef,
+    setCustomValidity,
+  };
 };
 
 const { formRef, setCustomValidity } = useCustomValidity({
