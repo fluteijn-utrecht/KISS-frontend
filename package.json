@@ -9,9 +9,9 @@
     "test:unit": "vitest --environment jsdom --coverage",
     "test:unitci": "vitest run --environment jsdom",
     "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-    "lint": "npm run lint:es && npm run lint:style -- -f github",
+    "lint": "npm run lint:es && npm run lint:style --- -f github",
     "lint:es": "eslint .",
-    "lint:fix": "npm run lint:format && npm run lint:es -- --fix && npm run lint:style -- --fix",
+    "lint:fix": "npm run lint:format && npm run lint:es --- --fix && npm run lint:style --- --fix",
     "lint:format": "prettier --write --ignore-path .gitignore **/*.{scss,vue,css,ts,js,cjs,mjs}",
     "lint:style": "stylelint \"**/*.{css,scss,vue}\" --ignore-path .gitignore"
   },
