@@ -5,6 +5,7 @@ import {
 } from "@vue/eslint-config-typescript";
 import pluginVitest from "@vitest/eslint-plugin";
 import skipFormatting from "@vue/eslint-config-prettier/skip-formatting";
+import tseslint from "typescript-eslint";
 import js from "@eslint/js";
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
@@ -23,6 +24,7 @@ export default defineConfigWithVueTs(
     ignores: ["**/dist/**", "**/dist-ssr/**", "**/coverage/**"],
   },
   js.configs.recommended,
+  tseslint.configs.recommended,
   pluginVue.configs["flat/essential"],
   vueTsConfigs.recommended,
   {
@@ -38,9 +40,14 @@ export default defineConfigWithVueTs(
           ignores: ["Pagination", "Paragraph"],
         },
       ],
+      // we are fine with these rules being warnings:
+      "@typescript-eslint/no-explicit-any": ["warn"],
+
       // TODO: treat these rules as errors and fix all affected code
       "vue/no-setup-props-destructure": ["warn"],
       "vue/prefer-import-from-vue": ["warn"],
+      "@typescript-eslint/no-unused-vars": ["warn"],
+      "@typescript-eslint/no-unused-expressions": ["warn"],
     },
   },
 );
