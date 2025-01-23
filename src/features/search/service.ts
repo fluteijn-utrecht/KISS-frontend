@@ -8,13 +8,13 @@ import {
 import { fetchLoggedIn } from "@/services";
 import type { Ref } from "vue";
 import type { SearchResult, Source } from "./types";
-import { computed, watch } from "vue";
+import { computed } from "vue";
 
 export function mapResult(obj: any): SearchResult {
   const source = obj?._source?.object_bron ?? "Website";
   const id = obj?._id;
 
-  const title = obj?._source?.headings?.[0] ?? obj?._source?.title;
+  const title = obj?._source?.title ?? obj?._source?.headings?.[0];
   const content = obj?._source?.body_content;
   const url = parseValidUrl(obj?._source?.url);
   const documentUrl = new URL(location.origin);
