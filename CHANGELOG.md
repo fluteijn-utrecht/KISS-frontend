@@ -18,11 +18,20 @@
 - Contactverzoekformuliertjes / vragensetjes óók voor groepen #954
 - Pagesize meegeven bij ophalen contactverzoeken en contactmomenten #896
 - VAC items vindbaar maken voor beheer #1004
+- VAC items toevoegen #1005
+- VAC item bewerken #1006
+- VAC beheerfunctionaliteit kunnen verbergen  #1007
+- VAC item verwijderen #1008
+- Kan geen tekst selecteren binnen harmonica componenten #945
+- Contactverzoek voor een Medewerker moet gemaild kunnen worden #817
+
 
 ### Warnings and deployment notes
 Zie installatiehandleiding voor instructies
-- Nieuwe Environment Variabelen nodig: `VAC_OBJECTEN_BASE_URL`, `VAC_OBJECT_TYPE_URL` , `VAC_OBJECT_TYPE_VERSION`, `VAC_OBJECTEN_TOKEN` 
 - Minimale lengte van secrets is verhoogd van 16 naar 32 tekens
+- Nieuwe Environment Variabelen nodig voor functionaliteit omtrent beheer van VACs: `VAC_OBJECTEN_BASE_URL`, `VAC_OBJECT_TYPE_URL` , `VAC_OBJECT_TYPE_VERSION`, `VAC_OBJECTEN_TOKEN` en `USE_VACS`.
+- Nieuwe Environment Variabele om contactverzoeken voor medewerkers te kunnen mailen: `USE_MEDEWERKEREMAIL`
+
   
 ### Bugfixes
 
@@ -31,14 +40,10 @@ Zie installatiehandleiding voor instructies
 - Verschillen objecttypes met community concepts wegwerken #986
 
 ### Maintenance
- - Upgrade vue from 3.4.31 to 3.5.11  PR #928
- - Upgrade vue from 3.5.11 to 3.5.12 PR #966
+ - Upgrade vue from 3.4.31 to 3.5.12  PR #928, PR #966
  - 3 vulnerabilities in the nuget dependencies of this project PR #927
- - Upgrade ckeditor5 from 42.0.0 to 42.0.2  PR #929 
- - Upgrade ckeditor5 from 42.0.2 to 43.1.1 PR #963
- - Upgrade ckeditor5 from 43.1.1 to 43.3.0 PR #964 
- - Upgrade pinia from 2.1.7 to 2.2.4   PR #930 
- - Upgrade pinia from 2.2.4 to 2.2.5 PR #967
+ - Upgrade ckeditor5 from 42.0.0 to 43.3.0  (PR #929, PR #963, PR #964)
+ - Upgrade pinia from 2.1.7 to 2.2.5   (PR #930, PR #967) 
  - Upgrade vue-router from 4.4.0 to 4.4.5 PR #931
  - Upgrade dompurify from 2.5.5 to 2.5.7  PR #965
  - Upgrade .Net naar v8 PR #968

@@ -134,16 +134,18 @@ export function fetchContactmomentenByKlantId(
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(async (paginated) => ({
-      ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ]).then((page) =>
-        page.map(({ klantContact }) =>
-          mapKlantContactToContactmomentViewModel(klantContact),
+    return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(
+      async (paginated) => ({
+        ...paginated,
+        page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+          KlantContactExpand.gingOverOnderwerpobjecten,
+        ]).then((page) =>
+          page.map(({ klantContact }) =>
+            mapKlantContactToContactmomentViewModel(klantContact),
+          ),
         ),
-      ),
-    }));
+      }),
+    );
   }
 
   const searchParams = new URLSearchParams();
@@ -307,11 +309,11 @@ export function mapContactverzoekData({
 
   const vragenToelichting =
     data.contactVerzoekVragenSet &&
-      data.contactVerzoekVragenSet.vraagAntwoord &&
-      data.contactVerzoekVragenSet.vraagAntwoord.length
+    data.contactVerzoekVragenSet.vraagAntwoord &&
+    data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-        data.contactVerzoekVragenSet.vraagAntwoord,
-      )
+          data.contactVerzoekVragenSet.vraagAntwoord,
+        )
       : "";
 
   let verantwoordelijkheAfdeling = "";
@@ -331,7 +333,7 @@ export function mapContactverzoekData({
     if (data.medewerker) {
       //voor een medewerker van een groep
       actor = {
-        naam: data.medewerker.achternaam || "",
+        naam: data.medewerker.achternaam || data.medewerker.emailadres || "",
         soortActor: "medewerker",
         identificatie: data.medewerker?.identificatie || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
@@ -352,7 +354,7 @@ export function mapContactverzoekData({
     if (data.medewerker) {
       //voor een medewerker van een afdeling
       actor = {
-        naam: data.medewerker.achternaam || "",
+        naam: data.medewerker.achternaam || data.medewerker.emailadres || "",
         soortActor: "medewerker",
         identificatie: data.medewerker?.identificatie || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,

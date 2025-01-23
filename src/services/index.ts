@@ -3,6 +3,7 @@ export * from "./service-data-enricher";
 export * from "./fetch-logged-in";
 export * from "./pagination";
 export * from "./zgw";
+export * from "./use-loader";
 
 export function parseValidInt(input: unknown): number | undefined {
   if (typeof input === "number") {
@@ -43,7 +44,7 @@ export function createLookupList<K, V>(entries: [K, V][]): LookupList<K, V> {
   };
 }
 
-export function throwIfNotOk(response: Response ) {
+export function throwIfNotOk(response: Response) {
   if (!response.ok) throw new Error(response.statusText);
   return response as Response & { ok: true };
 }

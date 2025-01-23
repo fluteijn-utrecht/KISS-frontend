@@ -1,9 +1,18 @@
 <template>
-  <div class="container" @submit.prevent>
+  <simple-spinner v-if="loading" />
+
+  <div
+    v-else
+    ref="formRef"
+    class="container"
+    @submit.prevent
+    @input="setCustomValidity"
+  >
     <form-fieldset class="radio-group">
       <form-fieldset-legend class="required"
         >Contactverzoek maken voor</form-fieldset-legend
       >
+
       <label>
         <input
           type="radio"
@@ -14,6 +23,7 @@
         />
         Afdeling
       </label>
+
       <label>
         <input
           type="radio"
@@ -24,7 +34,8 @@
         />
         Groep
       </label>
-      <label>
+
+      <label v-if="!useMedewerkeremail">
         <input
           type="radio"
           :value="ActorType.medewerker"
@@ -35,6 +46,7 @@
         Medewerker
       </label>
     </form-fieldset>
+
     <label
       v-if="form.typeActor === ActorType.afdeling"
       class="utrecht-form-label"
@@ -61,6 +73,7 @@
         placeholder="Zoek een groep"
       />
     </label>
+
     <label
       :class="[
         'utrecht-form-label',
@@ -71,8 +84,30 @@
         },
       ]"
     >
-      <span class="">Medewerker</span>
+      <span class="">{{
+        useMedewerkeremail ? "Emailadres medewerker" : "Medewerker"
+      }}</span>
+
+      <input
+        v-if="useMedewerkeremail"
+        v-model="medewerkeremail"
+        name="Emailadres medewerker"
+        type="email"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :disabled="
+          (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
+          (form.typeActor == ActorType.groep && !form.groep?.id)
+        "
+        :placeholder="
+          (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
+          (form.typeActor == ActorType.groep && !form.groep?.id)
+            ? 'Kies eerst een afdeling of groep'
+            : ''
+        "
+      />
+
       <medewerker-search
+        v-else
         class="utrecht-textbox utrecht-textbox--html-input"
         :model-value="form.medewerker"
         @update:model-value="onUpdateMedewerker"
@@ -201,8 +236,7 @@
           <span>Voornaam</span>
           <input
             v-model="form.voornaam"
-            type="tel"
-            name="Naam"
+            name="Voornaam"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -211,8 +245,7 @@
           <span>Tussenvoegsel</span>
           <input
             v-model="form.voorvoegselAchternaam"
-            type="tel"
-            name="Naam"
+            name="Tussenvoegsel"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -221,8 +254,7 @@
           <span>Achternaam</span>
           <input
             v-model="form.achternaam"
-            type="tel"
-            name="Naam"
+            name="Achternaam"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -231,8 +263,7 @@
           <span>Organisatie</span>
           <input
             v-model="form.organisatie"
-            type="tel"
-            name="Naam"
+            name="Organisatie"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -245,7 +276,7 @@
             type="tel"
             name="Telefoonnummer 1"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="handleTelefoonInput"
+            @input="setActive"
           />
         </label>
         <label class="utrecht-form-label">
@@ -255,7 +286,7 @@
             type="tel"
             name="Telefoonnummer 2"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="handleTelefoonInput"
+            @input="setActive"
           />
         </label>
         <label class="utrecht-form-label">
@@ -271,9 +302,10 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
+            type="email"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="handleEmailInput"
+            @input="setActive"
           />
         </label>
       </div>
@@ -288,13 +320,14 @@ export default {
 </script>
 
 <script lang="ts" setup>
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
 import type {
   ContactmomentContactVerzoek,
   ContactVerzoekMedewerker,
 } from "@/stores/contactmoment";
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, useModel, watch } from "vue";
+import { computed, ref, useModel, watch, watchEffect } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -315,6 +348,7 @@ import {
 import { fetchGroepen, type Groep } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
 import { TypeOrganisatorischeEenheid } from "../../components/types";
+import { fetchLoggedIn, useLoader } from "@/services";
 
 const props = defineProps<{ modelValue: ContactmomentContactVerzoek }>();
 const model = useModel(props, "modelValue");
@@ -376,6 +410,17 @@ const onUpdateActorAfdelingOrGroep = () => {
 
   setActive();
 };
+
+const medewerkeremail = computed({
+  get: () => form.value.medewerker?.emailadres,
+  set: (value) => (form.value.medewerker = { emailadres: value }),
+});
+
+const { data: useMedewerkeremail, loading } = useLoader(() =>
+  fetchLoggedIn("/api/environment/use-medewerkeremail")
+    .then((r) => r.json())
+    .then(({ useMedewerkeremail }) => useMedewerkeremail),
+);
 
 const telEl = ref<HTMLInputElement>();
 
@@ -500,32 +545,53 @@ watch(
   ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
 );
 
-const handleTelefoonInput = (event: Event) => {
-  const el = event.target as HTMLInputElement;
-
-  setActive();
-
-  if (!el.value || TELEFOON_PATTERN.test(el.value)) {
+const validateTelefoonInput = (input: HTMLInputElement) => {
+  if (!input.value || TELEFOON_PATTERN.test(input.value)) {
     // telEl: back to custom noContactMessage if applicable, otherwise clear
-    el.setCustomValidity(
-      el === telEl.value && !hasContact.value ? noContactMessage : "",
+    input.setCustomValidity(
+      input === telEl.value && !hasContact.value ? noContactMessage : "",
     );
   } else {
-    el.setCustomValidity("Vul een geldig telefoonnummer in.");
+    input.setCustomValidity("Vul een geldig telefoonnummer in.");
   }
 };
 
-const handleEmailInput = (event: Event) => {
-  const el = event.target as HTMLInputElement;
-
-  setActive();
-
-  el.setCustomValidity(
-    !el.value || EMAIL_PATTERN.test(el.value)
+const validateEmailInput = (input: HTMLInputElement) => {
+  input.setCustomValidity(
+    !input.value || EMAIL_PATTERN.test(input.value)
       ? ""
       : "Vul een geldig emailadres in.",
   );
 };
+
+// potential generic validation helper function, for now keep it in component scope
+// see comments https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/pull/1028
+const useCustomValidity = (inputTypeValidatorMap: {
+  [key: string]: (input: HTMLInputElement) => void;
+}) => {
+  const formRef = ref<HTMLElement>();
+
+  const queryInputs = (type: string) =>
+    (formRef.value?.querySelectorAll(`[type='${type}']`) ||
+      []) as NodeListOf<HTMLInputElement>;
+
+  const setCustomValidity = () =>
+    Object.entries(inputTypeValidatorMap).forEach(([type, validator]) =>
+      queryInputs(type).forEach((input) => validator(input)),
+    );
+
+  watchEffect(() => setCustomValidity());
+
+  return {
+    formRef,
+    setCustomValidity,
+  };
+};
+
+const { formRef, setCustomValidity } = useCustomValidity({
+  tel: validateTelefoonInput,
+  email: validateEmailInput,
+});
 </script>
 
 <style lang="scss" scoped>
@@ -547,6 +613,12 @@ fieldset {
 .radio-group {
   > legend {
     font-size: inherit;
+  }
+
+  // styling with only two radios, override space-between
+  &:has(> label:nth-of-type(2):last-of-type) {
+    justify-content: flex-start;
+    gap: var(--spacing-default);
   }
 }
 
