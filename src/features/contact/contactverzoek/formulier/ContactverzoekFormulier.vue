@@ -85,13 +85,13 @@
       ]"
     >
       <span class="">{{
-        useMedewerkeremail ? "Emailadres medewerker" : "Medewerker"
+        useMedewerkeremail ? "E-mailadres medewerker" : "Medewerker"
       }}</span>
 
       <input
         v-if="useMedewerkeremail"
         v-model="medewerkeremail"
-        name="Emailadres medewerker"
+        name="E-mailadres medewerker"
         type="email"
         class="utrecht-textbox utrecht-textbox--html-input"
         :disabled="
