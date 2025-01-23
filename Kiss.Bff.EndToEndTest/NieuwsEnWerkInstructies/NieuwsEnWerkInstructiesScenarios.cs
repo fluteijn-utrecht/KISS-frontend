@@ -815,7 +815,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given the user is on the Nieuws and werkinstructiesscreen available under Beheer");
 
-        await using var werkbericht = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie });
+        await using var werkbericht = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie });
 
         await Step("And navigates to the page containing the werkinstructie created earlier ");
 
@@ -835,7 +835,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given there is at least 1 nieuwsbericht");
 
-        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
+        await using var nieuws = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws });
 
         await Step("When the user navigates to the Nieuws and werkinstructiesscreen available under Beheer");
 
@@ -860,7 +860,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a nieuwsbericht for with a publicatiedatum in the future");
 
-        await using var niewus = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublishDateOffset = TimeSpan.FromDays(1) });
+        await using var niewus = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublishDateOffset = TimeSpan.FromDays(1) });
 
         await Step("When the user navigates to the HOME Page");
 
