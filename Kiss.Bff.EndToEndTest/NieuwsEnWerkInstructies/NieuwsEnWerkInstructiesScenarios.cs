@@ -882,7 +882,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a nieuwsbericht for a publicatiedatum in the past");
 
-        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublishDateOffset = TimeSpan.FromDays(-1) });
+        await using var nieuws = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublishDateOffset = TimeSpan.FromDays(-1) });
 
         await Step("When the user navigates to the HOME Page And the user browses through all pages of the Nieuws section");
 
@@ -901,7 +901,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a nieuwsbericht for a publicatie-einddatum in the past");
 
-        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublicatieEinddatum = DateTime.Now.AddDays(-1) });
+        await using var nieuws = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublicatieEinddatum = DateTime.Now.AddDays(-1) });
 
         await Step("When the user navigates to the HOME Page");
 
@@ -923,7 +923,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
     {
         await Step("Given a nieuwsbericht for a publicatie-einddatum in the future");
 
-        await using var nieuws = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublicatieEinddatum = DateTime.Now.AddDays(1) });
+        await using var nieuws = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, PublicatieEinddatum = DateTime.Now.AddDays(1) });
 
         await Step("When the user navigates to the HOME Page");
 
@@ -949,7 +949,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await using var skill2 = await Page.CreateSkill(Guid.NewGuid().ToString());
         await using var skill3 = await Page.CreateSkill(Guid.NewGuid().ToString());
 
-        await using var niewus = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = $"{skill1.Naam},{skill2.Naam},{skill3.Naam}" });
+        await using var niewus = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Nieuws, Skill = $"{skill1.Naam},{skill2.Naam},{skill3.Naam}" });
 
         await Step("When the user navigates to the HOME Page");
 
@@ -981,7 +981,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await using var skill1 = await Page.CreateSkill(Guid.NewGuid().ToString());
         await using var skill2 = await Page.CreateSkill(Guid.NewGuid().ToString());
 
-        await using var werkinstructie = await Page.CreateBericht(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie, Skill = $"{skill1.Naam},{skill2.Naam}" });
+        await using var werkinstructie = await Page.CreateBerichtAsync(new() { Title = Guid.NewGuid().ToString(), BerichtType = BerichtType.Werkinstructie, Skill = $"{skill1.Naam},{skill2.Naam}" });
 
         await Step("When the user navigates to the HOME Page");
 
