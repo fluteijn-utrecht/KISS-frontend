@@ -3,7 +3,6 @@ import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
 import { useIntersectionObserver } from "@vueuse/core";
-import validityHandler from "./directives/validity-handler";
 
 // warning if closing tab or refreshing
 if (import.meta.env.PROD) {
@@ -43,7 +42,5 @@ app.directive("focus", {
     el.stop();
   },
 });
-
-app.directive("validity-handler", validityHandler);
 
 app.mount("#app");

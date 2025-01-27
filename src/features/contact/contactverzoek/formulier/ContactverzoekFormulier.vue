@@ -73,7 +73,7 @@
 
       <input
         v-model="form.medewerkeremail"
-        v-validity-handler="validateEmailInput"
+        v-on-mounted-input="validateEmailInput"
         name="E-mailadres medewerker"
         class="utrecht-textbox utrecht-textbox--html-input"
         @input="setActive"
@@ -259,7 +259,7 @@
           <input
             ref="telEl"
             v-model="form.telefoonnummer1"
-            v-validity-handler="validateTelefoonInput"
+            v-on-mounted-input="validateTelefoonInput"
             name="Telefoonnummer 1"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -269,7 +269,7 @@
           <span>Telefoonnummer 2</span>
           <input
             v-model="form.telefoonnummer2"
-            v-validity-handler="validateTelefoonInput"
+            v-on-mounted-input="validateTelefoonInput"
             name="Telefoonnummer 2"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -288,7 +288,7 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
-            v-validity-handler="validateEmailInput"
+            v-on-mounted-input="validateEmailInput"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -313,7 +313,7 @@ import type {
   ContactVerzoekMedewerker,
 } from "@/stores/contactmoment";
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, useModel, watch } from "vue";
+import { computed, ref, useModel, watch, type Directive } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -541,8 +541,29 @@ const validateEmailInput = (el: HTMLInputElement) => {
   el.setCustomValidity(
     !el.value || EMAIL_PATTERN.test(el.value)
       ? ""
-      : "Vul een geldig emailadres in.",
+      : "Vul een geldig e-mailadres in.",
   );
+};
+
+const vOnMountedInput: Directive<
+  HTMLInputElement & { onInputHandler?: EventListener },
+  (el: HTMLInputElement) => void
+> = {
+  mounted(el, binding) {
+    const validator = binding.value;
+    const handler = () => validator(el);
+
+    validator(el); // onmounted
+
+    el.addEventListener("input", handler); // oninput
+    el.onInputHandler = handler;
+  },
+  unmounted(el) {
+    if (el.onInputHandler) {
+      el.removeEventListener("input", el.onInputHandler);
+      delete el.onInputHandler;
+    }
+  },
 };
 </script>
 
