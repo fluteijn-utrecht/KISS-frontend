@@ -882,23 +882,12 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         await Step("When the user navigates to the HOME Page And the user browses through all pages of the Nieuws section");
 
         await Page.GotoAsync("/");
-
-
-        var nextPageButton = Page.GetNieuwsSection().GetNextPageLink();
-        var nieuwsSection = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter();
-
-        bool niewsExists = false;
-        while (!await nextPageButton.IsDisabledPageLink())
-        {
-            await nextPageButton.ClickAsync();
-            niewsExists = await nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title }).IsVisibleAsync();
-
-            await nieuwsSection.First.WaitForAsync();
-        }
+ 
 
         await Step("Then the nieuwsbericht should be visible");
 
-        Assert.AreEqual<bool>(niewsExists, true);
+        Assert.AreEqual(true, await Page.IsBerichtVisibleOnAllPagesAsync(nieuws));
+
 
     }
 
@@ -913,22 +902,10 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Page.GotoAsync("/");
 
-        await Step("And browses through all pages of the Nieuws section");
-        
-        var nextPageButton = Page.GetNieuwsSection().GetNextPageLink();
-        var nieuwsSection = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter();
+        await Step("And browses through all pages of the Nieuws section and Then the nieuwsbericht should not be visible");
 
-        bool niewsExists = false;
-        while (!await nextPageButton.IsDisabledPageLink())
-        {
-            await nextPageButton.ClickAsync();
-            niewsExists = await nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title }).IsVisibleAsync();
-
-            await nieuwsSection.First.WaitForAsync();
-        }
-        await Step("Then the nieuwsbericht should not be visible");
-
-        Assert.AreEqual<bool>(niewsExists, false);
+        Assert.AreEqual(false, await Page.IsBerichtVisibleOnAllPagesAsync(nieuws)); 
+         
     }
 
     [TestMethod]
@@ -942,22 +919,9 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Page.GotoAsync("/");
 
-        await Step("And browses through all pages of the Nieuws section");
+        await Step("And browses through all pages of the Nieuws section and Then the nieuwsbericht should be visible");
 
-         var nextPageButton = Page.GetNieuwsSection().GetNextPageLink();
-        var nieuwsSection = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter();
-
-        bool niewsExists = false;
-        while (!await nextPageButton.IsDisabledPageLink())
-        {
-            await nextPageButton.ClickAsync();
-            niewsExists = await nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title }).IsVisibleAsync();
-
-            await nieuwsSection.First.WaitForAsync();
-        }
-        await Step("Then the nieuwsbericht should be visible");
-
-        Assert.AreEqual<bool>(niewsExists, true);
+        Assert.AreEqual(true, await Page.IsBerichtVisibleOnAllPagesAsync(nieuws)); 
 
     }
 
@@ -978,20 +942,13 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And browses through all pages of the Nieuws section");
 
-        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter(new()
-        {
-            Has = Page.GetByRole(AriaRole.Heading, new() { Name = niewus.Title }).First
-        });
-       
+         var article = await Page.GetBerichtOnAllPagesAsync(niewus);
+
         await Step("Then the nieuwsbericht should be displayed with the corresponding skills as labels");
        
-        await Expect(articles).ToBeVisibleAsync();
+        await Expect(article).ToBeVisibleAsync();
 
-        await Expect(articles.Locator(".skills-container").Locator("small")).ToHaveCountAsync(3);       
-        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill1.Naam }) })).ToBeVisibleAsync();
-        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill2.Naam }) })).ToBeVisibleAsync();
-        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill3.Naam }) })).ToBeVisibleAsync();
-
+        Assert.AreEqual(true, await Page.AreSkillsVisibleByNameAsync(article,new() { skill1.Naam, skill2.Naam, skill3.Naam }));
     }
 
     [TestMethod]
@@ -1010,18 +967,13 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And browses through all pages of the Nieuws section");
 
-        var articles = Page.GetWerkinstructiesSection().GetByRole(AriaRole.Article).Filter(new()
-        {
-            Has = Page.GetByRole(AriaRole.Heading, new() { Name = werkinstructie.Title }).First
-        });
+        var article = await Page.GetBerichtOnAllPagesAsync(werkinstructie);
 
         await Step("Then the werkinstructie should be displayed with the corresponding skills as labels");
 
-        await Expect(articles).ToBeVisibleAsync();
+        await Expect(article).ToBeVisibleAsync();
 
-        await Expect(articles.Locator(".skills-container").Locator("small")).ToHaveCountAsync(2);
-        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill1.Naam }) })).ToBeVisibleAsync();
-        await Expect(articles.Filter(new() { Has = Page.Locator("small", new() { HasText = skill2.Naam }) })).ToBeVisibleAsync();
+        Assert.AreEqual(true, await Page.AreSkillsVisibleByNameAsync(article,new() { skill1.Naam, skill2.Naam }));
 
 
     }

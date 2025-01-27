@@ -187,7 +187,54 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             return false;
         }
 
+        public static async Task<ILocator?> GetBerichtOnAllPagesAsync(this IPage page, Bericht bericht)
+        {
+            var section = bericht.BerichtType == BerichtType.Nieuws ? page.GetNieuwsSection() : page.GetWerkinstructiesSection();
+            var nextPageButton = section.GetNextPageLink();
 
+            while (true)
+            {
+                var article = section.GetByRole(AriaRole.Heading, new() { Name = bericht.Title });
+                if (await article.IsVisibleAsync())
+                    return article;
+
+                if (await nextPageButton.IsVisibleAsync() && await nextPageButton.IsDisabledPageLink())
+                    break;
+
+                if (await nextPageButton.IsVisibleAsync())
+                {
+                    await nextPageButton.ClickAsync();
+                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return null;
+        }
+
+
+        public static async Task<bool> AreSkillsVisibleByNameAsync(this IPage page, ILocator articleLocator, List<string> expectedSkillNames)
+        {
+            var skillsContainerLocator = articleLocator.Locator(".skills-container");
+            var skillLocators = skillsContainerLocator.Locator("small");
+            var skillCount = await skillLocators.CountAsync();
+
+            for (int i = 0; i < skillCount; i++)
+            {
+                var skillElementLocator = skillLocators.Nth(i);
+                var skillText = await skillElementLocator.InnerTextAsync();
+
+                if (expectedSkillNames.Contains(skillText) && !await skillElementLocator.IsVisibleAsync())
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
 
