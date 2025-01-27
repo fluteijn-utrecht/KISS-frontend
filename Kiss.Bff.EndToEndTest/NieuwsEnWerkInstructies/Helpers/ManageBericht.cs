@@ -159,7 +159,35 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
 
         }
- 
+
+        public static async Task<bool> IsBerichtVisibleOnAllPagesAsync(this IPage page, Bericht bericht)
+        {
+            var section = bericht.BerichtType == BerichtType.Nieuws ? page.GetNieuwsSection() : page.GetWerkinstructiesSection();
+            var nextPageButton = section.GetNextPageLink();
+
+            while (true)
+            {
+                if (await section.GetByRole(AriaRole.Heading, new() { Name = bericht.Title }).IsVisibleAsync())
+                    return true;
+
+                if (await nextPageButton.IsVisibleAsync() && await nextPageButton.IsDisabledPageLink())
+                    break;
+
+                if (await nextPageButton.IsVisibleAsync())
+                {
+                    await nextPageButton.ClickAsync();
+                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                }
+                else
+                {
+                    break;  
+                }
+            }
+
+            return false;
+        }
+
+
     }
 
 

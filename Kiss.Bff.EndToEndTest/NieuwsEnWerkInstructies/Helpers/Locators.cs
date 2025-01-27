@@ -22,17 +22,6 @@
         public static ILocator GetBeheerTableCell(this IPage page, int col, int row) =>
                      page.Locator($"table tbody tr:nth-child({row}) td:nth-child({col})");
 
-        public static async Task<IReadOnlyList<ILocator>> GetAllLinksFromNavAsync(this IPage page)
-        {
-            // Locate the <nav> element by role="navigation"
-            var navLocator = page.GetByRole(AriaRole.Navigation);
-
-            // Find all <a> tags (links) inside the <nav> element using a Locator
-            var linkLocators = navLocator.Locator("a");
-
-            // Return a list of all the ILocator objects for each <a> tag
-            return await linkLocators.AllAsync();
-        }
-
+    
     }
 }

@@ -868,23 +868,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("And browses through all pages of the Nieuws section");
 
-        var nextPageButton = Page.GetNieuwsSection().GetNextPageLink();
-        var nieuwsSection = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter();
-
-        var allPagesChecked = false;
-        while (!allPagesChecked)
-        {
-            Assert.AreEqual(false, await nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = niewus.Title }).IsVisibleAsync());
-
-            if (await nextPageButton.IsDisabledPageLink())
-            {
-                allPagesChecked = true;
-            }
-            else { 
-                await nextPageButton.ClickAsync();
-            }
-          
-        } 
+       Assert.AreEqual(false,await Page.IsBerichtVisibleOnAllPagesAsync(niewus));
      
     }
 
