@@ -876,9 +876,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
         {
             await nextPageButton.ClickAsync();
             niewsExists = await nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = niewus.Title }).IsVisibleAsync();
-          
-            await nieuwsSection.First.WaitForAsync();
-        }
+          }
 
         await Step("Then the nieuwsbericht should not be visible");
 
