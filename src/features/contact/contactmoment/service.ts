@@ -333,10 +333,10 @@ export function mapContactverzoekData({
     if (data.medewerker) {
       //voor een medewerker van een groep
       actor = {
-        naam: data.medewerker.achternaam || data.medewerker.emailadres || "",
+        naam: data.medewerker.achternaam || data.medewerkeremail || "",
         soortActor: "medewerker",
         identificatie:
-          data.medewerker.identificatie || data.medewerker.emailadres || "",
+          data.medewerker.identificatie || data.medewerkeremail || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
         naamOrganisatorischeEenheid: data.groep?.naam || "",
         identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
@@ -355,10 +355,10 @@ export function mapContactverzoekData({
     if (data.medewerker) {
       //voor een medewerker van een afdeling
       actor = {
-        naam: data.medewerker.achternaam || data.medewerker.emailadres || "",
+        naam: data.medewerker.achternaam || data.medewerkeremail || "",
         soortActor: "medewerker",
         identificatie:
-          data.medewerker.identificatie || data.medewerker.emailadres || "",
+          data.medewerker.identificatie || data.medewerkeremail || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
         naamOrganisatorischeEenheid: data.afdeling?.naam || "",
         identificatieOrganisatorischeEenheid:
