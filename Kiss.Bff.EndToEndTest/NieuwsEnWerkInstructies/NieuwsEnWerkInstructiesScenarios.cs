@@ -864,15 +864,16 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user navigates to the HOME Page");
 
-        await Page.GotoAsync("/");
-
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
+       
         await Step("And browses through all pages of the Nieuws section");
 
-        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
-          
+      
+        var niewsExists = await Page.FindBerichtOnPagesAsync(niewus.Title);
+       
         await Step("Then the nieuwsbericht should not be visible");
 
-        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = niewus.Title })).ToBeHiddenAsync();
+        Assert.AreEqual<bool>(niewsExists, false); 
 
       
     }
@@ -886,13 +887,13 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user navigates to the HOME Page And the user browses through all pages of the Nieuws section");
 
-        await Page.GotoAsync("/");
-        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
+
+        var niewsExists = await Page.FindBerichtOnPagesAsync(nieuws.Title);
 
         await Step("Then the nieuwsbericht should be visible");
 
-        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeVisibleAsync();
-
+        Assert.AreEqual<bool>(niewsExists, true);
 
     }
 
@@ -905,17 +906,15 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user navigates to the HOME Page");
 
-        await Page.GotoAsync("/");
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("And browses through all pages of the Nieuws section");
 
-        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
-
+        var niewsExists = await Page.FindBerichtOnPagesAsync(nieuws.Title);
 
         await Step("Then the nieuwsbericht should not be visible");
 
-        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeHiddenAsync();
-
+        Assert.AreEqual<bool>(niewsExists, false);
     }
 
     [TestMethod]
@@ -927,16 +926,15 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user navigates to the HOME Page");
 
-        await Page.GotoAsync("/");
+        await Page.NavigateToNieuwsWerkinstructiesBeheer();
 
         await Step("And browses through all pages of the Nieuws section");
 
-        var articles = Page.GetNieuwsSection().GetByRole(AriaRole.Article);
+        var niewsExists = await Page.FindBerichtOnPagesAsync(nieuws.Title);
 
         await Step("Then the nieuwsbericht should be visible");
 
-        await Expect(articles.GetByRole(AriaRole.Heading, new() { Name = nieuws.Title })).ToBeVisibleAsync();
-
+        Assert.AreEqual<bool>(niewsExists, true);
 
     }
 
