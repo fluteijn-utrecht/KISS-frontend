@@ -18,7 +18,6 @@ if (import.meta.env.PROD) {
 
 async function checkBackendStatus() {
   try {
-    // Controleer de backend status via de status endpoint
     const response = await fetch("/api/environment/status");
     if (response.ok) {
       const { status } = await response.json();

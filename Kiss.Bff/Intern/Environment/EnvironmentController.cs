@@ -65,7 +65,7 @@ namespace Kiss.Bff.Intern.Environment
             return Ok(new { defaultRegister = defaultRegister.Index });
         }
 
-        //endpoint voor meerdere backend statussen in toekomst
+        // Kan later meerdere checks bevatten
         [HttpGet("status")]
         public IActionResult GetStatus()
         {
