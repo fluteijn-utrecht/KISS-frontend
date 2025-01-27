@@ -146,30 +146,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
 
         }
-
-        public static async Task<bool> FindBerichtOnPagesAsync(this IPage page, string searchString, IEnumerable<string>? whitelistUrls = null)
-        {
-            whitelistUrls ??= Enumerable.Empty<string>();
-
-            var urls = await page.GetAllLinksFromNavAsync();
-            var tasks = urls.Select(async url =>
-            {
-                var href = await url.GetAttributeAsync("href");
-                if (href == null || href.StartsWith("/api") || href == "/") return false;
-
-                return await page.GotoAsync(href).ContinueWith(async x =>
-                {
-                    var locator = page.GetBeheerRowByValue(searchString);
-                    return await locator.IsVisibleAsync();
-                }).Unwrap();
-            });
-
-            var results = await Task.WhenAll(tasks);
-
-            return results.Any(result => result);
-        }
-
-       
+ 
     }
 
 

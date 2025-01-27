@@ -864,18 +864,25 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("When the user navigates to the HOME Page");
 
-        await Page.NavigateToNieuwsWerkinstructiesBeheer();
-       
+        await Page.GotoAsync("/");
+
         await Step("And browses through all pages of the Nieuws section");
 
-      
-        var niewsExists = await Page.FindBerichtOnPagesAsync(niewus.Title);
-       
+        var nextPageButton = Page.GetNieuwsSection().GetNextPageLink();
+        var nieuwsSection = Page.GetNieuwsSection().GetByRole(AriaRole.Article).Filter();
+
+        bool niewsExists = false;
+        while (!await nextPageButton.IsDisabledPageLink())
+        {
+            await nextPageButton.ClickAsync();
+            niewsExists = await nieuwsSection.GetByRole(AriaRole.Heading, new() { Name = niewus.Title }).IsVisibleAsync();
+          
+            await nieuwsSection.First.WaitForAsync();
+        }
+
         await Step("Then the nieuwsbericht should not be visible");
 
-        Assert.AreEqual<bool>(niewsExists, false); 
-
-      
+        Assert.AreEqual(false, niewsExists);
     }
 
     [TestMethod]
