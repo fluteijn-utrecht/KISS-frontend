@@ -51,6 +51,49 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await  Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
 
         }
+        
+        [TestMethod("3. Searching by BSN (Valid)")]
+        public async Task SearchByBSN_Valid()
+        {
+            await Step("When user starts a new contactmoment");
+
+            await Page.NavigateToContactMomentAsync();
+
+
+            await Step(" Perform the search with a valid BSN");
+
+            var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
+
+            await bsnInput.FillAsync("999992223");
+            await Page.PersonenThird_SearchButton().ClickAsync();
+
+            await Step("Verify navigation to the Persoonsinformatie page");
+
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
+
+        }
+
+
+        [TestMethod(" 4. Searching by BSN (Invalid)")]
+        public async Task SearchByBSN_Invalid()
+        {
+            await Step("When user starts a new contactmoment");
+
+            await Page.NavigateToContactMomentAsync();
+
+            await Step(" Perform the search with a valid BSN");
+
+            var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
+
+            await bsnInput.FillAsync("123456789");
+
+            await Page.PersonenThird_SearchButton().ClickAsync();
+
+            await Step("Check for the error message");
+             
+            Assert.AreEqual( await bsnInput.EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
+
+          }
 
         #endregion
     }
