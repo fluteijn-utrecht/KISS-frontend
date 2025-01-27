@@ -24,11 +24,7 @@ import { provideValidationMessages } from "./useValidationMessages";
 import PromptModal from "../PromptModal.vue";
 import type { FormHTMLAttributes } from "vue";
 
-// needed by vue compiler
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface NonBlockingFormProps
-  extends /* @vue-ignore */ FormHTMLAttributes {}
-defineProps<NonBlockingFormProps>();
+defineProps<FormHTMLAttributes>();
 
 const dialog = useConfirmDialog();
 

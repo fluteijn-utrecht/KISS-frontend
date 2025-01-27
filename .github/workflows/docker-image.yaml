@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - '*.*.*'
 
   push:
     branches:
@@ -65,7 +66,7 @@ jobs:
         if: github.event_name != 'pull_request'
 
       - name: Build containers
-        uses: docker/bake-action@v3
+        uses: docker/bake-action@v5
         with:
           push: false
           load: true

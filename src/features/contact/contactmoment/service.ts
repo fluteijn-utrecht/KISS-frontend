@@ -335,7 +335,8 @@ export function mapContactverzoekData({
       actor = {
         naam: data.medewerker.achternaam || data.medewerker.emailadres || "",
         soortActor: "medewerker",
-        identificatie: data.medewerker?.identificatie || "",
+        identificatie:
+          data.medewerker.identificatie || data.medewerker.emailadres || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
         naamOrganisatorischeEenheid: data.groep?.naam || "",
         identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
@@ -356,7 +357,8 @@ export function mapContactverzoekData({
       actor = {
         naam: data.medewerker.achternaam || data.medewerker.emailadres || "",
         soortActor: "medewerker",
-        identificatie: data.medewerker?.identificatie || "",
+        identificatie:
+          data.medewerker.identificatie || data.medewerker.emailadres || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
         naamOrganisatorischeEenheid: data.afdeling?.naam || "",
         identificatieOrganisatorischeEenheid:
