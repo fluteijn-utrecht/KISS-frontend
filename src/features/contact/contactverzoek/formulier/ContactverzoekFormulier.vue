@@ -1,13 +1,7 @@
 <template>
   <simple-spinner v-if="loading" />
 
-  <div
-    v-else
-    ref="formRef"
-    class="container"
-    @submit.prevent
-    @input="setCustomValidity"
-  >
+  <div v-else class="container" @submit.prevent>
     <form-fieldset class="radio-group">
       <form-fieldset-legend class="required"
         >Contactverzoek maken voor</form-fieldset-legend
@@ -74,7 +68,20 @@
       />
     </label>
 
+    <label v-if="useMedewerkeremail" class="utrecht-form-label">
+      <span class="">E-mailadres medewerker</span>
+
+      <input
+        v-model="form.medewerkeremail"
+        v-validity-handler="validateEmailInput"
+        name="E-mailadres medewerker"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
+      />
+    </label>
+
     <label
+      v-else
       :class="[
         'utrecht-form-label',
         {
@@ -84,30 +91,9 @@
         },
       ]"
     >
-      <span class="">{{
-        useMedewerkeremail ? "E-mailadres medewerker" : "Medewerker"
-      }}</span>
-
-      <input
-        v-if="useMedewerkeremail"
-        v-model="medewerkeremail"
-        name="E-mailadres medewerker"
-        type="email"
-        class="utrecht-textbox utrecht-textbox--html-input"
-        :disabled="
-          (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
-          (form.typeActor == ActorType.groep && !form.groep?.id)
-        "
-        :placeholder="
-          (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
-          (form.typeActor == ActorType.groep && !form.groep?.id)
-            ? 'Kies eerst een afdeling of groep'
-            : ''
-        "
-      />
+      <span class="">Medewerker</span>
 
       <medewerker-search
-        v-else
         class="utrecht-textbox utrecht-textbox--html-input"
         :model-value="form.medewerker"
         @update:model-value="onUpdateMedewerker"
@@ -273,7 +259,7 @@
           <input
             ref="telEl"
             v-model="form.telefoonnummer1"
-            type="tel"
+            v-validity-handler="validateTelefoonInput"
             name="Telefoonnummer 1"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -283,7 +269,7 @@
           <span>Telefoonnummer 2</span>
           <input
             v-model="form.telefoonnummer2"
-            type="tel"
+            v-validity-handler="validateTelefoonInput"
             name="Telefoonnummer 2"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -302,7 +288,7 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
-            type="email"
+            v-validity-handler="validateEmailInput"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -327,7 +313,7 @@ import type {
   ContactVerzoekMedewerker,
 } from "@/stores/contactmoment";
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, useModel, watch, watchEffect } from "vue";
+import { computed, ref, useModel, watch, type Directive } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
@@ -410,11 +396,6 @@ const onUpdateActorAfdelingOrGroep = () => {
 
   setActive();
 };
-
-const medewerkeremail = computed({
-  get: () => form.value.medewerker?.emailadres,
-  set: (value) => (form.value.medewerker = { emailadres: value }),
-});
 
 const { data: useMedewerkeremail, loading } = useLoader(() =>
   fetchLoggedIn("/api/environment/use-medewerkeremail")
@@ -545,53 +526,39 @@ watch(
   ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
 );
 
-const validateTelefoonInput = (input: HTMLInputElement) => {
-  if (!input.value || TELEFOON_PATTERN.test(input.value)) {
+const validateTelefoonInput = (el: HTMLInputElement) => {
+  if (!el.value || TELEFOON_PATTERN.test(el.value)) {
     // telEl: back to custom noContactMessage if applicable, otherwise clear
-    input.setCustomValidity(
-      input === telEl.value && !hasContact.value ? noContactMessage : "",
-    );
+    return el === telEl.value && !hasContact.value ? noContactMessage : "";
   } else {
-    input.setCustomValidity("Vul een geldig telefoonnummer in.");
+    return "Vul een geldig telefoonnummer in.";
   }
 };
 
-const validateEmailInput = (input: HTMLInputElement) => {
-  input.setCustomValidity(
-    !input.value || EMAIL_PATTERN.test(input.value)
-      ? ""
-      : "Vul een geldig emailadres in.",
-  );
+const validateEmailInput = (el: HTMLInputElement) =>
+  !el.value || EMAIL_PATTERN.test(el.value)
+    ? ""
+    : "Vul een geldig e-mailadres in.";
+
+const vValidityHandler: Directive<
+  HTMLInputElement & { onInputHandler?: EventListener },
+  (el: HTMLInputElement) => string
+> = {
+  mounted(el, binding) {
+    const setCustomValidity = () => el.setCustomValidity(binding.value(el));
+
+    setCustomValidity(); // onmounted
+
+    el.addEventListener("input", setCustomValidity); // oninput
+    el.onInputHandler = setCustomValidity;
+  },
+  unmounted(el) {
+    if (el.onInputHandler) {
+      el.removeEventListener("input", el.onInputHandler);
+      delete el.onInputHandler;
+    }
+  },
 };
-
-// potential generic validation helper function, for now keep it in component scope
-// see comments https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/pull/1028
-const useCustomValidity = (inputTypeValidatorMap: {
-  [key: string]: (input: HTMLInputElement) => void;
-}) => {
-  const formRef = ref<HTMLElement>();
-
-  const queryInputs = (type: string) =>
-    (formRef.value?.querySelectorAll(`[type='${type}']`) ||
-      []) as NodeListOf<HTMLInputElement>;
-
-  const setCustomValidity = () =>
-    Object.entries(inputTypeValidatorMap).forEach(([type, validator]) =>
-      queryInputs(type).forEach((input) => validator(input)),
-    );
-
-  watchEffect(() => setCustomValidity());
-
-  return {
-    formRef,
-    setCustomValidity,
-  };
-};
-
-const { formRef, setCustomValidity } = useCustomValidity({
-  tel: validateTelefoonInput,
-  email: validateEmailInput,
-});
 </script>
 
 <style lang="scss" scoped>

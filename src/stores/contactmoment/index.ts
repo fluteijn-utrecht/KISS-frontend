@@ -60,16 +60,15 @@ export interface MedewerkerGroepen {
   groepsnaam: string;
 }
 
-export type ContactVerzoekMedewerker = Partial<{
+export type ContactVerzoekMedewerker = {
   user: string;
-  identificatie: string;
-  voornaam: string;
-  voorvoegselAchternaam: string;
-  achternaam: string;
+  identificatie?: string;
+  voornaam?: string;
+  voorvoegselAchternaam?: string;
+  achternaam?: string;
   afdelingen: MedewerkerAfdelingen[];
   groepen: MedewerkerGroepen[];
-  emailadres: string;
-}>;
+};
 
 export enum ActorType {
   "afdeling",
@@ -87,6 +86,7 @@ export type ContactmomentContactVerzoek = {
 
   typeActor?: ActorType;
   medewerker?: ContactVerzoekMedewerker;
+  medewerkeremail?: string;
   afdeling?: Afdeling;
   groep?: Groep;
   organisatorischeEenheidVanMedewerker?: MederwerkerGroepAfdeling;
@@ -203,6 +203,7 @@ export const useContactmomentStore = defineStore("contactmoment", {
           afdeling: undefined,
           groep: undefined,
           medewerker: undefined,
+          medewerkeremail: undefined,
           organisatorischeEenheidVanMedewerker: undefined,
           telefoonnummer1: "",
           telefoonnummer2: "",
