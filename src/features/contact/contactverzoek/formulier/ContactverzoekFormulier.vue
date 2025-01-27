@@ -73,7 +73,7 @@
 
       <input
         v-model="form.medewerkeremail"
-        v-on-mounted-input="validateEmailInput"
+        v-validity-handler="validateEmailInput"
         name="E-mailadres medewerker"
         class="utrecht-textbox utrecht-textbox--html-input"
         @input="setActive"
@@ -259,7 +259,7 @@
           <input
             ref="telEl"
             v-model="form.telefoonnummer1"
-            v-on-mounted-input="validateTelefoonInput"
+            v-validity-handler="validateTelefoonInput"
             name="Telefoonnummer 1"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -269,7 +269,7 @@
           <span>Telefoonnummer 2</span>
           <input
             v-model="form.telefoonnummer2"
-            v-on-mounted-input="validateTelefoonInput"
+            v-validity-handler="validateTelefoonInput"
             name="Telefoonnummer 2"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -288,7 +288,7 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
-            v-on-mounted-input="validateEmailInput"
+            v-validity-handler="validateEmailInput"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
@@ -529,34 +529,28 @@ watch(
 const validateTelefoonInput = (el: HTMLInputElement) => {
   if (!el.value || TELEFOON_PATTERN.test(el.value)) {
     // telEl: back to custom noContactMessage if applicable, otherwise clear
-    el.setCustomValidity(
-      el === telEl.value && !hasContact.value ? noContactMessage : "",
-    );
+    return el === telEl.value && !hasContact.value ? noContactMessage : "";
   } else {
-    el.setCustomValidity("Vul een geldig telefoonnummer in.");
+    return "Vul een geldig telefoonnummer in.";
   }
 };
 
-const validateEmailInput = (el: HTMLInputElement) => {
-  el.setCustomValidity(
-    !el.value || EMAIL_PATTERN.test(el.value)
-      ? ""
-      : "Vul een geldig e-mailadres in.",
-  );
-};
+const validateEmailInput = (el: HTMLInputElement) =>
+  !el.value || EMAIL_PATTERN.test(el.value)
+    ? ""
+    : "Vul een geldig e-mailadres in.";
 
-const vOnMountedInput: Directive<
+const vValidityHandler: Directive<
   HTMLInputElement & { onInputHandler?: EventListener },
-  (el: HTMLInputElement) => void
+  (el: HTMLInputElement) => string
 > = {
   mounted(el, binding) {
-    const validator = binding.value;
-    const handler = () => validator(el);
+    const setCustomValidity = () => el.setCustomValidity(binding.value(el));
 
-    validator(el); // onmounted
+    setCustomValidity(); // onmounted
 
-    el.addEventListener("input", handler); // oninput
-    el.onInputHandler = handler;
+    el.addEventListener("input", setCustomValidity); // oninput
+    el.onInputHandler = setCustomValidity;
   },
   unmounted(el) {
     if (el.onInputHandler) {
