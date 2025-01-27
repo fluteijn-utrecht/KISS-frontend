@@ -22,5 +22,6 @@
         public static ILocator GetBeheerTableCell(this IPage page, int col, int row) =>
                      page.Locator($"table tbody tr:nth-child({row}) td:nth-child({col})");
 
+    
     }
 }
