@@ -159,7 +159,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
                 return await page.GotoAsync(href).ContinueWith(async x =>
                 {
-                    var locator = page.GetByText(searchString);
+                    var locator = page.GetBeheerRowByValue(searchString);
                     return await locator.IsVisibleAsync();
                 }).Unwrap();
             });
