@@ -15,11 +15,11 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         [TestMethod("1. Searching by Last Name and Date of Birth (Valid)")]
         public async Task SearchByLastNameAndDOB_ValidAsync()
         {
-            await Step("When user starts a new contactmoment");
+            await Step("Given the user is on the startpagina");
 
-            await Page.NavigateToContactMomentAsync();
+            await Page.CreateNewContactmomentAsync();
 
-            await Step("Perform the search");
+            await Step("User fills Lastname and Birthday and perform search");
 
             await Page.Personen_LastNameInput().FillAsync("Burck");
             await Page.Personen_BirthDateInput().FillAsync("17-11-1952");
@@ -36,17 +36,17 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         public async Task SearchByLastNameAndDOB_NotFoundAsync()
         {
 
-            await Step("When user starts a new contactmoment");
+            await Step("Given the user is on the startpagina ");
 
-            await Page.NavigateToContactMomentAsync();
+            await Page.CreateNewContactmomentAsync();
 
-            await Step("Perform the search");
+            await Step("User fills Lastname and Birthday and perform search");
 
             await Page.Personen_LastNameInput().FillAsync("TestDB");
             await Page.Personen_BirthDateInput().FillAsync("11-12-1990");
             await Page.PersonenFirst_SearchButton().ClickAsync();
 
-            await Step("Check for the error message");
+            await Step("The message is displayed as “Geen resultaten gevonden voor ’TestDB, 11-12-1990");
            
             await  Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
 
