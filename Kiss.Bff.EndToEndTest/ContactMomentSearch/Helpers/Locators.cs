@@ -16,10 +16,10 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
             page.GetByRole(AriaRole.Textbox, new() { Name = "Geboortedatum" });
 
          public static ILocator PersonenFirst_SearchButton(this IPage page) =>
-           page.GetByRole(AriaRole.Form).Filter(new () { HasText = "Achternaam Geboortedatum" }).GetByRole(AriaRole.Button);
+            page.Locator("form").Filter(new () { HasText = "Achternaam Geboortedatum" }).GetByRole(AriaRole.Button);
 
         public static ILocator PersonenThird_SearchButton(this IPage page) =>
-           page.GetByRole(AriaRole.Form).Filter(new() { HasText = "Bsn Zoeken" }).GetByRole(AriaRole.Button);
+            page.Locator("form").Filter(new() { HasText = "Bsn Zoeken" }).GetByRole(AriaRole.Button);
 
     }
 
