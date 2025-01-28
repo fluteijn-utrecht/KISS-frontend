@@ -55,10 +55,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         [TestMethod("3. Searching by BSN (Valid)")]
         public async Task SearchByBSN_Valid()
         {
-            await Step("When user starts a new contactmoment");
+            await Step("Given the user is on the startpagina ");
 
-            await Page.NavigateToContactMomentAsync();
-
+            await Page.CreateNewContactmomentAsync();
 
             await Step(" Perform the search with a valid BSN");
 
@@ -77,11 +76,11 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         [TestMethod(" 4. Searching by BSN (Invalid)")]
         public async Task SearchByBSN_Invalid()
         {
-            await Step("When user starts a new contactmoment");
+            await Step("Given the user is on the startpagina ");
 
-            await Page.NavigateToContactMomentAsync();
+            await Page.CreateNewContactmomentAsync();
 
-            await Step(" Perform the search with a valid BSN");
+            await Step(" Perform the search with a invalid BSN");
 
             var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
 
@@ -89,7 +88,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("Check for the error message");
+            await Step("The message is displayed as “Dit is geen valide BSN");
              
             Assert.AreEqual( await bsnInput.EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
 
