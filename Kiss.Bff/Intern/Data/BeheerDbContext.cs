@@ -2,9 +2,9 @@
 using Kiss.Bff.Beheer.Links.Data.Entities;
 using Kiss.Bff.Beheer.Verwerking;
 using Kiss.Bff.Intern.ContactmomentDetails.Data.Entities;
+using Kiss.Bff.Intern.ContactverzoekenVragensets;
 using Kiss.Bff.Intern.Kanalen.Data.Entities;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
-using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

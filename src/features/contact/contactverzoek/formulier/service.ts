@@ -6,6 +6,7 @@ import type {
   TextareaVraag,
   DropdownVraag,
   CheckboxVraag,
+  TypeOrganisatorischeEenheid,
 } from "../../components/types";
 
 const contactMomentVragenSets = "/api/contactverzoekvragensets";
@@ -14,13 +15,14 @@ type ServerContactVerzoekVragenSet = {
   id: number;
   titel: string;
   jsonVragen: string;
-  afdelingId: string;
+  organisatorischeEenheidId: string;
+  organisatorischeEenheidSoort: TypeOrganisatorischeEenheid;
 };
 
 ///////////////////////////////////////////////
 //vragensets
 
-function fetchVragenSets(url: string) {
+export async function fetchVragenSets(url: string) {
   return fetchLoggedIn(url)
     .then(throwIfNotOk)
     .then((response) => response.json())
@@ -47,7 +49,8 @@ function mapToClientContactVerzoekVragenSets(
       id: serverData.id,
       titel: serverData.titel,
       vraagAntwoord: parsedQuestions,
-      afdelingId: serverData.afdelingId,
+      organisatorischeEenheidId: serverData.organisatorischeEenheidId,
+      organisatorischeEenheidSoort: serverData.organisatorischeEenheidSoort,
     };
   });
 }

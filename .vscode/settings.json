@@ -5,30 +5,9 @@
     "scss",
     "vue"
   ],
-  "[css][scss]": {
-    "editor.formatOnSave": false,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": [
-      "source.formatDocument",
-      "source.fixAll.stylelint",
-    ]
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
   },
-
-  "[javascript][typescript]": {
-    "editor.formatOnSave": false,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": [
-      "source.formatDocument",
-      "source.fixAll.eslint",
-    ]
-  },
-  "[vue]": {
-    "editor.formatOnSave": false,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": [
-      "source.formatDocument",
-      "source.fixAll.stylelint",
-      "source.fixAll.eslint",
-    ],
-  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

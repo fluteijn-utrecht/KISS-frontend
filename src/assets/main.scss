@@ -1,4 +1,4 @@
-@import "./icons/icons";
+@use "./icons/icons";
 
 * {
   outline-offset: -2px;
@@ -52,7 +52,7 @@ body {
 .app-layout > aside {
   grid-area: aside;
   position: sticky;
-  inset-block: 0 0;
+  inset-block: 0;
   height: 100vh;
 }
 

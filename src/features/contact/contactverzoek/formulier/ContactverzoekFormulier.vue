@@ -1,67 +1,87 @@
 <template>
-  <div class="container" @submit.prevent>
+  <simple-spinner v-if="loading" />
+
+  <div v-else class="container" @submit.prevent>
     <form-fieldset class="radio-group">
       <form-fieldset-legend class="required"
         >Contactverzoek maken voor</form-fieldset-legend
       >
+
       <label>
         <input
           type="radio"
           :value="ActorType.afdeling"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @change="onTypeActorSelected"
+          @change="onUpdateActorAfdelingOrGroep"
         />
         Afdeling
       </label>
+
       <label>
         <input
           type="radio"
           :value="ActorType.groep"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @change="onTypeActorSelected"
+          @change="onUpdateActorAfdelingOrGroep"
         />
         Groep
       </label>
-      <label>
+
+      <label v-if="!useMedewerkeremail">
         <input
           type="radio"
           :value="ActorType.medewerker"
           class="utrecht-radio-button utrecht-radio-button--html-input"
           v-model="form.typeActor"
-          @change="onTypeActorSelected"
+          @change="onUpdateActorAfdelingOrGroep"
         />
         Medewerker
       </label>
     </form-fieldset>
+
     <label
       v-if="form.typeActor === ActorType.afdeling"
       class="utrecht-form-label"
     >
       <span class="required">Afdeling</span>
       <afdelingen-search
-        v-model="form.afdeling"
+        :model-value="form.afdeling"
+        @update:model-value="onUpdateAfdeling"
         :exact-match="true"
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een afdeling"
-        @update:model-value="onUpdateAfdeling"
       />
     </label>
 
     <label v-if="form.typeActor === ActorType.groep" class="utrecht-form-label">
       <span class="required">Groep</span>
       <groepen-search
-        v-model="form.groep"
+        :model-value="form.groep"
+        @update:model-value="onUpdateGroep"
         :exact-match="true"
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een groep"
-        @update:model-value="onUpdateGroep"
       />
     </label>
+
+    <label v-if="useMedewerkeremail" class="utrecht-form-label">
+      <span class="">E-mailadres medewerker</span>
+
+      <input
+        v-model="form.medewerkeremail"
+        v-validity-handler="validateEmailInput"
+        name="E-mailadres medewerker"
+        class="utrecht-textbox utrecht-textbox--html-input"
+        @input="setActive"
+      />
+    </label>
+
     <label
+      v-else
       :class="[
         'utrecht-form-label',
         {
@@ -72,9 +92,11 @@
       ]"
     >
       <span class="">Medewerker</span>
+
       <medewerker-search
         class="utrecht-textbox utrecht-textbox--html-input"
-        v-model="medewerker"
+        :model-value="form.medewerker"
+        @update:model-value="onUpdateMedewerker"
         :filter-field="
           form.typeActor == ActorType.afdeling
             ? 'Smoelenboek.afdelingen.afdelingnaam'
@@ -87,7 +109,6 @@
             ? form.afdeling?.naam
             : form.groep?.naam
         "
-        @update:model-value="onUpdateMedewerker"
         :required="false"
         :isDisabled="
           (form.typeActor == ActorType.afdeling && !form.afdeling?.id) ||
@@ -102,7 +123,7 @@
     </label>
 
     <label
-      v-if="form.typeActor === ActorType.medewerker && medewerker"
+      v-if="form.typeActor === ActorType.medewerker && form.medewerker"
       for="groep"
       class="utrecht-form-label"
     >
@@ -133,69 +154,64 @@
 
     <form-fieldset>
       <div class="container">
-        <service-data-wrapper :data="vragenSets">
-          <template #success="{ data }">
-            <!-- Dropdown for selecting Onderwerp -->
-            <contactverzoek-onderwerpen
-              :vragenSets="data"
-              :afdelingId="form?.afdeling?.id"
-              :prefill="!form.vragenSetChanged"
-              v-model:modelValue="form.contactVerzoekVragenSet"
-              @change="form.vragenSetChanged = true"
-            />
+        <!-- Dropdown for selecting Onderwerp -->
+        <contactverzoek-onderwerpen
+          :organisatorischeEenheidId="soort && form[soort]?.id"
+          :organisatorischeEenheidSoort="soort"
+          v-model:vragenSets="vragenSets"
+          v-model:vragenSetIdMap="vragenSetIdMap"
+          v-model:contactVerzoekVragenSet="form.contactVerzoekVragenSet"
+        />
 
-            <!-- Dynamic fields based on selected Onderwerp -->
-            <template v-if="form.contactVerzoekVragenSet">
-              <template
-                v-for="(item, index) in form.contactVerzoekVragenSet
-                  .vraagAntwoord"
-                :key="index"
+        <!-- Dynamic fields based on selected Onderwerp -->
+        <template v-if="form.contactVerzoekVragenSet">
+          <template
+            v-for="(item, index) in form.contactVerzoekVragenSet.vraagAntwoord"
+            :key="index"
+          >
+            <label class="utrecht-form-label">
+              <span>{{ item.description }}</span>
+              <input
+                v-if="isInputVraag(item)"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                type="text"
+                v-model="item.input"
+                @input="setActive"
+              />
+              <textarea
+                v-if="isTextareaVraag(item)"
+                class="utrecht-textarea"
+                v-model="item.textarea"
+                @input="setActive"
+              ></textarea>
+              <select
+                v-if="isDropdownVraag(item)"
+                class="utrecht-select"
+                v-model="item.selectedDropdown"
+                @input="setActive"
               >
-                <label class="utrecht-form-label">
-                  <span>{{ item.description }}</span>
+                <option v-for="option in item.options" :key="option">
+                  {{ option }}
+                </option>
+              </select>
+              <div v-if="isCheckboxVraag(item)">
+                <label
+                  class="utrecht-checkbox-button"
+                  v-for="(option, optionIndex) in item.options"
+                  :key="option"
+                >
                   <input
-                    v-if="isInputVraag(item)"
-                    class="utrecht-textbox utrecht-textbox--html-input"
-                    type="text"
-                    v-model="item.input"
-                    @input="setActive"
+                    class="utrecht-checkbox-button"
+                    type="checkbox"
+                    :value="option"
+                    v-model="item.selectedCheckbox[optionIndex]"
                   />
-                  <textarea
-                    v-if="isTextareaVraag(item)"
-                    class="utrecht-textarea"
-                    v-model="item.textarea"
-                    @input="setActive"
-                  ></textarea>
-                  <select
-                    v-if="isDropdownVraag(item)"
-                    class="utrecht-select"
-                    v-model="item.selectedDropdown"
-                    @input="setActive"
-                  >
-                    <option v-for="option in item.options" :key="option">
-                      {{ option }}
-                    </option>
-                  </select>
-                  <div v-if="isCheckboxVraag(item)">
-                    <label
-                      class="utrecht-checkbox-button"
-                      v-for="(option, optionIndex) in item.options"
-                      :key="option"
-                    >
-                      <input
-                        class="utrecht-checkbox-button"
-                        type="checkbox"
-                        :value="option"
-                        v-model="item.selectedCheckbox[optionIndex]"
-                      />
-                      {{ option }}
-                    </label>
-                  </div>
+                  {{ option }}
                 </label>
-              </template>
-            </template>
+              </div>
+            </label>
           </template>
-        </service-data-wrapper>
+        </template>
       </div>
     </form-fieldset>
 
@@ -206,8 +222,7 @@
           <span>Voornaam</span>
           <input
             v-model="form.voornaam"
-            type="tel"
-            name="Naam"
+            name="Voornaam"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -216,8 +231,7 @@
           <span>Tussenvoegsel</span>
           <input
             v-model="form.voorvoegselAchternaam"
-            type="tel"
-            name="Naam"
+            name="Tussenvoegsel"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -226,8 +240,7 @@
           <span>Achternaam</span>
           <input
             v-model="form.achternaam"
-            type="tel"
-            name="Naam"
+            name="Achternaam"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -236,8 +249,7 @@
           <span>Organisatie</span>
           <input
             v-model="form.organisatie"
-            type="tel"
-            name="Naam"
+            name="Organisatie"
             class="utrecht-textbox utrecht-textbox--html-input"
             @input="setActive"
           />
@@ -247,20 +259,20 @@
           <input
             ref="telEl"
             v-model="form.telefoonnummer1"
-            type="tel"
+            v-validity-handler="validateTelefoonInput"
             name="Telefoonnummer 1"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="handleTelefoonInput"
+            @input="setActive"
           />
         </label>
         <label class="utrecht-form-label">
           <span>Telefoonnummer 2</span>
           <input
             v-model="form.telefoonnummer2"
-            type="tel"
+            v-validity-handler="validateTelefoonInput"
             name="Telefoonnummer 2"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="handleTelefoonInput"
+            @input="setActive"
           />
         </label>
         <label class="utrecht-form-label">
@@ -276,9 +288,10 @@
           <span>E-mailadres</span>
           <input
             v-model="form.emailadres"
+            v-validity-handler="validateEmailInput"
             name="E-mailadres"
             class="utrecht-textbox utrecht-textbox--html-input"
-            @input="handleEmailInput"
+            @input="setActive"
           />
         </label>
       </div>
@@ -293,20 +306,18 @@ export default {
 </script>
 
 <script lang="ts" setup>
+import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import MedewerkerSearch from "./components/MedewerkerSearch.vue";
 import type {
-  ContactVerzoekMedewerker,
   ContactmomentContactVerzoek,
+  ContactVerzoekMedewerker,
 } from "@/stores/contactmoment";
-
 import { ActorType } from "@/stores/contactmoment";
-import { computed, ref, watch } from "vue";
+import { computed, ref, useModel, watch, type Directive } from "vue";
 import {
   FormFieldsetLegend,
   FormFieldset,
 } from "@utrecht/component-library-vue";
-import ServiceDataWrapper from "@/components/ServiceDataWrapper.vue";
-import { useVragenSets } from "./service";
 import {
   isInputVraag,
   isTextareaVraag,
@@ -316,55 +327,83 @@ import {
 import ContactverzoekOnderwerpen from "./components/ContactverzoekOnderwerpen.vue";
 import AfdelingenSearch from "../../components/AfdelingenSearch.vue";
 import GroepenSearch from "./components/GroepenSearch.vue";
-import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
-import { fetchGroepen } from "./components/groepen";
+import {
+  fetchAfdelingen,
+  type Afdeling,
+} from "@/features/contact/components/afdelingen";
+import { fetchGroepen, type Groep } from "./components/groepen";
 import { TELEFOON_PATTERN, EMAIL_PATTERN } from "@/helpers/validation";
+import { TypeOrganisatorischeEenheid } from "../../components/types";
+import { fetchLoggedIn, useLoader } from "@/services";
 
-const props = defineProps<{
-  modelValue: ContactmomentContactVerzoek;
-}>();
+const props = defineProps<{ modelValue: ContactmomentContactVerzoek }>();
+const model = useModel(props, "modelValue");
+
+const useModelProperty = <K extends keyof ContactmomentContactVerzoek>(
+  key: K,
+) =>
+  computed({
+    get: () => model.value[key],
+    set: (v) => {
+      model.value = { ...props.modelValue, [key]: v };
+    },
+  });
+
+const vragenSets = useModelProperty("vragenSets");
+const vragenSetIdMap = useModelProperty("vragenSetIdMap");
 
 const form = ref<Partial<ContactmomentContactVerzoek>>({});
 
-const medewerker = ref<ContactVerzoekMedewerker>();
+// cast to TypeOrganisatorischeEenheid
+const soort = computed(() =>
+  form.value.typeActor === ActorType.afdeling ||
+  form.value.typeActor === ActorType.groep
+    ? Object.values(TypeOrganisatorischeEenheid)[form.value.typeActor]
+    : undefined,
+);
 
 // update het formulier als er tussen vragen/contactmomenten/afhandelscherm geswitched wordt
 watch(
   () => props.modelValue,
-  (v) => {
-    form.value = v;
-    medewerker.value = form.value.medewerker;
-  },
+  (v) => (form.value = v),
   { immediate: true },
 );
 
-const setActive = () => {
-  form.value.isActive = true;
+const setActive = () => (form.value.isActive = true);
+
+// i.v.m. voorinvullen medewerker/typeActor is activeren vh formulier losgekoppeld van model
+// afdeling en groep volgen zelfde patroon maar worden (vooralsnog) niet vooringevuld
+const onUpdateAfdeling = (afdeling?: Afdeling) => {
+  form.value.afdeling = afdeling;
+
+  onUpdateActorAfdelingOrGroep();
 };
 
-const onUpdateAfdeling = () => {
-  form.value.contactVerzoekVragenSet = undefined;
-  form.value.vragenSetChanged = false;
-  medewerker.value = undefined;
+const onUpdateGroep = (groep?: Groep) => {
+  form.value.groep = groep;
+
+  onUpdateActorAfdelingOrGroep();
+};
+
+const onUpdateMedewerker = (medewerker?: ContactVerzoekMedewerker) => {
+  form.value.medewerker = medewerker;
+
   setActive();
 };
 
-const onUpdateGroep = () => {
-  medewerker.value = undefined;
+const onUpdateActorAfdelingOrGroep = () => {
+  form.value.medewerker = undefined;
+
   setActive();
 };
 
-const onUpdateMedewerker = () => {
-  form.value.medewerker = medewerker.value;
-  setActive();
-};
-
-const onTypeActorSelected = () => {
-  medewerker.value = undefined;
-};
+const { data: useMedewerkeremail, loading } = useLoader(() =>
+  fetchLoggedIn("/api/environment/use-medewerkeremail")
+    .then((r) => r.json())
+    .then(({ useMedewerkeremail }) => useMedewerkeremail),
+);
 
 const telEl = ref<HTMLInputElement>();
-const vragenSets = useVragenSets();
 
 /////////////////////////////////////////////////////////
 
@@ -487,60 +526,39 @@ watch(
   ([el, bool]) => el && el.setCustomValidity(!bool ? noContactMessage : ""),
 );
 
-const handleTelefoonInput = (event: Event) => {
-  const el = event.target as HTMLInputElement;
-
-  setActive();
-
+const validateTelefoonInput = (el: HTMLInputElement) => {
   if (!el.value || TELEFOON_PATTERN.test(el.value)) {
     // telEl: back to custom noContactMessage if applicable, otherwise clear
-    el.setCustomValidity(
-      el === telEl.value && !hasContact.value ? noContactMessage : "",
-    );
+    return el === telEl.value && !hasContact.value ? noContactMessage : "";
   } else {
-    el.setCustomValidity("Vul een geldig telefoonnummer in.");
+    return "Vul een geldig telefoonnummer in.";
   }
 };
 
-const handleEmailInput = (event: Event) => {
-  const el = event.target as HTMLInputElement;
+const validateEmailInput = (el: HTMLInputElement) =>
+  !el.value || EMAIL_PATTERN.test(el.value)
+    ? ""
+    : "Vul een geldig e-mailadres in.";
 
-  setActive();
+const vValidityHandler: Directive<
+  HTMLInputElement & { onInputHandler?: EventListener },
+  (el: HTMLInputElement) => string
+> = {
+  mounted(el, binding) {
+    const setCustomValidity = () => el.setCustomValidity(binding.value(el));
 
-  el.setCustomValidity(
-    !el.value || EMAIL_PATTERN.test(el.value)
-      ? ""
-      : "Vul een geldig emailadres in.",
-  );
-};
+    setCustomValidity(); // onmounted
 
-//als de afdeling wijzigt, dan moet de medewerker gereset worden
-watch(
-  () => form.value.afdeling,
-  (n, o) => {
-    if (n != o) {
-      form.value.medewerker = undefined;
+    el.addEventListener("input", setCustomValidity); // oninput
+    el.onInputHandler = setCustomValidity;
+  },
+  unmounted(el) {
+    if (el.onInputHandler) {
+      el.removeEventListener("input", el.onInputHandler);
+      delete el.onInputHandler;
     }
-    setActive();
   },
-);
-
-//als de groep wijzigt, moet de medewerker reset worden
-watch(
-  () => form.value.groep,
-  () => {
-    form.value.medewerker = undefined;
-    setActive();
-  },
-);
-
-watch(
-  () => form.value.medewerker,
-  () => {
-    form.value.isMedewerker = true;
-    setActive();
-  },
-);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -562,6 +580,12 @@ fieldset {
 .radio-group {
   > legend {
     font-size: inherit;
+  }
+
+  // styling with only two radios, override space-between
+  &:has(> label:nth-of-type(2):last-of-type) {
+    justify-content: flex-start;
+    gap: var(--spacing-default);
   }
 }
 

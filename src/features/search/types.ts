@@ -39,9 +39,14 @@ export type Kennisartikel = {
 };
 
 export type Vac = {
+  uuid?: string;
   vraag: string;
   antwoord: string;
-  afdelingen?: Afdeling[];
+  toelichting?: string;
+  afdelingen?: VacAfdeling[];
+  trefwoorden?: { trefwoord: string }[];
+  status?: string;
+  doelgroep?: string;
 };
 
 export type Nieuwsbericht = {
@@ -54,4 +59,6 @@ export type Werkinstructie = {
   title: string;
 };
 
-export type Afdeling = { afdelingNaam: string };
+export type Afdeling = { afdelingnaam: string };
+
+export type VacAfdeling = { afdelingNaam: string };

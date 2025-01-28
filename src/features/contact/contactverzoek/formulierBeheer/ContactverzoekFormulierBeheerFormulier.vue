@@ -11,7 +11,6 @@
   <template v-if="loading"> <simple-spinner /></template>
   <div>
     <pre>
- 
       Hier kan je een template maken voor een contactverzoek. Houd er rekening mee dat
       dit template een aanvulling is op de standaard vragen.
       Deze hoef je hier dus niet toe te voegen. De standaardvragen zijn: 
@@ -35,15 +34,36 @@
         v-model="title"
       />
     </label>
+
     <!-- dropdown for afdelingen -->
-    <label class="utrecht-form-label">
+    <label
+      v-if="soort === TypeOrganisatorischeEenheid.Afdeling"
+      class="utrecht-form-label"
+    >
       <span class="required">Afdeling</span>
       <service-data-search
         class="utrecht-textbox utrecht-textbox--html-input"
         :required="true"
         placeholder="Zoek een afdeling"
         :get-data="useAfdelingen"
-        v-model="selectedAfdeling"
+        v-model="selectedOrganisatorischeEenheid"
+        :map-value="(x) => x?.naam"
+        :map-description="(x) => x?.identificatie"
+      />
+    </label>
+
+    <!-- dropdown for groepen -->
+    <label
+      v-else-if="soort === TypeOrganisatorischeEenheid.Groep"
+      class="utrecht-form-label"
+    >
+      <span class="required">Groep</span>
+      <service-data-search
+        class="utrecht-textbox utrecht-textbox--html-input"
+        :required="true"
+        placeholder="Zoek een groep"
+        :get-data="useGroepen"
+        v-model="selectedOrganisatorischeEenheid"
         :map-value="(x) => x?.naam"
         :map-description="(x) => x?.identificatie"
       />
@@ -252,10 +272,16 @@ import { fetchLoggedIn } from "@/services";
 import { toast } from "@/stores/toast";
 import { useRouter } from "vue-router";
 import { useAfdelingen } from "@/features/contact/components/afdelingen";
+import { useGroepen } from "@/features/contact/contactverzoek/formulier/components/groepen";
 import ServiceDataSearch from "@/components/ServiceDataSearch.vue";
+import { TypeOrganisatorischeEenheid } from "../../components/types";
 
 const router = useRouter();
-const props = defineProps<{ id?: string }>();
+
+const props = defineProps<{
+  id?: string;
+  soort?: TypeOrganisatorischeEenheid;
+}>();
 
 type Vraag = {
   id: number;
@@ -275,13 +301,14 @@ type CheckboxVraag = Vraag & {
   options: string[];
 };
 
-type ContactverzoekAfdeling = {
+type ContactverzoekOrganisatorischeEenheid = {
   id: string;
   identificatie: string;
   naam: string;
 };
 
-const selectedAfdeling = ref<ContactverzoekAfdeling>();
+const selectedOrganisatorischeEenheid =
+  ref<ContactverzoekOrganisatorischeEenheid>();
 const selectedVraag = ref("Vraag toevoegen");
 const title = ref("");
 const vragen = ref<Vraag[]>([]);
@@ -292,8 +319,9 @@ const submit = async () => {
   try {
     const payload = {
       Titel: title.value,
-      AfdelingId: selectedAfdeling.value?.id,
-      AfdelingNaam: selectedAfdeling.value?.naam,
+      OrganisatorischeEenheidId: selectedOrganisatorischeEenheid.value?.id,
+      OrganisatorischeEenheidNaam: selectedOrganisatorischeEenheid.value?.naam,
+      OrganisatorischeEenheidSoort: props.soort,
       JsonVragen: JSON.stringify(generatedSchema, null, 2),
     };
 
@@ -445,9 +473,9 @@ async function load() {
       const data = await response.json();
 
       title.value = data.titel;
-      selectedAfdeling.value = {
-        id: data.afdelingId,
-        naam: data.afdelingNaam,
+      selectedOrganisatorischeEenheid.value = {
+        id: data.organisatorischeEenheidId,
+        naam: data.organisatorischeEenheidNaam,
         identificatie: data.identificatie,
       };
       vragen.value = ToSchemaFromVragen(JSON.parse(data.jsonVragen));
@@ -514,7 +542,8 @@ const handleSuccess = () => {
   toast({
     text: "Contactverzoek formulier opgeslagen",
   });
-  router.push("/Beheer/Contactverzoekformulieren/");
+
+  navigateToContactverzoekformulieren();
 };
 
 const setVraagTypeDescription = (type: string) => {
@@ -533,7 +562,7 @@ const setVraagTypeDescription = (type: string) => {
 };
 
 const navigateToContactverzoekformulieren = () => {
-  router.push("/Beheer/Contactverzoekformulieren/");
+  router.push(`/Beheer/formulieren-contactverzoek-${props.soort}/`);
 };
 
 const revealCancelDialog = () => {

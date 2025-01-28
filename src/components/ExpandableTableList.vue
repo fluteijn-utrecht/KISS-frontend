@@ -12,6 +12,8 @@
 </template>
 
 <script lang="ts" setup>
+// TODO we now render a ul within a table, this is not valid HTML
+// let's try to refactor this, possibly to a regular table with expandable extra rows
 import { computed } from "vue";
 import { ref } from "vue";
 
@@ -22,8 +24,15 @@ defineProps<{
 
 const toggleDetails = (e: Event) => {
   e.preventDefault();
-  if (e.currentTarget instanceof HTMLDetailsElement) {
-    e.currentTarget.open = !e.currentTarget.open;
+  // if the summary element is the target, we are either
+  // 1. clicking the chevron rendered via css with ::after
+  // 2. using keyboard navigation and pressing enter
+  // these are the only cases in which we want to open/close the details
+  if (e.target instanceof HTMLElement && e.target.tagName === "SUMMARY") {
+    const details = e.target.closest("details");
+    if (details) {
+      details.open = !details.open;
+    }
   }
 };
 
