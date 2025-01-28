@@ -21,7 +21,7 @@ const getAfdelingenSearchUrl = (
 
   const matchType = exactMatch ? "exact" : "icontains";
   if (search) {
-    searchParams.set("data_attrs", `naam__${matchType}__${search.trim()}`);
+    searchParams.set("data_attr", `naam__${matchType}__${search.trim()}`);
   }
   return "/api/afdelingen/api/v2/objects?" + searchParams;
 };
