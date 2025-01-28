@@ -66,8 +66,18 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
             if (!string.IsNullOrEmpty(request.Skill))
             {
-                var skillCheckbox = page.GetByRole(AriaRole.Checkbox, new() { Name = request.Skill });
-                await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
+                List<string> skills = new();
+
+                if (request.Skill.Contains(","))
+                    skills.AddRange(request.Skill.Split(","));
+                else
+                    skills.Add(request.Skill);
+
+                foreach (var skill in skills)
+                {
+                    var skillCheckbox = page.GetByRole(AriaRole.Checkbox, new() { Name = skill });
+                    await skillCheckbox.CheckAsync(); // Ensure the skill checkbox is checked
+                }
             }
 
             // Use the current time as the base publish date
@@ -83,6 +93,9 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             var publishDateInput = page.GetByLabel("Publicatiedatum");
             await publishDateInput.FillAsync(publishDate.ToString("yyyy-MM-ddTHH:mm"));
 
+            var PublicatieEinddatumInput = page.GetByLabel("Publicatie-einddatum");
+            await PublicatieEinddatumInput.FillAsync(request.PublicatieEinddatum.ToString("yyyy-MM-ddTHH:mm"));
+
             var opslaanKnop = page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" });
             while (await opslaanKnop.IsVisibleAsync() && await opslaanKnop.IsEnabledAsync())
             {
@@ -97,7 +110,7 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 Title = request.Title,
                 PublishDateOffset = request.PublishDateOffset,
                 PublicatieDatum = publishDate,
-                PublicatieEinddatum = publishDate.AddYears(1),
+                PublicatieEinddatum = request.PublicatieEinddatum,
                 Skill = request.Skill,
                 Body = request.Body,
                 BerichtType = request.BerichtType,
@@ -174,7 +187,54 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             return false;
         }
 
+        public static async Task<ILocator?> GetBerichtOnAllPagesAsync(this IPage page, Bericht bericht)
+        {
+            var section = bericht.BerichtType == BerichtType.Nieuws ? page.GetNieuwsSection() : page.GetWerkinstructiesSection();
+            var nextPageButton = section.GetNextPageLink();
 
+            while (true)
+            {
+                var article = section.GetByRole(AriaRole.Heading, new() { Name = bericht.Title });
+                if (await article.IsVisibleAsync())
+                    return article;
+
+                if (await nextPageButton.IsVisibleAsync() && await nextPageButton.IsDisabledPageLink())
+                    break;
+
+                if (await nextPageButton.IsVisibleAsync())
+                {
+                    await nextPageButton.ClickAsync();
+                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return null;
+        }
+
+
+        public static async Task<bool> AreSkillsVisibleByNameAsync(this IPage page, ILocator articleLocator, List<string> expectedSkillNames)
+        {
+            var skillsContainerLocator = articleLocator.Locator(".skills-container");
+            var skillLocators = skillsContainerLocator.Locator("small");
+            var skillCount = await skillLocators.CountAsync();
+
+            for (int i = 0; i < skillCount; i++)
+            {
+                var skillElementLocator = skillLocators.Nth(i);
+                var skillText = await skillElementLocator.InnerTextAsync();
+
+                if (expectedSkillNames.Contains(skillText) && !await skillElementLocator.IsVisibleAsync())
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
 
@@ -236,5 +296,8 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
         public BerichtType BerichtType { get; init; } = BerichtType.Nieuws;
 
         public TimeSpan? PublishDateOffset { get; init; }
+
+        public DateTime PublicatieDatum { get; init; }
+        public DateTime PublicatieEinddatum { get; init; } = DateTime.Now.AddDays(1);
     }
 }
