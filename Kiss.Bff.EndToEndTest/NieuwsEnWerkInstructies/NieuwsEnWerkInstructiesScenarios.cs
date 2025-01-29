@@ -845,7 +845,7 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Expect(Page.GetBeheerTableCell(1,1)).ToHaveTextAsync(nieuws.Title);
         await Expect(Page.GetBeheerTableCell(2, 1)).ToHaveTextAsync(nieuws.BerichtType.ToString());
-        await Expect(Page.GetBeheerTableCell(3, 1)).ToHaveTextAsync(DateTime.Now.ToString("dd-MM-yyyy, HH:mm"));
+        await Expect(Page.GetBeheerTableCell(3, 1)).ToHaveTextAsync(nieuws.PublicatieDatum.ToString("dd-MM-yyyy, HH:mm"));
 
     }
 

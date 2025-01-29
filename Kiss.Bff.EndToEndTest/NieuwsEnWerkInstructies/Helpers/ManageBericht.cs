@@ -53,11 +53,15 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             await page.NavigateToNieuwsWerkinstructiesBeheer();
             var toevoegenLink = page.GetByRole(AriaRole.Link, new() { Name = "Toevoegen" });
             await toevoegenLink.ClickAsync();
+           
+            await page.WaitForPageAndSpinnerAsync(); // Wait until the page loads completely
+
             await page.GetByRole(AriaRole.Radio, new() { Name = request.BerichtType.ToString() }).CheckAsync();
 
             await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(request.Title);
 
-            await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(request.Body);
+            var richTextEditor = page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" });
+             await richTextEditor.FillAsync(request.Body);
 
             if (request.IsImportant)
             {
@@ -122,11 +126,15 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
             var row = page.GetBeheerRowByValue(bericht.Key);
             await row.GetByRole(AriaRole.Link).ClickAsync();
 
+            await page.WaitForPageAndSpinnerAsync(); // Wait until the page loads completely
+
             // Update fields
             await page.GetByRole(AriaRole.Textbox, new() { Name = "Titel" }).FillAsync(bericht.Title);
-            await page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" }).FillAsync(bericht.Body);
+            var richTextEditor = page.GetByRole(AriaRole.Textbox, new() { Name = "Rich Text Editor" });
+            await richTextEditor.FillAsync(bericht.Body);
 
             var belangrijk = page.GetByRole(AriaRole.Checkbox, new() { Name = "Belangrijk" });
+
             if (bericht.IsImportant)
                 await belangrijk.CheckAsync();
             else
@@ -156,17 +164,18 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
                 }
                 throw new Exception("Failed to update the bericht.");
             });
-
-
         }
 
         public static async Task<bool> IsBerichtVisibleOnAllPagesAsync(this IPage page, Bericht bericht)
         {
+          
             var section = bericht.BerichtType == BerichtType.Nieuws ? page.GetNieuwsSection() : page.GetWerkinstructiesSection();
             var nextPageButton = section.GetNextPageLink();
 
             while (true)
             {
+                    await page.WaitForPageAndSpinnerAsync(); // Wait until the page loads completely
+
                 if (await section.GetByRole(AriaRole.Heading, new() { Name = bericht.Title }).IsVisibleAsync())
                     return true;
 
@@ -175,12 +184,13 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
                 if (await nextPageButton.IsVisibleAsync())
                 {
-                    await nextPageButton.ClickAsync();
                     await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                    await nextPageButton.WaitForAsync(); // Wait until the next button is fully loaded
+                    await nextPageButton.ClickAsync();
                 }
                 else
                 {
-                    break;  
+                    break;
                 }
             }
 
@@ -235,6 +245,14 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
 
             return true;
         }
+        public static async Task WaitForPageAndSpinnerAsync(this IPage page)
+        {
+            // Wait for the loader spinner to disappear
+            await page.WaitForSelectorAsync("div.loader", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden });
+             
+        }
+
+      
     }
 
 
