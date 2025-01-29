@@ -247,9 +247,6 @@ namespace Kiss.Bff.EndToEndTest.NieuwsEnWerkInstructies.Helpers
         }
         public static async Task WaitForPageAndSpinnerAsync(this IPage page)
         {
-            // Wait for the page to load completely
-            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-
             // Wait for the loader spinner to disappear
             await page.WaitForSelectorAsync("div.loader", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden });
              
