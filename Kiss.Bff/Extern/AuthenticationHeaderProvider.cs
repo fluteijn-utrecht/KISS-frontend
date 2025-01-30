@@ -29,7 +29,7 @@ namespace Kiss.Bff
         {
             if (TokenProvider == null && AuthHeader == null)
             {
-                throw new Exception("Setting up a proxy for InterneTaak failed. A token or clientId/clientSecret combination should be provided");
+                throw new Exception("Setting up a proxy failed. A token or clientId/clientSecret combination should be provided");
             }
 
             if (AuthHeader != null)

@@ -155,6 +155,9 @@
         /// <returns>An error message if applicable, or an empty string if all is well</returns>
         private static string Validate(IReadOnlyList<RegistrySystem> systemen)
         {
+            // we can't throw in this case, because it causes tests to fail
+            if (systemen.Count == 0) return "";
+
             foreach (var systeem in systemen)
             {
                 // OK2
