@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Kiss.Bff.Extern.ZaakGerichtWerken.KlantContacten;
+using Kiss.Bff.Extern;
 
 namespace Kiss.Bff.Intern.Environment
 {
@@ -9,20 +8,13 @@ namespace Kiss.Bff.Intern.Environment
     [ApiController]
     public class EnvironmentController : ControllerBase
     {
-        private readonly KlantContactConfig _config;
+        private readonly RegistryConfig _registryConfig;
         private readonly IConfiguration _configuration;
 
-        public EnvironmentController(IOptions<KlantContactConfig> config, IConfiguration configuration)
+        public EnvironmentController(RegistryConfig klantContactConfig, IConfiguration configuration)
         {
-            _config = config.Value;
+            _registryConfig = klantContactConfig;
             _configuration = configuration;
-        }
-
-        [HttpGet("use-klantinteracties")]
-        public IActionResult GetUseKlantInteracties()
-        {
-            var useKlantInteracties = _configuration["USE_KLANTINTERACTIES"] ?? "false";
-            return Ok(new { useKlantInteracties = bool.Parse(useKlantInteracties) });
         }
 
         [HttpGet("use-vacs")]
@@ -49,29 +41,17 @@ namespace Kiss.Bff.Intern.Environment
             return Ok(new { versienummer });
         }
 
-        [HttpGet("default-register")]
-        public IActionResult GetDefaultRegister()
+        [HttpGet("registers")]
+        public IActionResult GetRegistrySystems()
         {
-            // Gebruik de geconfigureerde klantcontactregisters
-            var defaultRegister = _config.Registers
-                .Select((register, index) => new { Index = index, register.IsDefault })
-                .FirstOrDefault(x => x.IsDefault);
-
-            if (defaultRegister == null)
+            var model = new
             {
-                return NotFound(new { message = "Geen default register gevonden." });
-            }
+                Systemen = _registryConfig.Systemen
+                    // don't expose secrets
+                    .Select((x) => new { x.IsDefault, x.Identifier, x.KlantinteractieVersion })
+            };
 
-            return Ok(new { defaultRegister = defaultRegister.Index });
-        }
-
-        // Kan later meerdere checks bevatten
-        [HttpGet("status")]
-        public IActionResult GetStatus()
-        {
-            // Haal de status op uit de configuratie
-            var contactRegisterStatus = _configuration["contactRegisterStatus"] ?? "OK";
-            return Ok(new { status = contactRegisterStatus });
+            return Ok(model);
         }
     }
 }

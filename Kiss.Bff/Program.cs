@@ -6,7 +6,6 @@ using Kiss.Bff.Config;
 using Kiss.Bff.Extern.Klantinteracties;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Kiss.Bff.Groepen;
-using Kiss.Bff.InterneTaak;
 using Kiss.Bff;
 using Kiss.Bff.ZaakGerichtWerken.Contactmomenten;
 using Kiss.Bff.ZaakGerichtWerken.Klanten;
@@ -17,7 +16,8 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Kiss.Bff.Intern.Seed.Features;
 using Kiss.Bff.Vacs;
-using Kiss.Bff.Extern.ZaakGerichtWerken.KlantContacten;
+using Kiss.Bff.Extern;
+using Kiss.Bff.Extern.InterneTaak;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,8 +73,7 @@ try
 
     builder.Services.AddHttpClient();
 
-    builder.Services.AddKlantContactConfig(builder.Configuration, out var contactRegisterStatus);
-    builder.Configuration["ContactRegisterStatus"] = contactRegisterStatus;
+    builder.Services.AddRegistryConfig(builder.Configuration);
     builder.Services.AddZaaksystemen(builder.Configuration);
 
     var connStr = $"Username={builder.Configuration["POSTGRES_USER"]};Password={builder.Configuration["POSTGRES_PASSWORD"]};Host={builder.Configuration["POSTGRES_HOST"]};Database={builder.Configuration["POSTGRES_DB"]};Port={builder.Configuration["POSTGRES_PORT"]}";
@@ -82,7 +81,6 @@ try
     builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PRIVATE_API_KEY"]);
 
     builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
-    builder.Services.AddContactmomentenProxy(builder.Configuration["CONTACTMOMENTEN_BASE_URL"], builder.Configuration["CONTACTMOMENTEN_API_CLIENT_ID"], builder.Configuration["CONTACTMOMENTEN_API_KEY"]);
 
     if(int.TryParse(builder.Configuration["EMAIL_PORT"], out var emailPort)) 
     {
@@ -112,12 +110,9 @@ try
     builder.Services.AddHealthChecks();
 
     builder.Services.AddElasticsearch(builder.Configuration["ELASTIC_BASE_URL"], builder.Configuration["ELASTIC_USERNAME"], builder.Configuration["ELASTIC_PASSWORD"]);
-    builder.Services.AddInterneTaakProxy(builder.Configuration["INTERNE_TAAK_BASE_URL"], builder.Configuration["INTERNE_TAAK_TOKEN"], builder.Configuration["INTERNE_TAAK_OBJECT_TYPE_URL"], builder.Configuration["INTERNE_TAAK_CLIENT_ID"], builder.Configuration["INTERNE_TAAK_CLIENT_SECRET"], builder.Configuration["INTERNE_TAAK_TYPE_VERSION"]);
     builder.Services.AddAfdelingenProxy(builder.Configuration["AFDELINGEN_BASE_URL"], builder.Configuration["AFDELINGEN_TOKEN"], builder.Configuration["AFDELINGEN_OBJECT_TYPE_URL"], builder.Configuration["AFDELINGEN_CLIENT_ID"], builder.Configuration["AFDELINGEN_CLIENT_SECRET"]);
     builder.Services.AddGroepenProxy(builder.Configuration["GROEPEN_BASE_URL"], builder.Configuration["GROEPEN_TOKEN"], builder.Configuration["GROEPEN_OBJECT_TYPE_URL"], builder.Configuration["GROEPEN_CLIENT_ID"], builder.Configuration["GROEPEN_CLIENT_SECRET"]);
     builder.Services.AddVacsProxy(builder.Configuration["VAC_OBJECTEN_BASE_URL"], builder.Configuration["VAC_OBJECTEN_TOKEN"], builder.Configuration["VAC_OBJECT_TYPE_URL"], builder.Configuration["VAC_OBJECT_TYPE_VERSION"]);
-
-    builder.Services.AddKlantinteracties(builder.Configuration["KLANTINTERACTIES_BASE_URL"], builder.Configuration["KLANTINTERACTIES_TOKEN"]);
 
     builder.Host.UseSerilog((ctx, services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)

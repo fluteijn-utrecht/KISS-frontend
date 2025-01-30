@@ -416,7 +416,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import {
   Heading as UtrechtHeading,
@@ -470,6 +470,10 @@ import { fetchAfdelingen } from "@/features/contact/components/afdelingen";
 import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVraag.vue";
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
+import {
+  fetchSystemen,
+  klantinteractieVersions,
+} from "@/services/environment/fetch-systemen";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -523,6 +527,7 @@ const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
 };
 
 const saveBetrokkeneBijContactverzoek = async (
+  systemIdentifier: string,
   vraag: Vraag,
   klantcontactId: string,
   contactverzoekData?: Partial<ContactverzoekData>,
@@ -537,7 +542,7 @@ const saveBetrokkeneBijContactverzoek = async (
       contactverzoekData?.betrokkene?.persoonsnaam?.voorvoegselAchternaam;
     const achternaam = contactverzoekData?.betrokkene?.persoonsnaam?.achternaam;
 
-    const result = await saveBetrokkene({
+    const result = await saveBetrokkene(systemIdentifier, {
       klantcontactId: klantcontactId,
       organisatienaam: organisatie,
       voornaam: voornaam,
@@ -561,7 +566,7 @@ const saveBetrokkeneBijContactverzoek = async (
         contactverzoekData?.betrokkene?.persoonsnaam?.achternaam ||
         klant.achternaam;
 
-      const result = await saveBetrokkene({
+      const result = await saveBetrokkene(systemIdentifier, {
         partijId: klant.id,
         klantcontactId: klantcontactId,
         organisatienaam: organisatie,
@@ -577,12 +582,13 @@ const saveBetrokkeneBijContactverzoek = async (
 };
 
 const saveBetrokkeneBijContactmoment = async (
+  systemIdentifier: string,
   vraag: Vraag,
   klantcontactId: string,
 ) => {
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {
-      await saveBetrokkene({
+      await saveBetrokkene(systemIdentifier, {
         partijId: klant.id,
         klantcontactId: klantcontactId,
       });
@@ -591,7 +597,14 @@ const saveBetrokkeneBijContactmoment = async (
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
-  const useKlantInteractiesApi = await useOpenKlant2();
+  const systemen = await fetchSystemen();
+  const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
+  if (!defaultSysteem) {
+    throw new Error("Geen default systeem gevonden");
+  }
+  const systemIdentifier = defaultSysteem.identifier;
+  const useKlantInteractiesApi =
+    defaultSysteem.klantinteractieVersion === klantinteractieVersions.ok2;
 
   const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
   const isAnoniem = !vraag.klanten.some((x) => x.shouldStore && x.klant.id);
@@ -691,7 +704,10 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     let betrokkenenUuids: string[] = [];
 
     // 1 //////////////////////
-    const savedKlantContactResult = await saveKlantContact(vraag);
+    const savedKlantContactResult = await saveKlantContact(
+      systemIdentifier,
+      vraag,
+    );
 
     if (
       savedKlantContactResult.errorMessage ||
@@ -712,6 +728,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     // 3 //////////////////////
     if (isContactverzoek) {
       betrokkenenUuids = await saveBetrokkeneBijContactverzoek(
+        systemIdentifier,
         vraag,
         savedKlantContactId,
         contactverzoekData,
@@ -719,7 +736,11 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     }
 
     if (isNietAnoniemContactmoment) {
-      await saveBetrokkeneBijContactmoment(vraag, savedKlantContactId);
+      await saveBetrokkeneBijContactmoment(
+        systemIdentifier,
+        vraag,
+        savedKlantContactId,
+      );
     }
 
     // 4 ///////////////////////
@@ -732,6 +753,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
               contactverzoekData?.betrokkene?.digitaleAdressen?.length
             ) {
               return saveDigitaleAdressen(
+                systemIdentifier,
                 contactverzoekData.betrokkene.digitaleAdressen,
                 betrokkeneUuid,
               );
@@ -752,6 +774,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     let savedContactverzoekResult: SaveInterneTaakResponseModel | null = null;
     if (isContactverzoek) {
       savedContactverzoekResult = await saveInternetaak(
+        systemIdentifier,
         contactverzoekData?.toelichting ?? "",
         savedKlantContactId,
         actoren,
@@ -815,7 +838,10 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       Object.assign(contactmoment, cvData);
     }
 
-    const savedContactmomentResult = await saveContactmoment(contactmoment);
+    const savedContactmomentResult = await saveContactmoment(
+      systemIdentifier,
+      contactmoment,
+    );
 
     if (
       savedContactmomentResult.errorMessage ||
@@ -834,6 +860,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     if (isContactverzoek && cvData) {
       promises.push(
         saveContactverzoek({
+          systemIdentifier,
           data: cvData,
           contactmomentUrl: savedContactmoment.url,
         }),

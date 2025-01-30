@@ -1,25 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
+namespace Kiss.Bff.Extern.Klantinteracties
 {
     [ApiController]
-    [Route("/api/contactmomenten/{**path}")]
-    public class ContactmomentenProxy(RegistryConfig registryConfig) : ControllerBase
+    [Route("/api/klantinteracties/{**path}")]
+    public class KlantinteractiesProxy(RegistryConfig registryConfig) : ControllerBase
     {
-        private readonly RegistryConfig _registryConfig = registryConfig;
-
         [HttpPost]
         [HttpGet]
         public IActionResult Handle([FromRoute] string path, [FromHeader(Name = "systemIdentifier")] string? systemIdentifier)
         {
-            var registry = string.IsNullOrWhiteSpace(systemIdentifier)
-                ? _registryConfig.Systemen.FirstOrDefault(x => x.IsDefault)?.KlantinteractieRegistry
-                : _registryConfig.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.KlantinteractieRegistry;
+            var registry = registryConfig.GetRegistrySystem(systemIdentifier)?.KlantinteractieRegistry;
 
-            if (registry == null)
-            {
-                return BadRequest();
-            }
+            if (registry == null) return BadRequest("Geen Klantinteractieregister gevonden voor deze systemIdentifier");
 
             return new ProxyResult(() =>
             {
@@ -37,6 +30,6 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
             });
         }
 
-        private Uri GetUri(KlantinteractieRegistry config, string path) => new Uri($"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}?{Request.QueryString}");
+        private Uri GetUri(KlantinteractieRegistry config, string path) => new Uri($"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}{Request.QueryString}");
     }
 }

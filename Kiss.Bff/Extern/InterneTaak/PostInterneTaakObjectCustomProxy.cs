@@ -1,15 +1,15 @@
 ﻿using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Kiss.Bff.InterneTaak
+namespace Kiss.Bff.Extern.InterneTaak
 {
     [ApiController]
-    public class PostInterneTaakCustomProxy : ControllerBase
+    public class PostInterneTaakObjectCustomProxy : ControllerBase
     {
-        private readonly InterneTaakProxyConfig _config;
+        private readonly RegistryConfig _config;
         private readonly GetMedewerkerIdentificatie _getMedewerkerIdentificatie;
 
-        public PostInterneTaakCustomProxy(InterneTaakProxyConfig config, GetMedewerkerIdentificatie getMedewerkerIdentificatie)
+        public PostInterneTaakObjectCustomProxy(RegistryConfig config, GetMedewerkerIdentificatie getMedewerkerIdentificatie)
         {
             _config = config;
             _getMedewerkerIdentificatie = getMedewerkerIdentificatie;
@@ -17,13 +17,17 @@ namespace Kiss.Bff.InterneTaak
 
         [HttpPost]
         [Route("api/internetaak/api/{version}/objects")]
-        public IActionResult Post([FromRoute] string version, [FromBody] JsonObject node)
+        public IActionResult Post([FromRoute] string version, [FromBody] JsonObject node, [FromHeader(Name = "systemIdentifier")] string systemIdentifier)
         {
-            node["type"] = _config.ObjectTypeUrl;
+            var registry = _config.GetRegistrySystem(systemIdentifier)?.InterneTaakRegistry;
+
+            if (registry == null) return BadRequest("Geen Interne Taakregister gevonden voor deze systemIdentifier");
+
+            node["type"] = registry.ObjectTypeUrl;
 
             if (node.TryGetPropertyValue("record", out var record) && record is JsonObject recordObj)
             {
-                recordObj["typeVersion"] = _config.TypeVersion;
+                recordObj["typeVersion"] = registry.ObjectTypeVersion;
 
                 if (recordObj.TryGetPropertyValue("data", out var data) && data is JsonObject dataObj)
                 {
@@ -31,12 +35,12 @@ namespace Kiss.Bff.InterneTaak
                 }
             }
 
-            var url = $"{_config.Destination.TrimEnd('/')}/api/{version}/objects";
+            var url = $"{registry.BaseUrl.TrimEnd('/')}/api/{version}/objects";
 
             return new ProxyResult(() =>
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(node) };
-                _config.ApplyHeaders(request.Headers, ControllerContext.HttpContext.User);
+                registry.ApplyHeaders(request.Headers, ControllerContext.HttpContext.User);
                 return request;
             });
         }

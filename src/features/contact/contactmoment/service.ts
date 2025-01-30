@@ -47,6 +47,7 @@ import {
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { voegContactmomentToeAanZaak } from "@/services/openzaak";
 import { koppelObject } from "@/services/openklant1";
+import { fetchWithSysteemId } from "@/services/fetch-with-systeem-id";
 
 //obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
 const contactmomentenProxyRoot = "/api/contactmomenten";
@@ -58,17 +59,21 @@ const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
 export const saveContactmoment = async (
+  systemIdentifier: string,
   data: Contactmoment,
 ): Promise<SaveContactmomentResponseModel> => {
-  const response = await postContactmoment(data);
+  const response = await postContactmoment(systemIdentifier, data);
   const responseBody = await response.json();
 
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
-const postContactmoment = (data: Contactmoment): Promise<Response> => {
-  return fetchLoggedIn(`/api/postcontactmomenten`, {
+const postContactmoment = (
+  systemIdentifier: string,
+  data: Contactmoment,
+): Promise<Response> => {
+  return fetchWithSysteemId(systemIdentifier, `/api/postcontactmomenten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -221,9 +226,11 @@ export function useContactmomentObject(getUrl: () => string) {
 }
 
 export function saveContactverzoek({
+  systemIdentifier,
   data,
   contactmomentUrl,
 }: {
+  systemIdentifier: string;
   data: Omit<ContactverzoekData, "contactmoment">;
   contactmomentUrl: string;
   klantUrl?: string;
@@ -242,7 +249,7 @@ export function saveContactverzoek({
     },
   };
 
-  return fetchLoggedIn(url, {
+  return fetchWithSysteemId(systemIdentifier, url, {
     method: "POST",
     headers: {
       Accept: "application/json",

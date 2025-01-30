@@ -1,25 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 
-namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
+namespace Kiss.Bff.Extern.InterneTaak
 {
     [ApiController]
-    [Route("/api/contactmomenten/{**path}")]
-    public class ContactmomentenProxy(RegistryConfig registryConfig) : ControllerBase
+    [Route("/api/internetaak/{**path}")]
+    public class InterneTaakObjectsProxy(RegistryConfig registryConfig) : ControllerBase
     {
-        private readonly RegistryConfig _registryConfig = registryConfig;
-
         [HttpPost]
         [HttpGet]
         public IActionResult Handle([FromRoute] string path, [FromHeader(Name = "systemIdentifier")] string? systemIdentifier)
         {
-            var registry = string.IsNullOrWhiteSpace(systemIdentifier)
-                ? _registryConfig.Systemen.FirstOrDefault(x => x.IsDefault)?.KlantinteractieRegistry
-                : _registryConfig.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.KlantinteractieRegistry;
+            var registry = registryConfig.GetRegistrySystem(systemIdentifier)?.InterneTaakRegistry;
 
-            if (registry == null)
-            {
-                return BadRequest();
-            }
+            if (registry == null) return BadRequest("Geen Interne Taakregister gevonden voor deze systemIdentifier");
 
             return new ProxyResult(() =>
             {
@@ -37,6 +31,10 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
             });
         }
 
-        private Uri GetUri(KlantinteractieRegistry config, string path) => new Uri($"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}?{Request.QueryString}");
+        private Uri GetUri(InternetaakRegistry config, string path)
+        {
+            var url = $"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}{Request.QueryString}";
+            return new Uri(url);
+        }
     }
 }
