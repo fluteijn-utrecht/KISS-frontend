@@ -1,6 +1,6 @@
 # Change history
 
-## vX.X.X
+## v0.6.0
 
 ### New features
 
@@ -23,6 +23,7 @@
 - VAC item verwijderen #1008
 - Kan geen tekst selecteren binnen harmonica componenten #945
 - Contactverzoek voor een Medewerker moet gemaild kunnen worden #817
+- title gebruiken ipv eerste in headings bij tonen webpagina in zoekresultaten. #999
 
 ### Warnings and deployment notes
 
@@ -37,6 +38,9 @@ Zie installatiehandleiding voor instructies
 - Afdwingen max token lifetime van /api/contactmomentendetails #915
 - Duidelijker paginering in /api/contactmomentendetails #914
 - Verschillen objecttypes met community concepts wegwerken #986
+- Kommafix m.b.v. afdelingsnamen [PC-652](https://dimpact.atlassian.net/browse/PC-652)
+- E-mailadres komt niet meer mee in contactverzoek naar e-Suite [PC-884](https://dimpact.atlassian.net/browse/PC-884)
+- Contactverzoeken zoeken gaat niet goed om met paginering in response [PC-911](https://dimpact.atlassian.net/browse/)
 
 ### Maintenance
 
