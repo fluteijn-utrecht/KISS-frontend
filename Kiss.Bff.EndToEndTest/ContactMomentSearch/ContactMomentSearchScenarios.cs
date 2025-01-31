@@ -61,9 +61,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step(" Perform the search with a valid BSN");
 
-            var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
-
-            await bsnInput.FillAsync("999992223");
+            await Page.PersonenBsnInput().FillAsync("999992223");
             await Page.PersonenThird_SearchButton().ClickAsync();
 
             await Step("Verify navigation to the Persoonsinformatie page");
