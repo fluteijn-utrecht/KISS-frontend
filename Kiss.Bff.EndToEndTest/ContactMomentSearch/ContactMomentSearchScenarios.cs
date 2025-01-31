@@ -113,12 +113,10 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
 
             await Step("Verify that multiple results are displayed in the table");
-
-            var rowByAddressLine1 = await Page.SearchAddressTableByColumn(huisNummer, 3);           
-            var rowByPostcode = await Page.SearchAddressTableByColumn(postCode, 4);   
-            
-            Assert.IsTrue(await rowByPostcode.CountAsync() > 1);
-            Assert.IsTrue(await rowByAddressLine1.CountAsync() > 1); 
+                      
+            var rowByPostcode = await Page.SearchAddressByPostalAndHuisNummer(postCode,huisNummer);   
+              
+            Assert.IsTrue(await rowByPostcode.CountAsync() > 1); 
         }
 
         
