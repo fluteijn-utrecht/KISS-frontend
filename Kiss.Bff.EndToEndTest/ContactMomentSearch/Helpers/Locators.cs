@@ -27,28 +27,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
         public static ILocator Personen_HuisnummerInput(this IPage page) =>
           page.GetByRole(AriaRole.Textbox, new() { Name = "huisnummer" });
 
-
-       
-
-        public static ILocator GetTableRowByColumnValue(this IPage page, int columnIndex, string value, int tableIndex = 0)
-        {
-            var tableLocator = page.GetByRole(AriaRole.Table).Nth(tableIndex);
-
-            // Ensure the row selection correctly finds rows where the nth-child(td) contains the specified text
-            var rowLocator = tableLocator.Locator($"tbody tr:has(td:nth-child({columnIndex}):has-text(\"{value}\"))");
-
-            return rowLocator;
-        }
-
-        public static ILocator GetRowsByAddress(this IPage page, string addressLine1, string addressLine2, int columnIndex1 = 3, int columnIndex2 = 4)
-        {
-            var tableLocator = page.GetByRole(AriaRole.Table); // Locate the table
-
-            // Fix: Use plain text matching instead of regex
-            return tableLocator.Locator($@"tbody tr:has(td:nth-child({columnIndex1}):has-text(""{addressLine1}""))
-                                    :has(td:nth-child({columnIndex2}):has-text(""{addressLine2}""))");
-        }
-
+        
         public static  async Task<ILocator> SearchAddressTableByColumn(this IPage page, string value, int columnIndex)
         {
             var tableLocator = page.GetByRole(AriaRole.Table);  
