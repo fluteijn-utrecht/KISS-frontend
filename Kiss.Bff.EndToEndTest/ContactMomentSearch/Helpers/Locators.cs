@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading.Tasks; 
 
 namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
 {
@@ -27,15 +27,13 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
         public static ILocator Personen_HuisnummerInput(this IPage page) =>
           page.GetByRole(AriaRole.Textbox, new() { Name = "huisnummer" });
 
-        public static async Task<ILocator> SearchAddressByPostalAndHuisNummer(this IPage page, string postcode, string huisNummer)
-        {
-            var tableLocator = page.GetByRole(AriaRole.Table); // Locate the table
-            await page.WaitForSelectorAsync("tbody tr"); // Ensure table rows are loaded
-
-            // Construct the locator
-            return tableLocator.Locator($"tbody tr:has(td:nth-child(4):has-text(\"{postcode.Trim()}\"))" +
+        public static ILocator SearchAddressByPostalAndHuisNummer(this IPage page, string postcode, string huisNummer)
+        { 
+            return page.GetByRole(AriaRole.Table).Locator($"tbody tr:has(td:nth-child(4):has-text(\"{postcode.Trim()}\"))" +
                                          $":has(td:nth-child(3):has-text(\"{huisNummer.Trim()}\"))");
         }
+        
+       
     }
 
 

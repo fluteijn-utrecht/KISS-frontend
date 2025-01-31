@@ -94,7 +94,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
         }
 
-     
+
         [TestMethod("5. Searching by Postcode and Huisnummer (Valid)")]
         public async Task SearchByPostcodeAndHuisnummer_Valid()
         {
@@ -113,12 +113,11 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
 
             await Step("Verify that multiple results are displayed in the table");
-                      
-            var rowByPostcode = await Page.SearchAddressByPostalAndHuisNummer(postCode,huisNummer);   
-              
-            Assert.IsTrue(await rowByPostcode.CountAsync() > 1); 
-        }
 
+            await Page.GetByRole(AriaRole.Table).WaitForAsync();
+
+            Assert.IsTrue(await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync() > 1);
+        }
         
         [TestMethod("6. Searching by Postcode and Huisnummer (Not Found)")]
         public async Task SearchByPostcodeAndHuisnummer_NotFound()
