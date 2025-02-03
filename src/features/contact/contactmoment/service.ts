@@ -8,10 +8,8 @@ import { fetchLoggedIn } from "@/services";
 
 import {
   type Gespreksresultaat,
-  type Contactmoment,
   type ObjectContactmoment,
   type ContactmomentDetails,
-  type SaveContactmomentResponseModel,
 } from "./types";
 
 import { toRelativeProxyUrl } from "@/helpers/url";
@@ -58,30 +56,7 @@ const contactmomentDetails = "/api/contactmomentdetails";
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
-export const saveContactmoment = async (
-  systemIdentifier: string,
-  data: Contactmoment,
-): Promise<SaveContactmomentResponseModel> => {
-  const response = await postContactmoment(systemIdentifier, data);
-  const responseBody = await response.json();
 
-  throwIfNotOk(response);
-  return { data: responseBody };
-};
-
-const postContactmoment = (
-  systemIdentifier: string,
-  data: Contactmoment,
-): Promise<Response> => {
-  return fetchWithSysteemId(systemIdentifier, `/api/postcontactmomenten`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-};
 
 export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
 
@@ -225,6 +200,7 @@ export function useContactmomentObject(getUrl: () => string) {
   );
 }
 
+//te gebruiken om cotactverzoeken als internetaak op te slaan in een overige objecten register, wanneer er geen regiser compatibel met openklant 2 of hoger beschikbaar is. 
 export function saveContactverzoek({
   systemIdentifier,
   data,
@@ -316,11 +292,11 @@ export function mapContactverzoekData({
 
   const vragenToelichting =
     data.contactVerzoekVragenSet &&
-    data.contactVerzoekVragenSet.vraagAntwoord &&
-    data.contactVerzoekVragenSet.vraagAntwoord.length
+      data.contactVerzoekVragenSet.vraagAntwoord &&
+      data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-          data.contactVerzoekVragenSet.vraagAntwoord,
-        )
+        data.contactVerzoekVragenSet.vraagAntwoord,
+      )
       : "";
 
   let verantwoordelijkheAfdeling = "";
