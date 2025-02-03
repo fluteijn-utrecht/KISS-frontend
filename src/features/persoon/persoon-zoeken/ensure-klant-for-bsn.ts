@@ -1,22 +1,36 @@
 import { ensureKlantForBsn as ensureKlantForBsn1 } from "@/services/openklant1";
-import { findKlantByIdentifier, createKlant as createKlant2 } from "@/services/openklant2";
-import { useOpenKlant2 } from "@/services/openklant2/service";
-import { useOrganisatieIds } from "@/stores/user"; 
+import {
+  findKlantByIdentifier,
+  createKlant as createKlant2,
+} from "@/services/openklant2";
+import {
+  fetchSystemen,
+  klantinteractieVersions,
+} from "@/services/environment/fetch-systemen";
+import { useOrganisatieIds } from "@/stores/user";
 
-export const ensureKlantForBsn = async (
-  parameters: { bsn: string }
-) => {
+export const ensureKlantForBsn = async (parameters: { bsn: string }) => {
+  const systemen = await fetchSystemen();
+  const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
 
-  const isOpenKlant2 = await useOpenKlant2();
+  if (!defaultSysteem) {
+    throw new Error("Geen default register gevonden");
+  }
 
-  if (isOpenKlant2) {
+  const useKlantInteractiesApi =
+    defaultSysteem.klantinteractieVersion === klantinteractieVersions.ok2;
+
+  if (useKlantInteractiesApi) {
     // Gebruik openklant2 implementatie
-    return (await findKlantByIdentifier(parameters)) ?? (await createKlant2(parameters));
+    return (
+      (await findKlantByIdentifier(parameters)) ??
+      (await createKlant2(parameters))
+    );
   } else {
     // Gebruik openklant1 implementatie
     const organisatieIds = useOrganisatieIds();
     const bronorganisatie = organisatieIds.value[0] || "";
-    
+
     return await ensureKlantForBsn1(parameters, bronorganisatie);
   }
 };
