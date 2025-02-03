@@ -4,14 +4,7 @@
     {
         public static IServiceCollection AddRegistryConfig(this IServiceCollection services, IConfiguration configuration)
         {
-            // first check if we can build the registries from the new environment variable format
-            var registries = GetFromNewEnvironmentVariables(configuration).ToList();
-
-            if (registries.Count == 0)
-            {
-                // otherwise, try the old environment variable format
-                registries.AddRange(GetFromOldEnvironmentVariables(configuration));
-            }
+            var registries = GetRegistryConfiguration(configuration).ToList();
 
             // check if we have all the configuration we need
             var statusMessage = Validate(registries);
@@ -37,7 +30,7 @@
         /// <param name="configuration"></param>
         /// <returns></returns>
         /// <exception cref="Exception">Throws when the KLANTINTERACTIE_BASE_URL is missing</exception>
-        private static IEnumerable<RegistrySystem> GetFromNewEnvironmentVariables(IConfiguration configuration)
+        private static IEnumerable<RegistrySystem> GetRegistryConfiguration(IConfiguration configuration)
         {
             var configs = configuration.GetSection("REGISTERS")?.Get<IEnumerable<Dictionary<string, string>>>() ?? [];
 
@@ -73,77 +66,6 @@
                             ObjectTypeUrl = interneTaakObjectTypeUrl,
                             ObjectTypeVersion = GetValue("INTERNE_TAAK_TYPE_VERSION") ?? "1"
                         }
-                };
-            }
-        }
-
-        /// <summary>
-        /// Get the registry config using the new convention of environment variables <br/>
-        /// For example: <br/>
-        /// USE_KLANTINTERACTIES <br/>
-        /// CONTACTMOMENTEN_API_CLIENT_ID <br/>
-        /// </summary>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
-        private static IEnumerable<RegistrySystem> GetFromOldEnvironmentVariables(IConfiguration configuration)
-        {
-            var useKlantInteracties = bool.TryParse(configuration["USE_KLANTINTERACTIES"], out var validBool) && validBool;
-
-            return useKlantInteracties
-                ? GetOpenKlant2(configuration)
-                : GetOpenKlant1(configuration);
-        }
-
-        private static IEnumerable<RegistrySystem> GetOpenKlant1(IConfiguration configuration)
-        {
-            var contactmomentenBaseUrl = configuration["CONTACTMOMENTEN_BASE_URL"];
-            if (!string.IsNullOrWhiteSpace(contactmomentenBaseUrl))
-            {
-                var interneTaakBaseUrl = configuration["INTERNE_TAAK_BASE_URL"];
-                var interneTaakObjectTypeUrl = configuration["INTERNE_TAAK_OBJECT_TYPE_URL"];
-
-
-                yield return new RegistrySystem
-                {
-                    Identifier = contactmomentenBaseUrl,
-                    IsDefault = true,
-                    KlantinteractieVersion = KlantinteractieVersion.OpenKlant1,
-                    KlantinteractieRegistry = new KlantinteractieRegistry
-                    {
-                        BaseUrl = contactmomentenBaseUrl,
-                        ClientId = configuration["CONTACTMOMENTEN_API_CLIENT_ID"],
-                        ClientSecret = configuration["CONTACTMOMENTEN_API_KEY"]
-                    },
-                    InterneTaakRegistry = string.IsNullOrWhiteSpace(interneTaakBaseUrl) || string.IsNullOrWhiteSpace(interneTaakObjectTypeUrl)
-                    ? null
-                    : new InternetaakRegistry
-                    {
-                        BaseUrl = interneTaakBaseUrl,
-                        ClientId = configuration["INTERNE_TAAK_CLIENT_ID"],
-                        ClientSecret = configuration["INTERNE_TAAK_CLIENT_SECRET"],
-                        Token = configuration["INTERNE_TAAK_TOKEN"],
-                        ObjectTypeUrl = interneTaakObjectTypeUrl,
-                        ObjectTypeVersion = configuration["INTERNE_TAAK_TYPE_VERSION"] ?? "1"
-                    }
-                };
-            }
-        }
-
-        private static IEnumerable<RegistrySystem> GetOpenKlant2(IConfiguration configuration)
-        {
-            var contactmomentenBaseUrl = configuration["KLANTINTERACTIES_BASE_URL"];
-            if (!string.IsNullOrWhiteSpace(contactmomentenBaseUrl))
-            {
-                yield return new RegistrySystem
-                {
-                    Identifier = contactmomentenBaseUrl,
-                    IsDefault = true,
-                    KlantinteractieVersion = KlantinteractieVersion.OpenKlant2,
-                    KlantinteractieRegistry = new KlantinteractieRegistry
-                    {
-                        BaseUrl = contactmomentenBaseUrl,
-                        Token = configuration["KLANTINTERACTIES_TOKEN"]
-                    }
                 };
             }
         }
