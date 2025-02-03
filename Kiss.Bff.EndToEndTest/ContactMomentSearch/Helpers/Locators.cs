@@ -34,6 +34,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
         }
         
        
+        public static ILocator PersonenBsnInput(this IPage page) =>
+            page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" }); 
+
     }
 
 

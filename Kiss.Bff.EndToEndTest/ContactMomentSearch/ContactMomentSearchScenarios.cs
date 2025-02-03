@@ -17,15 +17,22 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         {
             await Step("Given the user is on the startpagina");
 
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
             await Page.CreateNewContactmomentAsync();
 
-            await Step("User fills Lastname and Birthday and perform search");
+            await Step("And user enters \"Burck\" in the field achternaam and enters \"17-11-1952\" in the field geboortedatum ");
 
             await Page.Personen_LastNameInput().FillAsync("Burck");
             await Page.Personen_BirthDateInput().FillAsync("17-11-1952");
-            await Page.PersonenFirst_SearchButton().ClickAsync();
 
-            await Step("Verify navigation to the Persoonsinformatie page");
+            await Step("And clicks the search button");
+
+            await Page.PersonenFirst_SearchButton().ClickAsync();
+             
+            await Step("Then user is navigated to Persoonsinformatie page ");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
 
@@ -38,17 +45,24 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step("Given the user is on the startpagina ");
 
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
             await Page.CreateNewContactmomentAsync();
 
-            await Step("User fills Lastname and Birthday and perform search");
+            await Step("And user enters \"TestDB” in the field achternaam and \"11-12-1990” in the field geboortedatum ");
 
             await Page.Personen_LastNameInput().FillAsync("TestDB");
             await Page.Personen_BirthDateInput().FillAsync("11-12-1990");
+
+            await Step("And clicks the search button");
+
             await Page.PersonenFirst_SearchButton().ClickAsync();
 
-            await Step("The message is displayed as “Geen resultaten gevonden voor ’TestDB, 11-12-1990");
-
-            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
+            await Step("Then the message is displayed as “Geen resultaten gevonden voor ’TestDB, 11-12-1990’.");
+           
+            await  Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
 
         }
 
@@ -56,17 +70,22 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         public async Task SearchByBSN_Valid()
         {
             await Step("Given the user is on the startpagina ");
+           
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
 
             await Page.CreateNewContactmomentAsync();
 
-            await Step(" Perform the search with a valid BSN");
+            await Step("And user enters \"999992223\" in the field bsn ");
 
-            var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
+            await Page.PersonenBsnInput().FillAsync("999992223");
 
-            await bsnInput.FillAsync("999992223");
+            await Step("And clicks the search button");
+
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("Verify navigation to the Persoonsinformatie page");
+            await Step("Then user is navigated to Persoonsinformatie page");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
 
@@ -78,19 +97,26 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         {
             await Step("Given the user is on the startpagina ");
 
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
             await Page.CreateNewContactmomentAsync();
 
-            await Step(" Perform the search with a invalid BSN");
+            await Step("And user enters \"123456789\" in the field bsn ");
 
-            var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
+            await Page.PersonenBsnInput().FillAsync("123456789");
 
-            await bsnInput.FillAsync("123456789");
+            await Step("And clicks the search button");
 
             await Page.PersonenThird_SearchButton().ClickAsync();
 
+            await Step("Then the message is displayed as “Dit is geen valide BSN.”");
+             
+            Assert.AreEqual( await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
             await Step("The message is displayed as “Dit is geen valide BSN");
 
-            Assert.AreEqual(await bsnInput.EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
+            Assert.AreEqual(await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
 
         }
 
@@ -100,19 +126,26 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         {
             await Step("Given the user is on the startpagina ");
 
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
             await Page.CreateNewContactmomentAsync();
 
-            await Step("Perform the search with valid postcode and huisnummer");
+            await Step("And user enters \"3544NG\" in the field Postcode and “10” in field Huisnummer");
 
             var postCode = "3544 NG";
             var huisNummer = "10";
 
             await Page.Personen_PostCodeInput().FillAsync(postCode);
             await Page.Personen_HuisnummerInput().FillAsync(huisNummer);
+
+            await Step("And clicks the search button");
+
             await Page.PersonenSecond_SearchButton().ClickAsync();
 
 
-            await Step("Verify that multiple results are displayed in the table");
+            await Step("Then a list of multiple records associated with same huisnummer and postcode is displayed ");
 
             await Page.GetByRole(AriaRole.Table).WaitForAsync();
 
@@ -124,15 +157,22 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         {
             await Step("Given the user is on the startpagina");
 
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
             await Page.CreateNewContactmomentAsync();
          
-            await Step(" Perform the search with non-existent data");
+            await Step("And user enters \"3544NG\" in the field postcode and “11” in field");
            
             await Page.Personen_PostCodeInput().FillAsync("3544 NG");
             await Page.Personen_HuisnummerInput().FillAsync("11");
+
+            await Step("And clicks the search button");
+
             await Page.PersonenSecond_SearchButton().ClickAsync(); 
 
-            await Step("Check for the error message");
+            await Step("Then the message as “Geen resultaten gevonden voor '3544NG, 11'.” is displayed ");
 
             await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor '3544NG, 11'.");
 
