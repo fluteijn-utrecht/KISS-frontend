@@ -179,6 +179,112 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
         }
 
+
+         [TestMethod("7. Searching by Partial Last Name and Date of Birth (Multiple Results)")]
+        public async Task SearchByPartialLastNameAndDOB_MultipleResults()
+        {
+            await Step("Given the user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("And user enters \"Mel\" in the field Achternaam and enters \"12091946\" in the field geboortedatum ");
+
+            await Page.Personen_LastNameInput().FillAsync("Mel");
+            await Page.Personen_BirthDateInput().FillAsync("12091946");
+
+            await Step("And clicks the search button");
+
+            await Page.PersonenFirst_SearchButton().ClickAsync();
+
+            await Step("Then the message as “2 resultaten gevonden voor ' Mel, 12-09-1946 '.” is displayed ");
+
+            await Page.GetByRole(AriaRole.Table).WaitForAsync();
+
+            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("2 resultaten gevonden voor 'Mel, 12-09-1946'.");
+
+            await Step("And a list of two records is displayed");
+
+            await Expect(Page.GetByRole(AriaRole.Table).Locator("tr.row-link")).ToHaveCountAsync(2);
+
+            await Step("One with the value \" Julia Christine Maria Melap\" in column Naam ");
+
+            await Expect(Page.GetByRole(AriaRole.Table).Locator("tr.row-link")      
+                .Nth(0).Locator("th[scope='row']")).ToHaveTextAsync("Julia Christine Maria Melap");
+
+            await Step("And one with value \"Julia Christina Melapatti\" in column Naam ");
+
+            await Expect(Page.GetByRole(AriaRole.Table).Locator("tr.row-link")
+                .Nth(1).Locator("th[scope='row']")).ToHaveTextAsync("Julia Christina Melapatti");
+         
+
+
+
+        }
+
+        [TestMethod("8. Searching by Partial Last Name and Date of Birth (Single Result)")]
+        public async Task SearchByBedrijfsnaam_MultipleRecordsAsync()
+        {
+            await Step("Given the user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item ");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And user enters “Donald” in the field Bedrijfsnaam");
+
+            await Page.Company_BedrijfsnaamInput().FillAsync("Donald");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_FirstSearchButton().ClickAsync();
+
+            await Step("Then the list displays multiple records associated with the name “Donald”.");
+
+            await Page.WaitForSelectorAsync(AriaRole.Table.ToString());
+
+            Assert.IsTrue(await Page.GetByRole(AriaRole.Table).GetByRole(AriaRole.Row).CountAsync() > 1);
+        }
+
+        [TestMethod("9. Search By Bedrijfsnaam Unique Result ")]
+        public async Task SearchByBedrijfsnaam_UniqueResultAsync()
+        {
+            await Step("Given the user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item ");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And user enters “Test Stichting Bolderbast” in the field Bedrijfsnaam");
+
+            await Page.Company_BedrijfsnaamInput().FillAsync("Test Stichting Bolderbast");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_FirstSearchButton().ClickAsync();
+
+            await Step("Then user is navigated to bedrijfsinformatie page");
+
+            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
+        }
+
         #endregion
     }
 }
