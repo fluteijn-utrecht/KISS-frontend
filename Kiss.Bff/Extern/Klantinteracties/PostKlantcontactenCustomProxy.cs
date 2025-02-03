@@ -3,6 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.Extern.Klantinteracties
 {
+    /// <summary>
+    /// Since multiple combinations of registers can be used, 
+    /// it must be determined in real time which register is used for storing contactmomenten (klantcontacten).
+    /// A systemIdentifier header is sent from the client for this purpose.
+    /// This endpoint is used for registries that support the the klantineracties API (openklant 2 or higher).
+    /// A dedicated endpoint is used for contactmomenten instead of the KlantinteractiesProxy because in this case information about the logged in user must be added server side
+    /// </summary>
     [Route("api")]
     [ApiController]
     public class PostKlantContactenCustomProxy : ControllerBase

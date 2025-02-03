@@ -2,6 +2,12 @@
 
 namespace Kiss.Bff.Extern.Klantinteracties
 {
+    /// <summary>
+    /// Since multiple combinations of registers can be used, 
+    /// it must be determined in real time which register should be used for actoren, digialeadressen and betrokkeken.
+    /// A systemIdentifier header is sent from the client for this purpose.
+    /// This endpoint is used for registries that support the klantineracties API (openklant 2 or higher).
+    /// </summary>
     [ApiController]
     [Route("/api/klantinteracties/{**path}")]
     public class KlantinteractiesProxy(RegistryConfig registryConfig) : ControllerBase

@@ -3,6 +3,12 @@ using System.Text.Json.Nodes;
 
 namespace Kiss.Bff.Extern.Klantinteracties
 {
+    /// <summary>
+    /// Since multiple combinations of registers can be used, 
+    /// it must be determined in real time which register is used for storing contactverzoeken (interne taak).
+    /// A systemIdentifier header is sent from the client for this purpose.
+    /// This endpoint is used for registries that support the the klantineracties API (openklant 2 or higher).
+    /// </summary>
     public class PostInterneTaakCustomProxy(RegistryConfig registryConfig) : ControllerBase
     {
         [HttpPost("api/postinternetaak")]
