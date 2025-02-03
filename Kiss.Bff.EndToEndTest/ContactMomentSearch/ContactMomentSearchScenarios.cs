@@ -70,15 +70,22 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         public async Task SearchByBSN_Valid()
         {
             await Step("Given the user is on the startpagina ");
+           
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
 
             await Page.CreateNewContactmomentAsync();
 
-            await Step(" Perform the search with a valid BSN");
+            await Step("And user enters \"999992223\" in the field bsn ");
 
             await Page.PersonenBsnInput().FillAsync("999992223");
+
+            await Step("And clicks the search button");
+
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("Verify navigation to the Persoonsinformatie page");
+            await Step("Then user is navigated to Persoonsinformatie page");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
 
@@ -90,19 +97,23 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         {
             await Step("Given the user is on the startpagina ");
 
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
             await Page.CreateNewContactmomentAsync();
 
-            await Step(" Perform the search with a invalid BSN");
+            await Step("And user enters \"123456789\" in the field bsn ");
 
-            var bsnInput = Page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
+            await Page.PersonenBsnInput().FillAsync("123456789");
 
-            await bsnInput.FillAsync("123456789");
+            await Step("And clicks the search button");
 
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("The message is displayed as “Dit is geen valide BSN");
+            await Step("Then the message is displayed as “Dit is geen valide BSN.”");
              
-            Assert.AreEqual( await bsnInput.EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
+            Assert.AreEqual( await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
 
           }
 
