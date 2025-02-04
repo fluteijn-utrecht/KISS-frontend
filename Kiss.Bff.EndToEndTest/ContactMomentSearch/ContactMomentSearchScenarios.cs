@@ -35,10 +35,10 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to Persoonsinformatie page ");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
-        
+
         }
 
-        
+
         [TestMethod("2. Searching by Last Name and Date of Birth (Not Found)")]
         public async Task SearchByLastNameAndDOB_NotFoundAsync()
         {
@@ -65,7 +65,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await  Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
 
         }
-        
+
         [TestMethod("3. Searching by BSN (Valid)")]
         public async Task SearchByBSN_Valid()
         {
@@ -111,11 +111,72 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("Then the message is displayed as “Dit is geen valide BSN.”");
-             
-            Assert.AreEqual( await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
+            await Step("Then the message is displayed as “Dit is geen valide BSN.”"); 
 
-          }
+            Assert.AreEqual(await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
+
+        }
+
+
+        [TestMethod("5. Searching by Postcode and Huisnummer (Valid)")]
+        public async Task SearchByPostcodeAndHuisnummer_Valid()
+        {
+            await Step("Given the user is on the startpagina ");
+
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("And user enters \"3544NG\" in the field Postcode and “10” in field Huisnummer");
+
+            var postCode = "3544 NG";
+            var huisNummer = "10";
+
+            await Page.Personen_PostCodeInput().FillAsync(postCode);
+            await Page.Personen_HuisnummerInput().FillAsync(huisNummer);
+
+            await Step("And clicks the search button");
+
+            await Page.PersonenSecond_SearchButton().ClickAsync();
+
+
+            await Step("Then a list of multiple records associated with same huisnummer and postcode is displayed ");
+             
+            await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
+
+            var resultCount = await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync();
+
+            Assert.IsTrue(resultCount > 1, $"Expected there to be multiple records associated with postCode {postCode} and huisNummer {huisNummer}, but found {resultCount}.");
+        }
+        
+        [TestMethod("6. Searching by Postcode and Huisnummer (Not Found)")]
+        public async Task SearchByPostcodeAndHuisnummer_NotFound()
+        {
+            await Step("Given the user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("When user starts a new contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+         
+            await Step("And user enters \"3544NG\" in the field postcode and “11” in field");
+           
+            await Page.Personen_PostCodeInput().FillAsync("3544 NG");
+            await Page.Personen_HuisnummerInput().FillAsync("11");
+
+            await Step("And clicks the search button");
+
+            await Page.PersonenSecond_SearchButton().ClickAsync(); 
+
+            await Step("Then the message as “Geen resultaten gevonden voor '3544NG, 11'.” is displayed ");
+
+            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor '3544NG, 11'.");
+
+
+        }
 
         #endregion
     }
