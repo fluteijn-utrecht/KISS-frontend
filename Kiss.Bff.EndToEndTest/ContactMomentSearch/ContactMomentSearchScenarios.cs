@@ -146,7 +146,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Page.GetByRole(AriaRole.Table).WaitForAsync();
 
-            Assert.IsTrue(await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync() > 1);
+            var resultCount = await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync();
+
+            Assert.IsTrue(resultCount > 1, $"Expected there to be multiple records associated with postCode {postCode} and huisNummer {huisNummer}, but found {resultCount}.");
         }
         
         [TestMethod("6. Searching by Postcode and Huisnummer (Not Found)")]
