@@ -148,7 +148,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             var resultCount = await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync();
 
-            Assert.IsTrue(resultCount > 1, $"Expected there to be multiple records associated with postCode {postCode} and huisNummer {huisNummer}, but found {resultCount}.");
+            Assert.IsTrue(resultCount > 2, $"Expected there to be multiple records associated with postCode {postCode} and huisNummer {huisNummer}, but found {resultCount}.");
         }
         
         [TestMethod("6. Searching by Postcode and Huisnummer (Not Found)")]
@@ -241,7 +241,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step("And user enters “Donald” in the field Bedrijfsnaam");
 
-            await Page.Company_BedrijfsnaamInput().FillAsync("Donald");
+            var lastName = "Donald";
+
+            await Page.Company_BedrijfsnaamInput().FillAsync(lastName);
 
             await Step("And clicks the search button");
 
@@ -251,7 +253,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
 
-            Assert.IsTrue(await Page.GetByRole(AriaRole.Table).GetByRole(AriaRole.Row).CountAsync() > 1);
+            var resultCount = await Page.GetByRole(AriaRole.Table).GetByRole(AriaRole.Row).CountAsync();
+
+            Assert.IsTrue(resultCount > 2, $"Expected multiple records associated with the last name '{lastName}', but found {resultCount}.");
         }
 
         [TestMethod("9. Search By Bedrijfsnaam Unique Result ")]
