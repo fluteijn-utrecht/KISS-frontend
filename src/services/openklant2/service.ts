@@ -30,6 +30,11 @@ import {
 import type { ContactverzoekData } from "../../features/contact/components/types";
 import type { Klant } from "../openklant/types";
 import type { Vraag } from "@/stores/contactmoment";
+import {
+  fetchSystemen,
+  klantinteractieVersions,
+} from "../environment/fetch-systemen";
+import { fetchWithSysteemId } from "../fetch-with-systeem-id";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -165,7 +170,10 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
   return value;
 }
 
-export function fetchBetrokkenen(params: { wasPartij__url: string, pageSize: string }) {
+export function fetchBetrokkenen(params: {
+  wasPartij__url: string;
+  pageSize: string;
+}) {
   const query = new URLSearchParams(params);
   return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
     .then(throwIfNotOk)
@@ -195,24 +203,27 @@ export function searchDigitaleAdressen({
     .then((r) => parsePagination(r, (x) => x as DigitaalAdresApiViewModel));
 }
 
-export function saveBetrokkene({
-  partijId,
-  klantcontactId,
-  organisatienaam,
-  voornaam,
-  voorvoegselAchternaam,
-  achternaam,
-}: {
-  partijId?: string;
-  klantcontactId: string;
-  organisatienaam?: string;
-  voornaam?: string;
-  voorvoegselAchternaam?: string;
-  achternaam?: string;
-}): Promise<{ uuid: string }> {
+export function saveBetrokkene(
+  systemIdentifier: string,
+  {
+    partijId,
+    klantcontactId,
+    organisatienaam,
+    voornaam,
+    voorvoegselAchternaam,
+    achternaam,
+  }: {
+    partijId?: string;
+    klantcontactId: string;
+    organisatienaam?: string;
+    voornaam?: string;
+    voorvoegselAchternaam?: string;
+    achternaam?: string;
+  },
+): Promise<{ uuid: string }> {
   const voorletters = voornaam ? voornaam.charAt(0) : undefined;
 
-  return fetchLoggedIn(klantinteractiesBetrokkenen, {
+  return fetchWithSysteemId(systemIdentifier, klantinteractiesBetrokkenen, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -241,6 +252,7 @@ export function saveBetrokkene({
 }
 
 export const saveInternetaak = async (
+  systemIdentifier: string,
   toelichting: string,
   contactmomentId: string,
   actorenIds: string[],
@@ -269,15 +281,18 @@ export const saveInternetaak = async (
 
   const interneTaak = createInternetaakPostModel(contactmomentId, actorenIds);
 
-  const response = await postInternetaak(interneTaak);
+  const response = await postInternetaak(systemIdentifier, interneTaak);
   const responseBody = await response.json();
 
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
-const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
-  return fetchLoggedIn(`/api/postinternetaak`, {
+const postInternetaak = (
+  systemIdentifier: string,
+  data: InternetaakPostModel,
+): Promise<Response> => {
+  return fetchWithSysteemId(systemIdentifier, `/api/postinternetaak`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -423,6 +438,7 @@ export async function postActor({
 }
 
 export const saveKlantContact = async (
+  systemIdentifier: string,
   vraag: Vraag,
 ): Promise<SaveKlantContactResponseModel> => {
   const klantcontactPostModel: KlantContactPostmodel = {
@@ -442,15 +458,21 @@ export const saveKlantContact = async (
     plaatsgevondenOp: new Date().toISOString(),
   };
 
-  const response = await postKlantContact(klantcontactPostModel);
+  const response = await postKlantContact(
+    systemIdentifier,
+    klantcontactPostModel,
+  );
   const responseBody = await response.json();
 
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
-const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
-  return fetchLoggedIn(`/api/postklantcontacten`, {
+const postKlantContact = (
+  systemIdentifier: string,
+  data: KlantContactPostmodel,
+): Promise<Response> => {
+  return fetchWithSysteemId(systemIdentifier, `/api/postklantcontacten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -461,6 +483,7 @@ const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
 };
 
 export const saveDigitaleAdressen = async (
+  systemIdentifier: string,
   digitaleAdressen: DigitaalAdresApiViewModel[],
   verstrektDoorBetrokkeneUuid: string,
 ): Promise<Array<{ uuid: string; url: string }>> => {
@@ -475,28 +498,35 @@ export const saveDigitaleAdressen = async (
       omschrijving: adres.omschrijving || "onbekend",
     };
 
-    const savedAdres = await postDigitaalAdres(postBody);
+    const savedAdres = await postDigitaalAdres(systemIdentifier, postBody);
     savedAdressen.push(savedAdres);
   }
 
   return savedAdressen;
 };
 
-const postDigitaalAdres = async (data: {
-  verstrektDoorBetrokkene: { uuid: string };
-  verstrektDoorPartij?: { uuid: string } | null;
-  adres: string;
-  soortDigitaalAdres: DigitaalAdresTypes | undefined;
-  omschrijving: string;
-}): Promise<{ uuid: string; url: string }> => {
-  const response = await fetchLoggedIn(klantinteractiesDigitaleadressen, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+const postDigitaalAdres = async (
+  systemIdentifier: string,
+  data: {
+    verstrektDoorBetrokkene: { uuid: string };
+    verstrektDoorPartij?: { uuid: string } | null;
+    adres: string;
+    soortDigitaalAdres: DigitaalAdresTypes | undefined;
+    omschrijving: string;
+  },
+): Promise<{ uuid: string; url: string }> => {
+  const response = await fetchWithSysteemId(
+    systemIdentifier,
+    klantinteractiesDigitaleadressen,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     },
-    body: JSON.stringify(data),
-  });
+  );
 
   const responseBody = await response.json();
   throwIfNotOk(response);
@@ -517,18 +547,18 @@ export const fetchKlantByIdOk2 = (uuid: string) => {
 export function findKlantByIdentifier(
   query:
     | {
-      vestigingsnummer: string;
-    }
+        vestigingsnummer: string;
+      }
     | {
-      rsin: string;
-      kvkNummer?: string;
-    }
+        rsin: string;
+        kvkNummer?: string;
+      }
     | {
-      bsn: string;
-    }
+        bsn: string;
+      }
     | {
-      kvkNummer: string;
-    },
+        kvkNummer: string;
+      },
 ): Promise<Klant | null> {
   const expand = "digitaleAdressen";
   let soortPartij,
@@ -577,18 +607,18 @@ export function findKlantByIdentifier(
 export async function createKlant(
   parameters:
     | {
-      vestigingsnummer: string;
-    }
+        vestigingsnummer: string;
+      }
     | {
-      rsin: string;
-      kvkNummer?: string;
-    }
+        rsin: string;
+        kvkNummer?: string;
+      }
     | {
-      bsn: string;
-    }
+        bsn: string;
+      }
     | {
-      kvkNummer: string;
-    },
+        kvkNummer: string;
+      },
 ) {
   let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
   if ("bsn" in parameters) {
@@ -746,13 +776,13 @@ async function mapPartijToKlant(
 export function searchKlantenByDigitaalAdres(
   query:
     | {
-      telefoonnummer: string;
-      partijType: PartijTypes;
-    }
+        telefoonnummer: string;
+        partijType: PartijTypes;
+      }
     | {
-      email: string;
-      partijType: PartijTypes;
-    },
+        email: string;
+        partijType: PartijTypes;
+      },
 ) {
   let key: DigitaalAdresTypes, value: string;
 
@@ -810,13 +840,15 @@ export function searchKlantenByDigitaalAdres(
   );
 }
 
-export async function useOpenKlant2() {
-  // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
-  // Fetch USE_KLANTCONTACTEN environment variable, wordt in sommige gevallen vervangen door flow te bepalen op basis van zaken
-  const response = await fetch("/api/environment/use-klantinteracties");
-  const { useKlantInteracties } = await response.json();
-  return useKlantInteracties as boolean;
-}
+/** bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
+ * @deprecated use fetchSystemen in stead
+ */
+export const useOpenKlant2 = () =>
+  fetchSystemen().then(
+    (systemen) =>
+      systemen.find((x) => x.isDefault)?.klantinteractieVersion ===
+      klantinteractieVersions.ok2,
+  );
 
 export const postOnderwerpobject = async (data: OnderwerpObjectPostModel) => {
   const response = await fetchLoggedIn(

@@ -9,15 +9,16 @@ import {
   type ServiceData,
 } from "@/services";
 import { mutate } from "swrv";
-import type { ContactmomentObject, UpdateContactgegevensParams } from "./types";
+import type { ContactmomentObject, SaveContactmomentResponseModel, UpdateContactgegevensParams } from "./types";
 import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant1 } from "./types";
 import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven.js";
 import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../openklant2/types.js";
-import type { Klant } from "../openklant/types";
+import type { Contactmoment, Klant } from "../openklant/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
+import { fetchWithSysteemId } from "../fetch-with-systeem-id";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
@@ -436,11 +437,11 @@ export const koppelObject = (data: ContactmomentObject) =>
 
 const nullForStatusCodes =
   (...statusCodes: number[]) =>
-  (r: Response) => {
-    if (statusCodes.includes(r.status)) return null;
-    throwIfNotOk(r);
-    return r;
-  };
+    (r: Response) => {
+      if (statusCodes.includes(r.status)) return null;
+      throwIfNotOk(r);
+      return r;
+    };
 
 export async function enrichContactverzoekObjectWithContactmoment(
   contactverzoekObject: any,
@@ -497,3 +498,30 @@ function fetchObjectsByContactmomentUrl(url: string) {
     .then((r) => r?.json())
     .then((x) => parsePagination(x, (o) => o as unknown));
 }
+
+
+
+export const saveContactmoment = async (
+  systemIdentifier: string,
+  data: Contactmoment,
+): Promise<SaveContactmomentResponseModel> => {
+  const response = await postContactmoment(systemIdentifier, data);
+  const responseBody = await response.json();
+
+  throwIfNotOk(response);
+  return { data: responseBody };
+};
+
+const postContactmoment = (
+  systemIdentifier: string,
+  data: Contactmoment,
+): Promise<Response> => {
+  return fetchWithSysteemId(systemIdentifier, `/api/postcontactmomenten`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+};
