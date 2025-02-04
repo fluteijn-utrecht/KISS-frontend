@@ -8,9 +8,8 @@ using Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers;
 namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 {
     [TestClass]
-    public class ContactMomentSearchScenarios : KissPlaywrightTest
+    internal class SearchPersonScenarios : KissPlaywrightTest
     {
-        #region Test Cases
 
         [TestMethod("1. Searching by Last Name and Date of Birth (Valid)")]
         public async Task SearchByLastNameAndDOB_ValidAsync()
@@ -31,7 +30,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("And clicks the search button");
 
             await Page.PersonenFirst_SearchButton().ClickAsync();
-             
+
             await Step("Then user is navigated to Persoonsinformatie page ");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Persoonsinformatie" })).ToHaveTextAsync("Persoonsinformatie");
@@ -61,8 +60,8 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Page.PersonenFirst_SearchButton().ClickAsync();
 
             await Step("Then the message is displayed as “Geen resultaten gevonden voor ’TestDB, 11-12-1990’.");
-           
-            await  Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
+
+            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'TestDB, 11-12-1990'.");
 
         }
 
@@ -70,7 +69,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         public async Task SearchByBSN_Valid()
         {
             await Step("Given the user is on the startpagina ");
-           
+
             await Page.GotoAsync("/");
 
             await Step("When user starts a new contactmoment");
@@ -111,7 +110,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("Then the message is displayed as “Dit is geen valide BSN.”"); 
+            await Step("Then the message is displayed as “Dit is geen valide BSN.”");
 
             Assert.AreEqual(await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
 
@@ -143,14 +142,14 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
 
             await Step("Then a list of multiple records associated with same huisnummer and postcode is displayed ");
-             
+
             await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
 
             var resultCount = await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync();
 
             Assert.IsTrue(resultCount > 2, $"Expected there to be multiple records associated with postCode {postCode} and huisNummer {huisNummer}, but found {resultCount}.");
         }
-        
+
         [TestMethod("6. Searching by Postcode and Huisnummer (Not Found)")]
         public async Task SearchByPostcodeAndHuisnummer_NotFound()
         {
@@ -161,15 +160,15 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("When user starts a new contactmoment");
 
             await Page.CreateNewContactmomentAsync();
-         
+
             await Step("And user enters \"3544NG\" in the field postcode and “11” in field");
-           
+
             await Page.Personen_PostCodeInput().FillAsync("3544 NG");
             await Page.Personen_HuisnummerInput().FillAsync("11");
 
             await Step("And clicks the search button");
 
-            await Page.PersonenSecond_SearchButton().ClickAsync(); 
+            await Page.PersonenSecond_SearchButton().ClickAsync();
 
             await Step("Then the message as “Geen resultaten gevonden voor '3544NG, 11'.” is displayed ");
 
@@ -179,7 +178,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
         }
 
 
-         [TestMethod("7. Searching by Partial Last Name and Date of Birth (Multiple Results)")]
+        [TestMethod("7. Searching by Partial Last Name and Date of Birth (Multiple Results)")]
         public async Task SearchByPartialLastNameAndDOB_MultipleResults()
         {
             await Step("Given the user is on the startpagina");
@@ -211,83 +210,18 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step("One with the value \" Julia Christine Maria Melap\" in column Naam ");
 
-            await Expect(Page.GetByRole(AriaRole.Table).Locator("tr.row-link")      
+            await Expect(Page.GetByRole(AriaRole.Table).Locator("tr.row-link")
                 .Nth(0).Locator("th[scope='row']")).ToHaveTextAsync("Julia Christine Maria Melap");
 
             await Step("And one with value \"Julia Christina Melapatti\" in column Naam ");
 
             await Expect(Page.GetByRole(AriaRole.Table).Locator("tr.row-link")
                 .Nth(1).Locator("th[scope='row']")).ToHaveTextAsync("Julia Christina Melapatti");
-         
+
 
 
 
         }
 
-        [TestMethod("8. Searching by Partial Last Name and Date of Birth (Single Result)")]
-        public async Task SearchByBedrijfsnaam_MultipleRecordsAsync()
-        {
-            await Step("Given the user is on the startpagina");
-
-            await Page.GotoAsync("/");
-
-            await Step("When user starts a new contactmoment");
-
-            await Page.CreateNewContactmomentAsync();
-
-            await Step("When user clicks Bedrijf from the menu item ");
-
-            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
-
-            await Step("And user enters “Donald” in the field Bedrijfsnaam");
-
-            var lastName = "Donald";
-
-            await Page.Company_BedrijfsnaamInput().FillAsync(lastName);
-
-            await Step("And clicks the search button");
-
-            await Page.Company_FirstSearchButton().ClickAsync();
-
-            await Step("Then the list displays multiple records associated with the name “Donald”.");
-
-            await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
-
-            var resultCount = await Page.GetByRole(AriaRole.Table).GetByRole(AriaRole.Row).CountAsync();
-
-            Assert.IsTrue(resultCount > 2, $"Expected multiple records associated with the last name '{lastName}', but found {resultCount}.");
-        }
-
-        [TestMethod("9. Search By Bedrijfsnaam Unique Result ")]
-        public async Task SearchByBedrijfsnaam_UniqueResultAsync()
-        {
-            await Step("Given the user is on the startpagina");
-
-            await Page.GotoAsync("/");
-
-            await Step("When user starts a new contactmoment");
-
-            await Page.CreateNewContactmomentAsync();
-
-            await Step("When user clicks Bedrijf from the menu item ");
-
-            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
-
-            await Step("And user enters “Test Stichting Bolderbast” in the field Bedrijfsnaam");
-
-            await Page.Company_BedrijfsnaamInput().FillAsync("Test Stichting Bolderbast");
-
-            await Step("And clicks the search button");
-
-            await Page.Company_FirstSearchButton().ClickAsync();
-
-            await Step("Then user is navigated to bedrijfsinformatie page");
-
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
-
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
-        }
-
-        #endregion
     }
 }
