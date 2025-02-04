@@ -17,9 +17,14 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
 
          public static ILocator PersonenFirst_SearchButton(this IPage page) =>
             page.Locator("form").Filter(new () { HasText = "Achternaam Geboortedatum" }).GetByRole(AriaRole.Button);
-          
-     }
 
-    
+        public static ILocator PersonenThird_SearchButton(this IPage page) =>
+            page.Locator("form").Filter(new() { HasText = "Bsn Zoeken" }).GetByRole(AriaRole.Button);
+        public static ILocator PersonenBsnInput(this IPage page) =>
+            page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" }); 
+
+    }
+
+
 }
 
