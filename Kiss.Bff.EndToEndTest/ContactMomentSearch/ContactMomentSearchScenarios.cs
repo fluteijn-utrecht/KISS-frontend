@@ -143,8 +143,8 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
 
             await Step("Then a list of multiple records associated with same huisnummer and postcode is displayed ");
-
-            await Page.GetByRole(AriaRole.Table).WaitForAsync();
+             
+            await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
 
             var resultCount = await Page.SearchAddressByPostalAndHuisNummer(postCode, huisNummer).CountAsync();
 
