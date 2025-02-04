@@ -249,7 +249,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step("Then the list displays multiple records associated with the name “Donald”.");
 
-            await Page.WaitForSelectorAsync(AriaRole.Table.ToString());
+            await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
 
             Assert.IsTrue(await Page.GetByRole(AriaRole.Table).GetByRole(AriaRole.Row).CountAsync() > 1);
         }
@@ -279,7 +279,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Step("Then user is navigated to bedrijfsinformatie page");
 
-            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
         }
