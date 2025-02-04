@@ -111,10 +111,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Page.PersonenThird_SearchButton().ClickAsync();
 
-            await Step("Then the message is displayed as “Dit is geen valide BSN.”");
-             
-            Assert.AreEqual( await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
-            await Step("The message is displayed as “Dit is geen valide BSN");
+            await Step("Then the message is displayed as “Dit is geen valide BSN.”"); 
 
             Assert.AreEqual(await Page.PersonenBsnInput().EvaluateAsync<string>("(el) => el.validationMessage"), "Dit is geen valide BSN.");
 
