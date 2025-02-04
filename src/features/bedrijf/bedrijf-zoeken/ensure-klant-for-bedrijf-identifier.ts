@@ -20,7 +20,7 @@ export const ensureKlantForBedrijfIdentifier = async (
       systeemId,
       klantbedrijfidentifier,
     );
-    return klant ?? (await createKlant(klantbedrijfidentifier));
+    return klant ?? (await createKlant(systeemId, klantbedrijfidentifier));
   } else {
     const mappedIdentifier = mapBedrijfsIdentifier(klantbedrijfidentifier);
     const organisatieIds = useOrganisatieIds();
