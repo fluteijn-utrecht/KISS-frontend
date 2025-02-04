@@ -535,16 +535,17 @@ const postDigitaalAdres = async (
 
 //-----------------------------------------------------------------------------------------------------------
 
-export const fetchKlantByIdOk2 = (uuid: string) => {
+export const fetchKlantByIdOk2 = (systeemId: string, uuid: string) => {
   return fetchLoggedIn(
     `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`,
   )
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(mapPartijToKlant);
+    .then((partij) => mapPartijToKlant(systeemId, partij));
 };
 
 export function findKlantByIdentifier(
+  systeemId: string,
   query:
     | {
         vestigingsnummer: string;
@@ -597,14 +598,20 @@ export function findKlantByIdentifier(
     partijIdentificator__objectId,
   });
 
-  return fetchLoggedIn(`${klantinteractiesBaseUrl}/partijen?${searchParams}`)
+  return fetchWithSysteemId(
+    systeemId,
+    `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((r) => parsePagination(r, (x) => mapPartijToKlant(x as Partij)))
+    .then((r) =>
+      parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+    )
     .then(enforceOneOrZero);
 }
 
 export async function createKlant(
+  systeemId: string,
   parameters:
     | {
         vestigingsnummer: string;
@@ -649,7 +656,11 @@ export async function createKlant(
 
   if (!partijIdentificator) throw new Error("");
 
-  const partij = await createPartij(partijIdentificatie, soortPartij);
+  const partij = await createPartij(
+    systeemId,
+    partijIdentificatie,
+    soortPartij,
+  );
 
   const identificators = [
     await createPartijIdentificator({
@@ -675,7 +686,7 @@ export async function createKlant(
     identificators.push(kvkIdentificator);
   }
 
-  return mapPartijToKlant(partij, identificators);
+  return mapPartijToKlant(systeemId, partij, identificators);
 }
 
 const createPartijIdentificator = (body: {
@@ -697,16 +708,20 @@ const createPartijIdentificator = (body: {
     .then(throwIfNotOk)
     .then(parseJson);
 
-const getPartijIdentificator = (uuid: string) =>
-  fetchLoggedIn(klantinteractiesBaseUrl + "/partij-identificatoren/" + uuid)
+const getPartijIdentificator = (systeemId: string, uuid: string) =>
+  fetchWithSysteemId(
+    systeemId,
+    klantinteractiesBaseUrl + "/partij-identificatoren/" + uuid,
+  )
     .then(throwIfNotOk)
     .then(parseJson);
 
 function createPartij(
+  systeemId: string,
   partijIdentificatie: { naam: string } | { contactnaam: Contactnaam | null },
   soortPartij: PartijTypes,
 ) {
-  return fetchLoggedIn(klantinteractiesBaseUrl + "/partijen", {
+  return fetchWithSysteemId(systeemId, klantinteractiesBaseUrl + "/partijen", {
     body: JSON.stringify({
       digitaleAdressen: [],
       betrokkenen: [],
@@ -731,12 +746,13 @@ function createPartij(
 }
 
 async function mapPartijToKlant(
+  systeemId: string,
   partij: Partij,
   identificatoren?: any[],
 ): Promise<Klant> {
   if (!identificatoren?.length) {
     const promises = partij.partijIdentificatoren.map(({ uuid }) =>
-      getPartijIdentificator(uuid),
+      getPartijIdentificator(systeemId, uuid),
     );
     identificatoren = await Promise.all(promises);
   }
@@ -773,72 +789,72 @@ async function mapPartijToKlant(
   return ret;
 }
 
-export function searchKlantenByDigitaalAdres(
-  query:
-    | {
-        telefoonnummer: string;
-        partijType: PartijTypes;
-      }
-    | {
-        email: string;
-        partijType: PartijTypes;
-      },
-) {
-  let key: DigitaalAdresTypes, value: string;
+// export function searchKlantenByDigitaalAdres(
+//   query:
+//     | {
+//         telefoonnummer: string;
+//         partijType: PartijTypes;
+//       }
+//     | {
+//         email: string;~
+//         partijType: PartijTypes;
+//       },
+// ) {
+//   let key: DigitaalAdresTypes, value: string;
 
-  if ("telefoonnummer" in query) {
-    key = DigitaalAdresTypes.telefoonnummer;
-    value = query.telefoonnummer;
-  } else {
-    key = DigitaalAdresTypes.email;
-    value = query.email;
-  }
+//   if ("telefoonnummer" in query) {
+//     key = DigitaalAdresTypes.telefoonnummer;
+//     value = query.telefoonnummer;
+//   } else {
+//     key = DigitaalAdresTypes.email;
+//     value = query.email;
+//   }
 
-  const searchParams = new URLSearchParams();
-  searchParams.append("verstrektDoorPartij__soortPartij", query.partijType);
-  searchParams.append("soortDigitaalAdres", key);
-  searchParams.append("adres__icontains", value);
+//   const searchParams = new URLSearchParams();
+//   searchParams.append("verstrektDoorPartij__soortPartij", query.partijType);
+//   searchParams.append("soortDigitaalAdres", key);
+//   searchParams.append("adres__icontains", value);
 
-  const url = klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
+//   const url = klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
 
-  return (
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then(
-        ({
-          results,
-        }: {
-          results: { verstrektDoorPartij: { uuid: string } }[];
-        }) => {
-          const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
-          const uniquePartijIds = [...new Set(partijIds)];
-          const promises = uniquePartijIds.map(fetchKlantByIdOk2);
-          return Promise.all(promises);
-        },
-      )
-      // TIJDELIJK: de filters werken nog niet in OpenKlant 2.1, dat komt in een nieuwe release
-      // daarom filteren we hier handmatig
-      .then((klanten) =>
-        klanten.filter((klant) => {
-          const isBedrijf =
-            !!klant.kvkNummer || !!klant.vestigingsnummer || !!klant.rsin;
-          if (!isBedrijf) return false;
-          const matchesEmail =
-            key === DigitaalAdresTypes.email &&
-            klant.emailadressen.some((adres: string | string[]) =>
-              adres.includes(value),
-            );
-          const matchesTelefoon =
-            key === DigitaalAdresTypes.telefoonnummer &&
-            klant.telefoonnummers.some((adres: string | string[]) =>
-              adres.includes(value),
-            );
-          return matchesEmail || matchesTelefoon;
-        }),
-      )
-  );
-}
+//   return (
+//     fetchLoggedIn(url)
+//       .then(throwIfNotOk)
+//       .then(parseJson)
+//       .then(
+//         ({
+//           results,
+//         }: {
+//           results: { verstrektDoorPartij: { uuid: string } }[];
+//         }) => {
+//           const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
+//           const uniquePartijIds = [...new Set(partijIds)];
+//           const promises = uniquePartijIds.map(fetchKlantByIdOk2);
+//           return Promise.all(promises);
+//         },
+//       )
+//       // TIJDELIJK: de filters werken nog niet in OpenKlant 2.1, dat komt in een nieuwe release
+//       // daarom filteren we hier handmatig
+//       .then((klanten) =>
+//         klanten.filter((klant) => {
+//           const isBedrijf =
+//             !!klant.kvkNummer || !!klant.vestigingsnummer || !!klant.rsin;
+//           if (!isBedrijf) return false;
+//           const matchesEmail =
+//             key === DigitaalAdresTypes.email &&
+//             klant.emailadressen.some((adres: string | string[]) =>
+//               adres.includes(value),
+//             );
+//           const matchesTelefoon =
+//             key === DigitaalAdresTypes.telefoonnummer &&
+//             klant.telefoonnummers.some((adres: string | string[]) =>
+//               adres.includes(value),
+//             );
+//           return matchesEmail || matchesTelefoon;
+//         }),
+//       )
+//   );
+// }
 
 /** bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
  * @deprecated use fetchSystemen in stead
@@ -909,3 +925,5 @@ export function fetchKlantcontacten({
       parsePagination(r, (x) => x as ExpandedKlantContactApiViewmodel),
     );
 }
+
+export { fetchWithSysteemId };

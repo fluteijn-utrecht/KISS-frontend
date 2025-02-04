@@ -2,31 +2,20 @@ import { ServiceResult } from "@/services";
 import type { Ref } from "vue";
 import { fetchKlantByIdOk2 } from "@/services/openklant2";
 import { fetchKlantByIdOk1 } from "@/services/openklant1";
+import { getRegisterDetails } from "@/features/shared/systeemdetails"; // Nieuwe methode om interacties API te bepalen
 
-export const useKlantById = (
-  id: Ref<string>,
-  gebruikKlantInteractiesApi: Ref<boolean | null>,
-) => {
-  const getApiSpecifickUrl = () => {
-    if (gebruikKlantInteractiesApi.value === null) {
-      return "";
-    }
+export const useKlantById = (id: Ref<string>) => {
+  const getApiSpecifiekUrl = () => id.value || "";
 
-    return id.value;
+  const fetchKlant = async (url: string) => {
+    if (!url) return null;
+
+    const { useKlantInteractiesApi, systeemId } = await getRegisterDetails();
+
+    return useKlantInteractiesApi
+      ? fetchKlantByIdOk2(systeemId, url)
+      : fetchKlantByIdOk1(url);
   };
 
-  const fetchKlant = (
-    url: string,
-    gebruikKlantinteractiesApi: Ref<boolean | null>,
-  ) => {
-    if (gebruikKlantinteractiesApi.value) {
-      return fetchKlantByIdOk2(url);
-    } else {
-      return fetchKlantByIdOk1(url);
-    }
-  };
-
-  return ServiceResult.fromFetcher(getApiSpecifickUrl, (u: string) =>
-    fetchKlant(u, gebruikKlantInteractiesApi),
-  );
+  return ServiceResult.fromFetcher(getApiSpecifiekUrl, fetchKlant);
 };
