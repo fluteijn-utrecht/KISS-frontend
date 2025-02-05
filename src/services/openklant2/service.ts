@@ -30,10 +30,7 @@ import {
 import type { ContactverzoekData } from "../../features/contact/components/types";
 import type { Klant } from "../openklant/types";
 import type { Vraag } from "@/stores/contactmoment";
-import {
-  fetchSystemen,
-  klantinteractieVersions,
-} from "../environment/fetch-systemen";
+import { fetchSystemen, registryVersions } from "../environment/fetch-systemen";
 import { fetchWithSysteemId } from "../fetch-with-systeem-id";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
@@ -862,8 +859,8 @@ async function mapPartijToKlant(
 export const useOpenKlant2 = () =>
   fetchSystemen().then(
     (systemen) =>
-      systemen.find((x) => x.isDefault)?.klantinteractieVersion ===
-      klantinteractieVersions.ok2,
+      systemen.find((x) => x.isDefault)?.registryVersion ===
+      registryVersions.ok2,
   );
 
 export const postOnderwerpobject = async (data: OnderwerpObjectPostModel) => {

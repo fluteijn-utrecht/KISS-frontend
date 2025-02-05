@@ -20,7 +20,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         [HttpPost]
         public IActionResult Post([FromBody] JsonObject parsedModel, [FromHeader(Name = "systemIdentifier")] string systemIdentifier)
         {
-            var config = _configuration.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.KlantinteractieRegistry;
+            var config = _configuration.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.ContactmomentRegistry; 
 
             if (config == null) return BadRequest();
 

@@ -22,14 +22,17 @@
         }
 
         /// <summary>
-        /// Get the registry config using the new convention of environment variables <br/>
-        /// For example: <br/>
-        /// REGISTERS__0__IS_DEFAULT <br/>
-        /// REGISTERS__0__KLANTINTERACTIE_CLIENT_ID <br/>
+        /// Haalt de registry-configuratie op uit de applicatie-instellingen.
+        /// Verwacht een lijst onder de sectie <c>REGISTERS</c> met sleutels zoals:  
+        /// - <c>KLANTINTERACTIE_BASE_URL</c> (verplicht)  
+        /// - <c>KLANTINTERACTIE_API_VERSION</c>  
+        /// - <c>KLANTINTERACTIE_TOKEN</c>  
+        /// - <c>CONTACTMOMENTEN_BASE_URL</c>, <c>CONTACTMOMENTEN_API_CLIENT_ID</c>, <c>CONTACTMOMENTEN_API_KEY</c>  
+        /// - <c>INTERNE_TAAK_BASE_URL</c>, <c>INTERNE_TAAK_CLIENT_ID</c>, <c>INTERNE_TAAK_CLIENT_SECRET</c>, <c>INTERNE_TAAK_TOKEN</c>  
+        /// - <c>KLANTEN_BASE_URL</c>, <c>KLANTEN_CLIENT_ID</c>, <c>KLANTEN_CLIENT_SECRET</c>  
+        /// 
+        /// <exception cref="Exception">Gooit een fout als de verplichte <c>KLANTINTERACTIE_BASE_URL</c> ontbreekt.</exception>
         /// </summary>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception">Throws when the KLANTINTERACTIE_BASE_URL is missing</exception>
         private static IEnumerable<RegistrySystem> GetRegistryConfiguration(IConfiguration configuration)
         {
             var configs = configuration.GetSection("REGISTERS")?.Get<IEnumerable<Dictionary<string, string>>>() ?? [];
@@ -37,38 +40,67 @@
             foreach (var item in configs)
             {
                 string? GetValue(string key) => item.TryGetValue(key, out var value) ? value : default;
-                var contactmomentenBaseUrl = GetValue("KLANTINTERACTIE_BASE_URL") ?? throw new Exception("Fout: base url ontbreekt voor klantinteractie");
-                var interneTaakBaseUrl = GetValue("INTERNE_TAAK_BASE_URL");
-                var interneTaakObjectTypeUrl = GetValue("INTERNE_TAAK_OBJECT_TYPE_URL");
+                var registryVersion = Enum.TryParse<RegistryVersion>(GetValue("REGISTRY_VERSION"), out var versie)
+                    ? versie
+                    : RegistryVersion.OpenKlant2;
 
-                yield return new RegistrySystem
+                var isDefault = bool.TryParse(GetValue("IS_DEFAULT"), out var defaultValue) && defaultValue;
+
+                if (registryVersion == RegistryVersion.OpenKlant2)
                 {
-                    IsDefault = bool.TryParse(GetValue("IS_DEFAULT"), out var isDefault) && isDefault,
-                    KlantinteractieVersion = Enum.TryParse<KlantinteractieVersion>(GetValue("KLANTINTERACTIE_API_VERSION"), out var versie)
-                        ? versie
-                        : KlantinteractieVersion.OpenKlant2,
-                    Identifier = contactmomentenBaseUrl,
-                    KlantinteractieRegistry = new KlantinteractieRegistry
+                    var klantinteractieBaseUrl = GetValue("KLANTINTERACTIE_BASE_URL") ?? throw new Exception("Fout: base url ontbreekt voor klantinteractie");
+
+                    yield return new RegistrySystem
                     {
-                        BaseUrl = contactmomentenBaseUrl,
-                        ClientId = GetValue("KLANTINTERACTIE_CLIENT_ID"),
-                        ClientSecret = GetValue("KLANTINTERACTIE_CLIENT_SECRET"),
-                        Token = GetValue("KLANTINTERACTIE_TOKEN")
-                    },
-                    InterneTaakRegistry = string.IsNullOrWhiteSpace(interneTaakBaseUrl) || string.IsNullOrWhiteSpace(interneTaakObjectTypeUrl)
-                        ? null
-                        : new InternetaakRegistry
+                        IsDefault = isDefault,
+                        RegistryVersion = registryVersion,
+                        Identifier = klantinteractieBaseUrl,
+                        KlantinteractieRegistry = new KlantinteractieRegistry
                         {
-                            BaseUrl = interneTaakBaseUrl,
-                            ClientId = GetValue("INTERNE_TAAK_CLIENT_ID"),
-                            ClientSecret = GetValue("INTERNE_TAAK_CLIENT_SECRET"),
-                            Token = GetValue("INTERNE_TAAK_TOKEN"),
-                            ObjectTypeUrl = interneTaakObjectTypeUrl,
-                            ObjectTypeVersion = GetValue("INTERNE_TAAK_TYPE_VERSION") ?? "1"
+                            BaseUrl = klantinteractieBaseUrl,
+                            Token = GetValue("KLANTINTERACTIE_TOKEN")
                         }
-                };
+                    };
+                }
+                else if (registryVersion == RegistryVersion.OpenKlant1)
+                {
+                    var contactmomentenBaseUrl = GetValue("CONTACTMOMENTEN_BASE_URL") ?? throw new Exception("Fout: base url ontbreekt voor contactmomenten");
+                    var interneTaakBaseUrl = GetValue("INTERNE_TAAK_BASE_URL");
+                    var interneTaakObjectTypeUrl = GetValue("INTERNE_TAAK_OBJECT_TYPE_URL");
+
+                    yield return new RegistrySystem
+                    {
+                        IsDefault = isDefault,
+                        RegistryVersion = registryVersion,
+                        Identifier = contactmomentenBaseUrl,
+                        ContactmomentRegistry = new ContactmomentRegistry
+                        {
+                            BaseUrl = contactmomentenBaseUrl,
+                            ClientId = GetValue("CONTACTMOMENTEN_API_CLIENT_ID"),
+                            ClientSecret = GetValue("CONTACTMOMENTEN_API_KEY"),
+                        },
+                        InterneTaakRegistry = string.IsNullOrWhiteSpace(interneTaakBaseUrl) || string.IsNullOrWhiteSpace(interneTaakObjectTypeUrl)
+                            ? null
+                            : new InternetaakRegistry
+                            {
+                                BaseUrl = interneTaakBaseUrl,
+                                ClientId = GetValue("INTERNE_TAAK_CLIENT_ID"),
+                                ClientSecret = GetValue("INTERNE_TAAK_CLIENT_SECRET"),
+                                Token = GetValue("INTERNE_TAAK_TOKEN"),
+                                ObjectTypeUrl = interneTaakObjectTypeUrl,
+                                ObjectTypeVersion = GetValue("INTERNE_TAAK_TYPE_VERSION") ?? "1"
+                            },
+                        KlantRegistry = new KlantRegistry
+                        {
+                            BaseUrl = GetValue("KLANTEN_BASE_URL"),
+                            ClientId = GetValue("KLANTEN_CLIENT_ID"),
+                            ClientSecret = GetValue("KLANTEN_CLIENT_SECRET"),
+                        }
+                    };
+                }
             }
         }
+
 
         /// <summary>
         /// Checks if the configuration of the registries is sufficient
@@ -77,51 +109,79 @@
         /// <returns>An error message if applicable, or an empty string if all is well</returns>
         private static string Validate(IReadOnlyList<RegistrySystem> systemen)
         {
-            // we can't throw in this case, because it causes tests to fail
-            if (systemen.Count == 0) return "";
+            if (systemen.Count == 0)
+            {
+                return "FOUT: Er zijn geen registraties geconfigureerd.";
+            }
 
             foreach (var systeem in systemen)
             {
-                // OK2
-                if (systeem.KlantinteractieVersion == KlantinteractieVersion.OpenKlant2)
+                switch (systeem.RegistryVersion)
                 {
-                    if (string.IsNullOrWhiteSpace(systeem.KlantinteractieRegistry?.Token))
-                    {
-                        return "FOUT: Bij OpenKlant2 moet voor het KlantinteractieRegister een Token geconfigureerd worden.";
-                    }
+                    case RegistryVersion.OpenKlant2:
+                        if (string.IsNullOrWhiteSpace(systeem.KlantinteractieRegistry?.BaseUrl))
+                        {
+                            return "FOUT: Bij OpenKlant2 moet voor het KlantinteractieRegister een BaseUrl geconfigureerd worden.";
+                        }
+                        if (string.IsNullOrWhiteSpace(systeem.KlantinteractieRegistry?.Token))
+                        {
+                            return "FOUT: Bij OpenKlant2 moet voor het KlantinteractieRegister een Token geconfigureerd worden.";
+                        }
+                        break;
+
+                    case RegistryVersion.OpenKlant1:
+                        if (string.IsNullOrWhiteSpace(systeem.ContactmomentRegistry?.BaseUrl))
+                        {
+                            return "FOUT: Bij OpenKlant1/eSuite moet ContactmomentRegistry een BaseUrl hebben.";
+                        }
+                        if (string.IsNullOrWhiteSpace(systeem.ContactmomentRegistry?.ClientId) ||
+                            string.IsNullOrWhiteSpace(systeem.ContactmomentRegistry?.ClientSecret))
+                        {
+                            return "FOUT: Bij OpenKlant1/eSuite moet ContactmomentRegistry een ClientId en ClientSecret hebben.";
+                        }
+
+                        if (systeem.InterneTaakRegistry != null)
+                        {
+                            if (string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry.BaseUrl))
+                            {
+                                return "FOUT: Bij OpenKlant1/eSuite moet InterneTaakRegistry een BaseUrl hebben.";
+                            }
+                            if (string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry.ObjectTypeUrl))
+                            {
+                                return "FOUT: Bij OpenKlant1/eSuite moet InterneTaakRegistry een ObjectTypeUrl hebben.";
+                            }
+                            bool heeftToken = !string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry.Token);
+                            bool heeftClientIdEnSecret =
+                                !string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry.ClientId) &&
+                                !string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry.ClientSecret);
+
+                            if (!heeftToken && !heeftClientIdEnSecret)
+                            {
+                                return "FOUT: Bij OpenKlant1/eSuite moet InterneTaakRegistry óf een Token hebben, óf een ClientId en ClientSecret (voor eSuite).";
+                            }
+                        }
+
+                        if (string.IsNullOrWhiteSpace(systeem.KlantRegistry?.BaseUrl))
+                        {
+                            return "FOUT: Bij OpenKlant1/eSuite moet KlantRegistry een BaseUrl hebben.";
+                        }
+                        if (string.IsNullOrWhiteSpace(systeem.KlantRegistry?.ClientId) ||
+                            string.IsNullOrWhiteSpace(systeem.KlantRegistry?.ClientSecret))
+                        {
+                            return "FOUT: Bij OpenKlant1/eSuite moet KlantRegistry een ClientId en ClientSecret hebben.";
+                        }
+                        break;
                 }
-                // OK1
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(systeem.KlantinteractieRegistry?.ClientSecret) || string.IsNullOrWhiteSpace(systeem.KlantinteractieRegistry?.ClientId))
-                    {
-                        return "FOUT: Bij OpenKlant1 / eSuite moet voor het KlantinteractieRegister een ClientSecret en een ClientId geconfigureerd worden.";
-                    }
-                    if (string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry?.Token)
-                        && (string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry?.ClientId) || string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry?.ClientSecret)))
-                    {
-                        return "FOUT: Bij eSuite moet voor het InterneTaakRegister een ClientSecret en een ClientId geconfigureerd worden. Bij OpenKlant1 moet voor het InterneTaakRegister een Token geconfigureerd worden.";
-                    }
-                    if (string.IsNullOrWhiteSpace(systeem.InterneTaakRegistry?.ObjectTypeUrl))
-                    {
-                        return "FOUT: Bij OpenKlant1 / eSuite moet voor het InterneTaakRegister ObjectTypeUrl geconfigureerd worden.";
-                    }
-                }
             }
 
-            var defaultRegistersCount = systemen.Where(r => r.IsDefault).Count();
+            var defaultRegistersCount = systemen.Count(r => r.IsDefault);
 
-            if (defaultRegistersCount > 1)
+            return defaultRegistersCount switch
             {
-                return "FOUT: Meerdere default registers ingesteld.";
-            }
-
-            if (defaultRegistersCount == 0)
-            {
-                return "FOUT: Geen default register ingesteld.";
-            }
-
-            return "";
+                > 1 => "FOUT: Meerdere default registers ingesteld.",
+                0 => "FOUT: Geen default register ingesteld.",
+                _ => ""
+            };
         }
     }
 }

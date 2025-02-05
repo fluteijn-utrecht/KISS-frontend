@@ -15,7 +15,7 @@ namespace Kiss.Bff.Extern
     public record RegistrySystem
     {
         public bool IsDefault { get; init; }
-        public KlantinteractieVersion KlantinteractieVersion { get; init; }
+        public RegistryVersion RegistryVersion { get; init; }
         public KlantinteractieRegistry? KlantinteractieRegistry { get; init; }
         public InternetaakRegistry? InterneTaakRegistry { get; init; }
         public ContactmomentRegistry? ContactmomentRegistry { get; init; }
@@ -23,8 +23,8 @@ namespace Kiss.Bff.Extern
         public required string Identifier { get; init; }
     }
 
-    [JsonConverter(typeof(JsonStringEnumConverter<KlantinteractieVersion>))]
-    public enum KlantinteractieVersion
+    [JsonConverter(typeof(JsonStringEnumConverter<RegistryVersion>))]
+    public enum RegistryVersion
     {
         OpenKlant1,
         OpenKlant2,

@@ -17,6 +17,6 @@ export const ensureKlantForBsn = async (parameters: { bsn: string }) => {
   } else {
     const organisatieIds = useOrganisatieIds();
     const bronorganisatie = organisatieIds.value[0] || "";
-    return await ensureKlantForBsn1(parameters, bronorganisatie);
+    return await ensureKlantForBsn1(systeemId, parameters, bronorganisatie);
   }
 };

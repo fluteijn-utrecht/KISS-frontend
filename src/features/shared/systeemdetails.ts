@@ -1,6 +1,6 @@
 import {
   fetchSystemen,
-  klantinteractieVersions,
+  registryVersions,
 } from "@/services/environment/fetch-systemen";
 
 export const getRegisterDetails = async () => {
@@ -14,6 +14,6 @@ export const getRegisterDetails = async () => {
   return {
     systeemId: defaultSysteem.identifier,
     useKlantInteractiesApi:
-      defaultSysteem.klantinteractieVersion === klantinteractieVersions.ok2,
+      defaultSysteem.registryVersion === registryVersions.ok2,
   };
 };

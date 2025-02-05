@@ -9,7 +9,11 @@ import {
   type ServiceData,
 } from "@/services";
 import { mutate } from "swrv";
-import type { ContactmomentObject, SaveContactmomentResponseModel, UpdateContactgegevensParams } from "./types";
+import type {
+  ContactmomentObject,
+  SaveContactmomentResponseModel,
+  UpdateContactgegevensParams,
+} from "./types";
 import { KlantType } from "./types";
 import type { Ref } from "vue";
 import { nanoid } from "nanoid";
@@ -63,22 +67,25 @@ function getKlantSearchUrl(
   return url.toString();
 }
 
-export function useSearchKlanten({
-  query,
-  page,
-  subjectType,
-}: KlantSearchParameters) {
-  const getUrl = () =>
-    getKlantSearchUrl(
-      query.value,
-      subjectType ?? KlantType.Persoon,
-      page.value,
-    );
-  return ServiceResult.fromFetcher(getUrl, searchKlanten);
-}
+// export function useSearchKlanten({
+//   query,
+//   page,
+//   subjectType,
+// }: KlantSearchParameters) {
+//   const getUrl = () =>
+//     getKlantSearchUrl(
+//       query.value,
+//       subjectType ?? KlantType.Persoon,
+//       page.value,
+//     );
+//   return ServiceResult.fromFetcher(getUrl, searchKlanten);
+// }
 
-function searchKlanten(url: string): Promise<PaginatedResult<Klant>> {
-  return fetchLoggedIn(url)
+function searchKlanten(
+  systeemId: string,
+  url: string,
+): Promise<PaginatedResult<Klant>> {
+  return fetchWithSysteemId(systeemId, url)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((j) => parsePagination(j, mapKlant))
@@ -129,8 +136,8 @@ function getKlantBsnUrl(bsn?: string) {
   return url.toString();
 }
 
-const searchSingleKlant = (url: string) =>
-  searchKlanten(url).then(enforceOneOrZero);
+const searchSingleKlant = (systeemId: string, url: string) =>
+  searchKlanten(systeemId, url).then(enforceOneOrZero);
 
 const getSingleBsnSearchId = (bsn: string | undefined) => {
   const url = getKlantBsnUrl(bsn);
@@ -197,17 +204,18 @@ export function useUpdateContactGegevens() {
   return ServiceResult.fromSubmitter(updateContactgegevens);
 }
 
-export function useKlantByBsn(
-  getBsn: () => string | undefined,
-): ServiceData<Klant | null> {
-  const getUrl = () => getKlantBsnUrl(getBsn());
+// export function useKlantByBsn(
+//   getBsn: () => string | undefined,
+// ): ServiceData<Klant | null> {
+//   const getUrl = () => getKlantBsnUrl(getBsn());
 
-  return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
-    getUniqueId: () => getSingleBsnSearchId(getBsn()),
-  });
-}
+//   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
+//     getUniqueId: () => getSingleBsnSearchId(getBsn()),
+//   });
+// }
 
 export async function ensureKlantForBsn(
+  systeemId: string,
   {
     bsn,
   }: {
@@ -220,7 +228,7 @@ export async function ensureKlantForBsn(
 
   if (!bsnUrl || !singleBsnId) throw new Error();
 
-  const first = await searchSingleKlant(bsnUrl);
+  const first = await searchSingleKlant(systeemId, bsnUrl);
 
   if (first) {
     mutate(singleBsnId, first);
@@ -288,11 +296,12 @@ const getUrlVoorGetKlantById = (
 };
 
 export const useKlantByIdentifier = async (
+  systeemId: string,
   getId: () => BedrijfIdentifierOpenKlant1 | undefined,
 ) => {
   const getUrl = () => getUrlVoorGetKlantById(getId());
 
-  return await searchSingleKlant(getUrl());
+  return await searchSingleKlant(systeemId, getUrl());
 };
 
 export function mapBedrijfsIdentifier(
@@ -320,6 +329,7 @@ export function mapBedrijfsIdentifier(
 //maak een klant aan in het klanten register als die nog niet bestaat
 //bijvoorbeeld om een contactmoment voor een in de kvk opgezocht bedrijf op te kunnen slaan
 export async function ensureKlantForBedrijfIdentifier(
+  systeemId: string,
   {
     bedrijfsnaam,
     identifier,
@@ -334,7 +344,7 @@ export async function ensureKlantForBedrijfIdentifier(
 
   if (!url || !uniqueId) throw new Error();
 
-  const first = await searchSingleKlant(url);
+  const first = await searchSingleKlant(systeemId, url);
 
   if (first) {
     mutate(uniqueId, first);
@@ -437,11 +447,11 @@ export const koppelObject = (data: ContactmomentObject) =>
 
 const nullForStatusCodes =
   (...statusCodes: number[]) =>
-    (r: Response) => {
-      if (statusCodes.includes(r.status)) return null;
-      throwIfNotOk(r);
-      return r;
-    };
+  (r: Response) => {
+    if (statusCodes.includes(r.status)) return null;
+    throwIfNotOk(r);
+    return r;
+  };
 
 export async function enrichContactverzoekObjectWithContactmoment(
   contactverzoekObject: any,
@@ -498,8 +508,6 @@ function fetchObjectsByContactmomentUrl(url: string) {
     .then((r) => r?.json())
     .then((x) => parsePagination(x, (o) => o as unknown));
 }
-
-
 
 export const saveContactmoment = async (
   systemIdentifier: string,

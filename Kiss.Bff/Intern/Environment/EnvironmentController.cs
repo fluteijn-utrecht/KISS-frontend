@@ -48,7 +48,7 @@ namespace Kiss.Bff.Intern.Environment
             {
                 Systemen = _registryConfig.Systemen
                     // don't expose secrets
-                    .Select((x) => new { x.IsDefault, x.Identifier, x.KlantinteractieVersion })
+                    .Select((x) => new { x.IsDefault, x.Identifier, x.RegistryVersion })
             };
 
             return Ok(model);

@@ -1,13 +1,13 @@
 import { ServiceResult } from "@/services";
 import {
   mapBedrijfsIdentifier,
-  useKlantByIdentifier,
+  useKlantByIdentifier as useKlantByIdentifierOk1,
 } from "@/services/openklant1/service";
 import {
   findKlantByIdentifier,
   type KlantBedrijfIdentifier,
-  useOpenKlant2,
 } from "@/services/openklant2";
+import { getRegisterDetails as getSysteemDetails } from "@/features/shared/systeemdetails";
 
 export const useKlantByBedrijfIdentifier = (
   getId: () => KlantBedrijfIdentifier | undefined,
@@ -24,13 +24,13 @@ export const useKlantByBedrijfIdentifier = (
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    const isOpenKlant2 = await useOpenKlant2();
+    const { useKlantInteractiesApi, systeemId } = await getSysteemDetails();
 
-    if (isOpenKlant2) {
-      return findKlantByIdentifier(id);
+    if (useKlantInteractiesApi) {
+      return findKlantByIdentifier(systeemId, id);
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
-      return useKlantByIdentifier(() => mappedId);
+      return useKlantByIdentifierOk1(systeemId, () => mappedId);
     }
   };
 
