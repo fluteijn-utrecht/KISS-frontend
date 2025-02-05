@@ -14,7 +14,7 @@ export const useKlantById = (id: Ref<string>) => {
 
     return useKlantInteractiesApi
       ? fetchKlantByIdOk2(systeemId, url)
-      : fetchKlantByIdOk1(url);
+      : fetchKlantByIdOk1(systeemId, url);
   };
 
   return ServiceResult.fromFetcher(getApiSpecifiekUrl, fetchKlant);

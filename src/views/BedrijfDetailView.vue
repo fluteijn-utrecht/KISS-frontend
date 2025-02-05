@@ -9,7 +9,7 @@
       :disabled="(k) => !k"
     >
       <template #success="{ data }">
-        <klant-details :klant="data" />
+        <klant-details v-if="data" :klant="data" />
       </template>
     </tab-list-data-item>
     <tab-list-data-item
@@ -91,9 +91,11 @@ const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 
-const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
+const klant = useKlantById(klantId);
 
-const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+const klantUrl = computed(() =>
+  klant.success && klant.data ? klant.data.url ?? "" : "",
+);
 const currentTab = ref("");
 
 //const contactverzoekenPage = ref(1);

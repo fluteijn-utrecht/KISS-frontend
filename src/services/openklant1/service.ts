@@ -145,16 +145,19 @@ const getSingleBsnSearchId = (bsn: string | undefined) => {
   return url + "_single";
 };
 
-export function useKlantById(id: Ref<string>) {
-  return ServiceResult.fromFetcher(
-    () => getKlantIdUrl(id.value),
-    fetchKlantByIdOk1,
-  );
-}
+// export function useKlantById(id: Ref<string>) {
+//   return ServiceResult.fromFetcher(
+//     () => getKlantIdUrl(id.value),
+//     fetchKlantByIdOk1,
+//   );
+// }
 
-export function fetchKlantByIdOk1(id: string) {
+export function fetchKlantByIdOk1(systeemId: string, id: string) {
   const url = getKlantIdUrl(id);
-  return fetchLoggedIn(url).then(throwIfNotOk).then(parseJson).then(mapKlant);
+  return fetchWithSysteemId(systeemId, url)
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then(mapKlant);
 }
 
 const getValidIdentificatie = ({ subjectType, subjectIdentificatie }: any) => {
