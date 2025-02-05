@@ -2,7 +2,7 @@ import { ServiceResult } from "@/services";
 import type { Ref } from "vue";
 import { fetchKlantByIdOk2 } from "@/services/openklant2";
 import { fetchKlantByIdOk1 } from "@/services/openklant1";
-import { getRegisterDetails } from "@/features/shared/systeemdetails"; // Nieuwe methode om interacties API te bepalen
+import { getRegisterDetails } from "@/features/shared/systeemdetails";
 
 export const useKlantById = (id: Ref<string>) => {
   const getApiSpecifiekUrl = () => id.value || "";

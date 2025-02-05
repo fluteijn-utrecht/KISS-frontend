@@ -23,15 +23,8 @@
 
         /// <summary>
         /// Haalt de registry-configuratie op uit de applicatie-instellingen.
-        /// Verwacht een lijst onder de sectie <c>REGISTERS</c> met sleutels zoals:  
-        /// - <c>KLANTINTERACTIE_BASE_URL</c> (verplicht)  
-        /// - <c>KLANTINTERACTIE_API_VERSION</c>  
-        /// - <c>KLANTINTERACTIE_TOKEN</c>  
-        /// - <c>CONTACTMOMENTEN_BASE_URL</c>, <c>CONTACTMOMENTEN_API_CLIENT_ID</c>, <c>CONTACTMOMENTEN_API_KEY</c>  
-        /// - <c>INTERNE_TAAK_BASE_URL</c>, <c>INTERNE_TAAK_CLIENT_ID</c>, <c>INTERNE_TAAK_CLIENT_SECRET</c>, <c>INTERNE_TAAK_TOKEN</c>  
-        /// - <c>KLANTEN_BASE_URL</c>, <c>KLANTEN_CLIENT_ID</c>, <c>KLANTEN_CLIENT_SECRET</c>  
-        /// 
-        /// <exception cref="Exception">Gooit een fout als de verplichte <c>KLANTINTERACTIE_BASE_URL</c> ontbreekt.</exception>
+        /// Verwacht een lijst onder <c>REGISTERS</c> met relevante API-sleutels en base URL's.
+        /// Gooit een fout als verplichte velden ontbreken.
         /// </summary>
         private static IEnumerable<RegistrySystem> GetRegistryConfiguration(IConfiguration configuration)
         {
