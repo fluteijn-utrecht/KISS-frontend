@@ -55,7 +55,13 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
         public static ILocator PersonenBsnInput(this IPage page) =>
             page.GetByRole(AriaRole.Textbox, new() { Name = "bsn" });
 
-         
+
+        public static ILocator Company_KvknummerInput(this IPage page) =>
+          page.GetByRole(AriaRole.Textbox, new() { Name = "KVK-nummer of vestigingsnummer" });
+
+        public static ILocator Company_KvknummerSearchButton(this IPage page) =>
+           page.Locator("form").Filter(new() { HasText = "KVK-nummer of" }).GetByRole(AriaRole.Button);
+
     }
 
 

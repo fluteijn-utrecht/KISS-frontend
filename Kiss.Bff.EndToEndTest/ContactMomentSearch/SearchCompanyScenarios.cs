@@ -73,7 +73,97 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
 
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
+         }
+
+
+
+        [TestMethod("3. Searching for a company by Bedrijfsnaam not available in the database")]
+        public async Task SearchByNonExistentBedrijfsnaamAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user click Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And the user enters 'test automation' in the field Bedrijfsnaam");
+
+            await Page.Company_BedrijfsnaamInput().FillAsync("test automation");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_FirstSearchButton().ClickAsync();
+
+            await Step("Then message is displayed as Geen resultaten gevonden voor 'test automation'.");
+
+            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor 'test automation'.");
+        }
+
+        [TestMethod("4. Searching a company by KVK-nummer")]
+        public async Task SearchByKvknummerAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user click Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And user enters '69599068' in the field KVK-nummer of vestigingsnummer");
+
+            await Page.Company_KvknummerInput().FillAsync("69599068");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_KvknummerSearchButton().ClickAsync();
+
+            await Step("Then user is navigated to bedrijfinformatie page of Test Stichting Bolderbast");
+
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+
+         }
+
+        [TestMethod("5. Searching a company using KVK-nummer with multiple records")]
+        public async Task SearchByKvknummer_MultipleRecordsAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And the user enters '68750110' in the field KVK-nummer of vestigingsnummer");
+
+            await Page.Company_KvknummerInput().FillAsync("68750110");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_KvknummerSearchButton().ClickAsync();
+
+            await Step("Then the list displays multiple records associated with the kvknummer '68750110'");
+
+            await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
+
+            var resultCount = await Page.GetByRole(AriaRole.Table).GetByRole(AriaRole.Row).CountAsync();
+
+            Assert.IsTrue(resultCount > 2, $"Expected there to be multiple records associated with kvknummer '68750110', but found {resultCount}.");
         }
 
     }
