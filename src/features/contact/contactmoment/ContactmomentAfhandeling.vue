@@ -1,61 +1,91 @@
 <template>
-  <prompt-modal :dialog="cancelDialog"
+  <prompt-modal
+    :dialog="cancelDialog"
     message="Weet je zeker dat je het contactmoment wilt annuleren? Alle gegevens worden verwijderd."
-    cancel-message="Nee" confirm-message="Ja" />
+    cancel-message="Nee"
+    confirm-message="Ja"
+  />
 
-  <prompt-modal :dialog="removeVraagDialog"
+  <prompt-modal
+    :dialog="removeVraagDialog"
     message="Weet je zeker dat je deze vraag wilt verwijderen? Alle gegevens in de vraag worden verwijderd."
-    cancel-message="Nee" confirm-message="Ja" />
+    cancel-message="Nee"
+    confirm-message="Ja"
+  />
 
   <back-link />
 
-  <simple-spinner v-if="saving || gespreksresultaten.loading || kanalenKeuzelijst.loading" />
+  <simple-spinner
+    v-if="saving || gespreksresultaten.loading || kanalenKeuzelijst.loading"
+  />
 
   <form v-else class="afhandeling" @submit.prevent="submit">
     <utrecht-heading :level="1" modelValue>Afhandeling</utrecht-heading>
 
-    <application-message v-if="errorMessage != ''" messageType="error" :message="errorMessage" />
+    <application-message
+      v-if="errorMessage != ''"
+      messageType="error"
+      :message="errorMessage"
+    />
 
-    <template v-else-if="contactmomentStore.huidigContactmoment && kanalenKeuzelijst.success
-    ">
-      <article v-for="(vraag, idx) in contactmomentStore.huidigContactmoment.vragen" :key="idx">
+    <template
+      v-else-if="
+        contactmomentStore.huidigContactmoment && kanalenKeuzelijst.success
+      "
+    >
+      <article
+        v-for="(vraag, idx) in contactmomentStore.huidigContactmoment.vragen"
+        :key="idx"
+      >
         <utrecht-heading :level="2">
           <div class="vraag-heading">
             Vraag {{ idx + 1 }}
 
-            <utrecht-button v-if="contactmomentStore.huidigContactmoment.vragen.length > 1" appearance="subtle-button"
-              class="icon icon-after trash icon-only" :title="`Vraag ${idx + 1} verwijderen`"
-              @click="toggleRemoveVraagDialog(idx)" />
+            <utrecht-button
+              v-if="contactmomentStore.huidigContactmoment.vragen.length > 1"
+              appearance="subtle-button"
+              class="icon icon-after trash icon-only"
+              :title="`Vraag ${idx + 1} verwijderen`"
+              @click="toggleRemoveVraagDialog(idx)"
+            />
           </div>
         </utrecht-heading>
         <section v-if="vraag.klanten.length" class="gerelateerde-resources">
           <utrecht-heading :level="3">{{
-    vraag.klanten.length > 1 ? "Klanten" : "Klant"
-  }}</utrecht-heading>
+            vraag.klanten.length > 1 ? "Klanten" : "Klant"
+          }}</utrecht-heading>
           <ul>
             <li v-for="record in vraag.klanten" :key="record.klant.id">
               <label>
-                <span v-if="record.klant.voornaam ||
-    record.klant.achternaam ||
-    record.klant.bedrijfsnaam
-    ">{{
-    [
-      record.klant.voornaam,
-      record.klant.voorvoegselAchternaam,
-      record.klant.achternaam,
-    ]
-      .filter((x) => x)
-      .join(" ") || record.klant.bedrijfsnaam
-  }}</span>
+                <span
+                  v-if="
+                    record.klant.voornaam ||
+                    record.klant.achternaam ||
+                    record.klant.bedrijfsnaam
+                  "
+                  >{{
+                    [
+                      record.klant.voornaam,
+                      record.klant.voorvoegselAchternaam,
+                      record.klant.achternaam,
+                    ]
+                      .filter((x) => x)
+                      .join(" ") || record.klant.bedrijfsnaam
+                  }}</span
+                >
                 <span v-else>{{
-      [
-        ...record.klant.emailadressen,
-        ...record.klant.telefoonnummers,
-      ]
-        .filter((x) => x)
-        .join(", ")
-    }}</span>
-                <input title="Deze klant opslaan bij het contactmoment" type="checkbox" v-model="record.shouldStore" />
+                  [
+                    ...record.klant.emailadressen,
+                    ...record.klant.telefoonnummers,
+                  ]
+                    .filter((x) => x)
+                    .join(", ")
+                }}</span>
+                <input
+                  title="Deze klant opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
@@ -63,17 +93,20 @@
 
         <section v-if="vraag.zaken.length" class="gerelateerde-resources">
           <utrecht-heading :level="3">{{
-    vraag.zaken.length > 1 ? "Gerelateerde zaken" : "Gerelateerde zaak"
-  }}</utrecht-heading>
+            vraag.zaken.length > 1 ? "Gerelateerde zaken" : "Gerelateerde zaak"
+          }}</utrecht-heading>
           <ul>
             <li v-for="record in vraag.zaken" :key="record.zaak.id">
               <label>
-                <span>{{ record.zaak.identificatie }}
-                  <div>
-                    (Zaaktype: {{ record.zaak.zaaktypeOmschrijving }})
-                  </div>
+                <span
+                  >{{ record.zaak.identificatie }}
+                  <div>(Zaaktype: {{ record.zaak.zaaktypeOmschrijving }})</div>
                 </span>
-                <input title="Deze zaak opslaan bij het contactmoment" type="checkbox" v-model="record.shouldStore" />
+                <input
+                  title="Deze zaak opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
@@ -81,27 +114,35 @@
 
         <section v-if="vraag.medewerkers.length" class="gerelateerde-resources">
           <utrecht-heading :level="3">{{
-    vraag.medewerkers.length > 1
-      ? "Gerelateerde medewerkers"
-      : "Gerelateerde medewerker"
-  }}</utrecht-heading>
+            vraag.medewerkers.length > 1
+              ? "Gerelateerde medewerkers"
+              : "Gerelateerde medewerker"
+          }}</utrecht-heading>
           <ul>
             <li v-for="record in vraag.medewerkers" :key="record.medewerker.id">
               <label>
-                <span v-if="record.medewerker.voornaam || record.medewerker.achternaam
-    ">{{
-    [
-      record.medewerker.voornaam,
-      record.medewerker.voorvoegselAchternaam,
-      record.medewerker.achternaam,
-    ]
-      .filter((x) => x)
-      .join(" ")
-  }}
-                  <span v-if="record.medewerker.emailadres">({{ record.medewerker.emailadres }})</span>
+                <span
+                  v-if="
+                    record.medewerker.voornaam || record.medewerker.achternaam
+                  "
+                  >{{
+                    [
+                      record.medewerker.voornaam,
+                      record.medewerker.voorvoegselAchternaam,
+                      record.medewerker.achternaam,
+                    ]
+                      .filter((x) => x)
+                      .join(" ")
+                  }}
+                  <span v-if="record.medewerker.emailadres"
+                    >({{ record.medewerker.emailadres }})</span
+                  >
                 </span>
-                <input title="Deze medewerker opslaan bij het contactmoment" type="checkbox"
-                  v-model="record.shouldStore" />
+                <input
+                  title="Deze medewerker opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
@@ -109,73 +150,108 @@
 
         <section v-if="vraag.websites.length" class="gerelateerde-resources">
           <utrecht-heading :level="3">{{
-    vraag.websites.length > 1
-      ? "Gerelateerde websites"
-      : "Gerelateerde website"
-  }}</utrecht-heading>
+            vraag.websites.length > 1
+              ? "Gerelateerde websites"
+              : "Gerelateerde website"
+          }}</utrecht-heading>
           <ul>
             <li v-for="record in vraag.websites" :key="record.website.url">
               <label>
-                <a :href="record.website.url" rel="noopener noreferrer" target="_blank">{{ record.website.title }}</a>
-                <input title="Deze website opslaan bij het contactmoment" type="checkbox"
-                  v-model="record.shouldStore" />
+                <a
+                  :href="record.website.url"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  >{{ record.website.title }}</a
+                >
+                <input
+                  title="Deze website opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
         </section>
 
-        <section v-if="vraag.kennisartikelen.length" class="gerelateerde-resources">
+        <section
+          v-if="vraag.kennisartikelen.length"
+          class="gerelateerde-resources"
+        >
           <utrecht-heading :level="3">{{
-    vraag.kennisartikelen.length > 1
-      ? "Gerelateerde kennisartikelen"
-      : "Gerelateerde kennisartikel"
-  }}</utrecht-heading>
+            vraag.kennisartikelen.length > 1
+              ? "Gerelateerde kennisartikelen"
+              : "Gerelateerde kennisartikel"
+          }}</utrecht-heading>
           <ul>
-            <li v-for="record in vraag.kennisartikelen" :key="record.kennisartikel.url">
+            <li
+              v-for="record in vraag.kennisartikelen"
+              :key="record.kennisartikel.url"
+            >
               <label>
                 <span>
                   {{ record.kennisartikel.title }}
                 </span>
-                <input title="Dit kennisartikel opslaan bij het contactmoment" type="checkbox"
-                  v-model="record.shouldStore" />
+                <input
+                  title="Dit kennisartikel opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
         </section>
 
-        <section v-if="vraag.nieuwsberichten.length" class="gerelateerde-resources">
+        <section
+          v-if="vraag.nieuwsberichten.length"
+          class="gerelateerde-resources"
+        >
           <utrecht-heading :level="3">{{
-    vraag.nieuwsberichten.length > 1
-      ? "Gerelateerde nieuwsberichten"
-      : "Gerelateerd nieuwsbericht"
-  }}</utrecht-heading>
+            vraag.nieuwsberichten.length > 1
+              ? "Gerelateerde nieuwsberichten"
+              : "Gerelateerd nieuwsbericht"
+          }}</utrecht-heading>
           <ul>
-            <li v-for="record in vraag.nieuwsberichten" :key="record.nieuwsbericht.url">
+            <li
+              v-for="record in vraag.nieuwsberichten"
+              :key="record.nieuwsbericht.url"
+            >
               <label>
                 <span>
                   {{ record.nieuwsbericht.title }}
                 </span>
-                <input title="Dit nieuwsbericht opslaan bij het contactmoment" type="checkbox"
-                  v-model="record.shouldStore" />
+                <input
+                  title="Dit nieuwsbericht opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
         </section>
 
-        <section v-if="vraag.werkinstructies.length" class="gerelateerde-resources">
+        <section
+          v-if="vraag.werkinstructies.length"
+          class="gerelateerde-resources"
+        >
           <utrecht-heading :level="3">{{
-    vraag.werkinstructies.length > 1
-      ? "Gerelateerde werkinstructies"
-      : "Gerelateerde werkinstructie"
-  }}</utrecht-heading>
+            vraag.werkinstructies.length > 1
+              ? "Gerelateerde werkinstructies"
+              : "Gerelateerde werkinstructie"
+          }}</utrecht-heading>
           <ul>
-            <li v-for="record in vraag.werkinstructies" :key="record.werkinstructie.url">
+            <li
+              v-for="record in vraag.werkinstructies"
+              :key="record.werkinstructie.url"
+            >
               <label>
                 <span>
                   {{ record.werkinstructie.title }}
                 </span>
-                <input title="Deze werkinstructie opslaan bij het contactmoment" type="checkbox"
-                  v-model="record.shouldStore" />
+                <input
+                  title="Deze werkinstructie opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
@@ -183,13 +259,17 @@
 
         <section v-if="vraag.vacs.length" class="gerelateerde-resources">
           <utrecht-heading :level="3">{{
-    vraag.vacs.length > 1 ? "Gerelateerde VACs" : "Gerelateerde VAC"
-  }}</utrecht-heading>
+            vraag.vacs.length > 1 ? "Gerelateerde VACs" : "Gerelateerde VAC"
+          }}</utrecht-heading>
           <ul>
             <li v-for="record in vraag.vacs" :key="record.vac.url">
               <label>
                 {{ record.vac.title }}
-                <input title="Deze VAC opslaan bij het contactmoment" type="checkbox" v-model="record.shouldStore" />
+                <input
+                  title="Deze VAC opslaan bij het contactmoment"
+                  type="checkbox"
+                  v-model="record.shouldStore"
+                />
               </label>
             </li>
           </ul>
@@ -198,22 +278,50 @@
         <section class="details">
           <utrecht-heading :level="3"> Details </utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
-            <label :for="'hoofdvraag' + idx" class="utrecht-form-label required">
+            <label
+              :for="'hoofdvraag' + idx"
+              class="utrecht-form-label required"
+            >
               Vraag
             </label>
 
-            <contactmoment-vraag :idx="idx" :vraag="vraag" v-model="vraag.vraag" />
-            <label :class="['utrecht-form-label', { required: !vraag.vraag }]" :for="'specifiekevraag' + idx">
+            <contactmoment-vraag
+              :idx="idx"
+              :vraag="vraag"
+              v-model="vraag.vraag"
+            />
+            <label
+              :class="['utrecht-form-label', { required: !vraag.vraag }]"
+              :for="'specifiekevraag' + idx"
+            >
               Specifieke vraag
             </label>
-            <input :required="!vraag.vraag" type="text" class="utrecht-textbox utrecht-textbox--html-input"
-              :id="'specifiekevraag' + idx" v-model="vraag.specifiekevraag" />
+            <input
+              :required="!vraag.vraag"
+              type="text"
+              class="utrecht-textbox utrecht-textbox--html-input"
+              :id="'specifiekevraag' + idx"
+              v-model="vraag.specifiekevraag"
+            />
 
-            <label class="utrecht-form-label" :for="'notitie' + idx">Notitie</label>
-            <textarea class="utrecht-textarea" :id="'notitie' + idx" v-model="vraag.notitie"></textarea>
-            <label :for="'kanaal' + idx" class="utrecht-form-label required">Kanaal</label>
-            <select :id="'kanaal' + idx" v-model="vraag.kanaal" class="utrecht-select utrecht-select--html-select"
-              @change="setUserChannel" required>
+            <label class="utrecht-form-label" :for="'notitie' + idx"
+              >Notitie</label
+            >
+            <textarea
+              class="utrecht-textarea"
+              :id="'notitie' + idx"
+              v-model="vraag.notitie"
+            ></textarea>
+            <label :for="'kanaal' + idx" class="utrecht-form-label required"
+              >Kanaal</label
+            >
+            <select
+              :id="'kanaal' + idx"
+              v-model="vraag.kanaal"
+              class="utrecht-select utrecht-select--html-select"
+              @change="setUserChannel"
+              required
+            >
               <template v-if="!kanalenKeuzelijst.data.length">
                 <option>Telefoon</option>
                 <option>E-mail</option>
@@ -225,17 +333,32 @@
                 <option>Instagram</option>
                 <option>WhatsApp</option>
               </template>
-              <option v-else v-for="{ naam } in kanalenKeuzelijst.data" :key="naam">
+              <option
+                v-else
+                v-for="{ naam } in kanalenKeuzelijst.data"
+                :key="naam"
+              >
                 {{ naam }}
               </option>
             </select>
 
-            <label :for="'gespreksresultaat' + idx" class="utrecht-form-label required">
+            <label
+              :for="'gespreksresultaat' + idx"
+              class="utrecht-form-label required"
+            >
               Afhandeling
             </label>
-            <select :id="'gespreksresultaat' + idx" v-model="vraag.gespreksresultaat"
-              class="utrecht-select utrecht-select--html-select" required v-if="gespreksresultaten.success">
-              <option v-for="(gespreksresultaat, i) in gespreksresultaten.data" :key="`gespreksresultaat_${i}`">
+            <select
+              :id="'gespreksresultaat' + idx"
+              v-model="vraag.gespreksresultaat"
+              class="utrecht-select utrecht-select--html-select"
+              required
+              v-if="gespreksresultaten.success"
+            >
+              <option
+                v-for="(gespreksresultaat, i) in gespreksresultaten.data"
+                :key="`gespreksresultaat_${i}`"
+              >
                 {{ gespreksresultaat.definitie }}
               </option>
             </select>
@@ -245,22 +368,38 @@
         <section v-if="vraag.gespreksresultaat !== CONTACTVERZOEK_GEMAAKT">
           <utrecht-heading :level="3"> Afgehandeld voor</utrecht-heading>
           <fieldset class="utrecht-form-fieldset">
-            <label :for="'afdeling' + idx" class="utrecht-form-label required">Afdeling</label>
+            <label :for="'afdeling' + idx" class="utrecht-form-label required"
+              >Afdeling</label
+            >
             <div class="relative">
-              <afdelingen-search v-model="vraag.afdeling" :exact-match="true" :id="'afdeling' + idx"
-                class="utrecht-textbox utrecht-textbox--html-input" :required="true" placeholder="Zoek een afdeling" />
+              <afdelingen-search
+                v-model="vraag.afdeling"
+                :exact-match="true"
+                :id="'afdeling' + idx"
+                class="utrecht-textbox utrecht-textbox--html-input"
+                :required="true"
+                placeholder="Zoek een afdeling"
+              />
             </div>
           </fieldset>
         </section>
 
-        <section v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT" class="contactverzoek-container">
+        <section
+          v-if="vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT"
+          class="contactverzoek-container"
+        >
           <utrecht-heading :level="3"> Contactverzoek</utrecht-heading>
           <contactverzoek-formulier v-model="vraag.contactverzoek" />
         </section>
       </article>
       <menu>
         <li>
-          <utrecht-button modelValue type="button" appearance="secondary-action-button" @click="cancelDialog.reveal">
+          <utrecht-button
+            modelValue
+            type="button"
+            appearance="secondary-action-button"
+            @click="cancelDialog.reveal"
+          >
             Annuleren
           </utrecht-button>
         </li>
@@ -283,10 +422,7 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import {
-  useContactmomentStore,
-  type Vraag,
-} from "@/stores/contactmoment";
+import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
@@ -326,7 +462,7 @@ import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
 import {
   fetchSystemen,
-  klantinteractieVersions,
+  registryVersions,
 } from "@/services/environment/fetch-systemen";
 import { saveContactmoment } from "@/services/openklant1";
 import type { Contactmoment } from "@/services/openklant/types";
@@ -453,7 +589,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   }
   const systemIdentifier = defaultSysteem.identifier;
   const useKlantInteractiesApi =
-    defaultSysteem.klantinteractieVersion === klantinteractieVersions.ok2;
+    defaultSysteem.registryVersion === registryVersions.ok2;
 
   const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
   const isAnoniem = !vraag.klanten.some((x) => x.shouldStore && x.klant.id);
@@ -952,7 +1088,7 @@ onMounted(() => {
       border-top: none;
     }
 
-    >label {
+    > label {
       display: flex;
       gap: var(--spacing-default);
       justify-content: space-between;
@@ -1011,11 +1147,11 @@ select {
   gap: var(--spacing-default);
   display: flex;
 
-  >legend {
+  > legend {
     position: absolute;
   }
 
-  >label {
+  > label {
     display: flex;
     gap: var(--spacing-extrasmall);
     line-height: var(--utrecht-form-fieldset-legend-line-height);
