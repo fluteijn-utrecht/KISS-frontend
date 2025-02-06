@@ -195,8 +195,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to bedrijfinformatie page of Test BV Donald Nevenvestiging");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
-
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
+             
         }
 
 
