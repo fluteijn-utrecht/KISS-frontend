@@ -64,7 +64,11 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
 
         public static ILocator Company_PostcodeHuisnummerSearchButton(this IPage page) =>
          page.Locator("form").Filter(new() { HasText = "Postcode Huisnummer Zoeken" }).GetByRole(AriaRole.Button);
-         
+
+        public static ILocator SearchCompanyByPostalAndHuisNummer(this IPage page, string postcode, string huisNummer)
+        {
+            return page.GetByRole(AriaRole.Table).Locator($"tbody tr:has(td:nth-child(4):has-text(\"{postcode.Trim()} {huisNummer.Trim()}\"))");
+        }
     }
 
 
