@@ -8,7 +8,7 @@ using Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers;
 namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 {
     [TestClass]
-   public class SearchPersonScenarios : KissPlaywrightTest
+    public class SearchPersonScenarios : KissPlaywrightTest
     {
 
         [TestMethod("1. Searching by Last Name and Date of Birth (Valid)")]

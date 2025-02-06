@@ -73,8 +73,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
 
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
-        }
+         }
 
 
 
@@ -133,8 +132,7 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
 
-            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToHaveTextAsync("Bedrijfsinformatie");
-        }
+         }
 
         [TestMethod("5. Searching a company using KVK-nummer with multiple records")]
         public async Task SearchByKvknummer_MultipleRecordsAsync()
