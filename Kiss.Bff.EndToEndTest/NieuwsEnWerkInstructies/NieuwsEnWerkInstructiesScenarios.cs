@@ -305,11 +305,11 @@ public class NieuwsEnWerkInstructiesScenarios : KissPlaywrightTest
 
         await Step("Given there is exactly 1 werkinstructie with this text in the title");
 
-        var werkbericht = await Page.CreateBerichtAsync(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
+        await using var werkbericht = await Page.CreateBerichtAsync(new() { Title = uniqueTitle, BerichtType = BerichtType.Werkinstructie });
        
         await Step("And there is exactly 1 nieuwsbericht with this text in the title");
-        
-        var nieuws = await Page.CreateBerichtAsync(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
+
+        await using var nieuws = await Page.CreateBerichtAsync(new() { Title = uniqueTitle, BerichtType = BerichtType.Nieuws });
 
         await Step("And the user is on the HOME Page");
 
