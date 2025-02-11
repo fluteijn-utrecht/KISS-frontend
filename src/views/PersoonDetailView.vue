@@ -101,7 +101,7 @@ const klant = useKlantById(
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 onMounted(async () => {
-  const { useKlantInteractiesApi, defaultSysteemId: defaultSysteemId } =
+  const { useKlantInteractiesApi, defaultSysteemId } =
     await getRegisterDetails();
   gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
   defaultSystemId.value = defaultSysteemId;
