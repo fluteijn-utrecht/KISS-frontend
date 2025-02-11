@@ -258,6 +258,73 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
         }
 
+        [TestMethod("9. Searching a company using postcode and huisnummer associated with multiple records")]
+        public async Task SearchByPostcodeAndHuisnummer_MultipleRecordsAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And the user enters '2352SZ' in the field postcode and '37' in field Huisnummer");
+
+            var postCode = "2352SZ";
+            var huisNummer = "37";
+            await Page.Company_PostcodeInput().FillAsync(postCode);
+            await Page.Company_HuisnummerInput().FillAsync(huisNummer);
+
+            await Step("And clicks the search button");
+
+            await Page.Company_PostcodeHuisnummerSearchButton().ClickAsync();
+
+            await Step("Then list of multiple records associated with postcode '2352SZ' and huisnummer '37' is displayed");
+
+            await Expect(Page.GetByRole(AriaRole.Table)).ToBeVisibleAsync();
+
+             var resultCount = await Page.SearchCompanyByPostalAndHuisNummer(postCode, huisNummer).CountAsync();
+
+            Assert.IsTrue(resultCount > 1, $"Expected multiple records associated with postcode '2352SZ' and huisnummer '37', but found {resultCount}.");
+        }
+
+
+        [TestMethod("10. Searching a company using postcode and huisnummer which is not present in DB")]
+        public async Task SearchByNonExistentPostcodeAndHuisnummerAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And the user enters '1234AB' in the field postcode and '10' in field Huisnummer");
+
+            await Page.Company_PostcodeInput().FillAsync("1234AB");
+            await Page.Company_HuisnummerInput().FillAsync("10");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_PostcodeHuisnummerSearchButton().ClickAsync();
+
+            await Step("Then message is displayed as 'Geen resultaten gevonden voor '1234AB, 10''.");
+
+            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor '1234AB, 10'.");
+        }
+
+
+
 
 
 
