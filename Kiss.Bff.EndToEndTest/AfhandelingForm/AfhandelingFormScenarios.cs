@@ -24,11 +24,11 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm
 
             var note = "test notitieblok";
 
-            await Page.GetPersonenNotitieblokTextbox().FillAsync(note);
+            await Page.GetContactmomentNotitieblokTextbox().FillAsync(note);
 
             await Step("Click the Afronden button");
 
-            await Page.GetPersonenAfrondenButton().ClickAsync();
+            await Page.GetAfrondenButton().ClickAsync();
 
             await Step("Then Afhandeling form has value as “test notitieblok” in field Notitie");
 
@@ -45,11 +45,11 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm
             await Page.GetNieuwContactmomentButton().ClickAsync();
 
             var note = "test notitieblok";
-            await Page.GetPersonenNotitieblokTextbox().FillAsync(note); 
+            await Page.GetContactmomentNotitieblokTextbox().FillAsync(note); 
 
             await Step("Given user clicks on Afronden button on the Notes-Contactverzoek-Pane");
 
-            await Page.GetPersonenAfrondenButton().ClickAsync();
+            await Page.GetAfrondenButton().ClickAsync();
 
             await Step("When Afhandeling form is displayed");
 
@@ -143,11 +143,11 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm
             await Page.GetNieuwContactmomentButton().ClickAsync();
 
             var note = "test notitieblok";
-            await Page.GetPersonenNotitieblokTextbox().FillAsync(note); 
+            await Page.GetContactmomentNotitieblokTextbox().FillAsync(note); 
          
             await Step("Given user clicks on Afronden button on the Notes-Contactverzoek-Pane");
 
-            await Page.GetPersonenAfrondenButton().ClickAsync();
+            await Page.GetAfrondenButton().ClickAsync();
 
             await Step("And Afhandeling form is displayed");
 

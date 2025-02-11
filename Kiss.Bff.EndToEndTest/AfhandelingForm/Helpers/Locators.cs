@@ -13,12 +13,12 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm.Helpers
         {
             return page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" });
         }
-        public static ILocator GetPersonenNotitieblokTextbox(this IPage page)
+        public static ILocator GetContactmomentNotitieblokTextbox(this IPage page)
         {
             return page.GetByRole(AriaRole.Tabpanel, new() { Name = "Notitieblok" }).GetByRole(AriaRole.Textbox);
         }
          
-        public static ILocator GetPersonenAfrondenButton(this IPage page)
+        public static ILocator GetAfrondenButton(this IPage page)
         {
             return page.GetByRole(AriaRole.Button, new() { Name = "Afronden" });
         }
@@ -58,6 +58,8 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm.Helpers
         {
             return page.GetByRole(AriaRole.Combobox, new() { Name = "Afdeling" });
         }
+
+       // This input is not associated with a label. This needs to be handled in development to ensure proper accessibility and identification.
         public static ILocator GetAfdelingVoorField(this IPage page)
         {
             return page.Locator("input[type='search']");
