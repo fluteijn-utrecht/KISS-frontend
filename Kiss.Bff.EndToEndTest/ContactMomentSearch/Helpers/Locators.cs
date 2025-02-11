@@ -62,6 +62,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch.Helpers
         public static ILocator Company_KvknummerSearchButton(this IPage page) =>
            page.Locator("form").Filter(new() { HasText = "KVK-nummer of" }).GetByRole(AriaRole.Button);
 
+        public static ILocator Company_PostcodeHuisnummerSearchButton(this IPage page) =>
+         page.Locator("form").Filter(new() { HasText = "Postcode Huisnummer Zoeken" }).GetByRole(AriaRole.Button);
+         
     }
 
 

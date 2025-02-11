@@ -72,8 +72,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to bedrijfsinformatie page");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test Stichting Bolderbast" })).ToBeVisibleAsync();
 
-         }
+        }
 
 
 
@@ -131,8 +132,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to bedrijfinformatie page of Test Stichting Bolderbast");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test Stichting Bolderbast" })).ToBeVisibleAsync();
 
-         }
+        }
 
         [TestMethod("5. Searching a company using KVK-nummer with multiple records")]
         public async Task SearchByKvknummer_MultipleRecordsAsync()
@@ -165,6 +167,99 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
 
             Assert.IsTrue(resultCount > 2, $"Expected there to be multiple records associated with kvknummer '68750110', but found {resultCount}.");
         }
+
+
+        [TestMethod("6. Searching a company using vestigingsnummer which is unique")]
+        public async Task SearchByVestigingsnummer_UniqueResultAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And user enters '000037178601' in the field KVK-nummer of vestigingsnummer");
+
+            await Page.Company_KvknummerInput().FillAsync("000037178601");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_KvknummerSearchButton().ClickAsync();
+
+            await Step("Then user is navigated to bedrijfinformatie page of Test BV Donald Nevenvestiging");
+
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test BV Donald Nevenvestiging" })).ToBeVisibleAsync();
+
+        }
+
+
+        [TestMethod("7. Searching a company by a kvknummer which is not available in DB")]
+        public async Task SearchByNonExistentKvknummerAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And user enters '12345678' in the field KVK-nummer of vestigingsnummer");
+
+            await Page.Company_KvknummerInput().FillAsync("12345678");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_KvknummerSearchButton().ClickAsync();
+
+            await Step("Then message is displayed as 'Geen resultaten gevonden voor 12345678'.");
+
+            await Expect(Page.GetByRole(AriaRole.Caption)).ToHaveTextAsync("Geen resultaten gevonden voor '12345678'.");
+        }
+        [TestMethod("8. Searching a company by postcode and huisnummer")]
+        public async Task SearchByPostcodeAndHuisnummerAsync()
+        {
+            await Step("Given user is on the startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("And user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("When user clicks Bedrijf from the menu item");
+
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Bedrijven" }).ClickAsync();
+
+            await Step("And the user enters '7431BX' in the field postcode and '3' in Huisnummer field");
+
+            await Page.Company_PostcodeInput().FillAsync("7431BX");
+            await Page.Company_HuisnummerInput().FillAsync("3");
+
+            await Step("And clicks the search button");
+
+            await Page.Company_PostcodeHuisnummerSearchButton().ClickAsync();
+
+            await Step("Then user is navigated to Bedrijfinformatie page of Test BV Donald Nevenvestiging");
+
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test BV Donald Nevenvestiging" })).ToBeVisibleAsync();
+
+        }
+
+
+
 
     }
 }
