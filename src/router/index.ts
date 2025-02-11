@@ -45,6 +45,8 @@ const ContactverzoekFormulierenBeheer = () =>
 
 const KanaalBeheer = () => import("@/views/Beheer/Kanalen/KanaalBeheer.vue");
 const KanalenBeheer = () => import("@/views/Beheer/Kanalen/KanalenBeheer.vue");
+const VacBeheer = () => import("@/views/Beheer/vacs/VacBeheer.vue");
+const VacsBeheer = () => import("@/views/Beheer/vacs/VacsBeheer.vue");
 
 const guardContactMoment: NavigationGuard = (to, from, next) => {
   const contactmoment = useContactmomentStore();
@@ -149,7 +151,7 @@ const router = createRouter({
       path: "/beheer",
       name: "Beheer",
       component: BeheerLayout,
-      props: true,
+      props: () => ({}), // Don't pass params to BeheerLayout
       meta: { hideSidebar: true },
       children: [
         {
@@ -205,16 +207,37 @@ const router = createRouter({
           meta: {},
         },
         {
-          path: "Contactverzoekformulieren",
-          name: "ContactverzoekformulierenBeheer",
+          path: "formulieren-contactverzoek-afdeling",
+          name: "FormulierenContactverzoekAfdelingenBeheer",
           component: ContactverzoekFormulierenBeheer,
+          props: { soort: "afdeling" },
           meta: {},
         },
         {
-          path: "Contactverzoekformulier/:id?",
-          name: "Contactverzoekformulier",
+          path: "formulier-contactverzoek-afdeling/:id?",
+          name: "FormulierContactverzoekAfdelingenBeheer",
           component: ContactverzoekFormulierBeheer,
-          props: true,
+          props: (route) => ({
+            ...route.params,
+            soort: "afdeling",
+          }),
+          meta: {},
+        },
+        {
+          path: "formulieren-contactverzoek-groep",
+          name: "FormulierenContactverzoekGroepenBeheer",
+          component: ContactverzoekFormulierenBeheer,
+          props: { soort: "groep" },
+          meta: {},
+        },
+        {
+          path: "formulier-contactverzoek-groep/:id?",
+          name: "FormulierContactverzoekGroepenBeheer",
+          component: ContactverzoekFormulierBeheer,
+          props: (route) => ({
+            ...route.params,
+            soort: "groep",
+          }),
           meta: {},
         },
         {
@@ -227,6 +250,19 @@ const router = createRouter({
           path: "kanaal/:id?",
           name: "KanaalBeheer",
           component: KanaalBeheer,
+          props: true,
+          meta: {},
+        },
+        {
+          path: "vacs",
+          name: "VacsBeheer",
+          component: VacsBeheer,
+          meta: {},
+        },
+        {
+          path: "vac/:uuid?",
+          name: "VacBeheer",
+          component: VacBeheer,
           props: true,
           meta: {},
         },

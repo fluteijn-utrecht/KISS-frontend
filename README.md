@@ -2,6 +2,7 @@
 [![Code quality checks](https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/actions/workflows/linter.yml/badge.svg)](https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/actions?query=workflow%3A+code+quality+checks)
 [![Known Vulnerabilities](https://snyk.io/test/github/Klantinteractie-Servicesysteem/KISS-frontend/badge.svg)](https://snyk.io/test/github/Klantinteractie-Servicesysteem/KISS-frontend)
 [![Dependabot](https://img.shields.io/badge/dependabot-025E8C?style=for-the-badge&logo=dependabot&logoColor=white)](https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/pulls?q=is%3Apr+author%3Aapp%2Fdependabot)
+[![Playwright Tests](https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/actions/workflows/playwright.yaml/badge.svg)](https://github.com/Klantinteractie-Servicesysteem/KISS-frontend/actions/workflows/playwright.yaml)
 # kiss-frontend
 
 ## Set-up environment variables

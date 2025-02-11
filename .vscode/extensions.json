@@ -3,7 +3,6 @@
     "vue.volar",
     "dbaeumer.vscode-eslint",
     "stylelint.vscode-stylelint",
-    "esbenp.prettier-vscode",
-    "rohit-gohri.format-code-action"
+    "esbenp.prettier-vscode"
   ]
 }

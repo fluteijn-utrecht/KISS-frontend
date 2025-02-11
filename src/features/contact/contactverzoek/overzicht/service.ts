@@ -90,7 +90,7 @@ export async function search(
     url.searchParams.set("ordering", "-record__data__registratiedatum");
     url.searchParams.set("pageSize", "10");
     url.searchParams.set(
-      "data_attrs",
+      "data_attr",
       `betrokkene__digitaleAdressen__icontains__${query}`,
     );
 
@@ -190,6 +190,7 @@ export function fetchContactverzoekenByKlantId(
   // OK2
   if (gebruikKlantInteractiesApi) {
     return fetchBetrokkenen({
+      pageSize: "100",
       wasPartij__url: id,
     }).then(async (paginated) => ({
       ...paginated,
@@ -208,7 +209,7 @@ export function fetchContactverzoekenByKlantId(
   const url = new URL("/api/internetaak/api/v2/objects", location.origin);
   url.searchParams.set("ordering", "-record__data__registratiedatum");
   url.searchParams.set("pageSize", "10");
-  url.searchParams.set("data_attrs", `betrokkene__klant__exact__${id}`);
+  url.searchParams.set("data_attr", `betrokkene__klant__exact__${id}`);
 
   return fetchLoggedIn(url)
     .then(throwIfNotOk)

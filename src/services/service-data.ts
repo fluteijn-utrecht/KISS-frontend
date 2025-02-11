@@ -8,7 +8,7 @@ const refreshInterval =
 
 const logError = import.meta.env.DEV
   ? (e: unknown) => console.error(e)
-  : // eslint-disable-next-line @typescript-eslint/no-empty-function
+  :  
     () => {};
 
 // sometimes, a query can return one or zero results.

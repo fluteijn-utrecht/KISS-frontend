@@ -1,5 +1,5 @@
 ﻿using Kiss.Bff.Beheer.Data;
-using Kiss.Bff.ZaakGerichtWerken.Contactverzoeken;
+using Kiss.Bff.Intern.ContactverzoekenVragensets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -38,17 +38,19 @@ namespace Kiss.Bff.Test
                     Id = 1,
                     Titel = "VragenSet 1",
                     JsonVragen = "{ \"Question1\": \"Answer1\" }",
-                    AfdelingId = "Dept1",
-                    AfdelingNaam = "Department 1" 
-
+                    OrganisatorischeEenheidId = "Dept1",
+                    OrganisatorischeEenheidNaam = "Department 1" ,
+                    OrganisatorischeEenheidSoort = "afdeling"
+                    
                 },
                 new ContactVerzoekVragenSet
                 {
                     Id = 2,
                     Titel = "VragenSet 2",
                     JsonVragen = "{ \"Question2\": \"Answer2\" }",
-                    AfdelingId = "Dept2",
-                    AfdelingNaam = "Department 2" 
+                    OrganisatorischeEenheidId = "Dept2",
+                    OrganisatorischeEenheidNaam = "Department 2" ,
+                    OrganisatorischeEenheidSoort = "afdeling"
                 }
             };
 
@@ -56,7 +58,7 @@ namespace Kiss.Bff.Test
             await dbContext.SaveChangesAsync();
 
             // Act
-            var result = await controller.Get(CancellationToken.None) as OkObjectResult;
+            var result = await controller.Get("afdeling", CancellationToken.None) as OkObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
@@ -75,7 +77,7 @@ namespace Kiss.Bff.Test
             var controller = new ReadContactverzoekenVragenSets(dbContext);
 
             // Act
-            var result = await controller.Get(CancellationToken.None) as OkObjectResult;
+            var result = await controller.Get("afdeling", CancellationToken.None) as OkObjectResult;
 
             // Assert
             Assert.IsNotNull(result);

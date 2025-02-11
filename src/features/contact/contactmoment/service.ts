@@ -134,16 +134,18 @@ export function fetchContactmomentenByKlantId(
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id }).then(async (paginated) => ({
-      ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ]).then((page) =>
-        page.map(({ klantContact }) =>
-          mapKlantContactToContactmomentViewModel(klantContact),
+    return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(
+      async (paginated) => ({
+        ...paginated,
+        page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+          KlantContactExpand.gingOverOnderwerpobjecten,
+        ]).then((page) =>
+          page.map(({ klantContact }) =>
+            mapKlantContactToContactmomentViewModel(klantContact),
+          ),
         ),
-      ),
-    }));
+      }),
+    );
   }
 
   const searchParams = new URLSearchParams();
@@ -328,12 +330,13 @@ export function mapContactverzoekData({
   let actor = null;
 
   if (data.typeActor == ActorType.groep) {
-    if (data.medewerker) {
+    if (data.medewerker || data.medewerkeremail) {
       //voor een medewerker van een groep
       actor = {
-        naam: data.medewerker.achternaam || "",
+        naam: data.medewerker?.achternaam || data.medewerkeremail || "",
         soortActor: "medewerker",
-        identificatie: data.medewerker?.identificatie || "",
+        identificatie:
+          data.medewerker?.identificatie || data.medewerkeremail || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Groep,
         naamOrganisatorischeEenheid: data.groep?.naam || "",
         identificatieOrganisatorischeEenheid: data.groep?.identificatie || "",
@@ -349,12 +352,13 @@ export function mapContactverzoekData({
     }
   }
   if (data.typeActor == ActorType.afdeling) {
-    if (data.medewerker) {
+    if (data.medewerker || data.medewerkeremail) {
       //voor een medewerker van een afdeling
       actor = {
-        naam: data.medewerker.achternaam || "",
+        naam: data.medewerker?.achternaam || data.medewerkeremail || "",
         soortActor: "medewerker",
-        identificatie: data.medewerker?.identificatie || "",
+        identificatie:
+          data.medewerker?.identificatie || data.medewerkeremail || "",
         typeOrganisatorischeEenheid: TypeOrganisatorischeEenheid.Afdeling,
         naamOrganisatorischeEenheid: data.afdeling?.naam || "",
         identificatieOrganisatorischeEenheid:

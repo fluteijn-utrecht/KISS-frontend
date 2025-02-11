@@ -27,13 +27,14 @@ export interface ContactVerzoekVragenSet {
   id: number;
   titel: string;
   vraagAntwoord: Vraag[];
-  afdelingId: string;
+  organisatorischeEenheidId: string;
+  organisatorischeEenheidSoort: TypeOrganisatorischeEenheid;
 }
 
 // Kan alleen groep of afdeling zijn, medewerker bestaat niet
 export enum TypeOrganisatorischeEenheid {
-  Groep = "groep",
   Afdeling = "afdeling",
+  Groep = "groep",
 }
 
 export type DigitaalAdres = {

@@ -1,7 +1,7 @@
 type FetchArgs = Parameters<typeof fetch>;
 type FetchReturn = ReturnType<typeof fetch>;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+ 
 const empty = () => {};
 
 const waitForLogin = {
