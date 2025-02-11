@@ -1,4 +1,6 @@
-﻿namespace Kiss.Bff.Extern
+﻿using System.Diagnostics.Metrics;
+
+namespace Kiss.Bff.Extern
 {
     public static class RegistryConfigExtensions
     {
@@ -102,9 +104,9 @@
         /// <returns>An error message if applicable, or an empty string if all is well</returns>
         private static string Validate(IReadOnlyList<RegistrySystem> systemen)
         {
-            if (systemen.Count == 0)
+            if (!systemen.Any())
             {
-                return "FOUT: Er zijn geen registraties geconfigureerd.";
+                return "FOUT: Er zijn geen registraties geconfigureerd. Controleer of de configuratie correct is ingesteld. Voor OpenKlant2 moet ten minste een KlantinteractieRegistry aanwezig zijn. Voor OpenKlant1 moeten Contactmomenten, Klanten en Interne Taken correct geconfigureerd zijn.";
             }
 
             foreach (var systeem in systemen)
