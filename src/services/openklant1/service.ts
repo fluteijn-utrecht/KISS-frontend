@@ -97,13 +97,6 @@ const getSingleBsnSearchId = (bsn: string | undefined) => {
   return url + "_single";
 };
 
-// export function useKlantById(id: Ref<string>) {
-//   return ServiceResult.fromFetcher(
-//     () => getKlantIdUrl(id.value),
-//     fetchKlantByIdOk1,
-//   );
-// }
-
 export function fetchKlantByIdOk1(systeemId: string, id: string) {
   const url = getKlantIdUrl(id);
   return fetchWithSysteemId(systeemId, url)

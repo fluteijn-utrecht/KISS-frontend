@@ -9,7 +9,7 @@
       :disabled="(k) => !k"
     >
       <template #success="{ data }">
-        <klant-details v-if="data" :klant="data" />
+        <klant-details :klant="data" />
       </template>
     </tab-list-data-item>
     <tab-list-data-item
@@ -82,23 +82,25 @@ import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
 import { useOpenKlant2 } from "@/services/openklant2/service";
+import { getRegisterDetails } from "@/features/shared/systeemdetails";
 import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
 import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
+const defaultSystemId = ref<string | null>(null);
 
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 
-const klant = useKlantById(klantId);
-
-const klantUrl = computed(() =>
-  klant.success && klant.data ? klant.data.url ?? "" : "",
+const klant = useKlantById(
+  klantId,
+  defaultSystemId,
+  gebruikKlantInteracatiesApi,
 );
-const currentTab = ref("");
 
-//const contactverzoekenPage = ref(1);
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+const currentTab = ref("");
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.success || !klant.data) return undefined;
@@ -152,6 +154,9 @@ watch(
 );
 
 onMounted(async () => {
-  gebruikKlantInteracatiesApi.value = await useOpenKlant2();
+  const { useKlantInteractiesApi, defaultSysteemId } =
+    await getRegisterDetails();
+  defaultSystemId.value = defaultSysteemId;
+  gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
 });
 </script>

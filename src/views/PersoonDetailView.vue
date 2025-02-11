@@ -6,7 +6,7 @@
   <tab-list v-model="activeTab">
     <tab-list-data-item label="Contactgegevens" :data="klant">
       <template #success="{ data }">
-        <klant-details v-if="data" :klant="data" />
+        <klant-details :klant="data" />
       </template>
     </tab-list-data-item>
 
@@ -88,22 +88,28 @@ import { getRegisterDetails } from "@/features/shared/systeemdetails";
 const props = defineProps<{ persoonId: string }>();
 
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
+const defaultSystemId = ref<string | null>(null);
 const activeTab = ref("");
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId);
-const klantUrl = computed(() =>
-  klant?.success && klant.data ? klant.data.url ?? "" : "",
+const klant = useKlantById(
+  klantId,
+  defaultSystemId,
+  gebruikKlantInteracatiesApi,
 );
 
+const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+
 onMounted(async () => {
-  const { useKlantInteractiesApi } = await getRegisterDetails();
+  const { useKlantInteractiesApi, defaultSysteemId: defaultSysteemId } =
+    await getRegisterDetails();
   gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
+  defaultSystemId.value = defaultSysteemId;
 });
 
 const getBsn = () =>
   !klant.success ||
-  !klant?.data?.bsn ||
+  !klant.data.bsn ||
   gebruikKlantInteracatiesApi.value === null
     ? ""
     : klant.data.bsn;
