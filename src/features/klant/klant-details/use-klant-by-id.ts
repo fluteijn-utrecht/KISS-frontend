@@ -10,11 +10,12 @@ export const useKlantById = (id: Ref<string>) => {
   const fetchKlant = async (url: string) => {
     if (!url) return null;
 
-    const { useKlantInteractiesApi, systeemId } = await getRegisterDetails();
+    const { useKlantInteractiesApi, defaultSysteemId } =
+      await getRegisterDetails();
 
     return useKlantInteractiesApi
-      ? fetchKlantByIdOk2(systeemId, url)
-      : fetchKlantByIdOk1(systeemId, url);
+      ? fetchKlantByIdOk2(defaultSysteemId, url)
+      : fetchKlantByIdOk1(defaultSysteemId, url);
   };
 
   return ServiceResult.fromFetcher(getApiSpecifiekUrl, fetchKlant);

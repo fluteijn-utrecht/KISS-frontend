@@ -24,13 +24,14 @@ export const useKlantByBedrijfIdentifier = (
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    const { useKlantInteractiesApi, systeemId } = await getSysteemDetails();
+    const { useKlantInteractiesApi, defaultSysteemId } =
+      await getSysteemDetails();
 
     if (useKlantInteractiesApi) {
-      return findKlantByIdentifier(systeemId, id);
+      return findKlantByIdentifier(defaultSysteemId, id);
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
-      return useKlantByIdentifierOk1(systeemId, () => mappedId);
+      return useKlantByIdentifierOk1(defaultSysteemId, () => mappedId);
     }
   };
 

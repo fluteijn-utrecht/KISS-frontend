@@ -25,6 +25,7 @@ import {
   type OnderwerpObjectPostModel,
   type Betrokkene,
   CodeSoortObjectId,
+  type KlantBedrijfIdentifier,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
@@ -541,6 +542,16 @@ export const fetchKlantByIdOk2 = (systeemId: string, uuid: string) => {
     .then((partij) => mapPartijToKlant(systeemId, partij));
 };
 
+export const ensureOk2Klant = async (
+  systeemId: string,
+  parameters: KlantBedrijfIdentifier,
+) => {
+  return (
+    (await findKlantByIdentifier(systeemId, parameters)) ??
+    (await createKlant(systeemId, parameters))
+  );
+};
+
 export function findKlantByIdentifier(
   systeemId: string,
   query:
@@ -785,73 +796,6 @@ async function mapPartijToKlant(
 
   return ret;
 }
-
-// export function searchKlantenByDigitaalAdres(
-//   query:
-//     | {
-//         telefoonnummer: string;
-//         partijType: PartijTypes;
-//       }
-//     | {
-//         email: string;~
-//         partijType: PartijTypes;
-//       },
-// ) {
-//   let key: DigitaalAdresTypes, value: string;
-
-//   if ("telefoonnummer" in query) {
-//     key = DigitaalAdresTypes.telefoonnummer;
-//     value = query.telefoonnummer;
-//   } else {
-//     key = DigitaalAdresTypes.email;
-//     value = query.email;
-//   }
-
-//   const searchParams = new URLSearchParams();
-//   searchParams.append("verstrektDoorPartij__soortPartij", query.partijType);
-//   searchParams.append("soortDigitaalAdres", key);
-//   searchParams.append("adres__icontains", value);
-
-//   const url = klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
-
-//   return (
-//     fetchLoggedIn(url)
-//       .then(throwIfNotOk)
-//       .then(parseJson)
-//       .then(
-//         ({
-//           results,
-//         }: {
-//           results: { verstrektDoorPartij: { uuid: string } }[];
-//         }) => {
-//           const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
-//           const uniquePartijIds = [...new Set(partijIds)];
-//           const promises = uniquePartijIds.map(fetchKlantByIdOk2);
-//           return Promise.all(promises);
-//         },
-//       )
-//       // TIJDELIJK: de filters werken nog niet in OpenKlant 2.1, dat komt in een nieuwe release
-//       // daarom filteren we hier handmatig
-//       .then((klanten) =>
-//         klanten.filter((klant) => {
-//           const isBedrijf =
-//             !!klant.kvkNummer || !!klant.vestigingsnummer || !!klant.rsin;
-//           if (!isBedrijf) return false;
-//           const matchesEmail =
-//             key === DigitaalAdresTypes.email &&
-//             klant.emailadressen.some((adres: string | string[]) =>
-//               adres.includes(value),
-//             );
-//           const matchesTelefoon =
-//             key === DigitaalAdresTypes.telefoonnummer &&
-//             klant.telefoonnummers.some((adres: string | string[]) =>
-//               adres.includes(value),
-//             );
-//           return matchesEmail || matchesTelefoon;
-//         }),
-//       )
-//   );
-// }
 
 /** bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
  * @deprecated use fetchSystemen in stead

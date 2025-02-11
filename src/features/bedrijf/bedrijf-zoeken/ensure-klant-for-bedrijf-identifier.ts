@@ -1,7 +1,6 @@
 import {
-  findKlantByIdentifier,
-  createKlant,
   type KlantBedrijfIdentifier,
+  ensureOk2Klant,
 } from "@/services/openklant2";
 import { ensureKlantForBedrijfIdentifier as ensureKlantForBedrijfIdentifierOk1 } from "@/services/openklant1/service";
 import { mapBedrijfsIdentifier } from "@/services/openklant1/service";
@@ -12,21 +11,18 @@ export const ensureKlantForBedrijfIdentifier = async (
   klantbedrijfidentifier: KlantBedrijfIdentifier,
   bedrijfsnaam: string,
 ) => {
-  const { useKlantInteractiesApi, systeemId } = await getSysteemDetails();
+  const { useKlantInteractiesApi, defaultSysteemId } =
+    await getSysteemDetails();
 
   if (useKlantInteractiesApi) {
-    const klant = await findKlantByIdentifier(
-      systeemId,
-      klantbedrijfidentifier,
-    );
-    return klant ?? (await createKlant(systeemId, klantbedrijfidentifier));
+    return await ensureOk2Klant(defaultSysteemId, klantbedrijfidentifier);
   } else {
     const mappedIdentifier = mapBedrijfsIdentifier(klantbedrijfidentifier);
     const organisatieIds = useOrganisatieIds();
     const organisatieId = organisatieIds.value[0] || "";
 
     return await ensureKlantForBedrijfIdentifierOk1(
-      systeemId,
+      defaultSysteemId,
       { bedrijfsnaam, identifier: mappedIdentifier },
       organisatieId,
     );

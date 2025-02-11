@@ -30,56 +30,8 @@ const contactmomentenProxyRoot = "/api/contactmomenten";
 const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
 const objectcontactmomentenUrl = `${contactmomentenBaseUrl}/objectcontactmomenten`;
-
-// type FieldParams = {
-//   email: string;
-//   telefoonnummer: string;
-// };
-
-type KlantSearchParameters = {
-  query: Ref<BedrijvenQuery | undefined>;
-  page: Ref<number | undefined>;
-  subjectType?: KlantType;
-};
-
 const klantRootUrl = new URL(document.location.href);
 klantRootUrl.pathname = klantenBaseUrl;
-
-function getKlantSearchUrl(
-  search: BedrijvenQuery | undefined,
-  subjectType: KlantType,
-  page: number | undefined,
-) {
-  if (!search) return "";
-
-  const url = new URL(klantRootUrl);
-  url.searchParams.set("page", page?.toString() ?? "1");
-  url.searchParams.append("subjectType", subjectType);
-
-  if ("email" in search) {
-    url.searchParams.set("emailadres", search.email);
-  }
-
-  if ("telefoonnummer" in search) {
-    url.searchParams.set("telefoonnummer", search.telefoonnummer);
-  }
-
-  return url.toString();
-}
-
-// export function useSearchKlanten({
-//   query,
-//   page,
-//   subjectType,
-// }: KlantSearchParameters) {
-//   const getUrl = () =>
-//     getKlantSearchUrl(
-//       query.value,
-//       subjectType ?? KlantType.Persoon,
-//       page.value,
-//     );
-//   return ServiceResult.fromFetcher(getUrl, searchKlanten);
-// }
 
 function searchKlanten(
   systeemId: string,
@@ -207,17 +159,7 @@ export function useUpdateContactGegevens() {
   return ServiceResult.fromSubmitter(updateContactgegevens);
 }
 
-// export function useKlantByBsn(
-//   getBsn: () => string | undefined,
-// ): ServiceData<Klant | null> {
-//   const getUrl = () => getKlantBsnUrl(getBsn());
-
-//   return ServiceResult.fromFetcher(getUrl, searchSingleKlant, {
-//     getUniqueId: () => getSingleBsnSearchId(getBsn()),
-//   });
-// }
-
-export async function ensureKlantForBsn(
+export async function ensureOk1Klant(
   systeemId: string,
   {
     bsn,
