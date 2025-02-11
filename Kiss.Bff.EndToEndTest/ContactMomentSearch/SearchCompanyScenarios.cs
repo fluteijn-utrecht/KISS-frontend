@@ -72,8 +72,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to bedrijfsinformatie page");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test Stichting Bolderbast" })).ToBeVisibleAsync();
 
-         }
+        }
 
 
 
@@ -131,8 +132,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to bedrijfinformatie page of Test Stichting Bolderbast");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test Stichting Bolderbast" })).ToBeVisibleAsync();
 
-         }
+        }
 
         [TestMethod("5. Searching a company using KVK-nummer with multiple records")]
         public async Task SearchByKvknummer_MultipleRecordsAsync()
@@ -193,7 +195,8 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to bedrijfinformatie page of Test BV Donald Nevenvestiging");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
-             
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test BV Donald Nevenvestiging" })).ToBeVisibleAsync();
+
         }
 
 
@@ -251,8 +254,9 @@ namespace Kiss.Bff.EndToEndTest.ContactMomentSearch
             await Step("Then user is navigated to Bedrijfinformatie page of Test BV Donald Nevenvestiging");
 
             await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Bedrijfsinformatie" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Test BV Donald Nevenvestiging" })).ToBeVisibleAsync();
 
-         }
+        }
 
 
 
