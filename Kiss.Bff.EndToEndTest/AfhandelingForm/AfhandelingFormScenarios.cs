@@ -71,7 +71,7 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm
 
             await Page.GetOpslaanButton().ClickAsync();
 
-            await Step("Then error message as 'Please fill out this field.' is displayed for the field Kanaal");
+            await Step("Then error message as 'Please select an item in the list.' is displayed for the field Kanaal");
 
             await Expect(Page.GetKanaalField()).ToHaveJSPropertyAsync("validationMessage", "Please select an item in the list.");
 
@@ -85,7 +85,7 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm
 
             await Page.GetOpslaanButton().ClickAsync();
 
-            await Step("Then error message as 'Please fill out this field.' is displayed for the field Afhandeling");
+            await Step("Then error message as 'Please select an item in the list.' is displayed for the field Afhandeling");
 
             await Expect(Page.GetAfhandelingField()).ToHaveJSPropertyAsync("validationMessage", "Please select an item in the list.");
 
@@ -167,7 +167,7 @@ namespace Kiss.Bff.EndToEndTest.AfhandelingForm
             await Step("And value 'Zelfstandig afgehandeld' in field Afhandeling");
 
             await Page.GetAfhandelingField().ClickAsync();
-            await Page.GetAfhandelingField().SelectOptionAsync(new[] { "Zelfstandig afgehandeld" });
+            await Page.GetAfhandelingField().SelectOptionAsync(new[] { new SelectOptionValue { Label = "Zelfstandig afgehandeld" } });
 
             await Step("And selects value 'Parkeren' in field Afdeling");
 
