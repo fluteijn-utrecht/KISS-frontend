@@ -174,8 +174,7 @@ export async function ensureOk1Klant(
     mutate(idUrl, first);
     return first;
   }
-
-  const response = await fetchLoggedIn(klantRootUrl, {
+  const response = await fetchWithSysteemId(systeemId, klantenBaseUrl, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
