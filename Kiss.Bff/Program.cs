@@ -80,8 +80,6 @@ try
     builder.Services.AddDbContext<BeheerDbContext>(o => o.UseNpgsql(connStr));
     builder.Services.AddEnterpriseSearch(builder.Configuration["ENTERPRISE_SEARCH_BASE_URL"], builder.Configuration["ENTERPRISE_SEARCH_PRIVATE_API_KEY"]);
 
-    builder.Services.AddKlantenProxy(builder.Configuration["KLANTEN_BASE_URL"], builder.Configuration["KLANTEN_CLIENT_ID"], builder.Configuration["KLANTEN_CLIENT_SECRET"]);
-
     if(int.TryParse(builder.Configuration["EMAIL_PORT"], out var emailPort)) 
     {
         builder.Services.AddSmtpClient(

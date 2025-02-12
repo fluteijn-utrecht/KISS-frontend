@@ -30,6 +30,12 @@ namespace Kiss.Bff.Test
         public static void ClassInit(TestContext _)
         {
             Environment.SetEnvironmentVariable("MANAGEMENTINFORMATIE_API_KEY", "eenZeerGeheimeSleutelMetMinimaal32TekensLang");
+
+            // Minimalistische dummy waarde zodat AddRegistryConfig niet crasht
+            Environment.SetEnvironmentVariable("REGISTERS__0__IS_DEFAULT", "true");
+            Environment.SetEnvironmentVariable("REGISTERS__0__REGISTRY_VERSION", "OpenKlant2");
+            Environment.SetEnvironmentVariable("REGISTERS__0__KLANTINTERACTIE_BASE_URL", "http://unittest.local");
+            Environment.SetEnvironmentVariable("REGISTERS__0__KLANTINTERACTIE_TOKEN", "unittest-token");
             s_factory = new CustomWebApplicationFactory();
             s_client = s_factory.CreateDefaultClient();
         }

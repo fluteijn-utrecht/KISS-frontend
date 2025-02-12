@@ -2,7 +2,7 @@ import { throwIfNotOk, parseJson, fetchLoggedIn } from "..";
 
 type ValueOf<T> = T[keyof T];
 
-export const klantinteractieVersions = {
+export const registryVersions = {
   ok1: "OpenKlant1",
   ok2: "OpenKlant2",
 } as const;
@@ -16,6 +16,6 @@ export const fetchSystemen = () =>
         systemen as {
           isDefault: boolean;
           identifier: string;
-          klantinteractieVersion: ValueOf<typeof klantinteractieVersions>;
+          registryVersion: ValueOf<typeof registryVersions>;
         }[],
     );

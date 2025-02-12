@@ -81,21 +81,30 @@ import {
   usePersoonByBsn,
   BrpGegevens,
 } from "@/features/persoon/persoon-details";
-import { useOpenKlant2 } from "@/services/openklant2";
 import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
 import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
+import { getRegisterDetails } from "@/features/shared/systeemdetails";
 
 const props = defineProps<{ persoonId: string }>();
 
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
+const defaultSystemId = ref<string | null>(null);
 const activeTab = ref("");
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
-const klant = useKlantById(klantId, gebruikKlantInteracatiesApi);
+const klant = useKlantById(
+  klantId,
+  defaultSystemId,
+  gebruikKlantInteracatiesApi,
+);
+
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 onMounted(async () => {
-  gebruikKlantInteracatiesApi.value = await useOpenKlant2();
+  const { useKlantInteractiesApi, defaultSysteemId } =
+    await getRegisterDetails();
+  gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
+  defaultSystemId.value = defaultSysteemId;
 });
 
 const getBsn = () =>

@@ -15,14 +15,16 @@ namespace Kiss.Bff.Extern
     public record RegistrySystem
     {
         public bool IsDefault { get; init; }
-        public KlantinteractieVersion KlantinteractieVersion { get; init; }
-        public required KlantinteractieRegistry KlantinteractieRegistry { get; init; }
+        public RegistryVersion RegistryVersion { get; init; }
+        public KlantinteractieRegistry? KlantinteractieRegistry { get; init; }
         public InternetaakRegistry? InterneTaakRegistry { get; init; }
+        public ContactmomentRegistry? ContactmomentRegistry { get; init; }
+        public KlantRegistry? KlantRegistry { get; init; }
         public required string Identifier { get; init; }
     }
 
-    [JsonConverter(typeof(JsonStringEnumConverter<KlantinteractieVersion>))]
-    public enum KlantinteractieVersion
+    [JsonConverter(typeof(JsonStringEnumConverter<RegistryVersion>))]
+    public enum RegistryVersion
     {
         OpenKlant1,
         OpenKlant2,
@@ -41,6 +43,24 @@ namespace Kiss.Bff.Extern
     }
 
     public record KlantinteractieRegistry : RegistryBase
+    {
+        public override void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
+        {
+            var authHeaderProvider = new AuthenticationHeaderProvider(Token, ClientId, ClientSecret);
+            authHeaderProvider.ApplyAuthorizationHeader(headers, user);
+        }
+    }
+
+    public record KlantRegistry : RegistryBase
+    {
+        public override void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
+        {
+            var authHeaderProvider = new AuthenticationHeaderProvider(Token, ClientId, ClientSecret);
+            authHeaderProvider.ApplyAuthorizationHeader(headers, user);
+        }
+    }
+
+    public record ContactmomentRegistry : RegistryBase
     {
         public override void ApplyHeaders(HttpRequestHeaders headers, System.Security.Claims.ClaimsPrincipal user)
         {

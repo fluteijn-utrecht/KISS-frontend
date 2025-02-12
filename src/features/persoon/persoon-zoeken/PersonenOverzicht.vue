@@ -52,17 +52,32 @@ import type { Persoon } from "@/services/brp";
 import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { watchEffect } from "vue";
-import { ensureKlantForBsn } from "./ensure-klant-for-bsn";
+import { getRegisterDetails } from "@/features/shared/systeemdetails";
+import { useOrganisatieIds } from "@/stores/user";
+import { ensureOk2Klant } from "@/services/openklant2";
+import { ensureOk1Klant } from "@/services/openklant1";
 import type { Klant } from "@/services/openklant/types";
 
 const props = defineProps<{
   records: Persoon[];
   navigateOnSingleResult?: boolean;
 }>();
-
 const router = useRouter();
 
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
+
+const ensureKlantForBsn = async (parameters: { bsn: string }) => {
+  const { useKlantInteractiesApi, defaultSysteemId } =
+    await getRegisterDetails();
+
+  return useKlantInteractiesApi
+    ? await ensureOk2Klant(defaultSysteemId, parameters)
+    : await ensureOk1Klant(
+        defaultSysteemId,
+        parameters,
+        useOrganisatieIds().value[0] || "",
+      );
+};
 
 const navigate = async (persoon: Persoon) => {
   const { bsn } = persoon;
@@ -73,8 +88,7 @@ const navigate = async (persoon: Persoon) => {
   await mutate("persoon" + bsn, persoon);
   await mutate(klant.id, klant);
 
-  const url = getKlantUrl(klant);
-  await router.push(url);
+  await router.push(getKlantUrl(klant));
 };
 
 watchEffect(async () => {
