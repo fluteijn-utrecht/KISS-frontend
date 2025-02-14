@@ -5,10 +5,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers
 {
     public static class Locators
     {
-        public static ILocator GetNieuwContactmomentButton(this IPage page)
-        {
-            return page.GetByRole(AriaRole.Button, new() { Name = "Nieuw contactmoment" });
-        }
+         
 
         public static ILocator GetContactmomentSearch(this IPage page)
         {
@@ -16,7 +13,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers
         }
     
 
-        public static ILocator GetContactmomentSearchResults(this IPage page)
+        public static ILocator GetContactmomentSearchResults (this IPage page)
         {
             return page.Locator(".search-results.isExpanded").GetByRole(AriaRole.Navigation).First.GetByRole(AriaRole.Link);
         }

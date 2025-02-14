@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Kiss.Bff.EndToEndTest.AnonymousContactmoment.Helpers;
 using Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers;
 
 namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
@@ -19,7 +20,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("When the user starts a new Contactmoment");
 
-            await Page.GetNieuwContactmomentButton().ClickAsync();
+            await Page.CreateNewContactmomentAsync();
 
             await Step("And enters 'boom' in the search field in the Search pane");
 
@@ -53,7 +54,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("When the user starts a new Contactmoment");
 
-            await Page.GetNieuwContactmomentButton().ClickAsync();
+            await Page.CreateNewContactmomentAsync();
 
             await Step("And checks the box Smoelenboek");
 
@@ -68,9 +69,8 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
             await Page.GetContactmomentSearch().PressAsync("Enter");
 
             await Step("Then 10 items should appear");
-
-            var items = Page.GetContactmomentSearchResults();
-            await Expect(items).ToHaveCountAsync(10);
+ 
+            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label Smoelenboek in the first column");
 
@@ -90,7 +90,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("When the user starts a new Contactmoment");
 
-            await Page.GetNieuwContactmomentButton().ClickAsync();
+            await Page.CreateNewContactmomentAsync();
 
             await Step("And checks the box VAC in the Search pane");
 
@@ -106,8 +106,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("Then 10 items should appear");
 
-            var items = Page.GetContactmomentSearchResults();
-            await Expect(items).ToHaveCountAsync(10);
+            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label VAC in the first column");
 
@@ -126,7 +125,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("When the user starts a new Contactmoment");
 
-            await Page.GetNieuwContactmomentButton().ClickAsync();
+            await Page.CreateNewContactmomentAsync();
 
             await Step("And checks the box Kennisbank in the Search pane");
 
@@ -141,9 +140,8 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
             await Page.GetContactmomentSearch().PressAsync("Enter");
 
             await Step("Then 10 items should appear");
-
-            var items = Page.GetContactmomentSearchResults();
-            await Expect(items).ToHaveCountAsync(10);
+             
+            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label Kennisbank in the first column");
 
