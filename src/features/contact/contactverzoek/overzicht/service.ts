@@ -82,7 +82,9 @@ export async function search(
       ],
     )
       .then(filterOutContactmomenten)
-      .then(enrichBetrokkeneWithDigitaleAdressen)
+      .then((page) =>
+        enrichBetrokkeneWithDigitaleAdressen(defaultSysteemId, page),
+      )
       .then(enrichInterneTakenWithActoren)
       .then(mapKlantcontactToContactverzoekOverzichtItem)
       .then(filterOutGeauthenticeerdeContactverzoeken);
