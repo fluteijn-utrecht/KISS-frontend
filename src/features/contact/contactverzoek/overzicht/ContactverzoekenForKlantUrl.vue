@@ -22,6 +22,7 @@ defineSlots();
 const props = defineProps<{
   klantUrl: string;
   gebruikKlantInteracties: boolean;
+  defaultSysteemId: string;
 }>();
 
 const emit = defineEmits<{
@@ -37,6 +38,7 @@ const {
 } = useLoader(() => {
   if (props.klantUrl)
     return fetchContactverzoekenByKlantId(
+      props.defaultSysteemId,
       props.klantUrl,
       props.gebruikKlantInteracties,
     );

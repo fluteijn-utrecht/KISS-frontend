@@ -24,9 +24,10 @@
     <tab-list-item label="Contactmomenten">
       <template #default="{ setError, setLoading, setDisabled }">
         <contactmomenten-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null"
+          v-if="gebruikKlantInteracatiesApi != null && defaultSysteemId"
           :klant-url="klantUrl"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          :default-systeem-id="defaultSysteemId"
           @load="setDisabled(!$event?.page?.length)"
           @loading="setLoading"
           @error="setError"
@@ -48,9 +49,10 @@
     <tab-list-item label="Contactverzoeken">
       <template #default="{ setError, setLoading, setDisabled }">
         <contactverzoeken-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null"
+          v-if="gebruikKlantInteracatiesApi != null && defaultSysteemId"
           :klant-url="klantUrl"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          :default-systeem-id="defaultSysteemId"
           @load="setDisabled(!$event?.page?.length)"
           @loading="setLoading"
           @error="setError"
@@ -81,21 +83,20 @@ import BackLink from "@/components/BackLink.vue";
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
-import { useOpenKlant2 } from "@/services/openklant2/service";
 import { getRegisterDetails } from "@/features/shared/systeemdetails";
 import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
 import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
 
 const props = defineProps<{ bedrijfId: string }>();
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
-const defaultSystemId = ref<string | null>(null);
+const defaultSysteemId = ref<string | null>(null);
 
 const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 
 const klant = useKlantById(
   klantId,
-  defaultSystemId,
+  defaultSysteemId,
   gebruikKlantInteracatiesApi,
 );
 
@@ -154,9 +155,9 @@ watch(
 );
 
 onMounted(async () => {
-  const { useKlantInteractiesApi, defaultSysteemId } =
+  const { useKlantInteractiesApi, defaultSystemId } =
     await getRegisterDetails();
-  defaultSystemId.value = defaultSysteemId;
+  defaultSysteemId.value = defaultSystemId;
   gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
 });
 </script>

@@ -12,7 +12,7 @@ export const getRegisterDetails = async () => {
   }
 
   return {
-    defaultSysteemId: defaultSysteem.identifier,
+    defaultSystemId: defaultSysteem.identifier,
     useKlantInteractiesApi:
       defaultSysteem.registryVersion === registryVersions.ok2,
   };

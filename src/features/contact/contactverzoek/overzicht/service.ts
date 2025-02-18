@@ -11,6 +11,7 @@ import {
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
   fetchBetrokkenen,
+  fetchWithSysteemId,
   filterOutContactmomenten,
   KlantContactExpand,
   searchDigitaleAdressen,
@@ -56,6 +57,7 @@ async function searchOk2Recursive(
 }
 
 export async function search(
+  defaultSysteemId: string,
   query: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<ContactverzoekOverzichtItem[]> {
@@ -72,6 +74,7 @@ export async function search(
     );
 
     return enrichBetrokkeneWithKlantContact(
+      defaultSysteemId,
       [...uniqueBetrokkenen.values()],
       [
         KlantContactExpand.leiddeTotInterneTaken,
@@ -184,6 +187,7 @@ function mapObjectToContactverzoekOverzichtItem({
 }
 
 export function fetchContactverzoekenByKlantId(
+  defaultSysteemId: string,
   id: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<PaginatedResult<ContactverzoekOverzichtItem>> {
@@ -194,10 +198,14 @@ export function fetchContactverzoekenByKlantId(
       wasPartij__url: id,
     }).then(async (paginated) => ({
       ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
-        KlantContactExpand.leiddeTotInterneTaken,
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ])
+      page: await enrichBetrokkeneWithKlantContact(
+        defaultSysteemId,
+        paginated.page,
+        [
+          KlantContactExpand.leiddeTotInterneTaken,
+          KlantContactExpand.gingOverOnderwerpobjecten,
+        ],
+      )
         .then(filterOutContactmomenten)
         .then(enrichBetrokkeneWithDigitaleAdressen)
         .then(enrichInterneTakenWithActoren)
@@ -211,7 +219,7 @@ export function fetchContactverzoekenByKlantId(
   url.searchParams.set("pageSize", "10");
   url.searchParams.set("data_attr", `betrokkene__klant__exact__${id}`);
 
-  return fetchLoggedIn(url)
+  return fetchWithSysteemId(defaultSysteemId, url.toString())
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) =>

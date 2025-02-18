@@ -74,6 +74,7 @@ export function mapKlantContactToContactmomentViewModel(
 ////////////////////////////////////////////
 // contactmomenten and contactverzoeken
 export async function enrichBetrokkeneWithKlantContact(
+  defaultSysteemId: string,
   value: Betrokkene[],
   expand?: KlantContactExpand[],
 ): Promise<BetrokkeneMetKlantContact[]> {
@@ -83,6 +84,7 @@ export async function enrichBetrokkeneWithKlantContact(
       continue;
     }
     const klantcontact = await fetchKlantcontact({
+      defaultSysteemId,
       uuid: klantContactId,
       expand,
     });
@@ -154,7 +156,7 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
     const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
       (digitaalAdres) => {
         const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-        return fetchLoggedIn(url)
+        return fetchLoggedIn(url) //todo
           .then(throwIfNotOk)
           .then(parseJson)
           .then((d) => d as DigitaalAdresApiViewModel);
@@ -831,16 +833,21 @@ export enum KlantContactExpand {
 }
 
 export function fetchKlantcontact({
+  defaultSysteemId,
   expand,
   uuid,
 }: {
+  defaultSysteemId: string;
   uuid: string;
   expand?: KlantContactExpand[];
 }) {
   const query = new URLSearchParams();
   expand && query.append("expand", expand.join(","));
 
-  return fetchLoggedIn(`${klantinteractiesKlantcontacten}/${uuid}?${query}`)
+  return fetchWithSysteemId(
+    defaultSysteemId,
+    `${klantinteractiesKlantcontacten}/${uuid}?${query}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) => r as ExpandedKlantContactApiViewmodel);

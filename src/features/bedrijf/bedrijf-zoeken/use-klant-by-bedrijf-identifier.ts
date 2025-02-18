@@ -24,7 +24,7 @@ export const useKlantByBedrijfIdentifier = (
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    const { useKlantInteractiesApi, defaultSysteemId } =
+    const { useKlantInteractiesApi, defaultSystemId: defaultSysteemId } =
       await getSysteemDetails();
 
     if (useKlantInteractiesApi) {

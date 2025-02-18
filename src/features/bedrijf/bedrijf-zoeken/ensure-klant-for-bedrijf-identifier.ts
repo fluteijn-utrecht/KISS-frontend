@@ -11,7 +11,7 @@ export const ensureKlantForBedrijfIdentifier = async (
   klantbedrijfidentifier: KlantBedrijfIdentifier,
   bedrijfsnaam: string,
 ) => {
-  const { useKlantInteractiesApi, defaultSysteemId } =
+  const { useKlantInteractiesApi, defaultSystemId: defaultSysteemId } =
     await getSysteemDetails();
 
   if (useKlantInteractiesApi) {

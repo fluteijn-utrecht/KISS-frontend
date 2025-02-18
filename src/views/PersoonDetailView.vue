@@ -21,9 +21,11 @@
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
         <contactmomenten-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null"
+          v-if="gebruikKlantInteracatiesApi != null && defaultSysteemId"
           :klant-url="klantUrl"
+          :default-systeem-id="defaultSysteemId"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+          :default-system-id="defaultSysteemId"
           @load="setDisabled(!$event?.page?.length)"
           @loading="setLoading"
           @error="setError"
@@ -51,8 +53,11 @@
         <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
         <contactverzoeken-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null && klantUrl"
+          v-if="
+            gebruikKlantInteracatiesApi != null && klantUrl && defaultSysteemId
+          "
           :klant-url="klantUrl"
+          :default-systeem-id="defaultSysteemId"
           :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
           @load="setDisabled(!$event?.page?.length)"
           @loading="setLoading"
@@ -88,23 +93,23 @@ import { getRegisterDetails } from "@/features/shared/systeemdetails";
 const props = defineProps<{ persoonId: string }>();
 
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
-const defaultSystemId = ref<string | null>(null);
+const defaultSysteemId = ref<string | null>(null);
 const activeTab = ref("");
 const klantId = computed(() => props.persoonId);
 const contactmomentStore = useContactmomentStore();
 const klant = useKlantById(
   klantId,
-  defaultSystemId,
+  defaultSysteemId,
   gebruikKlantInteracatiesApi,
 );
 
 const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
 
 onMounted(async () => {
-  const { useKlantInteractiesApi, defaultSysteemId } =
+  const { useKlantInteractiesApi, defaultSystemId } =
     await getRegisterDetails();
   gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
-  defaultSystemId.value = defaultSysteemId;
+  defaultSysteemId.value = defaultSystemId;
 });
 
 const getBsn = () =>

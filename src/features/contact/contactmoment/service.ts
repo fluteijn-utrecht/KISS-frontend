@@ -56,8 +56,6 @@ const contactmomentDetails = "/api/contactmomentdetails";
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
-
-
 export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
 
 export const useGespreksResultaten = () => {
@@ -110,6 +108,7 @@ export function koppelKlant({
 }
 
 export function fetchContactmomentenByKlantId(
+  defaultSysteemId: string,
   id: string,
   gebruikKlantinteractiesApi: boolean,
 ) {
@@ -117,9 +116,11 @@ export function fetchContactmomentenByKlantId(
     return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(
       async (paginated) => ({
         ...paginated,
-        page: await enrichBetrokkeneWithKlantContact(paginated.page, [
-          KlantContactExpand.gingOverOnderwerpobjecten,
-        ]).then((page) =>
+        page: await enrichBetrokkeneWithKlantContact(
+          defaultSysteemId,
+          paginated.page,
+          [KlantContactExpand.gingOverOnderwerpobjecten],
+        ).then((page) =>
           page.map(({ klantContact }) =>
             mapKlantContactToContactmomentViewModel(klantContact),
           ),
@@ -200,7 +201,7 @@ export function useContactmomentObject(getUrl: () => string) {
   );
 }
 
-//te gebruiken om cotactverzoeken als internetaak op te slaan in een overige objecten register, wanneer er geen regiser compatibel met openklant 2 of hoger beschikbaar is. 
+//te gebruiken om cotactverzoeken als internetaak op te slaan in een overige objecten register, wanneer er geen regiser compatibel met openklant 2 of hoger beschikbaar is.
 export function saveContactverzoek({
   systemIdentifier,
   data,
@@ -292,11 +293,11 @@ export function mapContactverzoekData({
 
   const vragenToelichting =
     data.contactVerzoekVragenSet &&
-      data.contactVerzoekVragenSet.vraagAntwoord &&
-      data.contactVerzoekVragenSet.vraagAntwoord.length
+    data.contactVerzoekVragenSet.vraagAntwoord &&
+    data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-        data.contactVerzoekVragenSet.vraagAntwoord,
-      )
+          data.contactVerzoekVragenSet.vraagAntwoord,
+        )
       : "";
 
   let verantwoordelijkheAfdeling = "";

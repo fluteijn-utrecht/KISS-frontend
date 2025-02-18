@@ -67,7 +67,7 @@ const router = useRouter();
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
 const ensureKlantForBsn = async (parameters: { bsn: string }) => {
-  const { useKlantInteractiesApi, defaultSysteemId } =
+  const { useKlantInteractiesApi, defaultSystemId: defaultSysteemId } =
     await getRegisterDetails();
 
   return useKlantInteractiesApi
