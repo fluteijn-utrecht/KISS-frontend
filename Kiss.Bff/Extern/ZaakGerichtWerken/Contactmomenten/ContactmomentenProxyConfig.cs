@@ -14,7 +14,7 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
         {
             var registry = _registryConfig.GetRegistrySystem(systemIdentifier)?.ContactmomentRegistry;
 
-            if (registry == null) return BadRequest($"Geen Contactmomentenregister gevonden voor deze systemIdentifier: {systemIdentifier}");
+            if (registry == null) return BadRequest($"Geen Contactmomentenregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
 
             return new ProxyResult(() =>

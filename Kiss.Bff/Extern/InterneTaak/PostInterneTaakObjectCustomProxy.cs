@@ -27,7 +27,7 @@ namespace Kiss.Bff.Extern.InterneTaak
         {
             var registry = _config.GetRegistrySystem(systemIdentifier)?.InterneTaakRegistry;
 
-            if (registry == null) return BadRequest($"Geen Interne Taakregister gevonden voor deze systemIdentifier: {systemIdentifier}");
+            if (registry == null) return BadRequest($"Geen Interne Taakregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
             node["type"] = registry.ObjectTypeUrl;
 

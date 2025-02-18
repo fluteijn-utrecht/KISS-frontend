@@ -23,7 +23,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         {
             var config = _configuration.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.ContactmomentRegistry;
 
-            if (config == null) return BadRequest($"Geen Contactmomentenregister gevonden voor deze systemIdentifier: {systemIdentifier}");
+            if (config == null) return BadRequest($"Geen Contactmomentenregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;
