@@ -191,9 +191,10 @@ export function fetchContactverzoekenByKlantId(
   id: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<PaginatedResult<ContactverzoekOverzichtItem>> {
-  // OK2
+  //OK2
   if (gebruikKlantInteractiesApi) {
     return fetchBetrokkenen({
+      defaultSysteemId,
       pageSize: "100",
       wasPartij__url: id,
     }).then(async (paginated) => ({
@@ -207,7 +208,9 @@ export function fetchContactverzoekenByKlantId(
         ],
       )
         .then(filterOutContactmomenten)
-        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then((page) =>
+          enrichBetrokkeneWithDigitaleAdressen(defaultSysteemId, page),
+        )
         .then(enrichInterneTakenWithActoren)
         .then(mapKlantcontactToContactverzoekOverzichtItem),
     }));

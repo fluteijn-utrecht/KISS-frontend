@@ -88,13 +88,15 @@ export const useGespreksResultaten = () => {
 };
 
 export function koppelKlant({
+  systemId,
   klantId,
   contactmomentId,
 }: {
+  systemId: string;
   klantId: string;
   contactmomentId: string;
 }) {
-  return fetchLoggedIn(klantcontactmomentenUrl, {
+  return fetchWithSysteemId(systemId, klantcontactmomentenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -113,20 +115,22 @@ export function fetchContactmomentenByKlantId(
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(
-      async (paginated) => ({
-        ...paginated,
-        page: await enrichBetrokkeneWithKlantContact(
-          defaultSysteemId,
-          paginated.page,
-          [KlantContactExpand.gingOverOnderwerpobjecten],
-        ).then((page) =>
-          page.map(({ klantContact }) =>
-            mapKlantContactToContactmomentViewModel(klantContact),
-          ),
+    return fetchBetrokkenen({
+      defaultSysteemId,
+      wasPartij__url: id,
+      pageSize: "100",
+    }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(
+        defaultSysteemId,
+        paginated.page,
+        [KlantContactExpand.gingOverOnderwerpobjecten],
+      ).then((page) =>
+        page.map(({ klantContact }) =>
+          mapKlantContactToContactmomentViewModel(klantContact),
         ),
-      }),
-    );
+      ),
+    }));
   }
 
   const searchParams = new URLSearchParams();
@@ -134,7 +138,10 @@ export function fetchContactmomentenByKlantId(
   searchParams.set("ordering", "-registratiedatum");
   searchParams.set("expand", "objectcontactmomenten");
 
-  return fetchLoggedIn(`${contactmomentenUrl}?${searchParams.toString()}`)
+  return fetchWithSysteemId(
+    defaultSysteemId,
+    `${contactmomentenUrl}?${searchParams.toString()}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));

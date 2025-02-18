@@ -12,14 +12,10 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
         [HttpGet]
         public IActionResult Handle([FromRoute] string path, [FromHeader(Name = "systemIdentifier")] string? systemIdentifier)
         {
-            var registry = string.IsNullOrWhiteSpace(systemIdentifier)
-                ? _registryConfig.Systemen.FirstOrDefault(x => x.IsDefault)?.KlantinteractieRegistry
-                : _registryConfig.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.KlantinteractieRegistry;
+            var registry = _registryConfig.GetRegistrySystem(systemIdentifier)?.ContactmomentRegistry;
 
-            if (registry == null)
-            {
-                return BadRequest();
-            }
+            if (registry == null) return BadRequest($"Geen Contactmomentenregister gevonden voor deze systemIdentifier: {systemIdentifier}");
+
 
             return new ProxyResult(() =>
             {
@@ -37,6 +33,6 @@ namespace Kiss.Bff.Extern.ZaakGerichtWerken.Contactmomenten
             });
         }
 
-        private Uri GetUri(KlantinteractieRegistry config, string path) => new Uri($"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}?{Request.QueryString}");
+        private Uri GetUri(ContactmomentRegistry config, string path) => new Uri($"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}?{Request.QueryString}");
     }
 }

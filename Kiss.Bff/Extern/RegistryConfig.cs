@@ -7,9 +7,7 @@ namespace Kiss.Bff.Extern
     public record RegistryConfig
     {
         public required IReadOnlyList<RegistrySystem> Systemen { get; init; }
-        public RegistrySystem? GetRegistrySystem(string? systemIdentifier) => string.IsNullOrWhiteSpace(systemIdentifier) //todo gewoon register pakken van identifier anders niks en exception gooien
-            ? Systemen.FirstOrDefault(x => x.IsDefault)
-            : Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier);
+        public RegistrySystem? GetRegistrySystem(string? systemIdentifier) => Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier);
     }
 
     public record RegistrySystem

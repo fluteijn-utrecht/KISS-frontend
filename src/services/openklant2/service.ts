@@ -150,13 +150,14 @@ export function fetchActor(id: string) {
 }
 
 export async function enrichBetrokkeneWithDigitaleAdressen(
+  defaultSysteemId: string,
   value: BetrokkeneMetKlantContact[],
 ): Promise<BetrokkeneMetKlantContact[]> {
   for (const betrokkeneWithKlantcontact of value) {
     const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
       (digitaalAdres) => {
         const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-        return fetchLoggedIn(url) //todo
+        return fetchWithSysteemId(defaultSysteemId, url)
           .then(throwIfNotOk)
           .then(parseJson)
           .then((d) => d as DigitaalAdresApiViewModel);
@@ -171,11 +172,15 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
 }
 
 export function fetchBetrokkenen(params: {
+  defaultSysteemId: string;
   wasPartij__url: string;
   pageSize: string;
 }) {
   const query = new URLSearchParams(params);
-  return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
+  return fetchWithSysteemId(
+    params.defaultSysteemId,
+    `${klantinteractiesBetrokkenen}?${query}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as Betrokkene));
@@ -303,6 +308,7 @@ const postInternetaak = (
 };
 
 export const ensureActoren = async (
+  defaultSysteemId: string,
   actorData: undefined | ContactverzoekData["actor"],
 ): Promise<string[]> => {
   if (!actorData) {
@@ -322,9 +328,10 @@ export const ensureActoren = async (
     id: string,
     type?: "afdeling" | "groep" | undefined,
   ) => {
-    const actor = await getActorById(id);
+    const actor = await getActorById(defaultSysteemId, id);
     if (actor.results.length === 0) {
       return await postActor({
+        defaultSysteemId,
         fullName: name,
         identificatie: id,
         typeOrganisatorischeEenheid: type ?? undefined,
@@ -358,9 +365,12 @@ export const ensureActoren = async (
   return actoren;
 };
 
-export async function getActorById(identificatie: string): Promise<any> {
+export async function getActorById(
+  defaultSysteemId: string,
+  identificatie: string,
+): Promise<any> {
   const url = `${klantinteractiesActoren}?actoridentificatorObjectId=${identificatie}`;
-  const response = await fetchLoggedIn(url, {
+  const response = await fetchWithSysteemId(defaultSysteemId, url, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -400,6 +410,7 @@ function mapActorType(
 }
 
 export async function postActor({
+  defaultSysteemId,
   fullName,
   identificatie,
   typeOrganisatorischeEenheid,
@@ -407,6 +418,7 @@ export async function postActor({
   fullName: string;
   identificatie: string;
   typeOrganisatorischeEenheid: "afdeling" | "groep" | undefined;
+  defaultSysteemId: string;
 }): Promise<string> {
   const { codeObjecttype, codeRegister, codeSoortObjectId, soortActor } =
     mapActorType(typeOrganisatorischeEenheid);
@@ -423,14 +435,18 @@ export async function postActor({
     },
   };
 
-  const response = await fetchLoggedIn(klantinteractiesActoren, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+  const response = await fetchWithSysteemId(
+    defaultSysteemId,
+    klantinteractiesActoren,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(parsedModel),
     },
-    body: JSON.stringify(parsedModel),
-  });
+  );
 
   throwIfNotOk(response);
   const jsonResponse = await response.json();
@@ -536,7 +552,8 @@ const postDigitaalAdres = async (
 //-----------------------------------------------------------------------------------------------------------
 
 export const fetchKlantByIdOk2 = (systeemId: string, uuid: string) => {
-  return fetchLoggedIn(
+  return fetchWithSysteemId(
+    systeemId,
     `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`,
   )
     .then(throwIfNotOk)

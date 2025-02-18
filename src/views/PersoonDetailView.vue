@@ -86,7 +86,6 @@ import {
   usePersoonByBsn,
   BrpGegevens,
 } from "@/features/persoon/persoon-details";
-import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
 import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
 import { getRegisterDetails } from "@/features/shared/systeemdetails";
 

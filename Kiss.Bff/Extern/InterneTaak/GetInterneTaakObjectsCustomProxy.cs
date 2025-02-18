@@ -18,7 +18,7 @@ namespace Kiss.Bff.Extern.InterneTaak
         {
             var registry = registryConfig.GetRegistrySystem(systemIdentifier)?.InterneTaakRegistry;
 
-            if (registry == null) return BadRequest("Geen Interne Taakregister gevonden voor deze systemIdentifier");
+            if (registry == null) return BadRequest($"Geen Interne Taakregister gevonden voor deze systemIdentifier: {systemIdentifier}");
 
             return new ProxyResult(() =>
             {
@@ -40,7 +40,9 @@ namespace Kiss.Bff.Extern.InterneTaak
         {
             var url = $"{config.BaseUrl.AsSpan().TrimEnd('/')}/{path}{Request.QueryString}";
             url = QueryHelpers.AddQueryString(url, "type", config.ObjectTypeUrl);
+
             return new Uri(url);
         }
+
     }
 }
