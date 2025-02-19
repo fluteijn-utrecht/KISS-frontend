@@ -110,22 +110,20 @@ export function koppelKlant({
 }
 
 export function fetchContactmomentenByKlantId(
-  defaultSysteemId: string,
+  systeemId: string,
   id: string,
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
     return fetchBetrokkenen({
-      defaultSysteemId,
+      systeemId: systeemId,
       wasPartij__url: id,
       pageSize: "100",
     }).then(async (paginated) => ({
       ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(
-        defaultSysteemId,
-        paginated.page,
-        [KlantContactExpand.gingOverOnderwerpobjecten],
-      ).then((page) =>
+      page: await enrichBetrokkeneWithKlantContact(systeemId, paginated.page, [
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ]).then((page) =>
         page.map(({ klantContact }) =>
           mapKlantContactToContactmomentViewModel(klantContact),
         ),
@@ -139,7 +137,7 @@ export function fetchContactmomentenByKlantId(
   searchParams.set("expand", "objectcontactmomenten");
 
   return fetchWithSysteemId(
-    defaultSysteemId,
+    systeemId,
     `${contactmomentenUrl}?${searchParams.toString()}`,
   )
     .then(throwIfNotOk)

@@ -74,7 +74,7 @@ export function mapKlantContactToContactmomentViewModel(
 ////////////////////////////////////////////
 // contactmomenten and contactverzoeken
 export async function enrichBetrokkeneWithKlantContact(
-  defaultSysteemId: string,
+  systeemId: string,
   value: Betrokkene[],
   expand?: KlantContactExpand[],
 ): Promise<BetrokkeneMetKlantContact[]> {
@@ -84,7 +84,7 @@ export async function enrichBetrokkeneWithKlantContact(
       continue;
     }
     const klantcontact = await fetchKlantcontact({
-      defaultSysteemId,
+      systeemId,
       uuid: klantContactId,
       expand,
     });
@@ -150,14 +150,14 @@ export function fetchActor(id: string) {
 }
 
 export async function enrichBetrokkeneWithDigitaleAdressen(
-  defaultSysteemId: string,
+  systeemId: string,
   value: BetrokkeneMetKlantContact[],
 ): Promise<BetrokkeneMetKlantContact[]> {
   for (const betrokkeneWithKlantcontact of value) {
     const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
       (digitaalAdres) => {
         const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-        return fetchWithSysteemId(defaultSysteemId, url)
+        return fetchWithSysteemId(systeemId, url)
           .then(throwIfNotOk)
           .then(parseJson)
           .then((d) => d as DigitaalAdresApiViewModel);
@@ -172,13 +172,13 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
 }
 
 export function fetchBetrokkenen(params: {
-  defaultSysteemId: string;
+  systeemId: string;
   wasPartij__url: string;
   pageSize: string;
 }) {
   const query = new URLSearchParams(params);
   return fetchWithSysteemId(
-    params.defaultSysteemId,
+    params.systeemId,
     `${klantinteractiesBetrokkenen}?${query}`,
   )
     .then(throwIfNotOk)
@@ -308,7 +308,7 @@ const postInternetaak = (
 };
 
 export const ensureActoren = async (
-  defaultSysteemId: string,
+  systeemId: string,
   actorData: undefined | ContactverzoekData["actor"],
 ): Promise<string[]> => {
   if (!actorData) {
@@ -328,10 +328,10 @@ export const ensureActoren = async (
     id: string,
     type?: "afdeling" | "groep" | undefined,
   ) => {
-    const actor = await getActorById(defaultSysteemId, id);
+    const actor = await getActorById(systeemId, id);
     if (actor.results.length === 0) {
       return await postActor({
-        defaultSysteemId,
+        systeemId: systeemId,
         fullName: name,
         identificatie: id,
         typeOrganisatorischeEenheid: type ?? undefined,
@@ -366,11 +366,11 @@ export const ensureActoren = async (
 };
 
 export async function getActorById(
-  defaultSysteemId: string,
+  systeemId: string,
   identificatie: string,
 ): Promise<any> {
   const url = `${klantinteractiesActoren}?actoridentificatorObjectId=${identificatie}`;
-  const response = await fetchWithSysteemId(defaultSysteemId, url, {
+  const response = await fetchWithSysteemId(systeemId, url, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -410,7 +410,7 @@ function mapActorType(
 }
 
 export async function postActor({
-  defaultSysteemId,
+  systeemId,
   fullName,
   identificatie,
   typeOrganisatorischeEenheid,
@@ -418,7 +418,7 @@ export async function postActor({
   fullName: string;
   identificatie: string;
   typeOrganisatorischeEenheid: "afdeling" | "groep" | undefined;
-  defaultSysteemId: string;
+  systeemId: string;
 }): Promise<string> {
   const { codeObjecttype, codeRegister, codeSoortObjectId, soortActor } =
     mapActorType(typeOrganisatorischeEenheid);
@@ -436,7 +436,7 @@ export async function postActor({
   };
 
   const response = await fetchWithSysteemId(
-    defaultSysteemId,
+    systeemId,
     klantinteractiesActoren,
     {
       method: "POST",
@@ -850,11 +850,11 @@ export enum KlantContactExpand {
 }
 
 export function fetchKlantcontact({
-  defaultSysteemId,
+  systeemId,
   expand,
   uuid,
 }: {
-  defaultSysteemId: string;
+  systeemId: string;
   uuid: string;
   expand?: KlantContactExpand[];
 }) {
@@ -862,7 +862,7 @@ export function fetchKlantcontact({
   expand && query.append("expand", expand.join(","));
 
   return fetchWithSysteemId(
-    defaultSysteemId,
+    systeemId,
     `${klantinteractiesKlantcontacten}/${uuid}?${query}`,
   )
     .then(throwIfNotOk)
