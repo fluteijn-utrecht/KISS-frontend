@@ -83,7 +83,7 @@ export async function search(
     )
       .then(filterOutContactmomenten)
       .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
-      .then((page) => enrichInterneTakenWithActoren(systeemId, page)) // Ensure systeemId is passed
+      .then((page) => enrichInterneTakenWithActoren(systeemId, page))
       .then(mapKlantcontactToContactverzoekOverzichtItem)
       .then(filterOutGeauthenticeerdeContactverzoeken);
   }
