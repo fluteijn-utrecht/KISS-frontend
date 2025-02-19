@@ -105,6 +105,7 @@ export function filterOutContactmomenten(
 }
 
 export async function enrichInterneTakenWithActoren(
+  systeemId: string,
   value: BetrokkeneMetKlantContact[],
 ): Promise<BetrokkeneMetKlantContact[]> {
   for (const betrokkeneWithKlantcontact of value) {
@@ -121,7 +122,9 @@ export async function enrichInterneTakenWithActoren(
     //we halen alle actoren op en kiezen dan de eerste medewerker. als er geen medewerkers bij staan de erste organisatie
     //wordt naar verwachting tzt aangepast, dan gaan we gewoon alle actoren bij de internetak tonen
 
-    const actorenFetchTasks = actoren.map((actor) => fetchActor(actor.uuid));
+    const actorenFetchTasks = actoren.map((actor) =>
+      fetchActor(systeemId, actor.uuid),
+    );
 
     const actorenDetails = await Promise.all(actorenFetchTasks);
 
@@ -142,8 +145,8 @@ export async function enrichInterneTakenWithActoren(
   return value;
 }
 
-export function fetchActor(id: string) {
-  return fetchLoggedIn(`${klantinteractiesActoren}/${id}`)
+export function fetchActor(systeemId: string, id: string) {
+  return fetchWithSysteemId(systeemId, `${klantinteractiesActoren}/${id}`)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((d) => d as ActorApiViewModel);
@@ -690,7 +693,7 @@ export async function createKlant(
   );
 
   const identificators = [
-    await createPartijIdentificator({
+    await createPartijIdentificator(systeemId, {
       identificeerdePartij: {
         url: partij.url,
         uuid: partij.uuid,
@@ -700,7 +703,7 @@ export async function createKlant(
   ];
 
   if (kvkNummer) {
-    const kvkIdentificator = await createPartijIdentificator({
+    const kvkIdentificator = await createPartijIdentificator(systeemId, {
       identificeerdePartij: {
         url: partij.url,
         uuid: partij.uuid,
@@ -716,22 +719,29 @@ export async function createKlant(
   return mapPartijToKlant(systeemId, partij, identificators);
 }
 
-const createPartijIdentificator = (body: {
-  identificeerdePartij: {
-    url: string;
-    uuid: string;
-  };
-  partijIdentificator: IdentificatorType & {
-    objectId: string;
-  };
-}) =>
-  fetchLoggedIn(klantinteractiesBaseUrl + "/partij-identificatoren", {
-    body: JSON.stringify(body),
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
+const createPartijIdentificator = (
+  systeemId: string,
+  body: {
+    identificeerdePartij: {
+      url: string;
+      uuid: string;
+    };
+    partijIdentificator: IdentificatorType & {
+      objectId: string;
+    };
+  },
+) =>
+  fetchWithSysteemId(
+    systeemId,
+    klantinteractiesBaseUrl + "/partij-identificatoren",
+    {
+      body: JSON.stringify(body),
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
     },
-  })
+  )
     .then(throwIfNotOk)
     .then(parseJson);
 
