@@ -312,20 +312,24 @@ export async function ensureKlantForBedrijfIdentifier(
     throw new Error("Kan geen klant aanmaken zonder identificatie");
   }
 
-  const response = await fetchLoggedIn(klantRootUrl, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
+  const response = await fetchWithSysteemId(
+    systeemId,
+    klantRootUrl.toString(),
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        bronorganisatie,
+        // TODO: WAT MOET HIER IN KOMEN?
+        klantnummer: nanoid(8),
+        subjectIdentificatie: subjectIdentificatie,
+        subjectType: subjectType, ///
+        bedrijfsnaam,
+      }),
     },
-    body: JSON.stringify({
-      bronorganisatie,
-      // TODO: WAT MOET HIER IN KOMEN?
-      klantnummer: nanoid(8),
-      subjectIdentificatie: subjectIdentificatie,
-      subjectType: subjectType, ///
-      bedrijfsnaam,
-    }),
-  });
+  );
 
   if (!response.ok) throw new Error();
 
@@ -392,13 +396,15 @@ const nullForStatusCodes =
 
 export async function enrichContactverzoekObjectWithContactmoment(
   contactverzoekObject: any,
+  systeemId: string,
 ) {
   const url = contactverzoekObject.record.data.contactmoment;
   const [contactmoment, details, objects] = await Promise.all([
-    fetchContactmomentByUrl(url),
-    fetchDetailsByUrl(url),
-    fetchObjectsByContactmomentUrl(url),
+    fetchContactmomentByUrl(systeemId, url),
+    fetchDetailsByUrl(systeemId, url),
+    fetchObjectsByContactmomentUrl(systeemId, url),
   ]);
+
   return {
     contactverzoekObject,
     contactmoment: {
@@ -412,13 +418,14 @@ export async function enrichContactverzoekObjectWithContactmoment(
   };
 }
 
-function fetchContactmomentByUrl(url: string) {
+function fetchContactmomentByUrl(systeemId: string, url: string) {
   const path = toRelativeProxyUrl(url, contactmomentenProxyRoot);
   if (!path) {
     throw new Error();
   }
   return (
-    fetchLoggedIn(
+    fetchWithSysteemId(
+      systeemId,
       `${path}?${new URLSearchParams({ expand: "objectcontactmomenten" })}`,
     )
       // de esuite heeft een ingewikkelde autorisatiestructuur.
@@ -430,16 +437,18 @@ function fetchContactmomentByUrl(url: string) {
   );
 }
 
-function fetchDetailsByUrl(url: string) {
-  return fetchLoggedIn(
+function fetchDetailsByUrl(systeemId: string, url: string) {
+  return fetchWithSysteemId(
+    systeemId,
     `/api/contactmomentdetails?${new URLSearchParams({ id: url })}`,
   )
     .then(nullForStatusCodes(404))
     .then((r) => r?.json());
 }
 
-function fetchObjectsByContactmomentUrl(url: string) {
-  return fetchLoggedIn(
+function fetchObjectsByContactmomentUrl(systeemId: string, url: string) {
+  return fetchWithSysteemId(
+    systeemId,
     `${objectcontactmomentenUrl}?${new URLSearchParams({ contactmoment: url })}`,
   )
     .then((r) => r?.json())

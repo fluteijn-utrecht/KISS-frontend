@@ -83,7 +83,7 @@ export async function search(
     )
       .then(filterOutContactmomenten)
       .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
-      .then((page) => enrichInterneTakenWithActoren(systeemId, page))
+      .then((page) => enrichInterneTakenWithActoren(systeemId, page)) // Ensure systeemId is passed
       .then(mapKlantcontactToContactverzoekOverzichtItem)
       .then(filterOutGeauthenticeerdeContactverzoeken);
   }
@@ -99,7 +99,11 @@ export async function search(
 
     return searchRecursive(url.toString())
       .then((x) =>
-        Promise.all(x.map(enrichContactverzoekObjectWithContactmoment)),
+        Promise.all(
+          x.map((obj) =>
+            enrichContactverzoekObjectWithContactmoment(obj, systeemId),
+          ),
+        ),
       )
       .then((x) => x.map(mapObjectToContactverzoekOverzichtItem))
       .then(filterOutGeauthenticeerdeContactverzoeken);
@@ -221,7 +225,7 @@ export function fetchContactverzoekenByKlantId(
     .then(parseJson)
     .then((r) =>
       parsePagination(r, (v) =>
-        enrichContactverzoekObjectWithContactmoment(v).then(
+        enrichContactverzoekObjectWithContactmoment(v, systeemId).then(
           mapObjectToContactverzoekOverzichtItem,
         ),
       ),
