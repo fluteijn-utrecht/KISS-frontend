@@ -83,7 +83,7 @@ export async function search(
     )
       .then(filterOutContactmomenten)
       .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
-      .then(enrichInterneTakenWithActoren)
+      .then((page) => enrichInterneTakenWithActoren(systeemId, page))
       .then(mapKlantcontactToContactverzoekOverzichtItem)
       .then(filterOutGeauthenticeerdeContactverzoeken);
   }
@@ -205,7 +205,7 @@ export function fetchContactverzoekenByKlantId(
       ])
         .then(filterOutContactmomenten)
         .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
-        .then(enrichInterneTakenWithActoren)
+        .then((page) => enrichInterneTakenWithActoren(systeemId, page))
         .then(mapKlantcontactToContactverzoekOverzichtItem),
     }));
   }
