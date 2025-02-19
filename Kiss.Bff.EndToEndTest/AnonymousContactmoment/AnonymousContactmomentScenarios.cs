@@ -8,6 +8,7 @@ using Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers;
 
 namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 {
+
     [TestClass]
     public class AnonymousContactmomentScenarios : KissPlaywrightTest
     {
@@ -78,7 +79,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
             { 
             await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "Smoelenboek" })).ToBeVisibleAsync();
             }));
-            
+
         }
 
         [TestMethod("3. Search for VAC in Contactmoment")]
@@ -151,6 +152,97 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
             }));
         }
 
-      
-       }
+        [TestMethod("5. Search for Website in Contactmoment")]
+        public async Task SearchForWebsiteInContactmoment()
+        {
+            await Step("Given the user is on the Startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("When the user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("And checks the box Deventer.nl in the Search pane");
+
+            await Page.GetDeventerCheckbox().CheckAsync();
+
+            await Step("And enters 'boom' in the search field in the Search pane");
+
+            await Page.GetGlobalSearch().FillAsync("boom");
+
+            await Step("And presses Enter");
+
+            await Page.GetGlobalSearch().PressAsync("Enter");
+
+            await Step("Then at least 1 item should appear");
+
+            await Expect(Page.GetGlobalSearchResults()).ToBeVisibleAsync();
+            
+            Assert.IsTrue((await Page.GetGlobalSearchResults().CountAsync()) > 0, "Expected at least 1 search result to appear.");
+
+            await Step("And the item has a label Website in the first column");
+
+            await Task.WhenAll((await Page.GetGlobalSearchResults().AllAsync()).Select(async item =>
+            {
+                await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "Website" })).ToBeVisibleAsync();
+            }));
+        }
+
+        [TestMethod("6. Fill Afdeling on Afhandeling form by viewing Kennisartikel")]
+        public async Task FillAfdelingOnAfhandelingFormByViewingKennisartikel()
+        {
+            await Step("Given the user is on the Startpagina");
+
+            await Page.GotoAsync("/");
+
+            await Step("When the user starts a new Contactmoment");
+
+            await Page.CreateNewContactmomentAsync();
+
+            await Step("And enters 'andere achternaam gebruiken' in the search field in Search pane");
+
+            await Page.GetGlobalSearch().FillAsync("andere achternaam gebruiken");
+
+            await Step("There should be 1 Kennisartikel in the list of results with the title 'Andere achternaam gebruiken'");
+
+            var item = Page.GetGlobalSearchResults().Locator("span:nth-of-type(2)").Filter(new() { HasText = "Andere achternaam gebruiken" });
+           
+            await Expect(item).ToBeVisibleAsync();
+            await Expect(item).ToHaveCountAsync(1);
+             
+            await Step("When user clicks on the item 'Andere achternaam gebruiken'");
+
+            await item.ClickAsync();
+
+            await Step("Then the search pane should display the article with title 'Andere achternaam gebruiken' and heading 'Inleiding'");
+
+            await Expect(Page.GetByRole(AriaRole.Article).GetByRole(AriaRole.Heading, new() { Name = "Andere achternaam gebruiken" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Article).GetByRole(AriaRole.Heading, new() { Name = "Inleiding" })).ToBeVisibleAsync();
+
+            await Step("And user clicks on 'Bijzonderheden' in the Search pane");
+
+            await Page.GetBijzonderhedenTab().ClickAsync();
+
+            await Step("And then clicks on Afronden in the Notes-Contactverzoek-Pane");
+
+            await Page.GetPersonenAfrondenButton().ClickAsync();
+
+            await Step("When Afhandeling form is displayed");
+
+            await Expect(Page.GetAfhandelingForm()).ToBeVisibleAsync();
+
+            await Step("Then the field 'Vraag' has value 'Andere achernaam gebruiken - Bijzonderheden'");
+                                                                                          
+            await Expect(Page.GetVraagField().Locator("option:checked")).ToHaveTextAsync("Andere achternaam gebruiken - Bijzonderheden");
+
+            await Step("And the dropdown list of the field Vraag has 8 items");
+   
+            await Expect(Page.GetVraagField().Locator("option")).ToHaveCountAsync(8);
+
+            await Step("And the field 'Afdeling' has value 'Publiekscontacten Burgertaken en gegevensbeheer'");
+
+            await Expect(Page.GetAfdelingField()).ToHaveValueAsync("Publiekscontacten Burgertaken en gegevensbeheer");
+        }
+    }
   }
