@@ -24,19 +24,19 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("And enters 'boom' in the search field in the Search pane");
 
-            await Page.GetContactmomentSearch().FillAsync("boom");
+            await Page.GetGlobalSearch().FillAsync("boom");
 
             await Step("And presses Enter");
 
-            await Page.GetContactmomentSearch().PressAsync("Enter");
+            await Page.GetGlobalSearch().PressAsync("Enter");
 
-            await Step("Then 10 items should appear in the Search pane");
-
-            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
+            await Step("Then 10 items should appear in the Search pane");            
+           
+            await Expect(Page.GetGlobalSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label VAC or Kennisbank or Website in the first column");
-
-            await Task.WhenAll((await Page.GetContactmomentSearchResults().AllAsync()).Select(async item =>
+           
+            await Task.WhenAll((await Page.GetGlobalSearchResults().AllAsync()).Select(async item =>
             {
                 var firstColumn = item.Locator("span:nth-of-type(1)");
                 await Expect(firstColumn.Filter(new() { HasText = "VAC" })
@@ -62,21 +62,21 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("And enters 'boom' in the search field in the Search pane");
 
-            await Page.GetContactmomentSearch().FillAsync("boom");
+            await Page.GetGlobalSearch().FillAsync("boom");
 
             await Step("And presses Enter");
 
-            await Page.GetContactmomentSearch().PressAsync("Enter");
+            await Page.GetGlobalSearch().PressAsync("Enter");
 
             await Step("Then 10 items should appear");
-
-            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
+ 
+            await Expect(Page.GetGlobalSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label Smoelenboek in the first column");
 
-            await Task.WhenAll((await Page.GetContactmomentSearchResults().AllAsync()).Select(async item =>
-            {
-                await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "Smoelenboek" })).ToBeVisibleAsync();
+            await Task.WhenAll((await Page.GetGlobalSearchResults().AllAsync()).Select(async item =>
+            { 
+            await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "Smoelenboek" })).ToBeVisibleAsync();
             }));
 
         }
@@ -98,19 +98,19 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("And enters 'boom' in the search field in the Search pane");
 
-            await Page.GetContactmomentSearch().FillAsync("boom");
+            await Page.GetGlobalSearch().FillAsync("boom");
 
             await Step("And presses Enter");
 
-            await Page.GetContactmomentSearch().PressAsync("Enter");
+            await Page.GetGlobalSearch().PressAsync("Enter");
 
             await Step("Then 10 items should appear");
 
-            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
+            await Expect(Page.GetGlobalSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label VAC in the first column");
 
-            await Task.WhenAll((await Page.GetContactmomentSearchResults().AllAsync()).Select(async item =>
+            await Task.WhenAll((await Page.GetGlobalSearchResults().AllAsync()).Select(async item =>
             {
                 await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "VAC" })).ToBeVisibleAsync();
             }));
@@ -133,19 +133,19 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("And enters 'boom' in the search field in the Search pane");
 
-            await Page.GetContactmomentSearch().FillAsync("boom");
+            await Page.GetGlobalSearch().FillAsync("boom");
 
             await Step("And presses Enter");
 
-            await Page.GetContactmomentSearch().PressAsync("Enter");
+            await Page.GetGlobalSearch().PressAsync("Enter");
 
             await Step("Then 10 items should appear");
-
-            await Expect(Page.GetContactmomentSearchResults()).ToHaveCountAsync(10);
+             
+            await Expect(Page.GetGlobalSearchResults()).ToHaveCountAsync(10);
 
             await Step("And each item has a label Kennisbank in the first column");
 
-            await Task.WhenAll((await Page.GetContactmomentSearchResults().AllAsync()).Select(async item =>
+            await Task.WhenAll((await Page.GetGlobalSearchResults().AllAsync()).Select(async item =>
             {
                 await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "Kennisbank" })).ToBeVisibleAsync();
             }));
@@ -168,21 +168,21 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("And enters 'boom' in the search field in the Search pane");
 
-            await Page.GetContactmomentSearch().FillAsync("boom");
+            await Page.GetGlobalSearch().FillAsync("boom");
 
             await Step("And presses Enter");
 
-            await Page.GetContactmomentSearch().PressAsync("Enter");
+            await Page.GetGlobalSearch().PressAsync("Enter");
 
             await Step("Then at least 1 item should appear");
 
-            await Expect(Page.GetContactmomentSearchResults()).ToBeVisibleAsync();
+            await Expect(Page.GetGlobalSearchResults()).ToBeVisibleAsync();
             
-            Assert.IsTrue((await Page.GetContactmomentSearchResults().CountAsync()) > 0, "Expected at least 1 search result to appear.");
+            Assert.IsTrue((await Page.GetGlobalSearchResults().CountAsync()) > 0, "Expected at least 1 search result to appear.");
 
             await Step("And the item has a label Website in the first column");
 
-            await Task.WhenAll((await Page.GetContactmomentSearchResults().AllAsync()).Select(async item =>
+            await Task.WhenAll((await Page.GetGlobalSearchResults().AllAsync()).Select(async item =>
             {
                 await Expect(item.Locator("span:nth-of-type(1)").Filter(new() { HasText = "Website" })).ToBeVisibleAsync();
             }));
@@ -201,11 +201,11 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("And enters 'andere achternaam gebruiken' in the search field in Search pane");
 
-            await Page.GetContactmomentSearch().FillAsync("andere achternaam gebruiken");
+            await Page.GetGlobalSearch().FillAsync("andere achternaam gebruiken");
 
             await Step("There should be 1 Kennisartikel in the list of results with the title 'Andere achternaam gebruiken'");
 
-            var item = Page.GetContactmomentSearchResults().Locator("span:nth-of-type(2)").Filter(new() { HasText = "Andere achternaam gebruiken" });
+            var item = Page.GetGlobalSearchResults().Locator("span:nth-of-type(2)").Filter(new() { HasText = "Andere achternaam gebruiken" });
            
             await Expect(item).ToBeVisibleAsync();
             await Expect(item).ToHaveCountAsync(1);

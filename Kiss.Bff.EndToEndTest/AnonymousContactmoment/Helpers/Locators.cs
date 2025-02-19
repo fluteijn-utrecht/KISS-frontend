@@ -5,15 +5,13 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers
 {
     public static class Locators
     {
-         
-
-        public static ILocator GetContactmomentSearch(this IPage page)
+        // During development, it is essential to include the ARIA role to ensure the element is located accurately, rather than relying on the class name.
+        public static ILocator GetGlobalSearch(this IPage page)
         {
             return page.Locator(".contactmomentLoopt").GetByRole(AriaRole.Combobox);
         }
-    
 
-        public static ILocator GetContactmomentSearchResults (this IPage page)
+        public static ILocator GetGlobalSearchResults(this IPage page)
         {
             return page.Locator(".search-results.isExpanded").GetByRole(AriaRole.Navigation).First.GetByRole(AriaRole.Link);
         }
