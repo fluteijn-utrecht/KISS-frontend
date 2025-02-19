@@ -8,6 +8,7 @@ using Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers;
 
 namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 {
+
     [TestClass]
     public class AnonymousContactmomentScenarios : KissPlaywrightTest
     {
@@ -216,8 +217,8 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen
 
             await Step("Then the search pane should display the article with title 'Andere achternaam gebruiken' and heading 'Inleiding'");
 
-            await Expect(Page.GetArticleTitle()).ToBeVisibleAsync();
-            await Expect(Page.GetArticleHeading()).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Article).GetByRole(AriaRole.Heading, new() { Name = "Andere achternaam gebruiken" })).ToBeVisibleAsync();
+            await Expect(Page.GetByRole(AriaRole.Article).GetByRole(AriaRole.Heading, new() { Name = "Inleiding" })).ToBeVisibleAsync();
 
             await Step("And user clicks on 'Bijzonderheden' in the Search pane");
 

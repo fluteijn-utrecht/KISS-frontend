@@ -39,17 +39,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentBronnen.Helpers
         {
             return page.GetByRole(AriaRole.Link, new() { Name = "Bijzonderheden" });
         }
-        public static ILocator GetArticleTitle(this IPage page)
-        {
-            return page.GetByRole(AriaRole.Article).GetByRole(AriaRole.Heading, new() { Name = "Andere achternaam gebruiken" });
-          }
-
-        public static ILocator GetArticleHeading(this IPage page)
-        {
-            return page.GetByRole(AriaRole.Article).GetByRole(AriaRole.Heading, new() { Name = "Inleiding" });
-        }
-
-       
+               
 
         public static ILocator GetPersonenAfrondenButton(this IPage page)
         {
