@@ -466,6 +466,7 @@ import {
 } from "@/services/environment/fetch-systemen";
 import { saveContactmoment } from "@/services/openklant1";
 import type { Contactmoment } from "@/services/openklant/types";
+import { getRegisterDetails } from "@/features/shared/systeemdetails";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -474,8 +475,17 @@ const errorMessage = ref("");
 const gespreksresultaten = useGespreksResultaten();
 const kanalenKeuzelijst = useKanalenKeuzeLijst();
 
-onMounted(() => {
+const gebruikKlantInteracatiesApi = ref<boolean>(false);
+const defaultSysteemId = ref<string | null>(null);
+
+onMounted(async () => {
+  const { useKlantInteractiesApi, defaultSystemId } =
+    await getRegisterDetails();
+  defaultSysteemId.value = defaultSystemId;
+  gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
+
   if (!contactmomentStore.huidigContactmoment) return;
+
   for (const vraag of contactmomentStore.huidigContactmoment.vragen) {
     if (vraag.contactverzoek.isActive) {
       vraag.gespreksresultaat = CONTACTVERZOEK_GEMAAKT;
@@ -503,10 +513,18 @@ const zakenToevoegenAanContactmoment = async (
   }
 };
 
-const koppelKlanten = async (vraag: Vraag, contactmomentId: string) => {
+const koppelKlanten = async (
+  systemId: string,
+  vraag: Vraag,
+  contactmomentId: string,
+) => {
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.url) {
-      await koppelKlant({ contactmomentId, klantId: klant.url });
+      await koppelKlant({
+        systemId,
+        contactmomentId,
+        klantId: klant.url,
+      });
     }
   }
 };
@@ -752,7 +770,10 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     // 5 /////////////////////////
     let actoren: string[] = [];
     if (isContactverzoek) {
-      actoren = await ensureActoren(contactverzoekData?.actor);
+      actoren = await ensureActoren(
+        systemIdentifier,
+        contactverzoekData?.actor,
+      );
     }
 
     // 6 /////////////////////////
@@ -852,7 +873,11 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
       );
     }
 
-    promises.push(koppelKlanten(vraag, savedContactmoment.url));
+    if (defaultSysteemId.value) {
+      promises.push(
+        koppelKlanten(defaultSysteemId.value, vraag, savedContactmoment.url),
+      );
+    }
 
     await Promise.all(promises);
 

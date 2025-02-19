@@ -30,7 +30,7 @@ namespace Kiss.Bff.Extern.Klantinteracties
         {
             var registry = _registryConfig.GetRegistrySystem(systemIdentifier)?.KlantinteractieRegistry;
 
-            if (registry == null) return BadRequest("Geen Contactmomentregister gevonden voor deze systemIdentifier");
+            if (registry == null) return BadRequest($"Geen Contactmomentregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;

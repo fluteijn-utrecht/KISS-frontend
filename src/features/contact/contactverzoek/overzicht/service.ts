@@ -11,6 +11,7 @@ import {
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
   fetchBetrokkenen,
+  fetchWithSysteemId,
   filterOutContactmomenten,
   KlantContactExpand,
   searchDigitaleAdressen,
@@ -56,6 +57,7 @@ async function searchOk2Recursive(
 }
 
 export async function search(
+  systeemId: string,
   query: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<ContactverzoekOverzichtItem[]> {
@@ -72,6 +74,7 @@ export async function search(
     );
 
     return enrichBetrokkeneWithKlantContact(
+      systeemId,
       [...uniqueBetrokkenen.values()],
       [
         KlantContactExpand.leiddeTotInterneTaken,
@@ -79,7 +82,7 @@ export async function search(
       ],
     )
       .then(filterOutContactmomenten)
-      .then(enrichBetrokkeneWithDigitaleAdressen)
+      .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
       .then(enrichInterneTakenWithActoren)
       .then(mapKlantcontactToContactverzoekOverzichtItem)
       .then(filterOutGeauthenticeerdeContactverzoeken);
@@ -184,22 +187,24 @@ function mapObjectToContactverzoekOverzichtItem({
 }
 
 export function fetchContactverzoekenByKlantId(
+  systeemId: string,
   id: string,
   gebruikKlantInteractiesApi: boolean,
 ): Promise<PaginatedResult<ContactverzoekOverzichtItem>> {
-  // OK2
+  //OK2
   if (gebruikKlantInteractiesApi) {
     return fetchBetrokkenen({
+      systeemId: systeemId,
       pageSize: "100",
       wasPartij__url: id,
     }).then(async (paginated) => ({
       ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(paginated.page, [
+      page: await enrichBetrokkeneWithKlantContact(systeemId, paginated.page, [
         KlantContactExpand.leiddeTotInterneTaken,
         KlantContactExpand.gingOverOnderwerpobjecten,
       ])
         .then(filterOutContactmomenten)
-        .then(enrichBetrokkeneWithDigitaleAdressen)
+        .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
         .then(enrichInterneTakenWithActoren)
         .then(mapKlantcontactToContactverzoekOverzichtItem),
     }));
@@ -211,7 +216,7 @@ export function fetchContactverzoekenByKlantId(
   url.searchParams.set("pageSize", "10");
   url.searchParams.set("data_attr", `betrokkene__klant__exact__${id}`);
 
-  return fetchLoggedIn(url)
+  return fetchWithSysteemId(systeemId, url.toString())
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) =>

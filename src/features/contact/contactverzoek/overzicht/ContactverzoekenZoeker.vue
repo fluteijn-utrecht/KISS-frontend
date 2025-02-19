@@ -46,14 +46,15 @@ import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
 import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
 import { ensureState } from "@/stores/create-store";
-import { useOpenKlant2 } from "@/services/openklant2";
 import { search } from "./service";
 import type { ContactverzoekOverzichtItem } from "./types";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
+import { getRegisterDetails } from "@/features/shared/systeemdetails";
 
 defineSlots();
 
-const openKlant2 = ref<boolean>(false);
+const gebruikKlantInteracatiesApi = ref<boolean>(false);
+const defaultSysteemId = ref<string | null>(null);
 
 const store = ensureState({
   stateId: "contactverzoeken-zoeker",
@@ -71,18 +72,26 @@ const store = ensureState({
 });
 
 onMounted(async () => {
-  openKlant2.value = await useOpenKlant2();
+  const { useKlantInteractiesApi, defaultSystemId } =
+    await getRegisterDetails();
+  defaultSysteemId.value = defaultSystemId;
+  gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
 });
 
 const handleSearch = async () => {
+  if (!defaultSysteemId.value) {
+    throw new Error("defaultSysteemId ontbreekt of is leeg");
+  }
+
   store.value.zoekerResults.loading = true;
   store.value.zoekerResults.success = false;
   store.value.zoekerResults.error = false;
 
   try {
     store.value.zoekerResults.data = await search(
+      defaultSysteemId.value,
       store.value.searchQuery,
-      openKlant2.value,
+      gebruikKlantInteracatiesApi.value,
     );
     store.value.zoekerResults.success = true;
   } catch (error) {

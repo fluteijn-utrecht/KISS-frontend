@@ -56,8 +56,6 @@ const contactmomentDetails = "/api/contactmomentdetails";
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 const klantcontactmomentenUrl = `${contactmomentenBaseUrl}/klantcontactmomenten`;
 
-
-
 export const CONTACTVERZOEK_GEMAAKT = "Contactverzoek gemaakt";
 
 export const useGespreksResultaten = () => {
@@ -90,13 +88,15 @@ export const useGespreksResultaten = () => {
 };
 
 export function koppelKlant({
+  systemId,
   klantId,
   contactmomentId,
 }: {
+  systemId: string;
   klantId: string;
   contactmomentId: string;
 }) {
-  return fetchLoggedIn(klantcontactmomentenUrl, {
+  return fetchWithSysteemId(systemId, klantcontactmomentenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -110,22 +110,25 @@ export function koppelKlant({
 }
 
 export function fetchContactmomentenByKlantId(
+  systeemId: string,
   id: string,
   gebruikKlantinteractiesApi: boolean,
 ) {
   if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({ wasPartij__url: id, pageSize: "100" }).then(
-      async (paginated) => ({
-        ...paginated,
-        page: await enrichBetrokkeneWithKlantContact(paginated.page, [
-          KlantContactExpand.gingOverOnderwerpobjecten,
-        ]).then((page) =>
-          page.map(({ klantContact }) =>
-            mapKlantContactToContactmomentViewModel(klantContact),
-          ),
+    return fetchBetrokkenen({
+      systeemId: systeemId,
+      wasPartij__url: id,
+      pageSize: "100",
+    }).then(async (paginated) => ({
+      ...paginated,
+      page: await enrichBetrokkeneWithKlantContact(systeemId, paginated.page, [
+        KlantContactExpand.gingOverOnderwerpobjecten,
+      ]).then((page) =>
+        page.map(({ klantContact }) =>
+          mapKlantContactToContactmomentViewModel(klantContact),
         ),
-      }),
-    );
+      ),
+    }));
   }
 
   const searchParams = new URLSearchParams();
@@ -133,7 +136,10 @@ export function fetchContactmomentenByKlantId(
   searchParams.set("ordering", "-registratiedatum");
   searchParams.set("expand", "objectcontactmomenten");
 
-  return fetchLoggedIn(`${contactmomentenUrl}?${searchParams.toString()}`)
+  return fetchWithSysteemId(
+    systeemId,
+    `${contactmomentenUrl}?${searchParams.toString()}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
@@ -200,7 +206,7 @@ export function useContactmomentObject(getUrl: () => string) {
   );
 }
 
-//te gebruiken om cotactverzoeken als internetaak op te slaan in een overige objecten register, wanneer er geen regiser compatibel met openklant 2 of hoger beschikbaar is. 
+//te gebruiken om cotactverzoeken als internetaak op te slaan in een overige objecten register, wanneer er geen regiser compatibel met openklant 2 of hoger beschikbaar is.
 export function saveContactverzoek({
   systemIdentifier,
   data,
@@ -292,11 +298,11 @@ export function mapContactverzoekData({
 
   const vragenToelichting =
     data.contactVerzoekVragenSet &&
-      data.contactVerzoekVragenSet.vraagAntwoord &&
-      data.contactVerzoekVragenSet.vraagAntwoord.length
+    data.contactVerzoekVragenSet.vraagAntwoord &&
+    data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-        data.contactVerzoekVragenSet.vraagAntwoord,
-      )
+          data.contactVerzoekVragenSet.vraagAntwoord,
+        )
       : "";
 
   let verantwoordelijkheAfdeling = "";

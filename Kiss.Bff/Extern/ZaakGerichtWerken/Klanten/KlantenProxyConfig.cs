@@ -17,7 +17,7 @@ namespace Kiss.Bff.ZaakGerichtWerken.Klanten
 
             if (registry == null)
             {
-                return BadRequest($"FOUT: Geen klantregistratie gevonden voor systemIdentifier '{systemIdentifier}'.");
+                return BadRequest($"FOUT: Geen klantregistratie gevonden voor systemIdentifier '{systemIdentifier ?? "null"}'");
             }
 
             return new ProxyResult(() =>

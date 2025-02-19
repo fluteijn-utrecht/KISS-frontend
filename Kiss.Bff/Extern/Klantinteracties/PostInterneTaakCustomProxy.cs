@@ -16,7 +16,7 @@ namespace Kiss.Bff.Extern.Klantinteracties
         {
             var config = registryConfig.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.KlantinteractieRegistry;
 
-            if (config == null) return BadRequest();
+            if (config == null) return BadRequest($"Geen Internetaakregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
             var url = config.BaseUrl.TrimEnd('/') + "/api/v1/internetaken";
 

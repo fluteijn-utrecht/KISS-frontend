@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using Kiss.Bff.Extern;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Win32;
 
 namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
 {
@@ -20,9 +21,9 @@ namespace Kiss.Bff.ZaakGerichtWerken.Contactmomenten
         [HttpPost]
         public IActionResult Post([FromBody] JsonObject parsedModel, [FromHeader(Name = "systemIdentifier")] string systemIdentifier)
         {
-            var config = _configuration.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.ContactmomentRegistry; 
+            var config = _configuration.Systemen.FirstOrDefault(x => x.Identifier == systemIdentifier)?.ContactmomentRegistry;
 
-            if (config == null) return BadRequest();
+            if (config == null) return BadRequest($"Geen Contactmomentenregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
             var email = User?.GetEmail();
             var userRepresentation = User?.Identity?.Name;

@@ -18,7 +18,7 @@ namespace Kiss.Bff.Extern.Klantinteracties
         {
             var registry = registryConfig.GetRegistrySystem(systemIdentifier)?.KlantinteractieRegistry;
 
-            if (registry == null) return BadRequest("Geen Klantinteractieregister gevonden voor deze systemIdentifier");
+            if (registry == null) return BadRequest($"Geen Klantinteractieregister gevonden voor deze systemIdentifier: '{systemIdentifier ?? "null"}'");
 
             return new ProxyResult(() =>
             {
