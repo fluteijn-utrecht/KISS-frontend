@@ -18,15 +18,15 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentZaak
 
             await Step("When the user clicks on 'Zaken' in the menu");
 
-            await Page.GetZakenMenu().ClickAsync();
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Zaken" }).ClickAsync();
 
             await Step("And enters 'ZAAK-2023-001' in the search field");
 
-            await Page.GetZaakSearchField().FillAsync("ZAAK-2023-001");
+            await Page.GetByTitle("ZAAK-1").FillAsync("ZAAK-2023-001");
 
             await Step("And clicks zoeken (magnifying glass-icon)");
 
-            await Page.GetZaakSearchButton().ClickAsync();
+            await Page.GetByTitle("Zoeken").ClickAsync();
 
             await Step("Then the user will navigate to the screen 'Zaak ZAAK-2023-001'");
 
@@ -46,11 +46,12 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentZaak
 
             await Step("When the user clicks Afronden in the Notes-Contactverzoek-Pane");
 
-            await Page.GetPersonenAfrondenButton().ClickAsync();
+            await Page.GetByRole(AriaRole.Button, new() { Name = "Afronden" }).ClickAsync();
 
             await Step("And the Afhandeling form is displayed");
 
-            await Expect(Page.GetAfhandelingForm()).ToBeVisibleAsync();
+            // This locator does not use an ARIA role. Consider updating the locator to use an ARIA role for better accessibility.
+            await Expect(Page.Locator("form.afhandeling")).ToBeVisibleAsync();
 
             await Step("Then the heading 'Gerelateerde zaak' appears under 'Vraag 1'");
 
@@ -64,7 +65,7 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentZaak
 
             await Step("And a checked checkbox is visible");
 
-            await Expect(Page.GetZaakCheckbox()).ToBeCheckedAsync();
+            await Expect(Page.GetByRole(AriaRole.Checkbox, new() { Name = "ZAAK-2023-001" })).ToBeCheckedAsync();
         }
 
         [TestMethod("3. Register Contactmoment bij Zaak - II")]
@@ -76,32 +77,36 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentZaak
 
             await Step("Given the user is on the Afhandeling-form");
 
-            await Expect(Page.GetAfhandelingForm()).ToBeVisibleAsync();
+            // This locator does not use an ARIA role. Consider updating the locator to use an ARIA role for better accessibility.
+            await Expect(Page.Locator("form.afhandeling")).ToBeVisibleAsync();
 
             await Step("When user enters value 'Contactmoment bij ZAAK-2023-001' in field Specifieke vraag");
 
-            await Page.GetSpecificVraagField().FillAsync("Contactmoment bij ZAAK-2023-001");
+            await Page.GetByRole(AriaRole.Textbox, new() { Name = "Specifieke vraag" }).FillAsync("Contactmoment bij ZAAK-2023-001");
 
             await Step("And user enters 'Live chat' in field Kanaal");
 
-            await Page.GetKanaalField().SelectOptionAsync(new[] { new SelectOptionValue { Label = "Live Chat" } });
+            await Page.GetByLabel("Kanaal").SelectOptionAsync(new[] { new SelectOptionValue { Label = "Live Chat" } });
 
             await Step("And value 'Zelfstandig afgehandeld' in field Afhandeling");
 
-            await Page.GetAfhandelingField().SelectOptionAsync(new[] { "Zelfstandig afgehandeld" });
+            await Page.GetByRole(AriaRole.Combobox, new() { Name = "Afhandeling" }).SelectOptionAsync(new[] { "Zelfstandig afgehandeld" });
 
             await Step("And selects value 'Parkeren' in field Afdeling");
 
-            await Page.GetAfdelingField().ClickAsync();
+            // This locator does not use an ARIA role. Consider updating the locator to use an ARIA role for better accessibility.
+            await Page.Locator("input[type='search']").ClickAsync();
+
             await Page.GetByText("Parkeren").ClickAsync();
 
             await Step("And clicks on Opslaan button");
 
-            await Page.GetOpslaanButton().ClickAsync();
+            await Page.GetByRole(AriaRole.Button, new() { Name = "Opslaan" }).ClickAsync();
 
             await Step("Then message as 'Het contactmoment is opgeslagen' is displayed on the Startpagina");
-
-            await Expect(Page.GetSuccessMessage()).ToHaveTextAsync("Het contactmoment is opgeslagen");
+           
+            // This locator does not use an ARIA role. Consider updating the locator to use an ARIA role for better accessibility.
+            await Expect(Page.Locator("output[role='status'].confirm")).ToHaveTextAsync("Het contactmoment is opgeslagen");
         }
 
         [TestMethod("4. View Contactmoment bij Zaak")]
@@ -121,15 +126,15 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentZaak
 
             await Step("And clicks on 'Zaken' in the menu");
 
-            await Page.GetZakenMenu().ClickAsync();
+            await Page.GetByRole(AriaRole.Link, new() { Name = "Zaken" }).ClickAsync();
 
             await Step("And enters 'ZAAK-2023-001' in the search field");
 
-            await Page.GetZaakSearchField().FillAsync("ZAAK-2023-001");
+            await Page.GetByTitle("ZAAK-1").FillAsync("ZAAK-2023-001");
 
             await Step("And clicks zoeken");
 
-            await Page.GetZaakSearchButton().ClickAsync();
+            await Page.GetByTitle("Zoeken").ClickAsync();
 
             await Step("And navigates to the screen 'Zaak ZAAK-2023-001'");
 
@@ -137,21 +142,22 @@ namespace Kiss.Bff.EndToEndTest.AnonymousContactmomentZaak
 
             await Step("And clicks on tab Contactmomenten");
 
-            await Page.GetContactmomentenTab().ClickAsync();
+            await Page.GetByRole(AriaRole.Tab, new() { Name = "Contactmomenten" }).ClickAsync();
 
             await Step("Then the first Contactmoment should contain the details as entered in Scenario: Register Contactmoment bij Zaak – II");
 
-            var firstContactMomentSummary = Page.GetFirstContactMomentSummary();
+            var firstContactMomentSummary = Page.FirstContactMomentSummary();
 
-            await Expect(firstContactMomentSummary.GetGespreksresultaatHeader()).ToHaveTextAsync("Zelfstandig afgehandeld");
-            await Expect(firstContactMomentSummary.GetAfdelingHeader()).ToHaveTextAsync("Parkeren");
+            await Expect(firstContactMomentSummary.GespreksresultaatHeader()).ToHaveTextAsync("Zelfstandig afgehandeld");
+            await Expect(firstContactMomentSummary.AfdelingHeader()).ToHaveTextAsync("Parkeren");
 
-            await Page.Locator("ul.overview > li:nth-child(2) details").EvaluateAsync("el => el.open = true");
+            await Page.FirstContactMomentDetails().EvaluateAsync("el => el.open = true");
 
-            var detailsList = Page.GetDetailsList();
-            await Expect(detailsList.GetZaaknummer()).ToHaveTextAsync("ZAAK-2023-001");
-            await Expect(detailsList.GetSpecifiekeVraag()).ToHaveTextAsync("Contactmoment bij ZAAK-2023-001");
+            var detailsList = Page.FirstContactMomentDetailsList();
+            await Expect(detailsList.ZaakNumber()).ToHaveTextAsync("ZAAK-2023-001");
+            await Expect(detailsList.ContactMomentDescription()).ToHaveTextAsync("Contactmoment bij ZAAK-2023-001");
         }
     }
+   
     
 }
