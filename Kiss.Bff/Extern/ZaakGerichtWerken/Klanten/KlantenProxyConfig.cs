@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using IdentityModel;
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Transforms;
 
