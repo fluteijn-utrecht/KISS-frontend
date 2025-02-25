@@ -1,5 +1,4 @@
-﻿using IdentityModel;
-using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem;
+﻿using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem;
 using Kiss.Bff.Extern.ZaakGerichtWerken.Zaaksysteem.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

@@ -2,8 +2,8 @@
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
+using Duende.IdentityModel;
 using Ganss.Xss;
-using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiss.Bff.Feedback
