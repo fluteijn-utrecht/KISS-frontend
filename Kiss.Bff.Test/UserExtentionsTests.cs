@@ -1,4 +1,4 @@
-﻿using IdentityModel;
+﻿using Duende.IdentityModel;
 using System.Security.Claims;
 
 namespace Kiss.Bff.Test
