@@ -16,20 +16,23 @@
       </template>
     </tab-list-item>
 
-    <tab-list-data-item
-      label="KvK-gegevens"
-      :data="bedrijf"
-      :disabled="(b) => !b"
-    >
-      <template #success="{ data }">
-        <handelsregister-gegevens v-if="data" :bedrijf="data" />
+    <tab-list-item label="KvK-gegevens">
+      <template #default="{ setError, setLoading }">
+        <handelsregister-gegevens
+          v-if="bedrijfIdentifier"
+          :bedrijf-identifier="bedrijfIdentifier"
+          @load="bedrijf = $event"
+          @loading="setLoading"
+          @error="setError"
+        />
       </template>
-    </tab-list-data-item>
+    </tab-list-item>
+
     <tab-list-item label="Contactmomenten">
       <template #default="{ setError, setLoading, setDisabled }">
         <contactmomenten-for-klant-identificator
-          v-if="systemen && bedrijf.success && bedrijf.data"
-          :klant-identificator="bedrijf.data"
+          v-if="systemen && bedrijf"
+          :klant-identificator="bedrijf"
           :systemen="systemen"
           @load="setDisabled(!$event?.length)"
           @loading="setLoading"
@@ -41,6 +44,7 @@
         </contactmomenten-for-klant-identificator>
       </template>
     </tab-list-item>
+
     <tab-list-data-item label="Zaken" :data="zaken" :disabled="(z) => !z.count">
       <template #success="{ data }">
         <zaken-overzicht
@@ -49,11 +53,12 @@
         />
       </template>
     </tab-list-data-item>
+
     <tab-list-item label="Contactverzoeken">
       <template #default="{ setError, setLoading, setDisabled }">
         <contactverzoeken-for-klant-identificator
-          v-if="systemen && bedrijf.success && bedrijf.data"
-          :klant-identificator="bedrijf.data"
+          v-if="systemen && bedrijf"
+          :klant-identificator="bedrijf"
           :systemen="systemen"
           @load="setDisabled(!$event?.length)"
           @loading="setLoading"
@@ -83,8 +88,7 @@ import { TabList, TabListDataItem, TabListItem } from "@/components/tabs";
 
 import BackLink from "@/components/BackLink.vue";
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
-import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
-import type { BedrijfIdentifier } from "@/services/kvk";
+import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
 import ContactverzoekenForKlantIdentificator from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantIdentificator.vue";
 import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
 import { useLoader } from "@/services";
@@ -97,6 +101,7 @@ const contactmomentStore = useContactmomentStore();
 
 const currentTab = ref("");
 const klant = ref<Klant>();
+const bedrijf = ref<Bedrijf>();
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.value) return undefined;
@@ -121,21 +126,22 @@ const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
     };
 };
 
-const bedrijf = useBedrijfByIdentifier(getBedrijfIdentifier);
+const bedrijfIdentifier = computed(getBedrijfIdentifier);
 
 const zaken = useZakenByKlantBedrijfIdentifier(() => {
-  if (!bedrijf.success || !bedrijf.data?.kvkNummer) return undefined;
-  if (bedrijf.data.vestigingsnummer)
-    return { vestigingsnummer: bedrijf.data.vestigingsnummer };
-  if (bedrijf.data.rsin)
-    return { rsin: bedrijf.data.rsin, kvkNummer: bedrijf.data.kvkNummer };
+  if (!bedrijf.value?.kvkNummer) return undefined;
+  if (bedrijf.value.vestigingsnummer)
+    return { vestigingsnummer: bedrijf.value.vestigingsnummer };
+  if (bedrijf.value.rsin)
+    return {
+      rsin: bedrijf.value.rsin,
+      kvkNummer: bedrijf.value.kvkNummer,
+    };
 });
 
 watch(
   () =>
-    klant.value && bedrijf.success
-      ? ([klant.value, bedrijf.data] as const)
-      : [],
+    klant.value && bedrijf.value ? ([klant.value, bedrijf.value] as const) : [],
   ([k, b]) => {
     if (!k || !b) return;
     contactmomentStore.setKlant({
