@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using IdentityModel;
 using Kiss.Bff.Beheer.Data;
 using Kiss.Bff.NieuwsEnWerkinstructies.Data.Entities;
 using Microsoft.AspNetCore.Mvc;

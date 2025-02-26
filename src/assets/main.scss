@@ -459,9 +459,24 @@ dt {
 }
 
 .htmlcontent {
+  --utrecht-heading-5-font-size: var(--utrecht-document-font-size);
+  --utrecht-heading-6-font-size: var(--utrecht-document-font-size);
+
   h3,
   h4 {
     margin-block-start: var(--spacing-default);
+  }
+
+  h5,
+  h6 {
+    color: var(--color-primary);
+    margin-block-start: var(--spacing-small);
+  }
+
+  .utrecht-heading-7,
+  .utrecht-heading-8 {
+    display: block;
+    margin-block-start: var(--spacing-small);
   }
 
   ul {
@@ -475,16 +490,25 @@ dt {
     }
   }
 
-  td {
-    border: 1px var(--color-tertiary) solid;
-    padding: var(--spacing-small);
+  ol {
+    margin-inline-start: var(--spacing-default);
+    margin-block: var(--spacing-small);
+  }
+
+  dl {
+    margin-block: var(--spacing-small);
   }
 
   table {
     margin-block: var(--spacing-small);
   }
 
-  p + p {
+  td {
+    border: 1px var(--color-tertiary) solid;
+    padding: var(--spacing-small);
+  }
+
+  p + :is(p, div, section, article) {
     margin-block-start: var(--spacing-small);
   }
 }

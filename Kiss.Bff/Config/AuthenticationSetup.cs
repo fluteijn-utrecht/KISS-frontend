@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using AngleSharp.Io;
-using IdentityModel;
+using Duende.IdentityModel;
 using Kiss;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
