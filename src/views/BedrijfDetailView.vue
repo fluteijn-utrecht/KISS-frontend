@@ -23,19 +23,18 @@
     </tab-list-data-item>
     <tab-list-item label="Contactmomenten">
       <template #default="{ setError, setLoading, setDisabled }">
-        <contactmomenten-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null && defaultSysteemId"
-          :klant-url="klantUrl"
-          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
-          :default-systeem-id="defaultSysteemId"
-          @load="setDisabled(!$event?.page?.length)"
+        <contactmomenten-for-klant-identificator
+          v-if="systemen && bedrijf.success && bedrijf.data"
+          :klantIdentificator="bedrijf.data"
+          :systemen="systemen"
+          @load="setDisabled(!$event?.length)"
           @loading="setLoading"
           @error="setError"
         >
           <template #object="{ object }">
             <zaak-preview :zaakurl="object.object" />
           </template>
-        </contactmomenten-for-klant-url>
+        </contactmomenten-for-klant-identificator>
       </template>
     </tab-list-item>
     <tab-list-data-item label="Zaken" :data="zaken" :disabled="(z) => !z.count">
@@ -85,7 +84,9 @@ import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identi
 import type { BedrijfIdentifier } from "@/services/kvk";
 import { getRegisterDetails } from "@/features/shared/systeemdetails";
 import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
-import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
+import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
+import { useLoader } from "@/services";
+import { fetchSystemen } from "@/services/environment/fetch-systemen";
 
 const props = defineProps<{ bedrijfId: string }>();
 const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
@@ -100,7 +101,7 @@ const klant = useKlantById(
   gebruikKlantInteracatiesApi,
 );
 
-const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+const klantUrl = computed(() => (klant.success ? (klant.data.url ?? "") : ""));
 const currentTab = ref("");
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
@@ -153,6 +154,8 @@ watch(
   },
   { immediate: true },
 );
+
+const { data: systemen } = useLoader(() => fetchSystemen());
 
 onMounted(async () => {
   const { useKlantInteractiesApi, defaultSystemId } =

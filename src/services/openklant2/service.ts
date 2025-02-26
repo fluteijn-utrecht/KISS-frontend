@@ -174,14 +174,17 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
   return value;
 }
 
-export function fetchBetrokkenen(params: {
+export function fetchBetrokkenen({
+  systeemId,
+  ...params
+}: {
   systeemId: string;
   wasPartij__url: string;
   pageSize: string;
 }) {
   const query = new URLSearchParams(params);
   return fetchWithSysteemId(
-    params.systeemId,
+    systeemId,
     `${klantinteractiesBetrokkenen}?${query}`,
   )
     .then(throwIfNotOk)

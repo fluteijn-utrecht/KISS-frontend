@@ -7,15 +7,14 @@ export const registryVersions = {
   ok2: "OpenKlant2",
 } as const;
 
+export type Systeem = {
+  isDefault: boolean;
+  identifier: string;
+  registryVersion: ValueOf<typeof registryVersions>;
+};
+
 export const fetchSystemen = () =>
   fetchLoggedIn("/api/environment/registers")
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(
-      ({ systemen }) =>
-        systemen as {
-          isDefault: boolean;
-          identifier: string;
-          registryVersion: ValueOf<typeof registryVersions>;
-        }[],
-    );
+    .then(({ systemen }) => systemen as Systeem[]);

@@ -5,8 +5,6 @@ export interface MedewerkerIdentificatie {
   voorvoegselAchternaam: string;
 }
 
-
-
 export interface ContactmomentDetails {
   id: string;
   startdatum: string;

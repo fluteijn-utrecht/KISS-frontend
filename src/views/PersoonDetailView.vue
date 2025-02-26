@@ -20,20 +20,18 @@
       <template #default="{ setError, setLoading, setDisabled }">
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
-        <contactmomenten-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null && defaultSysteemId"
-          :klant-url="klantUrl"
-          :default-systeem-id="defaultSysteemId"
-          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
-          :default-system-id="defaultSysteemId"
-          @load="setDisabled(!$event?.page?.length)"
+        <contactmomenten-for-klant-identificator
+          v-if="systemen && klantBsn"
+          :klant-identificator="{ bsn: klantBsn }"
+          :systemen="systemen"
+          @load="setDisabled(!$event?.length)"
           @loading="setLoading"
           @error="setError"
         >
           <template #object="{ object }">
             <zaak-preview :zaakurl="object.object" />
           </template>
-        </contactmomenten-for-klant-url>
+        </contactmomenten-for-klant-identificator>
       </template>
     </tab-list-item>
 
@@ -86,8 +84,10 @@ import {
   usePersoonByBsn,
   BrpGegevens,
 } from "@/features/persoon/persoon-details";
-import ContactmomentenForKlantUrl from "@/features/contact/contactmoment/ContactmomentenForKlantUrl.vue";
+import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
 import { getRegisterDetails } from "@/features/shared/systeemdetails";
+import { useLoader } from "@/services";
+import { fetchSystemen } from "@/services/environment/fetch-systemen";
 
 const props = defineProps<{ persoonId: string }>();
 
@@ -102,7 +102,7 @@ const klant = useKlantById(
   gebruikKlantInteracatiesApi,
 );
 
-const klantUrl = computed(() => (klant.success ? klant.data.url ?? "" : ""));
+const klantUrl = computed(() => (klant.success ? (klant.data.url ?? "") : ""));
 
 onMounted(async () => {
   const { useKlantInteractiesApi, defaultSystemId } =
@@ -122,6 +122,8 @@ const klantBsn = computed(getBsn);
 
 const zaken = useZakenByBsn(klantBsn);
 const persoon = usePersoonByBsn(getBsn);
+
+const { data: systemen } = useLoader(() => fetchSystemen());
 
 watch(
   [() => klant.success && klant.data, () => persoon.success && persoon.data],

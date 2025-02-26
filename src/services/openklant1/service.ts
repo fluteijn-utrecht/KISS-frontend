@@ -241,6 +241,17 @@ export const useKlantByIdentifier = async (
   return await searchSingleKlant(systeemId, getUrl());
 };
 
+export const fetchKlantByIdentifierOpenKlant1 = (
+  systeemId: string,
+  identifier: BedrijfIdentifierOpenKlant1 | { bsn: string },
+) =>
+  searchSingleKlant(
+    systeemId,
+    "bsn" in identifier
+      ? getKlantBsnUrl(identifier.bsn)
+      : getUrlVoorGetKlantById(identifier),
+  );
+
 export function mapBedrijfsIdentifier(
   bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2,
 ): BedrijfIdentifierOpenKlant1 {

@@ -35,8 +35,6 @@ import {
 } from "../components/service";
 import {
   DigitaalAdresTypes,
-  enrichBetrokkeneWithKlantContact,
-  fetchBetrokkenen,
   fetchKlantcontacten,
   KlantContactExpand,
   mapKlantContactToContactmomentViewModel,
@@ -107,42 +105,6 @@ export function koppelKlant({
       rol: "gesprekspartner",
     }),
   }).then(throwIfNotOk) as Promise<void>;
-}
-
-export function fetchContactmomentenByKlantId(
-  systeemId: string,
-  id: string,
-  gebruikKlantinteractiesApi: boolean,
-) {
-  if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({
-      systeemId: systeemId,
-      wasPartij__url: id,
-      pageSize: "100",
-    }).then(async (paginated) => ({
-      ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(systeemId, paginated.page, [
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ]).then((page) =>
-        page.map(({ klantContact }) =>
-          mapKlantContactToContactmomentViewModel(klantContact),
-        ),
-      ),
-    }));
-  }
-
-  const searchParams = new URLSearchParams();
-  searchParams.set("klant", id);
-  searchParams.set("ordering", "-registratiedatum");
-  searchParams.set("expand", "objectcontactmomenten");
-
-  return fetchWithSysteemId(
-    systeemId,
-    `${contactmomentenUrl}?${searchParams.toString()}`,
-  )
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
 }
 
 export const useContactmomentDetails = (url: () => string) =>
