@@ -1,7 +1,7 @@
 <template>
   <contactverzoeken-overzicht
-    v-if="contactverzoeken?.page"
-    :contactverzoeken="contactverzoeken.page"
+    v-if="contactverzoeken"
+    :contactverzoeken="contactverzoeken"
   >
     <template v-for="(_, slotName) in $slots" #[slotName]="props">
       <slot :name="slotName" v-bind="props"></slot>
@@ -10,23 +10,23 @@
 </template>
 
 <script lang="ts" setup>
-import type { PaginatedResult } from "@/services";
 import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
-import { fetchContactverzoekenByKlantId } from "./service";
+import { fetchContactverzoekenByKlantIdentificator } from "./service";
 import type { ContactverzoekOverzichtItem } from "./types";
+import type { KlantIdentificator } from "../../types";
+import type { Systeem } from "@/services/environment/fetch-systemen";
 
 defineSlots();
 
 const props = defineProps<{
-  klantUrl: string;
-  gebruikKlantInteracties: boolean;
-  defaultSysteemId: string;
+  klantIdentificator: KlantIdentificator;
+  systemen: Systeem[];
 }>();
 
 const emit = defineEmits<{
-  load: [data: PaginatedResult<ContactverzoekOverzichtItem>];
+  load: [data: ContactverzoekOverzichtItem[]];
   loading: [data: boolean];
   error: [data: boolean];
 }>();
@@ -36,11 +36,10 @@ const {
   loading,
   error,
 } = useLoader(() => {
-  if (props.klantUrl)
-    return fetchContactverzoekenByKlantId(
-      props.defaultSysteemId,
-      props.klantUrl,
-      props.gebruikKlantInteracties,
+  if (props.klantIdentificator)
+    return fetchContactverzoekenByKlantIdentificator(
+      props.klantIdentificator,
+      props.systemen,
     );
 });
 

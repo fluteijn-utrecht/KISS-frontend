@@ -25,7 +25,7 @@
       <template #default="{ setError, setLoading, setDisabled }">
         <contactmomenten-for-klant-identificator
           v-if="systemen && bedrijf.success && bedrijf.data"
-          :klantIdentificator="bedrijf.data"
+          :klant-identificator="bedrijf.data"
           :systemen="systemen"
           @load="setDisabled(!$event?.length)"
           @loading="setLoading"
@@ -47,19 +47,18 @@
     </tab-list-data-item>
     <tab-list-item label="Contactverzoeken">
       <template #default="{ setError, setLoading, setDisabled }">
-        <contactverzoeken-for-klant-url
-          v-if="gebruikKlantInteracatiesApi != null && defaultSysteemId"
-          :klant-url="klantUrl"
-          :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
-          :default-systeem-id="defaultSysteemId"
-          @load="setDisabled(!$event?.page?.length)"
+        <contactverzoeken-for-klant-identificator
+          v-if="systemen && bedrijf.success && bedrijf.data"
+          :klant-identificator="bedrijf.data"
+          :systemen="systemen"
+          @load="setDisabled(!$event?.length)"
           @loading="setLoading"
           @error="setError"
         >
           <template #object="{ object }">
             <zaak-preview v-if="object.object" :zaakurl="object.object" />
           </template>
-        </contactverzoeken-for-klant-url>
+        </contactverzoeken-for-klant-identificator>
       </template>
     </tab-list-item>
   </tab-list>
@@ -83,7 +82,7 @@ import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
 import { getRegisterDetails } from "@/features/shared/systeemdetails";
-import ContactverzoekenForKlantUrl from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantUrl.vue";
+import ContactverzoekenForKlantIdentificator from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantIdentificator.vue";
 import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
 import { useLoader } from "@/services";
 import { fetchSystemen } from "@/services/environment/fetch-systemen";
@@ -101,7 +100,6 @@ const klant = useKlantById(
   gebruikKlantInteracatiesApi,
 );
 
-const klantUrl = computed(() => (klant.success ? (klant.data.url ?? "") : ""));
 const currentTab = ref("");
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
