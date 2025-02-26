@@ -3,15 +3,19 @@
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
 
   <tab-list v-model="currentTab">
-    <tab-list-data-item
-      label="Contactgegevens"
-      :data="klant"
-      :disabled="(k) => !k"
-    >
-      <template #success="{ data }">
-        <klant-details :klant="data" />
+    <tab-list-item label="Contactgegevens">
+      <template #default="{ setError, setLoading }">
+        <klant-details
+          v-if="defaultSysteem"
+          :klant-id="bedrijfId"
+          :systeem="defaultSysteem"
+          @load="klant = $event"
+          @loading="setLoading"
+          @error="setError"
+        />
       </template>
-    </tab-list-data-item>
+    </tab-list-item>
+
     <tab-list-data-item
       label="KvK-gegevens"
       :data="bedrijf"
@@ -65,10 +69,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import { useContactmomentStore } from "@/stores/contactmoment";
-import { KlantDetails, useKlantById } from "@/features/klant/klant-details";
+import { KlantDetails } from "@/features/klant/klant-details";
 // import Pagination from "@/nl-design-system/components/Pagination.vue";
 import {
   useZakenByKlantBedrijfIdentifier,
@@ -81,47 +85,39 @@ import BackLink from "@/components/BackLink.vue";
 import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import { useBedrijfByIdentifier } from "@/features/bedrijf/use-bedrijf-by-identifier";
 import type { BedrijfIdentifier } from "@/services/kvk";
-import { getRegisterDetails } from "@/features/shared/systeemdetails";
 import ContactverzoekenForKlantIdentificator from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantIdentificator.vue";
 import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
 import { useLoader } from "@/services";
 import { fetchSystemen } from "@/services/environment/fetch-systemen";
+import type { Klant } from "@/services/openklant/types";
 
-const props = defineProps<{ bedrijfId: string }>();
-const gebruikKlantInteracatiesApi = ref<boolean | null>(null);
-const defaultSysteemId = ref<string | null>(null);
+defineProps<{ bedrijfId: string }>();
 
-const klantId = computed(() => props.bedrijfId);
 const contactmomentStore = useContactmomentStore();
 
-const klant = useKlantById(
-  klantId,
-  defaultSysteemId,
-  gebruikKlantInteracatiesApi,
-);
-
 const currentTab = ref("");
+const klant = ref<Klant>();
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
-  if (!klant.success || !klant.data) return undefined;
-  if (klant.data.vestigingsnummer)
+  if (!klant.value) return undefined;
+  if (klant.value.vestigingsnummer)
     return {
-      vestigingsnummer: klant.data.vestigingsnummer,
+      vestigingsnummer: klant.value.vestigingsnummer,
     };
   // if (klant.data.rsin)
   //   return {
   //     rsin: klant.data.rsin,
   //     kvkNummer: klant.data.kvkNummer,
   //   };
-  if (klant.data.nietNatuurlijkPersoonIdentifier)
+  if (klant.value.nietNatuurlijkPersoonIdentifier)
     return {
       //gechoogel met params verschil ok1 en esuite
-      rsin: klant.data.nietNatuurlijkPersoonIdentifier,
+      rsin: klant.value.nietNatuurlijkPersoonIdentifier,
     };
-  if (klant.data.rsin)
+  if (klant.value.rsin)
     return {
       //gechoogel met params verschil ok1 en esuite
-      rsin: klant.data.rsin,
+      rsin: klant.value.rsin,
     };
 };
 
@@ -137,8 +133,8 @@ const zaken = useZakenByKlantBedrijfIdentifier(() => {
 
 watch(
   () =>
-    klant.success && bedrijf.success
-      ? ([klant.data, bedrijf.data] as const)
+    klant.value && bedrijf.success
+      ? ([klant.value, bedrijf.data] as const)
       : [],
   ([k, b]) => {
     if (!k || !b) return;
@@ -154,11 +150,5 @@ watch(
 );
 
 const { data: systemen } = useLoader(() => fetchSystemen());
-
-onMounted(async () => {
-  const { useKlantInteractiesApi, defaultSystemId } =
-    await getRegisterDetails();
-  defaultSysteemId.value = defaultSystemId;
-  gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
-});
+const defaultSysteem = computed(() => systemen.value?.find((x) => x.isDefault));
 </script>

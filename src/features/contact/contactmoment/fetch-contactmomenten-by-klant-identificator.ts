@@ -19,9 +19,6 @@ export async function fetchContactmomentenByKlantIdentificator(
   id: KlantIdentificator,
   systemen: Systeem[],
 ): Promise<ContactmomentViewModel[]> {
-  const defaultSysteem = systemen.find((x) => x.isDefault);
-  if (!defaultSysteem) return [];
-
   const klantidentificators = getIdentificatorForOk1And2(id);
 
   const promises = systemen.map((systeem) => {
