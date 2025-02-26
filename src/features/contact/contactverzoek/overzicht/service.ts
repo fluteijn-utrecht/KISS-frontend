@@ -27,6 +27,7 @@ import {
   type Systeem,
 } from "@/services/environment/fetch-systemen";
 import { fetchInternetakenByKlantIdFromObjecten } from "@/services/internetaak/service";
+import { getIdentificatorForOk1And2 } from "../../shared";
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
   const url = new URL(urlStr);
@@ -197,39 +198,14 @@ export async function fetchContactverzoekenByKlantIdentificator(
   id: KlantIdentificator,
   systemen: Systeem[],
 ): Promise<ContactverzoekOverzichtItem[]> {
-  const { bsn, vestigingsnummer, rsin, kvkNummer } = id;
-
-  let klantIdentifier1, klantIdentifier2;
-
-  switch (true) {
-    case !!bsn:
-      klantIdentifier1 = { bsn };
-      klantIdentifier2 = { bsn };
-      break;
-    case !!vestigingsnummer:
-      klantIdentifier1 = { vestigingsnummer };
-      klantIdentifier2 = { vestigingsnummer };
-      break;
-    case !!kvkNummer:
-      // esuite wil een kvkNummer als niet-natuurlijk-persoon-Id
-      klantIdentifier1 = { nietNatuurlijkPersoonIdentifier: kvkNummer };
-      klantIdentifier2 = { kvkNummer, rsin };
-      break;
-    case !!rsin:
-      // dan maar proberen met de rsin?
-      klantIdentifier1 = { nietNatuurlijkPersoonIdentifier: rsin };
-      klantIdentifier2 = { rsin };
-      break;
-
-    default:
-      return [];
-  }
+  const klantidentificators = getIdentificatorForOk1And2(id);
 
   const promises = systemen.map((systeem) => {
     if (systeem.registryVersion === registryVersions.ok1) {
+      if (!klantidentificators.ok1) return [];
       return fetchKlantByIdentifierOpenKlant1(
         systeem.identifier,
-        klantIdentifier1,
+        klantidentificators.ok1,
       )
         .then((klant) =>
           !klant?.url
@@ -252,31 +228,31 @@ export async function fetchContactverzoekenByKlantIdentificator(
           return result;
         });
     }
-    return findKlantByIdentifier(systeem.identifier, klantIdentifier2).then(
-      (klant) =>
-        !klant?.id
-          ? []
-          : fetchBetrokkenen({
-              systeemId: systeem.identifier,
-              pageSize: "100",
-              wasPartij__url: klant.id,
-            }).then(({ page }) =>
-              enrichBetrokkeneWithKlantContact(systeem.identifier, page, [
-                KlantContactExpand.leiddeTotInterneTaken,
-                KlantContactExpand.gingOverOnderwerpobjecten,
-              ])
-                .then(filterOutContactmomenten)
-                .then((page) =>
-                  enrichBetrokkeneWithDigitaleAdressen(
-                    systeem.identifier,
-                    page,
-                  ),
-                )
-                .then((page) =>
-                  enrichInterneTakenWithActoren(systeem.identifier, page),
-                )
-                .then(mapKlantcontactToContactverzoekOverzichtItem),
-            ),
+    if (!klantidentificators.ok2) return [];
+    return findKlantByIdentifier(
+      systeem.identifier,
+      klantidentificators.ok2,
+    ).then((klant) =>
+      !klant?.id
+        ? []
+        : fetchBetrokkenen({
+            systeemId: systeem.identifier,
+            pageSize: "100",
+            wasPartij__url: klant.id,
+          }).then(({ page }) =>
+            enrichBetrokkeneWithKlantContact(systeem.identifier, page, [
+              KlantContactExpand.leiddeTotInterneTaken,
+              KlantContactExpand.gingOverOnderwerpobjecten,
+            ])
+              .then(filterOutContactmomenten)
+              .then((page) =>
+                enrichBetrokkeneWithDigitaleAdressen(systeem.identifier, page),
+              )
+              .then((page) =>
+                enrichInterneTakenWithActoren(systeem.identifier, page),
+              )
+              .then(mapKlantcontactToContactverzoekOverzichtItem),
+          ),
     );
   });
   return Promise.all(promises).then((all) =>

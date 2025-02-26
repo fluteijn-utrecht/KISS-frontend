@@ -1,4 +1,4 @@
-import { fetchContacmomentenByKlantUrlOk1 } from "@/services/contactmomenten/service";
+import { fetchContactmomentenByKlantUrlOk1 as fetchContactmomentenByKlantUrlOk1 } from "@/services/contactmomenten/service";
 import {
   type Systeem,
   registryVersions,
@@ -13,6 +13,7 @@ import {
   type ContactmomentViewModel,
 } from "@/services/openklant2";
 import type { KlantIdentificator } from "../types";
+import { getIdentificatorForOk1And2 } from "../shared";
 
 export async function fetchContactmomentenByKlantIdentificator(
   id: KlantIdentificator,
@@ -21,70 +22,47 @@ export async function fetchContactmomentenByKlantIdentificator(
   const defaultSysteem = systemen.find((x) => x.isDefault);
   if (!defaultSysteem) return [];
 
-  const { bsn, vestigingsnummer, rsin, kvkNummer } = id;
-
-  let klantIdentifier1, klantIdentifier2;
-
-  switch (true) {
-    case !!bsn:
-      klantIdentifier1 = { bsn };
-      klantIdentifier2 = { bsn };
-      break;
-    case !!vestigingsnummer:
-      klantIdentifier1 = { vestigingsnummer };
-      klantIdentifier2 = { vestigingsnummer };
-      break;
-    case !!kvkNummer:
-      // esuite wil een kvkNummer als niet-natuurlijk-persoon-Id
-      klantIdentifier1 = { nietNatuurlijkPersoonIdentifier: kvkNummer };
-      klantIdentifier2 = { kvkNummer, rsin };
-      break;
-    case !!rsin:
-      // dan maar proberen met de rsin?
-      klantIdentifier1 = { nietNatuurlijkPersoonIdentifier: rsin };
-      klantIdentifier2 = { rsin };
-      break;
-
-    default:
-      return [];
-  }
+  const klantidentificators = getIdentificatorForOk1And2(id);
 
   const promises = systemen.map((systeem) => {
     if (systeem.registryVersion === registryVersions.ok1) {
+      if (!klantidentificators.ok1) return [];
       return fetchKlantByIdentifierOpenKlant1(
         systeem.identifier,
-        klantIdentifier1,
+        klantidentificators.ok1,
       ).then((klant) =>
         !klant?.url
           ? []
-          : fetchContacmomentenByKlantUrlOk1({
+          : fetchContactmomentenByKlantUrlOk1({
               systeemIdentifier: systeem.identifier,
               klantUrl: klant.url,
             }).then(({ page }) => page),
       );
     }
-
-    return findKlantByIdentifier(systeem.identifier, klantIdentifier2).then(
-      (klant) =>
-        !klant?.url
-          ? []
-          : fetchBetrokkenen({
-              systeemId: systeem.identifier,
-              wasPartij__url: klant.url,
-              pageSize: "100",
-            })
-              .then(async (paginated) =>
-                enrichBetrokkeneWithKlantContact(
-                  systeem.identifier,
-                  paginated.page,
-                  [KlantContactExpand.gingOverOnderwerpobjecten],
-                ),
-              )
-              .then((page) =>
-                page.map(({ klantContact }) =>
-                  mapKlantContactToContactmomentViewModel(klantContact),
-                ),
+    if (!klantidentificators.ok2) return [];
+    return findKlantByIdentifier(
+      systeem.identifier,
+      klantidentificators.ok2,
+    ).then((klant) =>
+      !klant?.url
+        ? []
+        : fetchBetrokkenen({
+            systeemId: systeem.identifier,
+            wasPartij__url: klant.url,
+            pageSize: "100",
+          })
+            .then(async (paginated) =>
+              enrichBetrokkeneWithKlantContact(
+                systeem.identifier,
+                paginated.page,
+                [KlantContactExpand.gingOverOnderwerpobjecten],
               ),
+            )
+            .then((page) =>
+              page.map(({ klantContact }) =>
+                mapKlantContactToContactmomentViewModel(klantContact),
+              ),
+            ),
     );
   });
 

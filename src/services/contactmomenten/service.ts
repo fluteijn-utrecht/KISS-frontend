@@ -8,7 +8,7 @@ const contactmomentenApiRoot = "/contactmomenten/api/v1";
 const contactmomentenBaseUrl = `${contactmomentenProxyRoot}${contactmomentenApiRoot}`;
 const contactmomentenUrl = `${contactmomentenBaseUrl}/contactmomenten`;
 
-export function fetchContacmomentenByKlantUrlOk1({
+export function fetchContactmomentenByKlantUrlOk1({
   systeemIdentifier,
   klantUrl,
 }: {
