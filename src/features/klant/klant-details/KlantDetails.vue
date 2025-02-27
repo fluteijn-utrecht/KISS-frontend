@@ -41,7 +41,7 @@ import { watchEffect, type PropType } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import type { Klant } from "@/services/openklant/types";
 import { useLoader } from "@/services";
-import { fetchKlantById } from "./use-klant-by-id";
+import { fetchKlantById } from "./fetch-klant-by-id";
 import type { Systeem } from "@/services/environment/fetch-systemen";
 
 const props = defineProps({
