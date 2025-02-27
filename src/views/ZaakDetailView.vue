@@ -32,9 +32,9 @@
           <div class="contactmomenten">
             <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
             <contactmomenten-for-object-url
-              v-if="gebruikKlantInteracatiesApi != undefined && zaakUrl"
+              v-if="defaultSysteem && zaakUrl"
               :object-url="zaakUrl"
-              :gebruik-klant-interacties="gebruikKlantInteracatiesApi"
+              :systeem="defaultSysteem"
               @load="setDisabled(!$event.count)"
               @loading="setLoading"
               @error="setError"
@@ -64,8 +64,8 @@ import ZaakDeeplink from "@/features/zaaksysteem/components/ZaakDeeplink.vue";
 import { TabList, TabListItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
 import { useLoader } from "@/services/use-loader";
-import { useOpenKlant2 } from "@/services/openklant2";
 import ContactmomentenForObjectUrl from "@/features/contact/contactmoment/ContactmomentenForObjectUrl.vue";
+import { fetchSystemen } from "@/services/environment/fetch-systemen";
 
 const props = defineProps<{ zaakId: string; zaaksysteemId: string }>();
 const contactmomentStore = useContactmomentStore();
@@ -76,7 +76,8 @@ const zaak = useZaakById(
 const zaakUrl = computed(() =>
   zaak.success && zaak.data.self ? zaak.data.self : "",
 );
-const { data: gebruikKlantInteracatiesApi } = useLoader(() => useOpenKlant2());
+const { data: systemen } = useLoader(() => fetchSystemen());
+const defaultSysteem = computed(() => systemen.value?.find((x) => x.isDefault));
 
 const activeTab = ref("");
 
