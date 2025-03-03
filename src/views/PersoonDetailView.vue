@@ -7,9 +7,7 @@
     <tab-list-item label="Contactgegevens">
       <template #default="{ setError, setLoading }">
         <klant-details
-          v-if="defaultSysteem"
           :klant-id="persoonId"
-          :systeem="defaultSysteem"
           @load="klant = $event"
           @loading="setLoading"
           @error="setError"
@@ -34,9 +32,8 @@
         <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
 
         <contactmomenten-for-klant-identificator
-          v-if="systemen && persoon"
+          v-if="persoon"
           :klant-identificator="persoon"
-          :systemen="systemen"
           @load="setDisabled(!$event?.length)"
           @loading="setLoading"
           @error="setError"
@@ -64,9 +61,8 @@
         <utrecht-heading :level="2">Contactverzoeken</utrecht-heading>
 
         <contactverzoeken-for-klant-identificator
-          v-if="systemen && persoon"
+          v-if="persoon"
           :klant-identificator="persoon"
-          :systemen="systemen"
           @loading="setLoading"
           @error="setError"
           @load="setDisabled(!$event.length)"
@@ -92,8 +88,6 @@ import { TabList, TabListDataItem, TabListItem } from "@/components/tabs";
 import BackLink from "@/components/BackLink.vue";
 import { BrpGegevens } from "@/features/persoon/persoon-details";
 import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
-import { useLoader } from "@/services";
-import { fetchSystemen } from "@/services/environment/fetch-systemen";
 import ContactverzoekenForKlantIdentificator from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantIdentificator.vue";
 import type { Klant } from "@/services/openklant/types";
 import type { Persoon } from "@/services/brp";
@@ -109,9 +103,6 @@ const klantBsn = computed(() => klant.value?.bsn || "");
 
 const zaken = useZakenByBsn(klantBsn);
 const persoon = ref<Persoon>();
-
-const { data: systemen } = useLoader(() => fetchSystemen());
-const defaultSysteem = computed(() => systemen.value?.find((x) => x.isDefault));
 
 watch(
   [() => klant.value, () => persoon.value],

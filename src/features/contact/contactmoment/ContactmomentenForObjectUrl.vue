@@ -15,13 +15,12 @@ import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactmomentenOverzicht from "./ContactmomentenOverzicht.vue";
 import { fetchContactmomentenByObjectUrl } from "./service";
-import type { Systeem } from "@/services/environment/fetch-systemen";
+import { useSystemen } from "@/services/environment/fetch-systemen";
 
 defineSlots();
 
 const props = defineProps<{
   objectUrl: string;
-  systeem: Systeem;
 }>();
 
 const emit = defineEmits<{
@@ -30,13 +29,18 @@ const emit = defineEmits<{
   error: [data: boolean];
 }>();
 
+const { defaultSysteem } = useSystemen();
+
 const {
   data: contactmomenten,
   loading,
   error,
 } = useLoader(() => {
-  if (props.objectUrl && props.systeem)
-    return fetchContactmomentenByObjectUrl(props.systeem, props.objectUrl);
+  if (props.objectUrl && defaultSysteem.value)
+    return fetchContactmomentenByObjectUrl(
+      defaultSysteem.value,
+      props.objectUrl,
+    );
 });
 
 watchEffect(() => contactmomenten.value && emit("load", contactmomenten.value));

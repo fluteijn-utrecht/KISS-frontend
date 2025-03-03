@@ -16,13 +16,12 @@ import ContactverzoekenOverzicht from "./ContactverzoekenOverzicht.vue";
 import { fetchContactverzoekenByKlantIdentificator } from "./service";
 import type { ContactverzoekOverzichtItem } from "./types";
 import type { KlantIdentificator } from "../../types";
-import type { Systeem } from "@/services/environment/fetch-systemen";
+import { useSystemen } from "@/services/environment/fetch-systemen";
 
 defineSlots();
 
 const props = defineProps<{
   klantIdentificator: KlantIdentificator;
-  systemen: Systeem[];
 }>();
 
 const emit = defineEmits<{
@@ -31,15 +30,17 @@ const emit = defineEmits<{
   error: [data: boolean];
 }>();
 
+const { systemen } = useSystemen();
+
 const {
   data: contactverzoeken,
   loading,
   error,
 } = useLoader(() => {
-  if (props.klantIdentificator)
+  if (props.klantIdentificator && systemen.value)
     return fetchContactverzoekenByKlantIdentificator(
       props.klantIdentificator,
-      props.systemen,
+      systemen.value,
     );
 });
 

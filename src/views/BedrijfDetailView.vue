@@ -6,9 +6,7 @@
     <tab-list-item label="Contactgegevens">
       <template #default="{ setError, setLoading }">
         <klant-details
-          v-if="defaultSysteem"
           :klant-id="bedrijfId"
-          :systeem="defaultSysteem"
           @load="klant = $event"
           @loading="setLoading"
           @error="setError"
@@ -31,9 +29,8 @@
     <tab-list-item label="Contactmomenten">
       <template #default="{ setError, setLoading, setDisabled }">
         <contactmomenten-for-klant-identificator
-          v-if="systemen && bedrijf"
+          v-if="bedrijf"
           :klant-identificator="bedrijf"
-          :systemen="systemen"
           @load="setDisabled(!$event?.length)"
           @loading="setLoading"
           @error="setError"
@@ -57,9 +54,8 @@
     <tab-list-item label="Contactverzoeken">
       <template #default="{ setError, setLoading, setDisabled }">
         <contactverzoeken-for-klant-identificator
-          v-if="systemen && bedrijf"
+          v-if="bedrijf"
           :klant-identificator="bedrijf"
-          :systemen="systemen"
           @load="setDisabled(!$event?.length)"
           @loading="setLoading"
           @error="setError"
@@ -91,8 +87,6 @@ import { HandelsregisterGegevens } from "@/features/bedrijf/bedrijf-details";
 import type { Bedrijf, BedrijfIdentifier } from "@/services/kvk";
 import ContactverzoekenForKlantIdentificator from "@/features/contact/contactverzoek/overzicht/ContactverzoekenForKlantIdentificator.vue";
 import ContactmomentenForKlantIdentificator from "@/features/contact/contactmoment/ContactmomentenForKlantIdentificator.vue";
-import { useLoader } from "@/services";
-import { fetchSystemen } from "@/services/environment/fetch-systemen";
 import type { Klant } from "@/services/openklant/types";
 
 defineProps<{ bedrijfId: string }>();
@@ -154,7 +148,4 @@ watch(
   },
   { immediate: true },
 );
-
-const { data: systemen } = useLoader(() => fetchSystemen());
-const defaultSysteem = computed(() => systemen.value?.find((x) => x.isDefault));
 </script>

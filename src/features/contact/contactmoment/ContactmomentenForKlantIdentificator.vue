@@ -14,14 +14,13 @@ import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactmomentenOverzicht from "./ContactmomentenOverzicht.vue";
 import { fetchContactmomentenByKlantIdentificator } from "./fetch-contactmomenten-by-klant-identificator";
-import type { Systeem } from "@/services/environment/fetch-systemen";
+import { useSystemen } from "@/services/environment/fetch-systemen";
 import type { KlantIdentificator } from "../types";
 
 defineSlots();
 
 const props = defineProps<{
   klantIdentificator: KlantIdentificator;
-  systemen: Systeem[];
 }>();
 
 const emit = defineEmits<{
@@ -30,15 +29,17 @@ const emit = defineEmits<{
   error: [data: boolean];
 }>();
 
+const { systemen } = useSystemen();
+
 const {
   data: contactmomenten,
   loading,
   error,
 } = useLoader(() => {
-  if (props.klantIdentificator)
+  if (props.klantIdentificator && systemen.value)
     return fetchContactmomentenByKlantIdentificator(
       props.klantIdentificator,
-      props.systemen,
+      systemen.value,
     );
 });
 
