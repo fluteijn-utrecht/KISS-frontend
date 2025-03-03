@@ -1,7 +1,7 @@
 <template>
   <contactmomenten-overzicht
-    v-if="contactmomenten?.page"
-    :contactmomenten="contactmomenten.page"
+    v-if="contactmomenten"
+    :contactmomenten="contactmomenten"
   >
     <template v-for="(_, slotName) in $slots" #[slotName]="props">
       <slot :name="slotName" v-bind="props"></slot>
@@ -9,37 +9,37 @@
   </contactmomenten-overzicht>
 </template>
 <script setup lang="ts">
-import type { PaginatedResult } from "@/services";
 import type { ContactmomentViewModel } from "@/services/openklant2";
 import { useLoader } from "@/services/use-loader";
 import { watchEffect } from "vue";
 import ContactmomentenOverzicht from "./ContactmomentenOverzicht.vue";
-import { fetchContactmomentenByKlantId } from "./service";
+import { fetchContactmomentenByKlantIdentificator } from "./fetch-contactmomenten-by-klant-identificator";
+import { useSystemen } from "@/services/environment/fetch-systemen";
+import type { KlantIdentificator } from "../types";
 
 defineSlots();
 
 const props = defineProps<{
-  klantUrl: string;
-  gebruikKlantInteracties: boolean;
-  defaultSysteemId: string;
+  klantIdentificator: KlantIdentificator;
 }>();
 
 const emit = defineEmits<{
-  load: [data: PaginatedResult<ContactmomentViewModel>];
+  load: [data: ContactmomentViewModel[]];
   loading: [data: boolean];
   error: [data: boolean];
 }>();
+
+const { systemen } = useSystemen();
 
 const {
   data: contactmomenten,
   loading,
   error,
 } = useLoader(() => {
-  if (props.klantUrl)
-    return fetchContactmomentenByKlantId(
-      props.defaultSysteemId,
-      props.klantUrl,
-      props.gebruikKlantInteracties,
+  if (props.klantIdentificator && systemen.value)
+    return fetchContactmomentenByKlantIdentificator(
+      props.klantIdentificator,
+      systemen.value,
     );
 });
 

@@ -174,14 +174,17 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
   return value;
 }
 
-export function fetchBetrokkenen(params: {
+export function fetchBetrokkenen({
+  systeemId,
+  ...params
+}: {
   systeemId: string;
   wasPartij__url: string;
   pageSize: string;
 }) {
   const query = new URLSearchParams(params);
   return fetchWithSysteemId(
-    params.systeemId,
+    systeemId,
     `${klantinteractiesBetrokkenen}?${query}`,
   )
     .then(throwIfNotOk)
@@ -882,18 +885,23 @@ export function fetchKlantcontact({
 
 export function fetchKlantcontacten({
   expand,
+  systeemIdentifier,
   ...params
 }: {
   onderwerpobject__onderwerpobjectidentificatorObjectId?: string;
   hadBetrokkene__uuid?: string;
+  systeemIdentifier: string;
   expand?: KlantContactExpand[];
-} = {}) {
+}) {
   const query = new URLSearchParams(
     Object.entries(params).filter(([, value]) => value),
   );
   expand && query.append("expand", expand.join(","));
 
-  return fetchLoggedIn(`${klantinteractiesKlantcontacten}?${query}`)
+  return fetchWithSysteemId(
+    systeemIdentifier,
+    `${klantinteractiesKlantcontacten}?${query}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) =>

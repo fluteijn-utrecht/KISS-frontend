@@ -35,8 +35,6 @@ import {
 } from "../components/service";
 import {
   DigitaalAdresTypes,
-  enrichBetrokkeneWithKlantContact,
-  fetchBetrokkenen,
   fetchKlantcontacten,
   KlantContactExpand,
   mapKlantContactToContactmomentViewModel,
@@ -46,6 +44,10 @@ import type { ZaakDetails } from "@/features/zaaksysteem/types";
 import { voegContactmomentToeAanZaak } from "@/services/openzaak";
 import { koppelObject } from "@/services/openklant1";
 import { fetchWithSysteemId } from "@/services/fetch-with-systeem-id";
+import {
+  registryVersions,
+  type Systeem,
+} from "@/services/environment/fetch-systemen";
 
 //obsolete. api calls altijd vanuit /src/services of /src/apis. hier alleen nog busniesslogica afhandelen
 const contactmomentenProxyRoot = "/api/contactmomenten";
@@ -109,42 +111,6 @@ export function koppelKlant({
   }).then(throwIfNotOk) as Promise<void>;
 }
 
-export function fetchContactmomentenByKlantId(
-  systeemId: string,
-  id: string,
-  gebruikKlantinteractiesApi: boolean,
-) {
-  if (gebruikKlantinteractiesApi) {
-    return fetchBetrokkenen({
-      systeemId: systeemId,
-      wasPartij__url: id,
-      pageSize: "100",
-    }).then(async (paginated) => ({
-      ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(systeemId, paginated.page, [
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ]).then((page) =>
-        page.map(({ klantContact }) =>
-          mapKlantContactToContactmomentViewModel(klantContact),
-        ),
-      ),
-    }));
-  }
-
-  const searchParams = new URLSearchParams();
-  searchParams.set("klant", id);
-  searchParams.set("ordering", "-registratiedatum");
-  searchParams.set("expand", "objectcontactmomenten");
-
-  return fetchWithSysteemId(
-    systeemId,
-    `${contactmomentenUrl}?${searchParams.toString()}`,
-  )
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-}
-
 export const useContactmomentDetails = (url: () => string) =>
   ServiceResult.fromFetcher(
     () => {
@@ -162,16 +128,14 @@ export const useContactmomentDetails = (url: () => string) =>
       }),
   );
 
-export function fetchContactmomentenByObjectUrl(
-  url: string,
-  gebruikKlantinteractiesApi: boolean,
-) {
-  if (gebruikKlantinteractiesApi) {
+export function fetchContactmomentenByObjectUrl(systeem: Systeem, url: string) {
+  if (systeem.registryVersion === registryVersions.ok2) {
     // OK2
     const id = url.split("/").at(-1);
     if (!id) return Promise.reject("missing id");
 
     return fetchKlantcontacten({
+      systeemIdentifier: systeem.identifier,
       onderwerpobject__onderwerpobjectidentificatorObjectId: id,
       expand: [KlantContactExpand.gingOverOnderwerpobjecten],
     }).then((paginated) => ({
@@ -186,24 +150,13 @@ export function fetchContactmomentenByObjectUrl(
   params.set("ordering", "-registratiedatum");
   params.set("expand", "objectcontactmomenten");
 
-  return fetchLoggedIn(`${contactmomentenUrl}?${params}`)
+  return fetchWithSysteemId(
+    systeem.identifier,
+    `${contactmomentenUrl}?${params}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModel));
-}
-
-export function useContactmomentObject(getUrl: () => string) {
-  return ServiceResult.fromFetcher(
-    () => {
-      const u = getUrl();
-      if (!u) return "";
-      return toRelativeProxyUrl(u, contactmomentenProxyRoot) || "";
-    },
-    (u) =>
-      fetchLoggedIn(u)
-        .then(throwIfNotOk)
-        .then(parseJson) as Promise<ObjectContactmoment>,
-  );
 }
 
 //te gebruiken om cotactverzoeken als internetaak op te slaan in een overige objecten register, wanneer er geen regiser compatibel met openklant 2 of hoger beschikbaar is.

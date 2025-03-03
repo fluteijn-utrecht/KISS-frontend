@@ -1,18 +1,12 @@
-import {
-  fetchLoggedIn,
-  throwIfNotOk,
-  parseJson,
-  parsePagination,
-  type PaginatedResult,
-} from "@/services";
+import { fetchLoggedIn, throwIfNotOk, parseJson } from "@/services";
 import {
   DigitaleAdressenExpand,
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
   fetchBetrokkenen,
-  fetchWithSysteemId,
   filterOutContactmomenten,
+  findKlantByIdentifier,
   KlantContactExpand,
   searchDigitaleAdressen,
   type Betrokkene,
@@ -20,10 +14,20 @@ import {
   type ContactmomentViewModel,
   type DigitaalAdresExpandedApiViewModel,
 } from "@/services/openklant2";
-import { enrichContactverzoekObjectWithContactmoment } from "@/services/openklant1";
+import {
+  enrichContactverzoekObjectWithContactmoment,
+  fetchKlantByIdentifierOpenKlant1,
+} from "@/services/openklant1";
 import type { ContactverzoekOverzichtItem } from "./types";
 import type { ContactmomentDetails } from "../../contactmoment";
 import { fullName } from "@/helpers/string";
+import type { KlantIdentificator } from "../../types";
+import {
+  registryVersions,
+  type Systeem,
+} from "@/services/environment/fetch-systemen";
+import { fetchInternetakenByKlantIdFromObjecten } from "@/services/internetaak/service";
+import { getIdentificatorForOk1And2 } from "../../shared";
 
 function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
   const url = new URL(urlStr);
@@ -190,44 +194,74 @@ function mapObjectToContactverzoekOverzichtItem({
   } satisfies ContactverzoekOverzichtItem;
 }
 
-export function fetchContactverzoekenByKlantId(
-  systeemId: string,
-  id: string,
-  gebruikKlantInteractiesApi: boolean,
-): Promise<PaginatedResult<ContactverzoekOverzichtItem>> {
-  //OK2
-  if (gebruikKlantInteractiesApi) {
-    return fetchBetrokkenen({
-      systeemId: systeemId,
-      pageSize: "100",
-      wasPartij__url: id,
-    }).then(async (paginated) => ({
-      ...paginated,
-      page: await enrichBetrokkeneWithKlantContact(systeemId, paginated.page, [
-        KlantContactExpand.leiddeTotInterneTaken,
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ])
-        .then(filterOutContactmomenten)
-        .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
-        .then((page) => enrichInterneTakenWithActoren(systeemId, page))
-        .then(mapKlantcontactToContactverzoekOverzichtItem),
-    }));
-  }
+export async function fetchContactverzoekenByKlantIdentificator(
+  id: KlantIdentificator,
+  systemen: Systeem[],
+): Promise<ContactverzoekOverzichtItem[]> {
+  const klantidentificators = getIdentificatorForOk1And2(id);
 
-  // OK1
-  const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-  url.searchParams.set("ordering", "-record__data__registratiedatum");
-  url.searchParams.set("pageSize", "10");
-  url.searchParams.set("data_attr", `betrokkene__klant__exact__${id}`);
-
-  return fetchWithSysteemId(systeemId, url.toString())
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((r) =>
-      parsePagination(r, (v) =>
-        enrichContactverzoekObjectWithContactmoment(v, systeemId).then(
-          mapObjectToContactverzoekOverzichtItem,
-        ),
-      ),
+  const promises = systemen.map((systeem) => {
+    if (systeem.registryVersion === registryVersions.ok1) {
+      if (!klantidentificators.ok1) return [];
+      return fetchKlantByIdentifierOpenKlant1(
+        systeem.identifier,
+        klantidentificators.ok1,
+      )
+        .then((klant) =>
+          !klant?.url
+            ? []
+            : fetchInternetakenByKlantIdFromObjecten({
+                systeemId: systeem.identifier,
+                klantUrl: klant.url,
+              }).then(({ page }) => page),
+        )
+        .then(async (page) => {
+          const result = [];
+          for (const obj of page) {
+            result.push(
+              await enrichContactverzoekObjectWithContactmoment(
+                obj,
+                systeem.identifier,
+              ).then(mapObjectToContactverzoekOverzichtItem),
+            );
+          }
+          return result;
+        });
+    }
+    if (!klantidentificators.ok2) return [];
+    return findKlantByIdentifier(
+      systeem.identifier,
+      klantidentificators.ok2,
+    ).then((klant) =>
+      !klant?.id
+        ? []
+        : fetchBetrokkenen({
+            systeemId: systeem.identifier,
+            pageSize: "100",
+            wasPartij__url: klant.id,
+          }).then(({ page }) =>
+            enrichBetrokkeneWithKlantContact(systeem.identifier, page, [
+              KlantContactExpand.leiddeTotInterneTaken,
+              KlantContactExpand.gingOverOnderwerpobjecten,
+            ])
+              .then(filterOutContactmomenten)
+              .then((page) =>
+                enrichBetrokkeneWithDigitaleAdressen(systeem.identifier, page),
+              )
+              .then((page) =>
+                enrichInterneTakenWithActoren(systeem.identifier, page),
+              )
+              .then(mapKlantcontactToContactverzoekOverzichtItem),
+          ),
     );
+  });
+  return Promise.all(promises).then((all) =>
+    all
+      .flat()
+      .sort(
+        (a, b) =>
+          new Date(b.registratiedatum).valueOf() -
+          new Date(a.registratiedatum).valueOf(),
+      ),
+  );
 }
