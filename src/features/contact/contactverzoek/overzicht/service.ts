@@ -233,12 +233,12 @@ export async function fetchContactverzoekenByKlantIdentificator(
       systeem.identifier,
       klantidentificators.ok2,
     ).then((klant) =>
-      !klant?.id
+      !klant?.url
         ? []
         : fetchBetrokkenen({
             systeemId: systeem.identifier,
             pageSize: "100",
-            wasPartij__url: klant.id,
+            wasPartij__url: klant.url,
           }).then(({ page }) =>
             enrichBetrokkeneWithKlantContact(systeem.identifier, page, [
               KlantContactExpand.leiddeTotInterneTaken,
