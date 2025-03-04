@@ -43,9 +43,9 @@ REGISTERS__1__ZAAKSYSTEEM_DEEPLINK_URL=https://esuite.mijn-gemeente.nl/mp/zaak/
 REGISTERS__1__ZAAKSYSTEEM_DEEPLINK_PROPERTY=identificatie
 ```
 
-Hiermee komen de onderstaande release variabelen te vervallen. 
+Hiermee komen de onderstaande release variabelen te vervallen.
 De waardes blijven hetzelfde, maar deze moeten overgezet worden naar het bovenstaande stramien.
-Let op, als je nog oudere versies van KISS wil kunnen blijven deployen, dan zal je de oude variablen voorlopig nog moeten laten staan naast de nieuwe variabelen. 
+Let op, als je nog oudere versies van KISS wil kunnen blijven deployen, dan zal je de oude variablen voorlopig nog moeten laten staan naast de nieuwe variabelen.
 
 ```sh
 CONTACTMOMENTEN_API_CLIENT_ID
@@ -71,6 +71,10 @@ ZAAKSYSTEEM__n__BASE_URL
 ZAAKSYSTEEM__n__DEEPLINK_PROPERTY
 ZAAKSYSTEEM__n__DEEPLINK_URL
 ZAAKSYSTEEM__n__NIETNATUURLIJKPERSOONIDENTIFIER
+
+ZAKEN_BASE_URL
+ZAKEN_API_CLIENT_ID
+ZAKEN_API_KEY
 
 USE_KLANTINTERACTIES
 ```
