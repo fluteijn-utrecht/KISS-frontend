@@ -78,7 +78,7 @@ namespace Kiss.Bff.Test
         [DataRow("/api/internetaak/api/version/objects", "post")]
         [DataRow("/api/faq")]
         [DataRow("/api/contactmomentendetails?id=1")]
-        [DataRow("/api/zaaksysteem/deeplinkconfig")]
+        [DataRow("/api/environment/registers")]
         [DataRow("/api/KanaalToevoegen", "post")]
         public async Task CallingEnpointsWithoutCredetialsShouldResultInAUnauthorizedResponse(string url, string method = "get")
         {
