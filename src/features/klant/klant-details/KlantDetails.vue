@@ -42,7 +42,6 @@ import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import type { Klant } from "@/services/openklant/types";
 import { useLoader } from "@/services";
 import { fetchKlantById } from "./fetch-klant-by-id";
-import { useSystemen } from "@/services/environment/fetch-systemen";
 
 const props = defineProps({
   klantId: {
@@ -55,18 +54,13 @@ const props = defineProps({
   },
 });
 
-const { defaultSysteem } = useSystemen();
-
 const {
   data: klant,
   loading,
   error,
 } = useLoader(() => {
-  if (props.klantId && defaultSysteem.value)
-    return fetchKlantById({
-      id: props.klantId,
-      systeem: defaultSysteem.value,
-    });
+  if (!props.klantId) return;
+  return fetchKlantById({ id: props.klantId });
 });
 
 const emit = defineEmits<{
