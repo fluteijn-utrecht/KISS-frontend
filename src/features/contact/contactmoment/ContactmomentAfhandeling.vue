@@ -464,6 +464,7 @@ import {
   saveDigitaleAdressen,
   ensureActoren,
   postOnderwerpobject,
+  ensureOk2Klant,
 } from "@/services/openklant2/service";
 
 import type { SaveInterneTaakResponseModel } from "../../../services/openklant2/types";
@@ -486,7 +487,11 @@ import {
   fetchSystemen,
   registryVersions,
 } from "@/services/environment/fetch-systemen";
-import { saveContactmoment } from "@/services/openklant1";
+import {
+  ensureKlantForBedrijfIdentifier,
+  ensureOk1Klant,
+  saveContactmoment,
+} from "@/services/openklant1";
 import type { Contactmoment } from "@/services/openklant/types";
 
 const router = useRouter();
@@ -531,13 +536,44 @@ const koppelKlanten = async (
   systemId: string,
   vraag: Vraag,
   contactmomentId: string,
+  bronorganisatie: string,
 ) => {
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.url) {
+      let klantInSysteem;
+      if (klant.bsn) {
+        klantInSysteem = await ensureOk1Klant(
+          systemId,
+          { bsn: klant.bsn },
+          bronorganisatie,
+        );
+      } else if (klant.vestigingsnummer) {
+        klantInSysteem = await ensureKlantForBedrijfIdentifier(
+          systemId,
+          {
+            identifier: { vestigingsnummer: klant.vestigingsnummer },
+            bedrijfsnaam: "",
+          },
+          bronorganisatie,
+        );
+      } else if (klant.kvkNummer) {
+        klantInSysteem = await ensureKlantForBedrijfIdentifier(
+          systemId,
+          {
+            identifier: { nietNatuurlijkPersoonIdentifier: klant.kvkNummer },
+            bedrijfsnaam: "",
+          },
+          bronorganisatie,
+        );
+      } else {
+        throw new Error(
+          "geen valide klantidentificator. verwachtte een bsn, vestigingsnummer of kvknummer",
+        );
+      }
       await koppelKlant({
         systemId,
         contactmomentId,
-        klantId: klant.url,
+        klantUrl: klantInSysteem.url,
       });
     }
   }
@@ -605,8 +641,23 @@ const saveBetrokkeneBijContactmoment = async (
 ) => {
   for (const { shouldStore, klant } of vraag.klanten) {
     if (shouldStore && klant.id) {
+      let identifier;
+      if (klant.bsn) {
+        identifier = {
+          bsn: klant.bsn,
+        };
+      } else if (klant.vestigingsnummer) {
+        identifier = { vestigingsnummer: klant.vestigingsnummer };
+      } else if (klant.rsin) {
+        identifier = { rsin: klant.rsin };
+      } else {
+        throw new Error(
+          "invalide klantidentifier. verwachtte bsn, vestigingsnummer of rsin",
+        );
+      }
+      const klantInSysteem = await ensureOk2Klant(systemIdentifier, identifier);
       await saveBetrokkene(systemIdentifier, {
-        partijId: klant.id,
+        partijId: klantInSysteem.id,
         klantcontactId: klantcontactId,
       });
     }
@@ -896,7 +947,12 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     }
 
     promises.push(
-      koppelKlanten(systemIdentifier, vraag, savedContactmoment.url),
+      koppelKlanten(
+        systemIdentifier,
+        vraag,
+        savedContactmoment.url,
+        organisatieIds.value[0] || "",
+      ),
     );
 
     await Promise.all(promises);

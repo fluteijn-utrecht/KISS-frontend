@@ -1,10 +1,11 @@
-import { fetchLoggedIn, throwIfNotOk, parseJson } from "@/services";
+import { throwIfNotOk, parseJson } from "@/services";
 import {
   DigitaleAdressenExpand,
   enrichBetrokkeneWithDigitaleAdressen,
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
   fetchBetrokkenen,
+  fetchWithSysteemId,
   filterOutContactmomenten,
   findKlantByIdentifier,
   KlantContactExpand,
@@ -32,11 +33,15 @@ import {
   getIdentificatorForOk1And2,
 } from "../../shared";
 
-function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
+function searchRecursive(
+  systeemId: string,
+  urlStr: string,
+  page = 1,
+): Promise<any[]> {
   const url = new URL(urlStr);
   url.searchParams.set("page", page.toString());
 
-  return fetchLoggedIn(url)
+  return fetchWithSysteemId(systeemId, url.toString())
     .then(throwIfNotOk)
     .then(parseJson)
     .then(async (j) => {
@@ -45,97 +50,121 @@ function searchRecursive(urlStr: string, page = 1): Promise<any[]> {
       }
 
       if (!j.next) return j.results;
-      const nextResults = await searchRecursive(urlStr, page + 1);
+      const nextResults = await searchRecursive(systeemId, urlStr, page + 1);
       return [...j.results, ...nextResults];
     });
 }
 
 async function searchOk2Recursive(
+  systeemId: string,
   adres: string,
   page = 1,
 ): Promise<DigitaalAdresExpandedApiViewModel[]> {
   const paginated = await searchDigitaleAdressen({
+    systeemId,
     adres,
     page,
     expand: [DigitaleAdressenExpand.verstrektDoorBetrokkene],
   });
   if (!paginated.next) return paginated.page;
-  return [...paginated.page, ...(await searchOk2Recursive(adres, page + 1))];
+  return [
+    ...paginated.page,
+    ...(await searchOk2Recursive(systeemId, adres, page + 1)),
+  ];
 }
 
 export async function search(
-  systeemId: string,
+  systemen: Systeem[],
   query: string,
-  gebruikKlantInteractiesApi: boolean,
 ): Promise<ContactverzoekOverzichtItem[]> {
-  // OK2
-  if (gebruikKlantInteractiesApi) {
-    const adressen = await searchOk2Recursive(query);
+  const promises = systemen.map(async (systeem) => {
+    // OK2
+    if (systeem.registryVersion === registryVersions.ok2) {
+      const adressen = await searchOk2Recursive(systeem.identifier, query);
 
-    const betrokkenen = adressen
-      .map((x) => x?._expand?.verstrektDoorBetrokkene)
-      .filter(Boolean) as Betrokkene[];
+      const betrokkenen = adressen
+        .map((x) => x?._expand?.verstrektDoorBetrokkene)
+        .filter(Boolean) as Betrokkene[];
 
-    const uniqueBetrokkenen = new Map<string, Betrokkene>(
-      betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
-    );
+      const uniqueBetrokkenen = new Map<string, Betrokkene>(
+        betrokkenen.map((betrokkene) => [betrokkene.uuid, betrokkene]),
+      );
 
-    return enrichBetrokkeneWithKlantContact(
-      systeemId,
-      [...uniqueBetrokkenen.values()],
-      [
-        KlantContactExpand.leiddeTotInterneTaken,
-        KlantContactExpand.gingOverOnderwerpobjecten,
-      ],
-    )
-      .then(filterOutContactmomenten)
-      .then((page) => enrichBetrokkeneWithDigitaleAdressen(systeemId, page))
-      .then((page) => enrichInterneTakenWithActoren(systeemId, page))
-      .then((page) =>
-        Promise.all(
-          page.map(async (item) => ({
-            ...item,
-            zaaknummers: await enrichOnderwerpObjectenWithZaaknummers(
-              systeemId,
+      return enrichBetrokkeneWithKlantContact(
+        systeem.identifier,
+        [...uniqueBetrokkenen.values()],
+        [
+          KlantContactExpand.leiddeTotInterneTaken,
+          KlantContactExpand.gingOverOnderwerpobjecten,
+        ],
+      )
+        .then(filterOutContactmomenten)
+        .then((page) =>
+          enrichBetrokkeneWithDigitaleAdressen(systeem.identifier, page),
+        )
+        .then((page) => enrichInterneTakenWithActoren(systeem.identifier, page))
+        .then(async (page) => {
+          const result = [];
+          for (const item of page) {
+            const zaaknummers = await enrichOnderwerpObjectenWithZaaknummers(
+              systeem.identifier,
               item.klantContact._expand.gingOverOnderwerpobjecten || [],
-            ),
-          })),
-        ),
-      )
-      .then((page) =>
-        mapKlantcontactToContactverzoekOverzichtItem(systeemId, page),
-      )
-      .then(filterOutGeauthenticeerdeContactverzoeken);
-  }
-  /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie
-  else {
-    const url = new URL("/api/internetaak/api/v2/objects", location.origin);
-    url.searchParams.set("ordering", "-record__data__registratiedatum");
-    url.searchParams.set("pageSize", "10");
-    url.searchParams.set(
-      "data_attr",
-      `betrokkene__digitaleAdressen__icontains__${query}`,
-    );
+            );
+            const enriched = {
+              ...item,
+              zaaknummers,
+            };
+            result.push(enriched);
+          }
+          return result;
+        })
+        .then(mapKlantcontactToContactverzoekOverzichtItem)
+        .then(filterOutGeauthenticeerdeContactverzoeken);
+    }
 
-    return searchRecursive(url.toString())
-      .then((x) =>
-        Promise.all(
-          x.map((obj) =>
-            enrichContactverzoekObjectWithContactmoment(systeemId, obj)
+    /// OK1 heeft geen interne taak, dus gaan we naar de objecten registratie
+    else {
+      const url = new URL("/api/internetaak/api/v2/objects", location.origin);
+      url.searchParams.set("ordering", "-record__data__registratiedatum");
+      url.searchParams.set("pageSize", "10");
+      url.searchParams.set(
+        "data_attr",
+        `betrokkene__digitaleAdressen__icontains__${query}`,
+      );
+
+      return searchRecursive(systeem.identifier, url.toString())
+        .then(async (x) => {
+          const items = [];
+          for (const obj of x) {
+            const enriched = await enrichContactverzoekObjectWithContactmoment(
+              systeem.identifier,
+              obj,
+            )
               .then(async (cm) => ({
                 ...cm,
                 contactmoment: await enrichContactmomentWithZaaknummer(
-                  systeemId,
+                  systeem.identifier,
                   cm.contactmoment,
                 ),
               }))
-              .then(mapObjectToContactverzoekOverzichtItem),
-          ),
-        ),
-      )
+              .then(mapObjectToContactverzoekOverzichtItem);
+            items.push(enriched);
+          }
+          return items;
+        })
 
-      .then(filterOutGeauthenticeerdeContactverzoeken);
-  }
+        .then(filterOutGeauthenticeerdeContactverzoeken);
+    }
+  });
+
+  const all = await Promise.all(promises);
+  return all
+    .flat()
+    .sort(
+      (a, b) =>
+        new Date(b.registratiedatum).valueOf() -
+        new Date(a.registratiedatum).valueOf(),
+    );
 }
 
 function filterOutGeauthenticeerdeContactverzoeken(
@@ -145,7 +174,6 @@ function filterOutGeauthenticeerdeContactverzoeken(
 }
 
 function mapKlantcontactToContactverzoekOverzichtItem(
-  systeemId: string,
   betrokkeneMetKlantcontact: (BetrokkeneMetKlantContact & {
     zaaknummers: string[];
   })[],
@@ -298,12 +326,7 @@ export async function fetchContactverzoekenByKlantIdentificator(
                   })),
                 ),
               )
-              .then((page) =>
-                mapKlantcontactToContactverzoekOverzichtItem(
-                  systeem.identifier,
-                  page,
-                ),
-              ),
+              .then(mapKlantcontactToContactverzoekOverzichtItem),
           ),
     );
   });

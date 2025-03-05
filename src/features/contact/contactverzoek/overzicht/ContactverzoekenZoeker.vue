@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSearch">
+  <form @submit.prevent="handleSearch" v-if="systemen">
     <label class="utrecht-form-label">
       Telefoonnummer of e-mailadres
       <input
@@ -36,7 +36,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import SearchResultsCaption from "@/components/SearchResultsCaption.vue";
 import { Button as UtrechtButton } from "@utrecht/component-library-vue";
@@ -45,10 +44,7 @@ import { ensureState } from "@/stores/create-store";
 import { search } from "./service";
 import type { ContactverzoekOverzichtItem } from "./types";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import { getRegisterDetails } from "@/features/shared/systeemdetails";
-
-const gebruikKlantInteracatiesApi = ref<boolean>(false);
-const defaultSysteemId = ref<string | null>(null);
+import { useSystemen } from "@/services/environment/fetch-systemen";
 
 const store = ensureState({
   stateId: "contactverzoeken-zoeker",
@@ -65,16 +61,11 @@ const store = ensureState({
   },
 });
 
-onMounted(async () => {
-  const { useKlantInteractiesApi, defaultSystemId } =
-    await getRegisterDetails();
-  defaultSysteemId.value = defaultSystemId;
-  gebruikKlantInteracatiesApi.value = useKlantInteractiesApi;
-});
+const { systemen } = useSystemen();
 
 const handleSearch = async () => {
-  if (!defaultSysteemId.value) {
-    throw new Error("defaultSysteemId ontbreekt of is leeg");
+  if (!systemen.value) {
+    throw new Error("systemen niet gevonden");
   }
 
   store.value.zoekerResults.loading = true;
@@ -83,9 +74,8 @@ const handleSearch = async () => {
 
   try {
     store.value.zoekerResults.data = await search(
-      defaultSysteemId.value,
+      systemen.value,
       store.value.searchQuery,
-      gebruikKlantInteracatiesApi.value,
     );
     store.value.zoekerResults.success = true;
   } catch (error) {
