@@ -638,7 +638,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const useKlantInteractiesApi =
     systeem.registryVersion === registryVersions.ok2;
 
-  // now we now to which system all data should me posted.
+  // now we now to which system all data should be posted.
   // the klanten we have selected, come from the default system
   // depending on whether we want to link a zaak,
   // we need to ensure the klanten exist in the target system as well
