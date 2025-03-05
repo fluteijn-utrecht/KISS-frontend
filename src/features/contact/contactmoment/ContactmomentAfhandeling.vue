@@ -532,7 +532,7 @@ const zakenToevoegenAanContactmoment = async (
   }
 };
 
-const koppelKlanten = async (
+const ensureKlantenEnKoppelAanContactmomentOk1 = async (
   systemId: string,
   vraag: Vraag,
   contactmomentId: string,
@@ -634,7 +634,7 @@ const saveBetrokkeneBijContactverzoek = async (
   return betrokkenenUuids;
 };
 
-const saveBetrokkeneBijContactmoment = async (
+const ensureKlantenEnKoppelAanContactmomentOk2 = async (
   systemIdentifier: string,
   vraag: Vraag,
   klantcontactId: string,
@@ -666,6 +666,11 @@ const saveBetrokkeneBijContactmoment = async (
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const systemen = await fetchSystemen();
+
+  // if this contactmoment/contactverzoek is releated to a zaak,
+  // then we should store this contactmoment/contactverzoek in the registry..
+  // that is linked to the zaaksysteem that contains this particular zaak
+
   const zaakSysteemId = vraag.zaken.find((x) => x.shouldStore)?.zaaksysteemId;
   const systeem = systemen.find(
     ({ isDefault, identifier }) =>
@@ -808,7 +813,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     }
 
     if (isNietAnoniemContactmoment) {
-      await saveBetrokkeneBijContactmoment(
+      await ensureKlantenEnKoppelAanContactmomentOk2(
         systemIdentifier,
         vraag,
         savedKlantContactId,
@@ -947,7 +952,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     }
 
     promises.push(
-      koppelKlanten(
+      ensureKlantenEnKoppelAanContactmomentOk1(
         systemIdentifier,
         vraag,
         savedContactmoment.url,
