@@ -444,7 +444,11 @@ import {
 } from "@utrecht/component-library-vue";
 import SimpleSpinner from "@/components/SimpleSpinner.vue";
 import ApplicationMessage from "@/components/ApplicationMessage.vue";
-import { useContactmomentStore, type Vraag } from "@/stores/contactmoment";
+import {
+  useContactmomentStore,
+  type ContactmomentKlant,
+  type Vraag,
+} from "@/stores/contactmoment";
 import { toast } from "@/stores/toast";
 import {
   koppelKlant,
@@ -486,13 +490,14 @@ import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekF
 import {
   fetchSystemen,
   registryVersions,
+  type Systeem,
 } from "@/services/environment/fetch-systemen";
 import {
   ensureKlantForBedrijfIdentifier,
   ensureOk1Klant,
   saveContactmoment,
 } from "@/services/openklant1";
-import type { Contactmoment } from "@/services/openklant/types";
+import type { Contactmoment, Klant } from "@/services/openklant/types";
 
 const router = useRouter();
 const contactmomentStore = useContactmomentStore();
@@ -534,60 +539,27 @@ const zakenToevoegenAanContactmoment = async (
 
 const koppelKlanten = async (
   systemId: string,
-  vraag: Vraag,
+  klanten: Klant[],
   contactmomentId: string,
-  bronorganisatie: string,
 ) => {
-  for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore && klant.url) {
-      let klantInSysteem;
-      if (klant.bsn) {
-        klantInSysteem = await ensureOk1Klant(
-          systemId,
-          { bsn: klant.bsn },
-          bronorganisatie,
-        );
-      } else if (klant.vestigingsnummer) {
-        klantInSysteem = await ensureKlantForBedrijfIdentifier(
-          systemId,
-          {
-            identifier: { vestigingsnummer: klant.vestigingsnummer },
-            bedrijfsnaam: "",
-          },
-          bronorganisatie,
-        );
-      } else if (klant.kvkNummer) {
-        klantInSysteem = await ensureKlantForBedrijfIdentifier(
-          systemId,
-          {
-            identifier: { nietNatuurlijkPersoonIdentifier: klant.kvkNummer },
-            bedrijfsnaam: "",
-          },
-          bronorganisatie,
-        );
-      } else {
-        throw new Error(
-          "geen valide klantidentificator. verwachtte een bsn, vestigingsnummer of kvknummer",
-        );
-      }
-      await koppelKlant({
-        systemId,
-        contactmomentId,
-        klantUrl: klantInSysteem.url,
-      });
-    }
+  for (const klant of klanten) {
+    await koppelKlant({
+      systemId,
+      contactmomentId,
+      klantUrl: klant.url,
+    });
   }
 };
 
 const saveBetrokkeneBijContactverzoek = async (
   systemIdentifier: string,
-  vraag: Vraag,
+  klanten: Array<ContactmomentKlant & Klant>,
   klantcontactId: string,
   contactverzoekData?: Partial<ContactverzoekData>,
 ): Promise<string[]> => {
   const betrokkenenUuids: string[] = [];
 
-  if (!vraag.klanten.length) {
+  if (!klanten.length) {
     // voor een contactverzoek zonder klant moet OOK een betrokkene aangemaakt worden
     const organisatie = contactverzoekData?.betrokkene?.organisatie;
     const voornaam = contactverzoekData?.betrokkene?.persoonsnaam?.voornaam;
@@ -605,8 +577,8 @@ const saveBetrokkeneBijContactverzoek = async (
     betrokkenenUuids.push(result.uuid);
   }
 
-  for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore && klant.id) {
+  for (const klant of klanten) {
+    if (klant.id) {
       const organisatie =
         contactverzoekData?.betrokkene?.organisatie || klant.bedrijfsnaam;
       const voornaam =
@@ -636,31 +608,14 @@ const saveBetrokkeneBijContactverzoek = async (
 
 const saveBetrokkeneBijContactmoment = async (
   systemIdentifier: string,
-  vraag: Vraag,
+  klanten: Klant[],
   klantcontactId: string,
 ) => {
-  for (const { shouldStore, klant } of vraag.klanten) {
-    if (shouldStore && klant.id) {
-      let identifier;
-      if (klant.bsn) {
-        identifier = {
-          bsn: klant.bsn,
-        };
-      } else if (klant.vestigingsnummer) {
-        identifier = { vestigingsnummer: klant.vestigingsnummer };
-      } else if (klant.rsin) {
-        identifier = { rsin: klant.rsin };
-      } else {
-        throw new Error(
-          "invalide klantidentifier. verwachtte bsn, vestigingsnummer of rsin",
-        );
-      }
-      const klantInSysteem = await ensureOk2Klant(systemIdentifier, identifier);
-      await saveBetrokkene(systemIdentifier, {
-        partijId: klantInSysteem.id,
-        klantcontactId: klantcontactId,
-      });
-    }
+  for (const klant of klanten) {
+    await saveBetrokkene(systemIdentifier, {
+      partijId: klant.id,
+      klantcontactId: klantcontactId,
+    });
   }
 };
 
@@ -677,6 +632,8 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const systemIdentifier = systeem.identifier;
   const useKlantInteractiesApi =
     systeem.registryVersion === registryVersions.ok2;
+
+  const klanten = await ensureKlanten(systeem, vraag);
 
   const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
   const isAnoniem = !vraag.klanten.some((x) => x.shouldStore && x.klant.id);
@@ -706,10 +663,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   let contactverzoekData: Omit<ContactverzoekData, "contactmoment"> | undefined;
 
   if (isContactverzoek) {
-    const klantUrl = vraag.klanten
-      .filter((x) => x.shouldStore)
-      .map((x) => x.klant.url)
-      .find(Boolean);
+    const klantUrl = klanten.map((x) => x.url).find(Boolean);
 
     contactverzoekData = mapContactverzoekData({
       klantUrl,
@@ -801,7 +755,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     if (isContactverzoek) {
       betrokkenenUuids = await saveBetrokkeneBijContactverzoek(
         systemIdentifier,
-        vraag,
+        klanten,
         savedKlantContactId,
         contactverzoekData,
       );
@@ -810,7 +764,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     if (isNietAnoniemContactmoment) {
       await saveBetrokkeneBijContactmoment(
         systemIdentifier,
-        vraag,
+        klanten,
         savedKlantContactId,
       );
     }
@@ -898,10 +852,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     addWerkinstructiesToContactmoment(contactmoment, vraag);
     addVacToContactmoment(contactmoment, vraag);
 
-    const klantUrl = vraag.klanten
-      .filter((x) => x.shouldStore)
-      .map((x) => x.klant.url)
-      .find(Boolean);
+    const klantUrl = klanten.map((x) => x.url).find(Boolean);
 
     const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
     let cvData;
@@ -947,12 +898,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
     }
 
     promises.push(
-      koppelKlanten(
-        systemIdentifier,
-        vraag,
-        savedContactmoment.url,
-        organisatieIds.value[0] || "",
-      ),
+      koppelKlanten(systemIdentifier, klanten, savedContactmoment.url),
     );
 
     await Promise.all(promises);
@@ -1148,6 +1094,68 @@ onMounted(() => {
   );
   return Promise.all(promises);
 });
+
+const ensureKlanten = async (systeem: Systeem, vraag: Vraag) => {
+  const result = [];
+  for (const { klant, shouldStore } of vraag.klanten) {
+    if (!shouldStore) continue;
+    let klantInSysteem;
+    if (systeem.registryVersion === registryVersions.ok1) {
+      const bronorganisatie = organisatieIds.value[0] || "";
+      if (klant.bsn) {
+        klantInSysteem = await ensureOk1Klant(
+          systeem.identifier,
+          { bsn: klant.bsn },
+          bronorganisatie,
+        );
+      } else if (klant.vestigingsnummer) {
+        klantInSysteem = await ensureKlantForBedrijfIdentifier(
+          systeem.identifier,
+          {
+            identifier: { vestigingsnummer: klant.vestigingsnummer },
+            bedrijfsnaam: "",
+          },
+          bronorganisatie,
+        );
+      } else if (klant.kvkNummer) {
+        klantInSysteem = await ensureKlantForBedrijfIdentifier(
+          systeem.identifier,
+          {
+            identifier: { nietNatuurlijkPersoonIdentifier: klant.kvkNummer },
+            bedrijfsnaam: "",
+          },
+          bronorganisatie,
+        );
+      }
+    } else {
+      if (klant.bsn) {
+        klantInSysteem = await ensureOk2Klant(systeem.identifier, {
+          bsn: klant.bsn,
+        });
+      } else if (klant.vestigingsnummer) {
+        klantInSysteem = await ensureOk2Klant(systeem.identifier, {
+          vestigingsnummer: klant.vestigingsnummer,
+        });
+      } else if (klant.rsin) {
+        klantInSysteem = await ensureOk2Klant(systeem.identifier, {
+          rsin: klant.rsin,
+        });
+      }
+    }
+
+    if (!klantInSysteem) {
+      throw new Error(
+        "geen valide klantidentificator. verwachtte een bsn, vestigingsnummer, rsin of kvknummer",
+      );
+    }
+
+    result.push({
+      ...klant,
+      ...klantInSysteem,
+    });
+  }
+  return result;
+};
 </script>
 
 <style scoped lang="scss">
