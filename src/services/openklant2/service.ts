@@ -1,5 +1,4 @@
 import {
-  fetchLoggedIn,
   enforceOneOrZero,
   parseJson,
   parsePagination,
@@ -92,11 +91,12 @@ export async function enrichInterneTakenWithActoren(
     //we halen alle actoren op en kiezen dan de eerste medewerker. als er geen medewerkers bij staan de erste organisatie
     //wordt naar verwachting tzt aangepast, dan gaan we gewoon alle actoren bij de internetak tonen
 
-    const actorenFetchTasks = actoren.map((actor) =>
-      fetchActor(systeemId, actor.uuid),
-    );
+    const actorenDetails = [] as ActorApiViewModel[];
 
-    const actorenDetails = await Promise.all(actorenFetchTasks);
+    for (const actor of actoren) {
+      const actorDetails = await fetchActor(systeemId, actor.uuid);
+      actorenDetails.push(actorDetails);
+    }
 
     const medewerkerActor = actorenDetails.find(
       (x) => x.soortActor === "medewerker",
@@ -127,18 +127,15 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
   value: BetrokkeneMetKlantContact[],
 ): Promise<BetrokkeneMetKlantContact[]> {
   for (const betrokkeneWithKlantcontact of value) {
-    const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
-      (digitaalAdres) => {
-        const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-        return fetchWithSysteemId(systeemId, url)
-          .then(throwIfNotOk)
-          .then(parseJson)
-          .then((d) => d as DigitaalAdresApiViewModel);
-      },
-    );
-
-    betrokkeneWithKlantcontact.expandedDigitaleAdressen =
-      await Promise.all(fetchTasks);
+    betrokkeneWithKlantcontact.expandedDigitaleAdressen ??= [];
+    for (const digitaalAdres of betrokkeneWithKlantcontact.digitaleAdressen) {
+      const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
+      const expanded = await fetchWithSysteemId(systeemId, url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((d) => d as DigitaalAdresApiViewModel);
+      betrokkeneWithKlantcontact.expandedDigitaleAdressen.push(expanded);
+    }
   }
 
   return value;
@@ -168,17 +165,22 @@ export enum DigitaleAdressenExpand {
   verstrektDoorBetrokkene_hadKlantcontact_leiddeTotInterneTaken = "verstrektDoorBetrokkene.hadKlantcontact.leiddeTotInterneTaken",
 }
 export function searchDigitaleAdressen({
+  systeemId,
   adres,
   page = 1,
   expand = [],
 }: {
+  systeemId: string;
   adres: string;
   page: number;
   expand: DigitaleAdressenExpand[];
 }) {
   const params = new URLSearchParams({ adres, page: page.toString() });
   expand?.length && params.set("expand", expand.join(","));
-  return fetchLoggedIn(klantinteractiesDigitaleadressen + "?" + params)
+  return fetchWithSysteemId(
+    systeemId,
+    klantinteractiesDigitaleadressen + "?" + params,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) => parsePagination(r, (x) => x as DigitaalAdresApiViewModel));
