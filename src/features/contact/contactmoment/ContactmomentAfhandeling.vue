@@ -638,6 +638,11 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
   const useKlantInteractiesApi =
     systeem.registryVersion === registryVersions.ok2;
 
+  // now we now to which system all data should me posted.
+  // the klanten we have selected, come from the default system
+  // depending on whether we want to link a zaak,
+  // we need to ensure the klanten exist in the target system as well
+  // these are the actual klanten we need to use in the rest of the process
   const klanten = await ensureKlanten(systeem, vraag);
 
   const isContactverzoek = vraag.gespreksresultaat === CONTACTVERZOEK_GEMAAKT;
