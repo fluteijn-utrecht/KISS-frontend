@@ -1,24 +1,12 @@
-import {
-  throwIfNotOk,
-  ServiceResult,
-  parsePagination,
-  parseJson,
-} from "@/services";
+import { throwIfNotOk, ServiceResult } from "@/services";
 import { fetchLoggedIn } from "@/services";
 
-import {
-  type Gespreksresultaat,
-  type ObjectContactmoment,
-  type ContactmomentDetails,
-} from "./types";
-
-import { toRelativeProxyUrl } from "@/helpers/url";
+import { type Gespreksresultaat, type ContactmomentDetails } from "./types";
 
 import { formatIsoDate } from "@/helpers/date";
 import {
   ActorType,
   type ContactmomentContactVerzoek,
-  type ContactmomentKlant,
 } from "@/stores/contactmoment";
 
 import {
@@ -39,12 +27,7 @@ import {
   type ExpandedKlantContactApiViewmodel,
 } from "@/services/openklant2";
 import type { ZaakDetails } from "@/features/zaaksysteem/types";
-import { voegContactmomentToeAanZaak } from "@/services/openzaak";
-import {
-  ensureKlantForBedrijfIdentifier,
-  ensureOk1Klant,
-  koppelObject,
-} from "@/services/openklant1";
+import { koppelObject } from "@/services/openklant1";
 import { fetchWithSysteemId } from "@/services/fetch-with-systeem-id";
 import type { ContactmomentViewModel } from "../types";
 
@@ -89,11 +72,11 @@ export const useGespreksResultaten = () => {
 
 export async function koppelKlant({
   systemId,
-  klantId,
+  klantUrl,
   contactmomentId,
 }: {
   systemId: string;
-  klantId: string;
+  klantUrl: string;
   contactmomentId: string;
 }) {
   return fetchWithSysteemId(systemId, klantcontactmomentenUrl, {
@@ -102,7 +85,7 @@ export async function koppelKlant({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      klant: klantId,
+      klant: klantUrl,
       contactmoment: contactmomentId,
       rol: "gesprekspartner",
     }),
@@ -218,11 +201,11 @@ export function mapContactverzoekData({
 
   const vragenToelichting =
     data.contactVerzoekVragenSet &&
-      data.contactVerzoekVragenSet.vraagAntwoord &&
-      data.contactVerzoekVragenSet.vraagAntwoord.length
+    data.contactVerzoekVragenSet.vraagAntwoord &&
+    data.contactVerzoekVragenSet.vraagAntwoord.length
       ? formatVraagAntwoordForToelichting(
-        data.contactVerzoekVragenSet.vraagAntwoord,
-      )
+          data.contactVerzoekVragenSet.vraagAntwoord,
+        )
       : "";
 
   let verantwoordelijkheAfdeling = "";

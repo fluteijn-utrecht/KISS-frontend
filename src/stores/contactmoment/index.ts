@@ -115,6 +115,10 @@ export type ContactmomentKlant = {
   emailadressen: string[];
   hasContactInformation: boolean;
   url?: string;
+  bsn?: string;
+  vestigingsnummer?: string;
+  kvkNummer?: string;
+  rsin?: string;
 };
 
 export type Bron = {
