@@ -40,6 +40,7 @@
             <utrecht-heading :level="2"> Contactmomenten </utrecht-heading>
             <contactmomenten-for-object-url
               :object-url="zaak.url"
+              :systeem-id="zaaksysteemId"
               @load="setDisabled(!$event.count)"
               @loading="setLoading"
               @error="setError"

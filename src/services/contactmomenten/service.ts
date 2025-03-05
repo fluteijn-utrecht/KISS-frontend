@@ -46,23 +46,70 @@ export function fetchContactmomentenByKlantUrlOk1({
     .then((p) => parsePagination(p, (x) => x as ContactmomentViewModelOk1));
 }
 
-export function fetchContactmomentenByObjectUrlOk1({
+export const fetchObjectContactmomenten = ({
+  systeemIdentifier,
+  contactmomentUrl,
+}: {
+  systeemIdentifier: string;
+  contactmomentUrl: string;
+}) =>
+  fetchWithSysteemId(
+    systeemIdentifier,
+    `${contactmomentenBaseUrl}/objectcontactmomenten?${new URLSearchParams({ contactmoment: contactmomentUrl })}`,
+  )
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((p) =>
+      parsePagination(
+        p,
+        (x) =>
+          x as { contactmoment: string; object: string; objectType: string },
+      ),
+    );
+
+export async function fetchContactmomentenByObjectUrlOk1({
   systeemIdentifier,
   objectUrl,
 }: {
   systeemIdentifier: string;
   objectUrl: string;
 }) {
-  const params = new URLSearchParams();
-  params.set("object", objectUrl);
-  params.set("ordering", "-registratiedatum");
-  params.set("expand", "objectcontactmomenten");
-
-  return fetchWithSysteemId(
+  // LET OP. OpenKlant1 ondersteunt rechtstreeks contactmomenten zoeken op object, maar de esuite niet
+  const contactmomentIds = await fetchWithSysteemId(
     systeemIdentifier,
-    `${contactmomentenUrl}?${params}`,
+    `${contactmomentenBaseUrl}/objectcontactmomenten?${new URLSearchParams({ object: objectUrl })}`,
   )
     .then(throwIfNotOk)
+
     .then(parseJson)
-    .then((p) => parsePagination(p, (x) => x as ContactmomentViewModelOk1));
+    .then((p) =>
+      parsePagination(p, (x) =>
+        (x as { contactmoment: string }).contactmoment.split("/").pop(),
+      ),
+    );
+
+  const result = {
+    ...contactmomentIds,
+    page: [] as ContactmomentViewModelOk1[],
+  };
+
+  for (const id of contactmomentIds.page) {
+    if (id) {
+      const cm = await fetchWithSysteemId(
+        systeemIdentifier,
+        `${contactmomentenUrl}/${id}`,
+      )
+        .then(throwIfNotOk)
+        .then(parseJson);
+      result.page.push(cm);
+    }
+  }
+
+  result.page.sort(
+    (a, b) =>
+      new Date(b.registratiedatum).valueOf() -
+      new Date(a.registratiedatum).valueOf(),
+  );
+
+  return result;
 }
