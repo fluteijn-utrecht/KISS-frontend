@@ -7,7 +7,10 @@ import {
   findKlantByIdentifier,
   type KlantBedrijfIdentifier,
 } from "@/services/openklant2";
-import { getRegisterDetails as getSysteemDetails } from "@/features/shared/systeemdetails";
+import {
+  fetchSystemen,
+  registryVersions,
+} from "@/services/environment/fetch-systemen";
 
 export const useKlantByBedrijfIdentifier = (
   getId: () => KlantBedrijfIdentifier | undefined,
@@ -24,14 +27,18 @@ export const useKlantByBedrijfIdentifier = (
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    const { useKlantInteractiesApi, defaultSystemId: defaultSysteemId } =
-      await getSysteemDetails();
+    const systemen = await fetchSystemen();
+    const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
 
-    if (useKlantInteractiesApi) {
-      return findKlantByIdentifier(defaultSysteemId, id);
+    if (!defaultSysteem) {
+      throw new Error("Geen default register gevonden");
+    }
+
+    if (defaultSysteem.registryVersion === registryVersions.ok2) {
+      return findKlantByIdentifier(defaultSysteem.identifier, id);
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
-      return useKlantByIdentifierOk1(defaultSysteemId, () => mappedId);
+      return useKlantByIdentifierOk1(defaultSysteem.identifier, () => mappedId);
     }
   };
 
