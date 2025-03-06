@@ -24,10 +24,14 @@ export const fetchKlantById = async ({
     !klant?.emailadressen?.length && !klant?.telefoonnummers?.length;
 
   if (mistContactgegevens && systemenInfo.systemen.value) {
-    for (const systeem of systemenInfo.systemen.value) {
-      if (systeem.identifier === systemenInfo.defaultSysteem.value.identifier)
-        continue;
+    //if the default system does not contain contactinfo,
+    //try to find contactinfo in any of the other systems
 
+    const nonDefaultSystemen = systemenInfo.systemen.value.filter(
+      (x) => x.identifier != systemenInfo.defaultSysteem.value.identifier,
+    );
+
+    for (const systeem of nonDefaultSystemen) {
       const fallbackKlant = await fetchKlantBySysteem(id, systeem);
 
       if (
