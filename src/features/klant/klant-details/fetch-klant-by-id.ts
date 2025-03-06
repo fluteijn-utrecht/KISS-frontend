@@ -7,14 +7,14 @@ import {
 } from "@/services/environment/fetch-systemen";
 import type { Klant } from "@/services/openklant/types";
 
+const systemenInfo = useSystemen();
+
 // Haalt een klant op uit het default systeem. Als er geen e-mail en geen telefoonnummer is, probeert het andere systemen totdat er een geldige klant wordt gevonden.
 export const fetchKlantById = async ({
   id,
 }: {
   id: string;
 }): Promise<Klant | null> => {
-  const systemenInfo = useSystemen();
-
   const klant = await fetchKlantBySysteem(
     id,
     systemenInfo.defaultSysteem.value,

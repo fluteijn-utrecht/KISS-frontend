@@ -21,25 +21,20 @@ export const useKlantByBedrijfIdentifier = (
     return "klant" + JSON.stringify(id);
   };
 
+  const { defaultSysteem } = useSystemen();
+
   const findKlant = async () => {
     const id = getId();
     if (!id) {
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    const systemenInfo = useSystemen();
-
-    if (
-      systemenInfo.defaultSysteem.value.registryVersion === registryVersions.ok2
-    ) {
-      return findKlantByIdentifier(
-        systemenInfo.defaultSysteem.value.identifier,
-        id,
-      );
+    if (defaultSysteem.value.registryVersion === registryVersions.ok2) {
+      return findKlantByIdentifier(defaultSysteem.value.identifier, id);
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
       return useKlantByIdentifierOk1(
-        systemenInfo.defaultSysteem.value.identifier,
+        defaultSysteem.value.identifier,
         () => mappedId,
       );
     }

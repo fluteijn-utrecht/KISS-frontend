@@ -10,21 +10,19 @@ import {
   useSystemen,
 } from "@/services/environment/fetch-systemen";
 
+const { defaultSysteem } = useSystemen();
+
 export const ensureKlantForBedrijfIdentifier = async (
   klantbedrijfidentifier: KlantBedrijfIdentifier,
   bedrijfsnaam: string,
 ) => {
-  const systemenInfo = useSystemen();
-
-  if (!systemenInfo.defaultSysteem.value) {
+  if (!defaultSysteem.value) {
     throw new Error("Geen default register gevonden");
   }
 
-  if (
-    systemenInfo.defaultSysteem.value.registryVersion === registryVersions.ok2
-  ) {
+  if (defaultSysteem.value.registryVersion === registryVersions.ok2) {
     return await ensureOk2Klant(
-      systemenInfo.defaultSysteem.value.identifier,
+      defaultSysteem.value.identifier,
       klantbedrijfidentifier,
     );
   } else {
@@ -33,7 +31,7 @@ export const ensureKlantForBedrijfIdentifier = async (
     const organisatieId = organisatieIds.value[0] || "";
 
     return await ensureKlantForBedrijfIdentifierOk1(
-      systemenInfo.defaultSysteem.value.identifier,
+      defaultSysteem.value.identifier,
       { bedrijfsnaam, identifier: mappedIdentifier },
       organisatieId,
     );
