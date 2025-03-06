@@ -6,24 +6,25 @@ import { ensureKlantForBedrijfIdentifier as ensureKlantForBedrijfIdentifierOk1 }
 import { mapBedrijfsIdentifier } from "@/services/openklant1/service";
 import { useOrganisatieIds } from "@/stores/user";
 import {
-  fetchSystemen,
   registryVersions,
+  useSystemen,
 } from "@/services/environment/fetch-systemen";
 
 export const ensureKlantForBedrijfIdentifier = async (
   klantbedrijfidentifier: KlantBedrijfIdentifier,
   bedrijfsnaam: string,
 ) => {
-  const systemen = await fetchSystemen();
-  const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
+  const systemenInfo = useSystemen();
 
-  if (!defaultSysteem) {
+  if (!systemenInfo.defaultSysteem.value) {
     throw new Error("Geen default register gevonden");
   }
 
-  if (defaultSysteem.registryVersion === registryVersions.ok2) {
+  if (
+    systemenInfo.defaultSysteem.value.registryVersion === registryVersions.ok2
+  ) {
     return await ensureOk2Klant(
-      defaultSysteem.identifier,
+      systemenInfo.defaultSysteem.value.identifier,
       klantbedrijfidentifier,
     );
   } else {
@@ -32,7 +33,7 @@ export const ensureKlantForBedrijfIdentifier = async (
     const organisatieId = organisatieIds.value[0] || "";
 
     return await ensureKlantForBedrijfIdentifierOk1(
-      defaultSysteem.identifier,
+      systemenInfo.defaultSysteem.value.identifier,
       { bedrijfsnaam, identifier: mappedIdentifier },
       organisatieId,
     );

@@ -488,8 +488,8 @@ import contactmomentVraag from "@/features/contact/contactmoment/ContactmomentVr
 import { useKanalenKeuzeLijst } from "@/features/Kanalen/service";
 import ContactverzoekFormulier from "../contactverzoek/formulier/ContactverzoekFormulier.vue";
 import {
-  fetchSystemen,
   registryVersions,
+  useSystemen,
   type Systeem,
 } from "@/services/environment/fetch-systemen";
 import {
@@ -620,14 +620,14 @@ const saveBetrokkeneBijContactmoment = async (
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
-  const systemen = await fetchSystemen();
+  const systemenInfo = useSystemen();
 
   // if this contactmoment/contactverzoek is releated to a zaak,
   // then we should store this contactmoment/contactverzoek in the registry..
   // that is linked to the zaaksysteem that contains this particular zaak
 
   const zaakSysteemId = vraag.zaken.find((x) => x.shouldStore)?.zaaksysteemId;
-  const systeem = systemen.find(
+  const systeem = systemenInfo.systemen.value?.find(
     ({ isDefault, identifier }) =>
       (!zaakSysteemId && isDefault) || identifier === zaakSysteemId,
   );

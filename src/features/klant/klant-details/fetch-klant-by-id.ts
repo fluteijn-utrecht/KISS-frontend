@@ -1,8 +1,8 @@
 import { fetchKlantByIdOk2 } from "@/services/openklant2";
 import { fetchKlantByIdOk1 } from "@/services/openklant1";
 import {
-  fetchSystemen,
   registryVersions,
+  useSystemen,
   type Systeem,
 } from "@/services/environment/fetch-systemen";
 import type { Klant } from "@/services/openklant/types";
@@ -13,19 +13,20 @@ export const fetchKlantById = async ({
 }: {
   id: string;
 }): Promise<Klant | null> => {
-  const systemen = await fetchSystemen();
+  const systemenInfo = useSystemen();
 
-  const defaultSysteem = systemen.find((s) => s.isDefault);
-  if (!defaultSysteem) throw new Error("Geen default systeem gevonden");
-
-  const klant = await fetchKlantBySysteem(id, defaultSysteem);
+  const klant = await fetchKlantBySysteem(
+    id,
+    systemenInfo.defaultSysteem.value,
+  );
 
   const mistContactgegevens =
     !klant?.emailadressen?.length && !klant?.telefoonnummers?.length;
 
-  if (mistContactgegevens) {
-    for (const systeem of systemen) {
-      if (systeem.identifier === defaultSysteem.identifier) continue;
+  if (mistContactgegevens && systemenInfo.systemen.value) {
+    for (const systeem of systemenInfo.systemen.value) {
+      if (systeem.identifier === systemenInfo.defaultSysteem.value.identifier)
+        continue;
 
       const fallbackKlant = await fetchKlantBySysteem(id, systeem);
 

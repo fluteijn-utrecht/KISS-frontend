@@ -8,8 +8,8 @@ import {
   type KlantBedrijfIdentifier,
 } from "@/services/openklant2";
 import {
-  fetchSystemen,
   registryVersions,
+  useSystemen,
 } from "@/services/environment/fetch-systemen";
 
 export const useKlantByBedrijfIdentifier = (
@@ -27,18 +27,21 @@ export const useKlantByBedrijfIdentifier = (
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    const systemen = await fetchSystemen();
-    const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
+    const systemenInfo = useSystemen();
 
-    if (!defaultSysteem) {
-      throw new Error("Geen default register gevonden");
-    }
-
-    if (defaultSysteem.registryVersion === registryVersions.ok2) {
-      return findKlantByIdentifier(defaultSysteem.identifier, id);
+    if (
+      systemenInfo.defaultSysteem.value.registryVersion === registryVersions.ok2
+    ) {
+      return findKlantByIdentifier(
+        systemenInfo.defaultSysteem.value.identifier,
+        id,
+      );
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
-      return useKlantByIdentifierOk1(defaultSysteem.identifier, () => mappedId);
+      return useKlantByIdentifierOk1(
+        systemenInfo.defaultSysteem.value.identifier,
+        () => mappedId,
+      );
     }
   };
 

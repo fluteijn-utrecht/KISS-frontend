@@ -25,7 +25,7 @@ const _fetchSystemen = () =>
 const CACHE_LIFETIME_MS = 10_000;
 let currentSystemenPromise: Promise<Systeem[]> | undefined;
 
-export const fetchSystemen = () =>
+const fetchSystemen = () =>
   currentSystemenPromise ||
   (currentSystemenPromise = _fetchSystemen().then((systemen) => {
     setTimeout(() => {
@@ -36,9 +36,15 @@ export const fetchSystemen = () =>
 
 export const useSystemen = () => {
   const { data: systemen, loading, error } = useLoader(fetchSystemen);
-  const defaultSysteem = computed(() =>
-    systemen.value?.find(({ isDefault }) => isDefault),
-  );
+  const defaultSysteem = computed(() => {
+    const defaultSysteem = systemen.value?.find(({ isDefault }) => isDefault);
+
+    if (!defaultSysteem) {
+      throw new Error("Geen default register gevonden");
+    }
+
+    return defaultSysteem;
+  });
 
   return {
     systemen,
