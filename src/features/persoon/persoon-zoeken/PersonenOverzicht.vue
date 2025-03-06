@@ -69,17 +69,18 @@ const router = useRouter();
 
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
-const ensureKlantForBsn = async (parameters: { bsn: string }) => {
-  const systemenInfo = useSystemen();
+const systemenInfo = useSystemen();
 
-  return systemenInfo.defaultSysteem.value.registryVersion ===
-    registryVersions.ok2
-    ? await ensureOk2Klant(
-        systemenInfo.defaultSysteem.value.identifier,
-        parameters,
-      )
+const ensureKlantForBsn = async (parameters: { bsn: string }) => {
+  const defaultSysteem = systemenInfo.defaultSysteem.value;
+  if (!defaultSysteem) {
+    throw new Error("Geen default register gevonden");
+  }
+
+  return defaultSysteem.registryVersion === registryVersions.ok2
+    ? await ensureOk2Klant(defaultSysteem.identifier, parameters)
     : await ensureOk1Klant(
-        systemenInfo.defaultSysteem.value.identifier,
+        defaultSysteem.identifier,
         parameters,
         useOrganisatieIds().value[0] || "",
       );
