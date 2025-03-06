@@ -18,7 +18,7 @@ export const fetchKlantById = async ({
   const defaultSysteem = systemen.find((s) => s.isDefault);
   if (!defaultSysteem) throw new Error("Geen default systeem gevonden");
 
-  let klant = await fetchKlantBySysteem(id, defaultSysteem);
+  const klant = await fetchKlantBySysteem(id, defaultSysteem);
 
   const mistContactgegevens =
     !klant?.emailadressen?.length && !klant?.telefoonnummers?.length;
@@ -51,7 +51,7 @@ const fetchKlantBySysteem = async (
 
   try {
     return await fetchKlant(systeem.identifier, id);
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 };
