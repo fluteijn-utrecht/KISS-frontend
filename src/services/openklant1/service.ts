@@ -81,17 +81,17 @@ function getKlantIdUrl(id?: string) {
   return url.toString();
 }
 
-export function getKlantBsnUrl(bsn?: string) {
+function getKlantBsnUrl(bsn?: string) {
   if (!bsn) return "";
   const url = new URL(klantRootUrl);
   url.searchParams.set("subjectNatuurlijkPersoon__inpBsn", bsn);
   return url.toString();
 }
 
-export const searchSingleKlant = (systeemId: string, url: string) =>
+const searchSingleKlant = (systeemId: string, url: string) =>
   searchKlanten(systeemId, url).then(enforceOneOrZero);
 
-export const getSingleBsnSearchId = (bsn: string | undefined) => {
+const getSingleBsnSearchId = (bsn: string | undefined) => {
   const url = getKlantBsnUrl(bsn);
   if (!url) return url;
   return url + "_single";
