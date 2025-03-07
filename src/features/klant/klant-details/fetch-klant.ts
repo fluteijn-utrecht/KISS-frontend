@@ -1,6 +1,6 @@
 import {
   fetchKlantByIdOk2,
-  findKlantByIdentifier,
+  findKlantByIdentifierOpenKlant2,
 } from "@/services/openklant2";
 import {
   fetchKlantByIdOk1,
@@ -47,7 +47,7 @@ const fetchKlantByNonDefaultSysteem = async (
   const gevondenKlant =
     systeem.registryVersion === registryVersions.ok1
       ? await fetchKlantByIdentifierOpenKlant1(systeem.identifier, identifier)
-      : await findKlantByIdentifier(systeem.identifier, identifier);
+      : await findKlantByIdentifierOpenKlant2(systeem.identifier, identifier);
 
   return gevondenKlant ? fetchKlantById(gevondenKlant.id, systeem) : klant;
 };

@@ -7,7 +7,7 @@ import {
   fetchBetrokkenen,
   fetchWithSysteemId,
   filterOutContactmomenten,
-  findKlantByIdentifier,
+  findKlantByIdentifierOpenKlant2,
   KlantContactExpand,
   searchDigitaleAdressen,
   type Betrokkene,
@@ -293,7 +293,7 @@ export async function fetchContactverzoekenByKlantIdentificator(
         });
     }
     if (!klantidentificators.ok2) return [];
-    return findKlantByIdentifier(
+    return findKlantByIdentifierOpenKlant2(
       systeem.identifier,
       klantidentificators.ok2,
     ).then((klant) =>

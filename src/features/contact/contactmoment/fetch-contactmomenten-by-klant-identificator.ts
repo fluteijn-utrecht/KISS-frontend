@@ -5,7 +5,7 @@ import {
 } from "@/services/environment/fetch-systemen";
 import { fetchKlantByIdentifierOpenKlant1 } from "@/services/openklant1";
 import {
-  findKlantByIdentifier,
+  findKlantByIdentifierOpenKlant2,
   fetchBetrokkenen,
   enrichBetrokkeneWithKlantContact,
   KlantContactExpand,
@@ -48,7 +48,7 @@ export async function fetchContactmomentenByKlantIdentificator(
 
     if (!klantidentificators.ok2) return [];
 
-    return findKlantByIdentifier(
+    return findKlantByIdentifierOpenKlant2(
       systeem.identifier,
       klantidentificators.ok2,
     ).then((klant) =>

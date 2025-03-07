@@ -543,12 +543,12 @@ export const ensureOk2Klant = async (
   parameters: KlantBedrijfIdentifier,
 ) => {
   return (
-    (await findKlantByIdentifier(systeemId, parameters)) ??
+    (await findKlantByIdentifierOpenKlant2(systeemId, parameters)) ??
     (await createKlant(systeemId, parameters))
   );
 };
 
-export function findKlantByIdentifier(
+export function findKlantByIdentifierOpenKlant2(
   systeemId: string,
   query:
     | {

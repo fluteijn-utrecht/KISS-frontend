@@ -4,7 +4,7 @@ import {
   useKlantByIdentifier as useKlantByIdentifierOk1,
 } from "@/services/openklant1/service";
 import {
-  findKlantByIdentifier,
+  findKlantByIdentifierOpenKlant2,
   type KlantBedrijfIdentifier,
 } from "@/services/openklant2";
 import {
@@ -30,7 +30,10 @@ export const useKlantByBedrijfIdentifier = (
     }
 
     if (defaultSysteem.value.registryVersion === registryVersions.ok2) {
-      return findKlantByIdentifier(defaultSysteem.value.identifier, id);
+      return findKlantByIdentifierOpenKlant2(
+        defaultSysteem.value.identifier,
+        id,
+      );
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
       return useKlantByIdentifierOk1(
