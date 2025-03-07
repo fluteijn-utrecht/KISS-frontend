@@ -41,7 +41,7 @@ import { watchEffect, type PropType } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import type { Klant } from "@/services/openklant/types";
 import { useLoader } from "@/services";
-import { fetchKlantById } from "./fetch-klant-by-id";
+import { fetchKlant } from "./fetch-klant-by-id";
 
 const props = defineProps({
   klantId: {
@@ -60,7 +60,7 @@ const {
   error,
 } = useLoader(() => {
   if (!props.klantId) return;
-  return fetchKlantById({ id: props.klantId });
+  return fetchKlant({ id: props.klantId });
 });
 
 const emit = defineEmits<{
