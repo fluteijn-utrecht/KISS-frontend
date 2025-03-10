@@ -8,27 +8,31 @@ import {
 } from "@/services/openklant1";
 import {
   registryVersions,
-  useSystemen,
   type Systeem,
 } from "@/services/environment/fetch-systemen";
 import type { Klant } from "@/services/openklant/types";
 
-const { systemen, defaultSysteem } = useSystemen();
-
 export const fetchKlant = async ({
   id,
+  systemen,
+  defaultSysteem,
 }: {
   id: string;
+  systemen: Systeem[];
+  defaultSysteem: Systeem;
 }): Promise<Klant | null> => {
-  const klant = await fetchKlantById(id, defaultSysteem.value);
+  const klant = await fetchKlantById(id, defaultSysteem);
 
   if (heeftContactgegevens(klant)) return klant;
-  if (!systemen.value?.length) return klant;
+  if (!systemen.length) return klant;
 
-  for (const systeem of systemen.value.filter(
-    (s) => s.identifier !== defaultSysteem.value.identifier,
+  for (const nonDefaultSysteem of systemen.filter(
+    (s) => s.identifier !== defaultSysteem.identifier,
   )) {
-    const fallbackKlant = await fetchKlantByNonDefaultSysteem(klant, systeem);
+    const fallbackKlant = await fetchKlantByNonDefaultSysteem(
+      klant,
+      nonDefaultSysteem,
+    );
     if (heeftContactgegevens(fallbackKlant)) return fallbackKlant;
   }
 

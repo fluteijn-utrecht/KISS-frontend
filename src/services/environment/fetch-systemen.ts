@@ -25,7 +25,7 @@ const _fetchSystemen = () =>
 const CACHE_LIFETIME_MS = 10_000;
 let currentSystemenPromise: Promise<Systeem[]> | undefined;
 
-const fetchSystemen = () =>
+export const fetchSystemen = () =>
   currentSystemenPromise ||
   (currentSystemenPromise = _fetchSystemen().then((systemen) => {
     setTimeout(() => {
