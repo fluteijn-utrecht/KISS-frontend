@@ -15,14 +15,13 @@ import type {
   UpdateContactgegevensParams,
 } from "./types";
 import { KlantType } from "./types";
-import type { Ref } from "vue";
 import { nanoid } from "nanoid";
 import type { BedrijfIdentifier as BedrijfIdentifierOpenKlant1 } from "./types";
-import type { BedrijvenQuery } from "@/features/bedrijf/bedrijf-zoeken/use-search-bedrijven.js";
 import type { KlantBedrijfIdentifier as BedrijfIdentifierOpenKlant2 } from "../openklant2/types.js";
 import type { Contactmoment, Klant } from "../openklant/types";
 import { toRelativeProxyUrl } from "@/helpers/url";
 import { fetchWithSysteemId } from "../fetch-with-systeem-id";
+import type { KlantIdentificator } from "@/features/contact/types";
 
 const klantenBaseUrl = "/api/klanten/api/v1/klanten";
 
@@ -47,7 +46,7 @@ function searchKlanten(
         if (idUrl) {
           mutate(idUrl, klant);
         }
-        const bsnUrl = getKlantBsnUrl(klant.bsn);
+        const bsnUrl = getUrlVoorPersoon(klant.bsn);
 
         if (bsnUrl) {
           mutate(bsnUrl, klant);
@@ -81,18 +80,11 @@ function getKlantIdUrl(id?: string) {
   return url.toString();
 }
 
-function getKlantBsnUrl(bsn?: string) {
-  if (!bsn) return "";
-  const url = new URL(klantRootUrl);
-  url.searchParams.set("subjectNatuurlijkPersoon__inpBsn", bsn);
-  return url.toString();
-}
-
 const searchSingleKlant = (systeemId: string, url: string) =>
   searchKlanten(systeemId, url).then(enforceOneOrZero);
 
 const getSingleBsnSearchId = (bsn: string | undefined) => {
-  const url = getKlantBsnUrl(bsn);
+  const url = getUrlVoorPersoon(bsn);
   if (!url) return url;
   return url + "_single";
 };
@@ -161,7 +153,7 @@ export async function ensureOk1Klant(
   },
   bronorganisatie: string,
 ) {
-  const bsnUrl = getKlantBsnUrl(bsn);
+  const bsnUrl = getUrlVoorPersoon(bsn);
   const singleBsnId = getSingleBsnSearchId(bsn);
 
   if (!bsnUrl || !singleBsnId) throw new Error();
@@ -197,6 +189,7 @@ export async function ensureOk1Klant(
   return newKlant;
 }
 
+//todo vervangen worden door getUrlVoorBedrijf
 const getUrlVoorGetKlantById = (
   bedrijfSearchParameter: BedrijfIdentifierOpenKlant1 | undefined,
 ) => {
@@ -241,16 +234,51 @@ export const useKlantByIdentifier = async (
   return await searchSingleKlant(systeemId, getUrl());
 };
 
-export const fetchKlantByIdentifierOpenKlant1 = (
+export const fetchKlantByKlantIdentificatorOk1 = (
   systeemId: string,
-  identifier: BedrijfIdentifierOpenKlant1 | { bsn: string },
+  klantIdentifier: KlantIdentificator,
 ) =>
   searchSingleKlant(
     systeemId,
-    "bsn" in identifier
-      ? getKlantBsnUrl(identifier.bsn)
-      : getUrlVoorGetKlantById(identifier),
+    klantIdentifier.bsn
+      ? getUrlVoorPersoon(klantIdentifier.bsn)
+      : getUrlVoorBedrijf(klantIdentifier),
   );
+
+function getUrlVoorPersoon(bsn?: string) {
+  if (!bsn) return "";
+  const url = new URL(klantRootUrl);
+  url.searchParams.set("subjectNatuurlijkPersoon__inpBsn", bsn);
+  return url.toString();
+}
+
+const getUrlVoorBedrijf = (klantIdentifier: KlantIdentificator) => {
+  if (!klantIdentifier) {
+    return "";
+  }
+
+  const url = new URL(klantRootUrl);
+
+  if (klantIdentifier.vestigingsnummer) {
+    url.searchParams.set(
+      "subjectVestiging__vestigingsNummer",
+      klantIdentifier.vestigingsnummer,
+    );
+    url.searchParams.set("subjectType", KlantType.Bedrijf);
+    return url.toString();
+  }
+
+  if (klantIdentifier.kvkNummer) {
+    url.searchParams.set(
+      "subjectNietNatuurlijkPersoon__innNnpId",
+      klantIdentifier.kvkNummer,
+    );
+    url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
+    return url.toString();
+  }
+
+  return "";
+};
 
 export function mapBedrijfsIdentifier(
   bedrijfIdentifierOpenKlant2: BedrijfIdentifierOpenKlant2,

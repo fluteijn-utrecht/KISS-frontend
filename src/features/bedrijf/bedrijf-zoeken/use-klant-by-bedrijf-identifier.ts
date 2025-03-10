@@ -9,7 +9,7 @@ import {
 } from "@/services/openklant2";
 import {
   registryVersions,
-  useSystemen,
+  fetchSystemen,
 } from "@/services/environment/fetch-systemen";
 
 export const useKlantByBedrijfIdentifier = (
@@ -21,25 +21,24 @@ export const useKlantByBedrijfIdentifier = (
     return "klant" + JSON.stringify(id);
   };
 
-  const { defaultSysteem } = useSystemen();
-
   const findKlant = async () => {
     const id = getId();
     if (!id) {
       throw new Error("Geen valide KlantBedrijfIdentifier");
     }
 
-    if (defaultSysteem.value.registryVersion === registryVersions.ok2) {
-      return findKlantByIdentifierOpenKlant2(
-        defaultSysteem.value.identifier,
-        id,
-      );
+    const systemen = await fetchSystemen();
+    const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
+
+    if (!defaultSysteem) {
+      throw new Error("Geen default register gevonden");
+    }
+
+    if (defaultSysteem.registryVersion === registryVersions.ok2) {
+      return findKlantByIdentifierOpenKlant2(defaultSysteem.identifier, id);
     } else {
       const mappedId = mapBedrijfsIdentifier(id);
-      return useKlantByIdentifierOk1(
-        defaultSysteem.value.identifier,
-        () => mappedId,
-      );
+      return useKlantByIdentifierOk1(defaultSysteem.identifier, () => mappedId);
     }
   };
 

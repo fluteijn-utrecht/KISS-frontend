@@ -1,16 +1,17 @@
 import {
   fetchKlantByIdOk2,
-  findKlantByIdentifierOpenKlant2,
+  fetchKlantByKlantIdentificatorOk2,
 } from "@/services/openklant2";
 import {
   fetchKlantByIdOk1,
-  fetchKlantByIdentifierOpenKlant1,
+  fetchKlantByKlantIdentificatorOk1,
 } from "@/services/openklant1";
 import {
   registryVersions,
   type Systeem,
 } from "@/services/environment/fetch-systemen";
 import type { Klant } from "@/services/openklant/types";
+import { mapKlantToKlantIdentifier } from "@/features/contact/shared";
 
 export const fetchKlant = async ({
   id,
@@ -45,13 +46,13 @@ const fetchKlantByNonDefaultSysteem = async (
 ): Promise<Klant | null> => {
   if (!klant) return null;
 
-  const identifier = getIdentifier(klant);
+  const identifier = mapKlantToKlantIdentifier(systeem.registryVersion, klant);
   if (!identifier) return klant;
 
   const gevondenKlant =
     systeem.registryVersion === registryVersions.ok1
-      ? await fetchKlantByIdentifierOpenKlant1(systeem.identifier, identifier)
-      : await findKlantByIdentifierOpenKlant2(systeem.identifier, identifier);
+      ? await fetchKlantByKlantIdentificatorOk1(systeem.identifier, identifier)
+      : await fetchKlantByKlantIdentificatorOk2(systeem.identifier, identifier);
 
   return gevondenKlant ? fetchKlantById(gevondenKlant.id, systeem) : klant;
 };
@@ -73,14 +74,3 @@ const fetchKlantById = async (
 
 const heeftContactgegevens = (klant: Klant | null) =>
   klant?.emailadressen?.length || klant?.telefoonnummers?.length;
-
-const getIdentifier = (klant: Klant) =>
-  klant.bsn
-    ? { bsn: klant.bsn }
-    : klant.vestigingsnummer && klant.nietNatuurlijkPersoonIdentifier
-      ? {
-          vestigingsnummer: klant.vestigingsnummer,
-          nietNatuurlijkPersoonIdentifier:
-            klant.nietNatuurlijkPersoonIdentifier,
-        }
-      : null;

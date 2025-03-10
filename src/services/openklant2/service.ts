@@ -30,6 +30,7 @@ import type { ContactverzoekData } from "../../features/contact/components/types
 import type { Klant } from "../openklant/types";
 import type { Vraag } from "@/stores/contactmoment";
 import { fetchWithSysteemId } from "../fetch-with-systeem-id";
+import type { KlantIdentificator } from "@/features/contact/types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -548,6 +549,60 @@ export const ensureOk2Klant = async (
   );
 };
 
+export function fetchKlantByKlantIdentificatorOk2(
+  systeemId: string,
+  identificator: KlantIdentificator,
+): Promise<Klant | null> {
+  const expand = "digitaleAdressen";
+  let soortPartij: string;
+  let partijIdentificator__codeSoortObjectId: string;
+  let partijIdentificator__objectId: string;
+
+  if (identificator.bsn) {
+    soortPartij = PartijTypes.persoon;
+    partijIdentificator__codeSoortObjectId =
+      identificatorTypes.persoon.codeSoortObjectId;
+    partijIdentificator__objectId = identificator.bsn;
+  } else {
+    soortPartij = PartijTypes.organisatie;
+
+    if (identificator.vestigingsnummer) {
+      partijIdentificator__codeSoortObjectId =
+        identificatorTypes.vestiging.codeSoortObjectId;
+      partijIdentificator__objectId = identificator.vestigingsnummer;
+    } else if (identificator.rsin) {
+      partijIdentificator__codeSoortObjectId =
+        identificatorTypes.nietNatuurlijkPersoonRsin.codeSoortObjectId;
+      partijIdentificator__objectId = identificator.rsin;
+    } else if (identificator.kvkNummer) {
+      partijIdentificator__codeSoortObjectId =
+        identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId;
+      partijIdentificator__objectId = identificator.kvkNummer;
+    } else {
+      throw new Error("Geen geldige identificator opgegeven.");
+    }
+  }
+
+  const searchParams = new URLSearchParams({
+    expand,
+    soortPartij,
+    partijIdentificator__codeSoortObjectId,
+    partijIdentificator__objectId,
+  });
+
+  return fetchWithSysteemId(
+    systeemId,
+    `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
+  )
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) =>
+      parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+    )
+    .then(enforceOneOrZero);
+}
+
+//todo: verangen worden door fetchKlantByKlantIdentificatorOk2
 export function findKlantByIdentifierOpenKlant2(
   systeemId: string,
   query:
