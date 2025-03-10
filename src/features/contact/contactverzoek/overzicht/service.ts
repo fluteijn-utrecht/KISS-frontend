@@ -8,7 +8,6 @@ import {
   fetchKlantByKlantIdentificatorOk2,
   fetchWithSysteemId,
   filterOutContactmomenten,
-  findKlantByIdentifierOpenKlant2,
   KlantContactExpand,
   searchDigitaleAdressen,
   type Betrokkene,
