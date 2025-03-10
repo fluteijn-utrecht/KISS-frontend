@@ -830,7 +830,7 @@ const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
           },
           wasKlantcontact: null,
           onderwerpobjectidentificator: {
-            objectId: zaakinfo.zaak.url,
+            objectId: zaakinfo.zaak.uuid,
             codeObjecttype: "zgw-Zaak",
             codeRegister: "openzaak",
             codeSoortObjectId: "uuid",
