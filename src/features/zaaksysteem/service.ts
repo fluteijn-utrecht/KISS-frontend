@@ -266,6 +266,7 @@ const getZaakType = ({
 };
 
 const mapZaakDetails = async (zaak: {
+  uuid: string;
   identificatie: string;
   zaaksysteemId: string;
   zaaktype: string;
@@ -282,6 +283,7 @@ const mapZaakDetails = async (zaak: {
   const rollen = await getRollen(zaak);
 
   return {
+    uuid: zaak.uuid,
     identificatie: zaak.identificatie,
     zaaksysteemId: zaak.zaaksysteemId,
     toelichting: zaak.toelichting,

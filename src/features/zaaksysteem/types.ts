@@ -1,5 +1,6 @@
 export type ZaakDetails = {
   url: string;
+  uuid: string;
   zaaksysteemId: string;
   identificatie: string;
   startdatum?: Date;
