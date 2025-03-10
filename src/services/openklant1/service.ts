@@ -236,13 +236,13 @@ export const useKlantByIdentifier = async (
 
 export const fetchKlantByKlantIdentificatorOk1 = (
   systeemId: string,
-  klantIdentifier: KlantIdentificator,
+  klantidentificator: KlantIdentificator,
 ) =>
   searchSingleKlant(
     systeemId,
-    klantIdentifier.bsn
-      ? getUrlVoorPersoon(klantIdentifier.bsn)
-      : getUrlVoorBedrijf(klantIdentifier),
+    klantidentificator.bsn
+      ? getUrlVoorPersoon(klantidentificator.bsn)
+      : getUrlVoorBedrijf(klantidentificator),
   );
 
 function getUrlVoorPersoon(bsn?: string) {
@@ -252,26 +252,26 @@ function getUrlVoorPersoon(bsn?: string) {
   return url.toString();
 }
 
-const getUrlVoorBedrijf = (klantIdentifier: KlantIdentificator) => {
-  if (!klantIdentifier) {
+const getUrlVoorBedrijf = (klantIdentificator: KlantIdentificator) => {
+  if (!klantIdentificator) {
     return "";
   }
 
   const url = new URL(klantRootUrl);
 
-  if (klantIdentifier.vestigingsnummer) {
+  if (klantIdentificator.vestigingsnummer) {
     url.searchParams.set(
       "subjectVestiging__vestigingsNummer",
-      klantIdentifier.vestigingsnummer,
+      klantIdentificator.vestigingsnummer,
     );
     url.searchParams.set("subjectType", KlantType.Bedrijf);
     return url.toString();
   }
 
-  if (klantIdentifier.kvkNummer) {
+  if (klantIdentificator.kvkNummer) {
     url.searchParams.set(
       "subjectNietNatuurlijkPersoon__innNnpId",
-      klantIdentifier.kvkNummer,
+      klantIdentificator.kvkNummer,
     );
     url.searchParams.set("subjectType", KlantType.NietNatuurlijkPersoon);
     return url.toString();

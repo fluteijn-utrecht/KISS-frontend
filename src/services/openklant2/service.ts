@@ -551,33 +551,33 @@ export const ensureOk2Klant = async (
 
 export function fetchKlantByKlantIdentificatorOk2(
   systeemId: string,
-  identificator: KlantIdentificator,
+  klantIdentificator: KlantIdentificator,
 ): Promise<Klant | null> {
   const expand = "digitaleAdressen";
   let soortPartij: string;
   let partijIdentificator__codeSoortObjectId: string;
   let partijIdentificator__objectId: string;
 
-  if (identificator.bsn) {
+  if (klantIdentificator.bsn) {
     soortPartij = PartijTypes.persoon;
     partijIdentificator__codeSoortObjectId =
       identificatorTypes.persoon.codeSoortObjectId;
-    partijIdentificator__objectId = identificator.bsn;
+    partijIdentificator__objectId = klantIdentificator.bsn;
   } else {
     soortPartij = PartijTypes.organisatie;
 
-    if (identificator.vestigingsnummer) {
+    if (klantIdentificator.vestigingsnummer) {
       partijIdentificator__codeSoortObjectId =
         identificatorTypes.vestiging.codeSoortObjectId;
-      partijIdentificator__objectId = identificator.vestigingsnummer;
-    } else if (identificator.rsin) {
+      partijIdentificator__objectId = klantIdentificator.vestigingsnummer;
+    } else if (klantIdentificator.rsin) {
       partijIdentificator__codeSoortObjectId =
         identificatorTypes.nietNatuurlijkPersoonRsin.codeSoortObjectId;
-      partijIdentificator__objectId = identificator.rsin;
-    } else if (identificator.kvkNummer) {
+      partijIdentificator__objectId = klantIdentificator.rsin;
+    } else if (klantIdentificator.kvkNummer) {
       partijIdentificator__codeSoortObjectId =
         identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId;
-      partijIdentificator__objectId = identificator.kvkNummer;
+      partijIdentificator__objectId = klantIdentificator.kvkNummer;
     } else {
       throw new Error("Geen geldige identificator opgegeven.");
     }
