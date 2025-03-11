@@ -53,7 +53,7 @@ import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { watchEffect } from "vue";
 import {
-  fetchSystemen, // ✅ Gebruik fetchSystemen in plaats van useSystemen
+  fetchSystemen,
   registryVersions,
 } from "@/services/environment/fetch-systemen";
 import { useOrganisatieIds } from "@/stores/user";

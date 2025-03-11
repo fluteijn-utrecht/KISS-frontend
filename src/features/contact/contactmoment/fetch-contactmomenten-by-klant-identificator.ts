@@ -8,6 +8,7 @@ import {
   fetchBetrokkenen,
   enrichBetrokkeneWithKlantContact,
   KlantContactExpand,
+  fetchKlantByKlantIdentificatorOk2,
 } from "@/services/openklant2";
 import type { ContactmomentViewModel, KlantIdentificator } from "../types";
 import {
@@ -40,7 +41,7 @@ export async function fetchContactmomentenByKlantIdentificator(
       );
     }
 
-    const klant = await fetchKlantByKlantIdentificatorOk1(
+    const klant = await fetchKlantByKlantIdentificatorOk2(
       systeem.identifier,
       klantIndentificator,
     );
