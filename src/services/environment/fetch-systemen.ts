@@ -36,9 +36,11 @@ export const fetchSystemen = () =>
 
 export const useSystemen = () => {
   const { data: systemen, loading, error } = useLoader(fetchSystemen);
-  const defaultSysteem = computed(() =>
-    systemen.value?.find(({ isDefault }) => isDefault),
-  );
+  const defaultSysteem = computed(() => {
+    const defaultSysteem = systemen.value?.find(({ isDefault }) => isDefault);
+
+    return defaultSysteem;
+  });
 
   return {
     systemen,

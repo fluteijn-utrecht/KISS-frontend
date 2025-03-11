@@ -52,7 +52,10 @@ import type { Persoon } from "@/services/brp";
 import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { watchEffect } from "vue";
-import { getRegisterDetails } from "@/features/shared/systeemdetails";
+import {
+  fetchSystemen, // ✅ Gebruik fetchSystemen in plaats van useSystemen
+  registryVersions,
+} from "@/services/environment/fetch-systemen";
 import { useOrganisatieIds } from "@/stores/user";
 import { ensureOk2Klant } from "@/services/openklant2";
 import { ensureOk1Klant } from "@/services/openklant1";
@@ -67,13 +70,17 @@ const router = useRouter();
 const getKlantUrl = (klant: Klant) => `/personen/${klant.id}`;
 
 const ensureKlantForBsn = async (parameters: { bsn: string }) => {
-  const { useKlantInteractiesApi, defaultSystemId: defaultSysteemId } =
-    await getRegisterDetails();
+  const systemen = await fetchSystemen();
+  const defaultSysteem = systemen.find(({ isDefault }) => isDefault);
 
-  return useKlantInteractiesApi
-    ? await ensureOk2Klant(defaultSysteemId, parameters)
+  if (!defaultSysteem) {
+    throw new Error("Geen default register gevonden");
+  }
+
+  return defaultSysteem.registryVersion === registryVersions.ok2
+    ? await ensureOk2Klant(defaultSysteem.identifier, parameters)
     : await ensureOk1Klant(
-        defaultSysteemId,
+        defaultSysteem.identifier,
         parameters,
         useOrganisatieIds().value[0] || "",
       );

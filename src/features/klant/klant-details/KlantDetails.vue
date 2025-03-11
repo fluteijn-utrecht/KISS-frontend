@@ -41,8 +41,10 @@ import { watchEffect, type PropType } from "vue";
 import { Heading as UtrechtHeading } from "@utrecht/component-library-vue";
 import type { Klant } from "@/services/openklant/types";
 import { useLoader } from "@/services";
-import { fetchKlantById } from "./fetch-klant-by-id";
+import { fetchKlant } from "./fetch-klant";
 import { useSystemen } from "@/services/environment/fetch-systemen";
+
+const { systemen, defaultSysteem } = useSystemen();
 
 const props = defineProps({
   klantId: {
@@ -55,18 +57,18 @@ const props = defineProps({
   },
 });
 
-const { defaultSysteem } = useSystemen();
-
 const {
   data: klant,
   loading,
   error,
 } = useLoader(() => {
-  if (props.klantId && defaultSysteem.value)
-    return fetchKlantById({
-      id: props.klantId,
-      systeem: defaultSysteem.value,
-    });
+  if (!props.klantId || !defaultSysteem.value || !systemen.value?.length)
+    return;
+  return fetchKlant({
+    id: props.klantId,
+    systemen: systemen.value,
+    defaultSysteem: defaultSysteem.value,
+  });
 });
 
 const emit = defineEmits<{

@@ -620,11 +620,11 @@ const saveBetrokkeneBijContactmoment = async (
 };
 
 const saveVraag = async (vraag: Vraag, gespreksId?: string) => {
-  const systemen = await fetchSystemen();
-
   // if this contactmoment/contactverzoek is releated to a zaak,
   // then we should store this contactmoment/contactverzoek in the registry..
   // that is linked to the zaaksysteem that contains this particular zaak
+
+  const systemen = await fetchSystemen();
 
   const zaakSysteemId = vraag.zaken.find((x) => x.shouldStore)?.zaaksysteemId;
   const systeem = systemen.find(

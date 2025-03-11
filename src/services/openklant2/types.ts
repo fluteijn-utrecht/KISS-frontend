@@ -114,6 +114,7 @@ export interface KlantContactPostmodel {
   plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
 }
 
+//todo: KlantBedrijfIdentifier vervangen door KlantIdentificator
 export type KlantBedrijfIdentifier =
   | {
       bsn: string;

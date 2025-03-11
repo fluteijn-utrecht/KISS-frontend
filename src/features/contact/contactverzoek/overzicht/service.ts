@@ -5,9 +5,9 @@ import {
   enrichBetrokkeneWithKlantContact,
   enrichInterneTakenWithActoren,
   fetchBetrokkenen,
+  fetchKlantByKlantIdentificatorOk2,
   fetchWithSysteemId,
   filterOutContactmomenten,
-  findKlantByIdentifier,
   KlantContactExpand,
   searchDigitaleAdressen,
   type Betrokkene,
@@ -16,7 +16,7 @@ import {
 } from "@/services/openklant2";
 import {
   enrichContactverzoekObjectWithContactmoment,
-  fetchKlantByIdentifierOpenKlant1,
+  fetchKlantByKlantIdentificatorOk1,
 } from "@/services/openklant1";
 import type { ContactverzoekOverzichtItem } from "./types";
 import type { ContactmomentDetails } from "../../contactmoment";
@@ -30,7 +30,6 @@ import { fetchInternetakenByKlantIdFromObjecten } from "@/services/internetaak/s
 import {
   enrichContactmomentWithZaaknummer,
   enrichOnderwerpObjectenWithZaaknummers,
-  getIdentificatorForOk1And2,
 } from "../../shared";
 
 function searchRecursive(
@@ -251,17 +250,14 @@ function mapObjectToContactverzoekOverzichtItem({
 }
 
 export async function fetchContactverzoekenByKlantIdentificator(
-  id: KlantIdentificator,
+  klantIdentificator: KlantIdentificator,
   systemen: Systeem[],
 ): Promise<ContactverzoekOverzichtItem[]> {
-  const klantidentificators = getIdentificatorForOk1And2(id);
-
   const promises = systemen.map((systeem) => {
     if (systeem.registryVersion === registryVersions.ok1) {
-      if (!klantidentificators.ok1) return [];
-      return fetchKlantByIdentifierOpenKlant1(
+      return fetchKlantByKlantIdentificatorOk1(
         systeem.identifier,
-        klantidentificators.ok1,
+        klantIdentificator,
       )
         .then((klant) =>
           !klant?.url
@@ -292,10 +288,10 @@ export async function fetchContactverzoekenByKlantIdentificator(
           return result;
         });
     }
-    if (!klantidentificators.ok2) return [];
-    return findKlantByIdentifier(
+
+    return fetchKlantByKlantIdentificatorOk2(
       systeem.identifier,
-      klantidentificators.ok2,
+      klantIdentificator,
     ).then((klant) =>
       !klant?.url
         ? []
