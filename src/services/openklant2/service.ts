@@ -25,6 +25,7 @@ import {
   type OnderwerpObjectPostModel,
   type Betrokkene,
   CodeSoortObjectId,
+  type Identificator,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
@@ -165,7 +166,10 @@ export async function enrichBetrokkeneWithDigitaleAdressen(
   return value;
 }
 
-export function fetchBetrokkenen(params: { wasPartij__url: string, pageSize: string }) {
+export function fetchBetrokkenen(params: {
+  wasPartij__url: string;
+  pageSize: string;
+}) {
   const query = new URLSearchParams(params);
   return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
     .then(throwIfNotOk)
@@ -545,23 +549,27 @@ export const fetchKlantByIdOk2 = (uuid: string) => {
     .then(mapPartijToKlant);
 };
 
-export function findKlantByIdentifier(
+export async function findKlantByIdentifier(
   query:
     | {
-      vestigingsnummer: string;
-    }
+        bsn: string;
+      }
     | {
-      rsin: string;
-      kvkNummer?: string;
-    }
+        vestigingsnummer: string;
+        kvkNummer?: string;
+      }
+    // | {
+    //     rsin: string;
+    //     kvkNummer?: string;
+    //   }
     | {
-      bsn: string;
-    }
-    | {
-      kvkNummer: string;
-    },
+        kvkNummer: string;
+      },
 ): Promise<Klant | null> {
   const expand = "digitaleAdressen";
+
+  let matchingKvkNummer = true;
+
   let soortPartij,
     partijIdentificator__codeSoortObjectId,
     partijIdentificator__objectId;
@@ -578,10 +586,29 @@ export function findKlantByIdentifier(
       partijIdentificator__codeSoortObjectId =
         identificatorTypes.vestiging.codeSoortObjectId;
       partijIdentificator__objectId = query.vestigingsnummer;
-    } else if ("rsin" in query) {
-      partijIdentificator__codeSoortObjectId =
-        identificatorTypes.nietNatuurlijkPersoonRsin.codeSoortObjectId;
-      partijIdentificator__objectId = query.rsin;
+
+      const { subIdentificatorVan } = await findPartijIdentificator(
+        partijIdentificator__codeSoortObjectId,
+        partijIdentificator__objectId,
+      );
+
+      const {
+        partijIdentificator: { codeSoortObjectId, objectId },
+      } = (await getPartijIdentificator(
+        subIdentificatorVan.uuid,
+      )) as PartijIdentificator;
+
+      matchingKvkNummer =
+        codeSoortObjectId ===
+          identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId &&
+        objectId === query.kvkNummer;
+
+      console.log(`matchingKvkNummer`, matchingKvkNummer);
+
+      // } else if ("rsin" in query) {
+      //   partijIdentificator__codeSoortObjectId =
+      //     identificatorTypes.nietNatuurlijkPersoonRsin.codeSoortObjectId;
+      //   partijIdentificator__objectId = query.rsin;
     } else {
       //toegeovegd om types te alignen.. is dee route wenselijk???
 
@@ -598,30 +625,76 @@ export function findKlantByIdentifier(
     partijIdentificator__objectId,
   });
 
-  return fetchLoggedIn(`${klantinteractiesBaseUrl}/partijen?${searchParams}`)
+  return matchingKvkNummer
+    ? fetchLoggedIn(`${klantinteractiesBaseUrl}/partijen?${searchParams}`)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((r) => parsePagination(r, (x) => mapPartijToKlant(x as Partij)))
+        .then(enforceOneOrZero)
+    : null;
+}
+
+// =========
+
+type PartijIdentificator = {
+  uuid: string;
+  identificeerdePartij: {
+    uuid: string;
+  };
+  partijIdentificator: Identificator;
+  subIdentificatorVan: {
+    uuid: string;
+  };
+};
+
+const findPartijIdentificator = async (
+  partijIdentificatorCodeSoortObjectId: string,
+  partijIdentificatorObjectId: string,
+) =>
+  fetchLoggedIn(
+    klantinteractiesBaseUrl +
+      `/partij-identificatoren?${new URLSearchParams({
+        partijIdentificatorCodeSoortObjectId,
+        partijIdentificatorObjectId,
+      })}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
-    .then((r) => parsePagination(r, (x) => mapPartijToKlant(x as Partij)))
-    .then(enforceOneOrZero);
-}
+    .then((r) => parsePagination(r, (x) => x as PartijIdentificator))
+    // .then(enforceOneOrZero);
+    // client side filter because of query param bug
+    // https://github.com/maykinmedia/open-klant/issues/376
+    .then(
+      (r) =>
+        r.page.filter(
+          (p) =>
+            p.partijIdentificator.codeSoortObjectId ===
+              partijIdentificatorCodeSoortObjectId &&
+            p.partijIdentificator.objectId === partijIdentificatorObjectId,
+        )[0],
+    );
+
+// =========
 
 export async function createKlant(
   parameters:
     | {
-      vestigingsnummer: string;
-    }
+        bsn: string;
+      }
     | {
-      rsin: string;
-      kvkNummer?: string;
-    }
+        vestigingsnummer: string;
+        kvkNummer?: string;
+      }
+    // | {
+    //     rsin: string;
+    //     kvkNummer?: string;
+    //   }
     | {
-      bsn: string;
-    }
-    | {
-      kvkNummer: string;
-    },
+        kvkNummer: string;
+      },
 ) {
   let partijIdentificatie, partijIdentificator, soortPartij, kvkNummer;
+
   if ("bsn" in parameters) {
     soortPartij = PartijTypes.persoon;
     // dit is de enige manier om een partij zonder contactnaam aan te maken
@@ -632,6 +705,7 @@ export async function createKlant(
     };
   } else {
     soortPartij = PartijTypes.organisatie;
+
     // dit is de enige manier om een partij zonder naam aan te maken
     partijIdentificatie = { naam: "" };
     if ("vestigingsnummer" in parameters && parameters.vestigingsnummer) {
@@ -639,12 +713,16 @@ export async function createKlant(
         ...identificatorTypes.vestiging,
         objectId: parameters.vestigingsnummer,
       };
-    } else if ("rsin" in parameters && parameters.rsin) {
-      partijIdentificator = {
-        ...identificatorTypes.nietNatuurlijkPersoonRsin,
-        objectId: parameters.rsin,
-      };
+
       kvkNummer = parameters.kvkNummer;
+
+      // } else if ("rsin" in parameters && parameters.rsin) {
+      //   partijIdentificator = {
+      //     ...identificatorTypes.nietNatuurlijkPersoonRsin,
+      //     objectId: parameters.rsin,
+      //   };
+
+      //   kvkNummer = parameters.kvkNummer;
     }
   }
 
@@ -777,13 +855,13 @@ async function mapPartijToKlant(
 export function searchKlantenByDigitaalAdres(
   query:
     | {
-      telefoonnummer: string;
-      partijType: PartijTypes;
-    }
+        telefoonnummer: string;
+        partijType: PartijTypes;
+      }
     | {
-      email: string;
-      partijType: PartijTypes;
-    },
+        email: string;
+        partijType: PartijTypes;
+      },
 ) {
   let key: DigitaalAdresTypes, value: string;
 
