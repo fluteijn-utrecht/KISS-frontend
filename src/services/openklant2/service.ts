@@ -894,6 +894,7 @@ async function mapPartijToKlant(
     kvkNummer: getIdentificator(
       identificatorTypes.nietNatuurlijkPersoonKvkNummer,
     ),
+    // Kan weg... ??
     rsin: getIdentificator(identificatorTypes.nietNatuurlijkPersoonRsin),
   };
 
