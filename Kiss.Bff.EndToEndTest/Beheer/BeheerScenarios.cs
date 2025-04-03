@@ -15,7 +15,7 @@ namespace Kiss.Bff.EndToEndTest.Beheer
             await Page.GotoAsync("/");
             await Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" }).ClickAsync();
 
-            await Step("When the user clicks on Kanelen tab ");
+            await Step("When the user clicks on Kanalen tab ");
 
             await Page.GetByRole(AriaRole.Link, new() { Name = "Kanalen" }).ClickAsync();
 
@@ -25,12 +25,12 @@ namespace Kiss.Bff.EndToEndTest.Beheer
 
         }
 
-        [TestMethod("2. Adding a Kanelen")]
+        [TestMethod("2. Adding a Kanalen")]
         [DataRow("Automation Channel")]
-        public async Task AddKanel(string kanaalName)
+        public async Task AddKanaal(string kanaalName)
 
         {
-            await Step("Given user navigates to 'Kanelen' section of Beheer tab");
+            await Step("Given user navigates to 'Kanalen' section of Beheer tab");
 
             await AddKanaalHelper(kanaalName);
 
@@ -38,55 +38,74 @@ namespace Kiss.Bff.EndToEndTest.Beheer
 
             await Expect(Page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = kanaalName })).ToBeVisibleAsync();
 
-            await DeleteKanelHelper(kanaalName);
+            await DeleteKanaalHelper(kanaalName);
         }
 
-        [TestMethod("3. Editing an existing Kanelen")]
+        [TestMethod("3. Editing an existing Kanaal")]
         [DataRow("Automation Channel edit")]
-        public async Task EditKanel(string originalkanaalName)
+        public async Task EditKanaal(string originalkanaalName)
         {
             // Precondition: Add the channel
             await AddKanaalHelper(originalkanaalName);
 
             string updatedKanaalName = "Automation Channel Updated";
 
-            await Step("Given the user is on the 'Kanalen' section of the 'Beheer' tab");
+            try
+            {
+                await Step("Given the user is on the 'Kanalen' section of the 'Beheer' tab");
 
-            await Page.GotoAsync("/");
-            await Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" }).ClickAsync();
-            await Page.GetByRole(AriaRole.Link, new() { Name = "Kanalen" }).ClickAsync();
+                await Page.GotoAsync("/");
+                await Page.GetByRole(AriaRole.Link, new() { Name = "Beheer" }).ClickAsync();
+                await Page.GetByRole(AriaRole.Link, new() { Name = "Kanalen" }).ClickAsync();
 
-            await Step($"When user clicks on channel list with name as '{originalkanaalName}'");
+                await Step($"When user clicks on channel list with name as '{originalkanaalName}'");
 
-            await Page.GetByRole(AriaRole.Link, new() { Name = originalkanaalName }).ClickAsync();
+                await Page.GetByRole(AriaRole.Link, new() { Name = originalkanaalName }).ClickAsync();
 
-            await Step($"And user updates title to '{updatedKanaalName}'");
+                await Step($"And user updates title to '{updatedKanaalName}'");
 
-            await Page.GetByRole(AriaRole.Textbox, new() { Name = "Naam" }).FillAsync(updatedKanaalName);
+                await Page.GetByRole(AriaRole.Textbox, new() { Name = "Naam" }).FillAsync(updatedKanaalName);
 
-            await Step("And user clicks on Opslaan");
+                await Step("And user clicks on Opslaan");
 
-            await Page.GetOpslaanButton().ClickAsync();
+                await Page.GetOpslaanButton().ClickAsync();
 
-            await Step($"And updated channel '{updatedKanaalName}' is added to the list of Kanalen");
+                await Step($"And updated channel '{updatedKanaalName}' is added to the list of Kanalen");
 
-            await Expect(Page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = updatedKanaalName })).ToBeVisibleAsync();
-
-            await DeleteKanelHelper(updatedKanaalName);
+                await Expect(Page.GetByRole(AriaRole.Listitem).Filter(new() { HasText = updatedKanaalName })).ToBeVisibleAsync();
+            }
+            finally
+            {
+                await DeleteKanaalHelper(updatedKanaalName);
+            }
         }
-        [TestMethod("4. Deleting a Kanelen")]
+
+        [TestMethod("4. Deleting a Kanaal")]
         [DataRow("Automation Channel delete")]
-        public async Task DeleteKanel(String deleteKanaal)
+        public async Task DeleteKanaal(string deleteKanaal)
         {
             await Step("Precondition: Automation channel is created");
-
             await AddKanaalHelper(deleteKanaal);
 
-            await Step("when the user deletes the chaneel");
+            try
+            {
+                await Step("When the user deletes the channel");
+                await DeleteKanaalHelper(deleteKanaal);
+            }
+            finally
+            {
 
-            await DeleteKanelHelper(deleteKanaal);
+                var kanaalExists = await Page.GetByRole(AriaRole.Listitem)
+                    .Filter(new() { HasText = deleteKanaal })
+                    .IsVisibleAsync();
 
+                if (kanaalExists)
+                {
+                    await DeleteKanaalHelper(deleteKanaal);
+                }
+            }
         }
+
 
         // Helper method to add a new channel
         private async Task AddKanaalHelper(string kanaalName)
@@ -119,7 +138,7 @@ namespace Kiss.Bff.EndToEndTest.Beheer
         }
 
         // Helper method to delete a channel
-        private async Task DeleteKanelHelper(string kanaalName)
+        private async Task DeleteKanaalHelper(string kanaalName)
         {
             await Step("Given the user is on the 'Kanalen' section of the 'Beheer' tab");
 
@@ -148,4 +167,5 @@ namespace Kiss.Bff.EndToEndTest.Beheer
 
     }
 }
+
 
