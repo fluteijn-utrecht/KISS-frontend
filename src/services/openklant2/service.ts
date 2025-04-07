@@ -561,7 +561,7 @@ export async function findKlantByIdentifier(
       }
     | {
         vestigingsnummer: string;
-        kvkNummer?: string;
+        kvkNummer: string;
       }
     | {
         kvkNummer: string;
