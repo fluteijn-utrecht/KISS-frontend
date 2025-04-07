@@ -29,7 +29,7 @@ import {
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
 import type { Klant } from "../openklant/types";
-import type { Vraag } from "@/stores/contactmoment"; 
+import type { Vraag } from "@/stores/contactmoment";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -359,7 +359,6 @@ export async function getActorById(identificatie: string): Promise<any> {
   return await response.json();
 }
 
- 
 export type BaseOrganizationalUnitType = "afdeling" | "groep" | "medewerker";
 
 /**
@@ -368,29 +367,32 @@ export type BaseOrganizationalUnitType = "afdeling" | "groep" | "medewerker";
  * @param config Configuration object with medewerker email settings
  * @returns Configuration object with appropriate settings
  */
-function getActorConfig(type: BaseOrganizationalUnitType | undefined, config: { medewerkerEmailEnabled: boolean }): { 
-  codeObjecttype: string; 
-  soortActor: string; 
-  codeRegister: string; 
-  codeSoortObjectId: string; 
+function getActorConfig(
+  type: BaseOrganizationalUnitType | undefined,
+  config: { medewerkerEmailEnabled: boolean },
+): {
+  codeObjecttype: string;
+  soortActor: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
 } {
   switch (type) {
     case "afdeling":
-      return { 
-        codeObjecttype: "afd", 
-        soortActor: "organisatorische_eenheid", 
-        codeRegister: "obj", 
-        codeSoortObjectId: "idf" 
+      return {
+        codeObjecttype: "afd",
+        soortActor: "organisatorische_eenheid",
+        codeRegister: "obj",
+        codeSoortObjectId: "idf",
       };
-      
+
     case "groep":
-      return { 
-        codeObjecttype: "grp", 
-        soortActor: "organisatorische_eenheid", 
-        codeRegister: "obj", 
-        codeSoortObjectId: "idf" 
+      return {
+        codeObjecttype: "grp",
+        soortActor: "organisatorische_eenheid",
+        codeRegister: "obj",
+        codeSoortObjectId: "idf",
       };
-      
+
     case "medewerker":
     default:
       // Handle medewerker with or without email enabled
@@ -398,7 +400,7 @@ function getActorConfig(type: BaseOrganizationalUnitType | undefined, config: { 
         codeObjecttype: "mdw",
         soortActor: "medewerker",
         codeRegister: config.medewerkerEmailEnabled ? "handmatig" : "obj",
-        codeSoortObjectId: config.medewerkerEmailEnabled ? "email" : "idf"
+        codeSoortObjectId: config.medewerkerEmailEnabled ? "email" : "idf",
       };
   }
 }
@@ -410,13 +412,14 @@ async function mapActor({
 }: {
   fullName: string;
   identificatie: string;
-  typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;  
+  typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
 }) {
   const medewerkerEmailEnabled = await useMedewerkeremail();
-   
-  const unitInfo = getActorConfig(typeOrganisatorischeEenheid, {  medewerkerEmailEnabled });
-                  
-  
+
+  const unitInfo = getActorConfig(typeOrganisatorischeEenheid, {
+    medewerkerEmailEnabled,
+  });
+
   return {
     naam: fullName,
     soortActor: unitInfo.soortActor,
@@ -429,7 +432,7 @@ async function mapActor({
     },
   };
 }
- 
+
 export async function postActor({
   fullName,
   identificatie,
@@ -439,13 +442,17 @@ export async function postActor({
   identificatie: string;
   typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
 }): Promise<string> {
-  const parsedModel = await mapActor({ fullName, identificatie, typeOrganisatorischeEenheid });
+  const parsedModel = await mapActor({
+    fullName,
+    identificatie,
+    typeOrganisatorischeEenheid,
+  });
 
   const response = await fetchLoggedIn(klantinteractiesActoren, {
     method: "POST",
     headers: {
       Accept: "application/json",
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(parsedModel),
   });
@@ -453,7 +460,6 @@ export async function postActor({
   throwIfNotOk(response);
   const jsonResponse = await response.json();
   return jsonResponse.uuid;
-
 }
 
 export const saveKlantContact = async (
@@ -789,24 +795,12 @@ const findPartijIdentificator = async (
       `/partij-identificatoren?${new URLSearchParams({
         partijIdentificatorCodeSoortObjectId,
         partijIdentificatorObjectId,
-        // pageSize: "499"
       })}`,
   )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) => parsePagination(r, (x) => x as PartijIdentificator))
-    // .then(enforceOneOrZero);
-    // client side filter because of query param bug
-    // https://github.com/maykinmedia/open-klant/issues/376
-    .then(
-      (r) =>
-        r.page.filter(
-          (p) =>
-            p.partijIdentificator.codeSoortObjectId ===
-              partijIdentificatorCodeSoortObjectId &&
-            p.partijIdentificator.objectId === partijIdentificatorObjectId,
-        )[0] || null,
-    );
+    .then(enforceOneOrZero);
 
 async function createPartij(
   partijIdentificatie: { naam: string } | { contactnaam: Contactnaam | null },
