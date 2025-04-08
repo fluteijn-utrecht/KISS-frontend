@@ -359,32 +359,78 @@ export async function getActorById(
   return await response.json();
 }
 
-function mapActorType(
-  typeOrganisatorischeEenheid: "groep" | "afdeling" | undefined,
-) {
-  switch (typeOrganisatorischeEenheid) {
+export type BaseOrganizationalUnitType = "afdeling" | "groep" | "medewerker";
+
+/**
+ * Get actor configuration based on type and email settings
+ * @param type The organizational unit type
+ * @param config Configuration object with medewerker email settings
+ * @returns Configuration object with appropriate settings
+ */
+function getActorConfig(
+  type: BaseOrganizationalUnitType | undefined,
+  config: { medewerkerEmailEnabled: boolean },
+): {
+  codeObjecttype: string;
+  soortActor: string;
+  codeRegister: string;
+  codeSoortObjectId: string;
+} {
+  switch (type) {
     case "afdeling":
       return {
         codeObjecttype: "afd",
+        soortActor: "organisatorische_eenheid",
         codeRegister: "obj",
         codeSoortObjectId: "idf",
-        soortActor: "organisatorische_eenheid",
       };
+
     case "groep":
       return {
         codeObjecttype: "grp",
+        soortActor: "organisatorische_eenheid",
         codeRegister: "obj",
         codeSoortObjectId: "idf",
-        soortActor: "organisatorische_eenheid",
       };
+
+    case "medewerker":
     default:
+      // Handle medewerker with or without email enabled
       return {
         codeObjecttype: "mdw",
-        codeRegister: "obj",
-        codeSoortObjectId: "idf",
         soortActor: "medewerker",
+        codeRegister: config.medewerkerEmailEnabled ? "handmatig" : "obj",
+        codeSoortObjectId: config.medewerkerEmailEnabled ? "email" : "idf",
       };
   }
+}
+
+async function mapActor({
+  fullName,
+  identificatie,
+  typeOrganisatorischeEenheid,
+}: {
+  fullName: string;
+  identificatie: string;
+  typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
+}) {
+  const medewerkerEmailEnabled = await useMedewerkeremail();
+
+  const unitInfo = getActorConfig(typeOrganisatorischeEenheid, {
+    medewerkerEmailEnabled,
+  });
+
+  return {
+    naam: fullName,
+    soortActor: unitInfo.soortActor,
+    indicatieActief: true,
+    actoridentificator: {
+      objectId: identificatie,
+      codeObjecttype: unitInfo.codeObjecttype,
+      codeRegister: unitInfo.codeRegister,
+      codeSoortObjectId: unitInfo.codeSoortObjectId,
+    },
+  };
 }
 
 export async function postActor({
@@ -395,23 +441,14 @@ export async function postActor({
 }: {
   fullName: string;
   identificatie: string;
-  typeOrganisatorischeEenheid: "afdeling" | "groep" | undefined;
+  typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
   systeemId: string;
 }): Promise<string> {
-  const { codeObjecttype, codeRegister, codeSoortObjectId, soortActor } =
-    mapActorType(typeOrganisatorischeEenheid);
-
-  const parsedModel = {
-    naam: fullName,
-    soortActor,
-    indicatieActief: true,
-    actoridentificator: {
-      objectId: identificatie,
-      codeObjecttype,
-      codeRegister,
-      codeSoortObjectId,
-    },
-  };
+  const parsedModel = await mapActor({
+    fullName,
+    identificatie,
+    typeOrganisatorischeEenheid,
+  });
 
   const response = await fetchWithSysteemId(
     systeemId,
@@ -929,4 +966,8 @@ export function fetchKlantcontacten({
     );
 }
 
-export { fetchWithSysteemId };
+export async function useMedewerkeremail(): Promise<boolean> {
+  const response = await fetch("/api/environment/use-medewerkeremail");
+  const { useMedewerkeremail } = await response.json();
+  return useMedewerkeremail;
+}
