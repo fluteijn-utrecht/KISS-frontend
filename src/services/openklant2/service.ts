@@ -306,16 +306,22 @@ export const ensureActoren = async (
     id: string,
     type?: "afdeling" | "groep" | undefined,
   ) => {
-    const actor = await getActorById(systeemId, id);
-    if (actor.results.length === 0) {
+    const parsedModel = await mapActor({
+      fullName: name,
+      identificatie: id,
+      typeOrganisatorischeEenheid: type,
+    });
+    const { results } = await getActorById(
+      systeemId,
+      parsedModel.actoridentificator,
+    );
+    if (results.length === 0) {
       return await postActor({
         systeemId: systeemId,
-        fullName: name,
-        identificatie: id,
-        typeOrganisatorischeEenheid: type ?? undefined,
+        parsedModel,
       });
     }
-    return actor.results[0].uuid;
+    return results[0].uuid;
   };
 
   const actoren: string[] = [];
@@ -343,11 +349,16 @@ export const ensureActoren = async (
   return actoren;
 };
 
-export async function getActorById(
+async function getActorById(
   systeemId: string,
-  identificatie: string,
-): Promise<any> {
-  const url = `${klantinteractiesActoren}?actoridentificatorObjectId=${identificatie}`;
+  identificator: MappedActor["actoridentificator"],
+): Promise<{ results: { uuid: string }[] }> {
+  const url = `${klantinteractiesActoren}?${new URLSearchParams({
+    actoridentificatorObjectId: identificator.objectId,
+    actoridentificatorCodeRegister: identificator.codeRegister,
+    actoridentificatorCodeSoortObjectId: identificator.codeSoortObjectId,
+    actoridentificatorCodeObjecttype: identificator.codeObjecttype,
+  })}`;
   const response = await fetchWithSysteemId(systeemId, url, {
     method: "GET",
     headers: {
@@ -405,6 +416,18 @@ function getActorConfig(
   }
 }
 
+type MappedActor = {
+  naam: string;
+  soortActor: string;
+  indicatieActief: boolean;
+  actoridentificator: {
+    objectId: string;
+    codeObjecttype: string;
+    codeRegister: string;
+    codeSoortObjectId: string;
+  };
+};
+
 async function mapActor({
   fullName,
   identificatie,
@@ -413,7 +436,7 @@ async function mapActor({
   fullName: string;
   identificatie: string;
   typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
-}) {
+}): Promise<MappedActor> {
   const medewerkerEmailEnabled = await useMedewerkeremail();
 
   const unitInfo = getActorConfig(typeOrganisatorischeEenheid, {
@@ -433,23 +456,13 @@ async function mapActor({
   };
 }
 
-export async function postActor({
+async function postActor({
   systeemId,
-  fullName,
-  identificatie,
-  typeOrganisatorischeEenheid,
+  parsedModel,
 }: {
-  fullName: string;
-  identificatie: string;
-  typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
+  parsedModel: MappedActor;
   systeemId: string;
 }): Promise<string> {
-  const parsedModel = await mapActor({
-    fullName,
-    identificatie,
-    typeOrganisatorischeEenheid,
-  });
-
   const response = await fetchWithSysteemId(
     systeemId,
     klantinteractiesActoren,
