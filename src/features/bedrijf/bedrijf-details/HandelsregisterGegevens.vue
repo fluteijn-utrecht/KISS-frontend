@@ -1,6 +1,6 @@
 <template>
   <article class="details-block" v-if="bedrijf">
-    <utrecht-heading :level="2"> Gegevens Handelsregister</utrecht-heading>
+    <utrecht-heading :level="2">Gegevens Handelsregister</utrecht-heading>
     <dl>
       <dt>Bedrijfsnaam</dt>
       <dd>{{ bedrijf.bedrijfsnaam }}</dd>
@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { enforceOneOrZero, useLoader } from "@/services";
 import {
-  searchBedrijvenInHandelsRegister,
+  findBedrijfInHandelsRegister,
   type Bedrijf,
   type BedrijfIdentifier,
 } from "@/services/kvk";
@@ -48,7 +48,7 @@ const {
   error,
 } = useLoader(() => {
   if (props.bedrijfIdentifier)
-    return searchBedrijvenInHandelsRegister(props.bedrijfIdentifier).then(
+    return findBedrijfInHandelsRegister(props.bedrijfIdentifier).then(
       enforceOneOrZero,
     );
 });

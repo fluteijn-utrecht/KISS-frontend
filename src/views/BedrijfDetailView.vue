@@ -1,7 +1,6 @@
 <template>
   <back-link />
   <utrecht-heading :level="1">Bedrijfsinformatie</utrecht-heading>
-
   <tab-list v-model="currentTab">
     <tab-list-item label="Contactgegevens">
       <template #default="{ setError, setLoading }">
@@ -13,7 +12,6 @@
         />
       </template>
     </tab-list-item>
-
     <tab-list-item label="KvK-gegevens">
       <template #default="{ setError, setLoading }">
         <handelsregister-gegevens
@@ -91,9 +89,22 @@ const bedrijf = ref<Bedrijf>();
 
 const getBedrijfIdentifier = (): BedrijfIdentifier | undefined => {
   if (!klant.value) return undefined;
+
+  //todo: controleren of deze varant weer relevant is !!!!
+  if (klant.value.vestigingsnummer && klant.value.kvkNummer)
+    return {
+      vestigingsnummer: klant.value.vestigingsnummer,
+      kvkNummer: klant.value.kvkNummer,
+    };
+
   if (klant.value.vestigingsnummer)
     return {
       vestigingsnummer: klant.value.vestigingsnummer,
+    };
+
+  if (klant.value.kvkNummer)
+    return {
+      kvkNummer: klant.value.kvkNummer,
     };
   // if (klant.data.rsin)
   //   return {

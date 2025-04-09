@@ -34,7 +34,15 @@ export const fetchKlant = async ({
       klant,
       nonDefaultSysteem,
     );
-    if (heeftContactgegevens(fallbackKlant)) return fallbackKlant;
+
+    //we nemen alleen de contactgegevens over als die niet in de default klant zitten, maar wel in een ander system zijn gevonden
+    //alleen de contactgegevens, geen andere gegevens overnemen, de klant uit het default systeem is leidend!
+    if (klant && fallbackKlant && heeftContactgegevens(fallbackKlant)) {
+      klant.telefoonnummer = fallbackKlant.telefoonnummer;
+      klant.telefoonnummers = fallbackKlant.telefoonnummers;
+      klant.emailadres = fallbackKlant.emailadres;
+      klant.emailadressen = fallbackKlant.emailadressen;
+    }
   }
 
   return klant;
