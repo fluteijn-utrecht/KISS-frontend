@@ -62,18 +62,12 @@ import { useRouter } from "vue-router";
 import { mutate } from "swrv";
 import { ensureKlantForBedrijfIdentifier } from "./ensure-klant-for-bedrijf-identifier";
 import type { Klant } from "@/services/openklant/types";
+import type { KlantBedrijfIdentifier } from "@/services/openklant2";
 
 const props = defineProps<{
   item: Bedrijf | Klant;
   autoNavigate?: boolean;
 }>();
-
-type BedrijfIdentifierWithoutRsin = Exclude<
-  BedrijfIdentifier,
-  {
-    rsin: string;
-  }
->;
 
 // const matchingBedrijf = useBedrijfByIdentifier(() => {
 // wordt niet meer gebruikt, alleen relevant als we een klant hebben en kvkv gegevens erbij willen zoeken/
@@ -120,23 +114,21 @@ const bedrijf = computed(() =>
 
 const naam = computed(() => bedrijf.value.data?.bedrijfsnaam || "");
 
-const bedrijfIdentifier = computed<BedrijfIdentifierWithoutRsin | undefined>(
-  () => {
-    const { kvkNummer, vestigingsnummer } = bedrijf.value.data ?? {};
-    if (vestigingsnummer && kvkNummer)
-      return {
-        vestigingsnummer,
-        kvkNummer,
-      };
+const bedrijfIdentifier = computed<KlantBedrijfIdentifier | undefined>(() => {
+  const { kvkNummer, vestigingsnummer } = bedrijf.value.data ?? {};
+  if (vestigingsnummer && kvkNummer)
+    return {
+      vestigingsnummer,
+      kvkNummer,
+    };
 
-    if (kvkNummer)
-      return {
-        kvkNummer,
-      };
+  if (kvkNummer)
+    return {
+      kvkNummer,
+    };
 
-    return undefined;
-  },
-);
+  return undefined;
+});
 
 const router = useRouter();
 
@@ -151,10 +143,7 @@ const setCache = (klant: Klant, bedrijf?: Bedrijf | null) => {
   }
 };
 
-async function navigate(
-  bedrijf: Bedrijf,
-  identifier: BedrijfIdentifierWithoutRsin,
-) {
+async function navigate(bedrijf: Bedrijf, identifier: KlantBedrijfIdentifier) {
   const bedrijfsnaam = bedrijf.bedrijfsnaam;
   const klant = await ensureKlantForBedrijfIdentifier(identifier, bedrijfsnaam);
 
