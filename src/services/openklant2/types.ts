@@ -78,26 +78,6 @@ export type BetrokkeneMetKlantContact = Betrokkene & {
   expandedDigitaleAdressen?: DigitaalAdresApiViewModel[];
 };
 
-export interface MedewerkerIdentificatie {
-  identificatie: string;
-  achternaam: string;
-  voorletters: string;
-  voorvoegselAchternaam: string;
-}
-
-export interface ContactmomentViewModel {
-  url: string;
-  registratiedatum: string;
-  kanaal: string;
-  tekst: string;
-  objectcontactmomenten: {
-    object: string;
-    objectType: string;
-    contactmoment: string;
-  }[];
-  medewerkerIdentificatie: MedewerkerIdentificatie;
-}
-
 export interface InternetaakPostModel {
   nummer: string;
   gevraagdeHandeling: string;
@@ -134,6 +114,7 @@ export interface KlantContactPostmodel {
   plaatsgevondenOp: string; // 2019-08-24T14:15:22Z
 }
 
+//todo: KlantBedrijfIdentifier vervangen door KlantIdentificator
 export type KlantBedrijfIdentifier =
   | {
       bsn: string;

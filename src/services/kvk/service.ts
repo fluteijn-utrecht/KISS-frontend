@@ -21,7 +21,12 @@ const vestigingsprofielenUrl = "/api/kvk/v1/vestigingsprofielen/";
 export async function findBedrijfInHandelsRegister(query: BedrijfIdentifier) {
   const searchParams = new URLSearchParams();
 
-  if ("vestigingsnummer" in query && query.vestigingsnummer) {
+  if (
+    "vestigingsnummer" in query &&
+    query.vestigingsnummer &&
+    "kvkNummer" in query &&
+    query.kvkNummer
+  ) {
     searchParams.set("vestigingsnummer", query.vestigingsnummer);
     searchParams.set("kvkNummer", query.kvkNummer);
   } else if ("kvkNummer" in query && query.kvkNummer) {
@@ -43,7 +48,7 @@ export async function findBedrijfInHandelsRegister(query: BedrijfIdentifier) {
 }
 
 export async function searchBedrijvenInHandelsRegister(
-  query: BedrijfSearchOptions,
+  query: BedrijfIdentifier | BedrijfSearchOptions,
   page?: number,
 ) {
   const searchParams = new URLSearchParams();

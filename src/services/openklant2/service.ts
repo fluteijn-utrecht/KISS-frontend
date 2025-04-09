@@ -1,5 +1,4 @@
 import {
-  fetchLoggedIn,
   enforceOneOrZero,
   parseJson,
   parsePagination,
@@ -7,7 +6,6 @@ import {
 } from "@/services";
 
 import {
-  type ContactmomentViewModel,
   type BetrokkeneMetKlantContact,
   type ExpandedKlantContactApiViewmodel,
   type ActorApiViewModel,
@@ -25,11 +23,14 @@ import {
   type Betrokkene,
   CodeSoortObjectId,
   type PartijIdentificator,
+  type KlantBedrijfIdentifier,
 } from "./types";
 
 import type { ContactverzoekData } from "../../features/contact/components/types";
 import type { Klant } from "../openklant/types";
 import type { Vraag } from "@/stores/contactmoment";
+import { fetchWithSysteemId } from "../fetch-with-systeem-id";
+import type { KlantIdentificator } from "@/features/contact/types";
 
 const klantinteractiesProxyRoot = "/api/klantinteracties";
 const klantinteractiesApiRoot = "/api/v1";
@@ -40,37 +41,9 @@ const klantinteractiesDigitaleadressen = `${klantinteractiesBaseUrl}/digitaleadr
 const klantinteractiesBetrokkenen = `${klantinteractiesBaseUrl}/betrokkenen`;
 
 ////////////////////////////////////////////
-// contactmomenten
-export function mapKlantContactToContactmomentViewModel(
-  klantContact: ExpandedKlantContactApiViewmodel,
-) {
-  const medewerker = klantContact.hadBetrokkenActoren?.find(
-    (x) => x.soortActor === "medewerker",
-  );
-  const vm: ContactmomentViewModel = {
-    url: klantContact.url,
-    registratiedatum: klantContact.plaatsgevondenOp,
-    kanaal: klantContact?.kanaal,
-    tekst: klantContact?.inhoud,
-    objectcontactmomenten:
-      klantContact._expand?.gingOverOnderwerpobjecten?.map((o) => ({
-        objectType: o.onderwerpobjectidentificator.codeObjecttype,
-        contactmoment: o.klantcontact.uuid,
-        object: o.onderwerpobjectidentificator.objectId,
-      })) || [],
-    medewerkerIdentificatie: {
-      identificatie: medewerker?.actoridentificator?.objectId || "",
-      voorletters: "",
-      achternaam: medewerker?.naam || "",
-      voorvoegselAchternaam: "",
-    },
-  };
-  return vm;
-}
-
-////////////////////////////////////////////
 // contactmomenten and contactverzoeken
 export async function enrichBetrokkeneWithKlantContact(
+  systeemId: string,
   value: Betrokkene[],
   expand?: KlantContactExpand[],
 ): Promise<BetrokkeneMetKlantContact[]> {
@@ -80,6 +53,7 @@ export async function enrichBetrokkeneWithKlantContact(
       continue;
     }
     const klantcontact = await fetchKlantcontact({
+      systeemId,
       uuid: klantContactId,
       expand,
     });
@@ -100,6 +74,7 @@ export function filterOutContactmomenten(
 }
 
 export async function enrichInterneTakenWithActoren(
+  systeemId: string,
   value: BetrokkeneMetKlantContact[],
 ): Promise<BetrokkeneMetKlantContact[]> {
   for (const betrokkeneWithKlantcontact of value) {
@@ -116,9 +91,12 @@ export async function enrichInterneTakenWithActoren(
     //we halen alle actoren op en kiezen dan de eerste medewerker. als er geen medewerkers bij staan de erste organisatie
     //wordt naar verwachting tzt aangepast, dan gaan we gewoon alle actoren bij de internetak tonen
 
-    const actorenFetchTasks = actoren.map((actor) => fetchActor(actor.uuid));
+    const actorenDetails = [] as ActorApiViewModel[];
 
-    const actorenDetails = await Promise.all(actorenFetchTasks);
+    for (const actor of actoren) {
+      const actorDetails = await fetchActor(systeemId, actor.uuid);
+      actorenDetails.push(actorDetails);
+    }
 
     const medewerkerActor = actorenDetails.find(
       (x) => x.soortActor === "medewerker",
@@ -137,40 +115,45 @@ export async function enrichInterneTakenWithActoren(
   return value;
 }
 
-export function fetchActor(id: string) {
-  return fetchLoggedIn(`${klantinteractiesActoren}/${id}`)
+export function fetchActor(systeemId: string, id: string) {
+  return fetchWithSysteemId(systeemId, `${klantinteractiesActoren}/${id}`)
     .then(throwIfNotOk)
     .then(parseJson)
     .then((d) => d as ActorApiViewModel);
 }
 
 export async function enrichBetrokkeneWithDigitaleAdressen(
+  systeemId: string,
   value: BetrokkeneMetKlantContact[],
 ): Promise<BetrokkeneMetKlantContact[]> {
   for (const betrokkeneWithKlantcontact of value) {
-    const fetchTasks = betrokkeneWithKlantcontact.digitaleAdressen.map(
-      (digitaalAdres) => {
-        const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
-        return fetchLoggedIn(url)
-          .then(throwIfNotOk)
-          .then(parseJson)
-          .then((d) => d as DigitaalAdresApiViewModel);
-      },
-    );
-
-    betrokkeneWithKlantcontact.expandedDigitaleAdressen =
-      await Promise.all(fetchTasks);
+    betrokkeneWithKlantcontact.expandedDigitaleAdressen ??= [];
+    for (const digitaalAdres of betrokkeneWithKlantcontact.digitaleAdressen) {
+      const url = `${klantinteractiesDigitaleadressen}/${digitaalAdres.uuid}?`;
+      const expanded = await fetchWithSysteemId(systeemId, url)
+        .then(throwIfNotOk)
+        .then(parseJson)
+        .then((d) => d as DigitaalAdresApiViewModel);
+      betrokkeneWithKlantcontact.expandedDigitaleAdressen.push(expanded);
+    }
   }
 
   return value;
 }
 
-export function fetchBetrokkenen(params: {
+export function fetchBetrokkenen({
+  systeemId,
+  ...params
+}: {
+  systeemId: string;
   wasPartij__url: string;
   pageSize: string;
 }) {
   const query = new URLSearchParams(params);
-  return fetchLoggedIn(`${klantinteractiesBetrokkenen}?${query}`)
+  return fetchWithSysteemId(
+    systeemId,
+    `${klantinteractiesBetrokkenen}?${query}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((p) => parsePagination(p, (x) => x as Betrokkene));
@@ -182,40 +165,48 @@ export enum DigitaleAdressenExpand {
   verstrektDoorBetrokkene_hadKlantcontact_leiddeTotInterneTaken = "verstrektDoorBetrokkene.hadKlantcontact.leiddeTotInterneTaken",
 }
 export function searchDigitaleAdressen({
+  systeemId,
   adres,
   page = 1,
   expand = [],
 }: {
+  systeemId: string;
   adres: string;
   page: number;
   expand: DigitaleAdressenExpand[];
 }) {
   const params = new URLSearchParams({ adres, page: page.toString() });
   expand?.length && params.set("expand", expand.join(","));
-  return fetchLoggedIn(klantinteractiesDigitaleadressen + "?" + params)
+  return fetchWithSysteemId(
+    systeemId,
+    klantinteractiesDigitaleadressen + "?" + params,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) => parsePagination(r, (x) => x as DigitaalAdresApiViewModel));
 }
 
-export function saveBetrokkene({
-  partijId,
-  klantcontactId,
-  organisatienaam,
-  voornaam,
-  voorvoegselAchternaam,
-  achternaam,
-}: {
-  partijId?: string;
-  klantcontactId: string;
-  organisatienaam?: string;
-  voornaam?: string;
-  voorvoegselAchternaam?: string;
-  achternaam?: string;
-}): Promise<{ uuid: string }> {
+export function saveBetrokkene(
+  systemIdentifier: string,
+  {
+    partijId,
+    klantcontactId,
+    organisatienaam,
+    voornaam,
+    voorvoegselAchternaam,
+    achternaam,
+  }: {
+    partijId?: string;
+    klantcontactId: string;
+    organisatienaam?: string;
+    voornaam?: string;
+    voorvoegselAchternaam?: string;
+    achternaam?: string;
+  },
+): Promise<{ uuid: string }> {
   const voorletters = voornaam ? voornaam.charAt(0) : undefined;
 
-  return fetchLoggedIn(klantinteractiesBetrokkenen, {
+  return fetchWithSysteemId(systemIdentifier, klantinteractiesBetrokkenen, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -244,6 +235,7 @@ export function saveBetrokkene({
 }
 
 export const saveInternetaak = async (
+  systemIdentifier: string,
   toelichting: string,
   contactmomentId: string,
   actorenIds: string[],
@@ -272,15 +264,18 @@ export const saveInternetaak = async (
 
   const interneTaak = createInternetaakPostModel(contactmomentId, actorenIds);
 
-  const response = await postInternetaak(interneTaak);
+  const response = await postInternetaak(systemIdentifier, interneTaak);
   const responseBody = await response.json();
 
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
-const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
-  return fetchLoggedIn(`/api/postinternetaak`, {
+const postInternetaak = (
+  systemIdentifier: string,
+  data: InternetaakPostModel,
+): Promise<Response> => {
+  return fetchWithSysteemId(systemIdentifier, `/api/postinternetaak`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -291,6 +286,7 @@ const postInternetaak = (data: InternetaakPostModel): Promise<Response> => {
 };
 
 export const ensureActoren = async (
+  systeemId: string,
   actorData: undefined | ContactverzoekData["actor"],
 ): Promise<string[]> => {
   if (!actorData) {
@@ -310,15 +306,22 @@ export const ensureActoren = async (
     id: string,
     type?: "afdeling" | "groep" | undefined,
   ) => {
-    const actor = await getActorById(id);
-    if (actor.results.length === 0) {
+    const parsedModel = await mapActor({
+      fullName: name,
+      identificatie: id,
+      typeOrganisatorischeEenheid: type,
+    });
+    const { results } = await getActorById(
+      systeemId,
+      parsedModel.actoridentificator,
+    );
+    if (results.length === 0) {
       return await postActor({
-        fullName: name,
-        identificatie: id,
-        typeOrganisatorischeEenheid: type ?? undefined,
+        systeemId: systeemId,
+        parsedModel,
       });
     }
-    return actor.results[0].uuid;
+    return results[0].uuid;
   };
 
   const actoren: string[] = [];
@@ -346,9 +349,17 @@ export const ensureActoren = async (
   return actoren;
 };
 
-export async function getActorById(identificatie: string): Promise<any> {
-  const url = `${klantinteractiesActoren}?actoridentificatorObjectId=${identificatie}`;
-  const response = await fetchLoggedIn(url, {
+async function getActorById(
+  systeemId: string,
+  identificator: MappedActor["actoridentificator"],
+): Promise<{ results: { uuid: string }[] }> {
+  const url = `${klantinteractiesActoren}?${new URLSearchParams({
+    actoridentificatorObjectId: identificator.objectId,
+    actoridentificatorCodeRegister: identificator.codeRegister,
+    actoridentificatorCodeSoortObjectId: identificator.codeSoortObjectId,
+    actoridentificatorCodeObjecttype: identificator.codeObjecttype,
+  })}`;
+  const response = await fetchWithSysteemId(systeemId, url, {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -405,6 +416,18 @@ function getActorConfig(
   }
 }
 
+type MappedActor = {
+  naam: string;
+  soortActor: string;
+  indicatieActief: boolean;
+  actoridentificator: {
+    objectId: string;
+    codeObjecttype: string;
+    codeRegister: string;
+    codeSoortObjectId: string;
+  };
+};
+
 async function mapActor({
   fullName,
   identificatie,
@@ -413,7 +436,7 @@ async function mapActor({
   fullName: string;
   identificatie: string;
   typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
-}) {
+}): Promise<MappedActor> {
   const medewerkerEmailEnabled = await useMedewerkeremail();
 
   const unitInfo = getActorConfig(typeOrganisatorischeEenheid, {
@@ -433,29 +456,25 @@ async function mapActor({
   };
 }
 
-export async function postActor({
-  fullName,
-  identificatie,
-  typeOrganisatorischeEenheid,
+async function postActor({
+  systeemId,
+  parsedModel,
 }: {
-  fullName: string;
-  identificatie: string;
-  typeOrganisatorischeEenheid: BaseOrganizationalUnitType | undefined;
+  parsedModel: MappedActor;
+  systeemId: string;
 }): Promise<string> {
-  const parsedModel = await mapActor({
-    fullName,
-    identificatie,
-    typeOrganisatorischeEenheid,
-  });
-
-  const response = await fetchLoggedIn(klantinteractiesActoren, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+  const response = await fetchWithSysteemId(
+    systeemId,
+    klantinteractiesActoren,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(parsedModel),
     },
-    body: JSON.stringify(parsedModel),
-  });
+  );
 
   throwIfNotOk(response);
   const jsonResponse = await response.json();
@@ -463,6 +482,7 @@ export async function postActor({
 }
 
 export const saveKlantContact = async (
+  systemIdentifier: string,
   vraag: Vraag,
 ): Promise<SaveKlantContactResponseModel> => {
   const klantcontactPostModel: KlantContactPostmodel = {
@@ -482,15 +502,21 @@ export const saveKlantContact = async (
     plaatsgevondenOp: new Date().toISOString(),
   };
 
-  const response = await postKlantContact(klantcontactPostModel);
+  const response = await postKlantContact(
+    systemIdentifier,
+    klantcontactPostModel,
+  );
   const responseBody = await response.json();
 
   throwIfNotOk(response);
   return { data: responseBody };
 };
 
-const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
-  return fetchLoggedIn(`/api/postklantcontacten`, {
+const postKlantContact = (
+  systemIdentifier: string,
+  data: KlantContactPostmodel,
+): Promise<Response> => {
+  return fetchWithSysteemId(systemIdentifier, `/api/postklantcontacten`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -501,6 +527,7 @@ const postKlantContact = (data: KlantContactPostmodel): Promise<Response> => {
 };
 
 export const saveDigitaleAdressen = async (
+  systemIdentifier: string,
   digitaleAdressen: DigitaalAdresApiViewModel[],
   verstrektDoorBetrokkeneUuid: string,
 ): Promise<Array<{ uuid: string; url: string }>> => {
@@ -515,28 +542,35 @@ export const saveDigitaleAdressen = async (
       omschrijving: adres.omschrijving || "onbekend",
     };
 
-    const savedAdres = await postDigitaalAdres(postBody);
+    const savedAdres = await postDigitaalAdres(systemIdentifier, postBody);
     savedAdressen.push(savedAdres);
   }
 
   return savedAdressen;
 };
 
-const postDigitaalAdres = async (data: {
-  verstrektDoorBetrokkene: { uuid: string };
-  verstrektDoorPartij?: { uuid: string } | null;
-  adres: string;
-  soortDigitaalAdres: DigitaalAdresTypes | undefined;
-  omschrijving: string;
-}): Promise<{ uuid: string; url: string }> => {
-  const response = await fetchLoggedIn(klantinteractiesDigitaleadressen, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+const postDigitaalAdres = async (
+  systemIdentifier: string,
+  data: {
+    verstrektDoorBetrokkene: { uuid: string };
+    verstrektDoorPartij?: { uuid: string } | null;
+    adres: string;
+    soortDigitaalAdres: DigitaalAdresTypes | undefined;
+    omschrijving: string;
+  },
+): Promise<{ uuid: string; url: string }> => {
+  const response = await fetchWithSysteemId(
+    systemIdentifier,
+    klantinteractiesDigitaleadressen,
+    {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     },
-    body: JSON.stringify(data),
-  });
+  );
 
   const responseBody = await response.json();
   throwIfNotOk(response);
@@ -545,16 +579,78 @@ const postDigitaalAdres = async (data: {
 
 //-----------------------------------------------------------------------------------------------------------
 
-export const fetchKlantByIdOk2 = (uuid: string) => {
-  return fetchLoggedIn(
+export const fetchKlantByIdOk2 = (systeemId: string, uuid: string) => {
+  return fetchWithSysteemId(
+    systeemId,
     `${klantinteractiesBaseUrl}/partijen/${uuid}?${new URLSearchParams({ expand: "digitaleAdressen" })}`,
   )
     .then(throwIfNotOk)
     .then(parseJson)
-    .then(mapPartijToKlant);
+    .then((partij) => mapPartijToKlant(systeemId, partij));
 };
 
-export async function findKlantByIdentifier(
+export const ensureOk2Klant = async (
+  systeemId: string,
+  parameters: KlantBedrijfIdentifier,
+) => {
+  return (
+    (await findKlantByIdentifierOpenKlant2(systeemId, parameters)) ??
+    (await createKlant(systeemId, parameters))
+  );
+};
+
+export function fetchKlantByKlantIdentificatorOk2(
+  systeemId: string,
+  klantIdentificator: KlantIdentificator,
+): Promise<Klant | null> {
+  const expand = "digitaleAdressen";
+  let soortPartij: string;
+  let partijIdentificator__codeSoortObjectId: string;
+  let partijIdentificator__objectId: string;
+
+  if (klantIdentificator.bsn) {
+    soortPartij = PartijTypes.persoon;
+    partijIdentificator__codeSoortObjectId =
+      identificatorTypes.persoon.codeSoortObjectId;
+    partijIdentificator__objectId = klantIdentificator.bsn;
+  } else {
+    soortPartij = PartijTypes.organisatie;
+
+    if (klantIdentificator.vestigingsnummer) {
+      partijIdentificator__codeSoortObjectId =
+        identificatorTypes.vestiging.codeSoortObjectId;
+      partijIdentificator__objectId = klantIdentificator.vestigingsnummer;
+    } else if (klantIdentificator.kvkNummer) {
+      partijIdentificator__codeSoortObjectId =
+        identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId;
+      partijIdentificator__objectId = klantIdentificator.kvkNummer;
+    } else {
+      throw new Error("Geen geldige identificator opgegeven.");
+    }
+  }
+
+  const searchParams = new URLSearchParams({
+    expand,
+    soortPartij,
+    partijIdentificator__codeSoortObjectId,
+    partijIdentificator__objectId,
+  });
+
+  return fetchWithSysteemId(
+    systeemId,
+    `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
+  )
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) =>
+      parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+    )
+    .then(enforceOneOrZero);
+}
+
+//todo: verangen worden door fetchKlantByKlantIdentificatorOk2
+export async function findKlantByIdentifierOpenKlant2(
+  systeemId: string,
   query:
     | {
         bsn: string;
@@ -589,11 +685,13 @@ export async function findKlantByIdentifier(
 
       // check if vestigingsIdentificator is linked to a kvkIdentificator by subIdentificatorVan
       const vestigingsIdentificator = await findPartijIdentificator(
+        systeemId,
         partijIdentificator__codeSoortObjectId,
         partijIdentificator__objectId,
       );
 
       subIdentificatorMatch = await matchSubIdentificator(
+        systeemId,
         vestigingsIdentificator,
         query.kvkNummer,
       );
@@ -613,16 +711,20 @@ export async function findKlantByIdentifier(
     partijIdentificator__objectId,
   });
 
-  return subIdentificatorMatch !== false
-    ? fetchLoggedIn(`${klantinteractiesBaseUrl}/partijen?${searchParams}`)
-        .then(throwIfNotOk)
-        .then(parseJson)
-        .then((r) => parsePagination(r, (x) => mapPartijToKlant(x as Partij)))
-        .then(enforceOneOrZero)
-    : null;
+  return fetchWithSysteemId(
+    systeemId,
+    `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
+  )
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) =>
+      parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+    )
+    .then(enforceOneOrZero);
 }
 
 const matchSubIdentificator = async (
+  systeemId: string,
   subIdentificator: PartijIdentificator | null,
   kvkNummer?: string,
 ) => {
@@ -630,7 +732,10 @@ const matchSubIdentificator = async (
 
   const {
     partijIdentificator: { codeSoortObjectId, objectId },
-  } = await getPartijIdentificator(subIdentificator.subIdentificatorVan.uuid);
+  } = await getPartijIdentificator(
+    systeemId,
+    subIdentificator.subIdentificatorVan.uuid,
+  );
 
   return (
     codeSoortObjectId ===
@@ -640,6 +745,7 @@ const matchSubIdentificator = async (
 };
 
 export async function createKlant(
+  systeemId: string,
   parameters:
     | {
         bsn: string;
@@ -685,7 +791,11 @@ export async function createKlant(
 
   if (!partijIdentificator) throw new Error("");
 
-  const partij = await createPartij(partijIdentificatie, soortPartij);
+  const partij = await createPartij(
+    systeemId,
+    partijIdentificatie,
+    soortPartij,
+  );
 
   const identificatorPayload = {
     identificeerdePartij: {
@@ -700,7 +810,9 @@ export async function createKlant(
   // Create / update PartijIdentificatoren
   if ("bsn" in parameters) {
     // natuurlijk_persoon
-    identificatoren.push(await createPartijIdentificator(identificatorPayload));
+    identificatoren.push(
+      await createPartijIdentificator(systeemId, identificatorPayload),
+    );
   } else {
     // vestiging / niet_natuurlijk_persoon
 
@@ -708,6 +820,7 @@ export async function createKlant(
 
     // find kvkIdentificator, maybe null
     kvkIdentificator = await findPartijIdentificator(
+      systeemId,
       identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId,
       parameters.kvkNummer,
     );
@@ -715,7 +828,7 @@ export async function createKlant(
     if ("vestigingsnummer" in parameters && parameters.vestigingsnummer) {
       // ensure kvkIdentificator to use for reference from subIdentificatorVan
       if (!kvkIdentificator) {
-        kvkIdentificator = await createPartijIdentificator({
+        kvkIdentificator = await createPartijIdentificator(systeemId, {
           identificeerdePartij: null,
           partijIdentificator: {
             ...identificatorTypes.nietNatuurlijkPersoonKvkNummer,
@@ -726,7 +839,7 @@ export async function createKlant(
 
       // create vestigingsIdentificator with subIdentificatorVan
       identificatoren.push(
-        await createPartijIdentificator({
+        await createPartijIdentificator(systeemId, {
           ...identificatorPayload,
           subIdentificatorVan: { uuid: kvkIdentificator.uuid },
         }),
@@ -738,6 +851,7 @@ export async function createKlant(
         // update kvkIdentificator with identificeerdePartij
         identificatoren.push(
           await updatePartijIdentificator(
+            systeemId,
             kvkIdentificator.uuid,
             identificatorPayload,
           ),
@@ -745,52 +859,70 @@ export async function createKlant(
       } else {
         // create kvkIdentificator
         identificatoren.push(
-          await createPartijIdentificator(identificatorPayload),
+          await createPartijIdentificator(systeemId, identificatorPayload),
         );
       }
     }
   }
 
-  return mapPartijToKlant(partij, identificatoren);
+  return mapPartijToKlant(systeemId, partij, identificatoren);
 }
 
-const getPartijIdentificator = (uuid: string): Promise<PartijIdentificator> =>
-  fetchLoggedIn(klantinteractiesBaseUrl + `/partij-identificatoren/${uuid}`)
+const getPartijIdentificator = (
+  systeemId: string,
+  uuid: string,
+): Promise<PartijIdentificator> =>
+  fetchWithSysteemId(
+    systeemId,
+    klantinteractiesBaseUrl + `/partij-identificatoren/${uuid}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson);
 
 const createPartijIdentificator = (
+  systeemId: string,
   body: Omit<PartijIdentificator, "uuid">,
 ): Promise<PartijIdentificator> =>
-  fetchLoggedIn(klantinteractiesBaseUrl + "/partij-identificatoren", {
-    body: JSON.stringify(body),
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
+  fetchWithSysteemId(
+    systeemId,
+    klantinteractiesBaseUrl + "/partij-identificatoren",
+    {
+      body: JSON.stringify(body),
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
     },
-  })
+  )
     .then(throwIfNotOk)
     .then(parseJson);
 
 const updatePartijIdentificator = (
+  systeemId: string,
   uuid: string,
   body: Omit<PartijIdentificator, "uuid">,
 ): Promise<PartijIdentificator> =>
-  fetchLoggedIn(klantinteractiesBaseUrl + `/partij-identificatoren/${uuid}`, {
-    body: JSON.stringify(body),
-    method: "PUT",
-    headers: {
-      "content-type": "application/json",
+  fetchWithSysteemId(
+    systeemId,
+    klantinteractiesBaseUrl + `/partij-identificatoren/${uuid}`,
+    {
+      body: JSON.stringify(body),
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+      },
     },
-  })
+  )
     .then(throwIfNotOk)
     .then(parseJson);
 
 const findPartijIdentificator = async (
+  systeemId: string,
   partijIdentificatorCodeSoortObjectId: string,
   partijIdentificatorObjectId: string,
 ): Promise<PartijIdentificator | null> =>
-  fetchLoggedIn(
+  fetchWithSysteemId(
+    systeemId,
     klantinteractiesBaseUrl +
       `/partij-identificatoren?${new URLSearchParams({
         partijIdentificatorCodeSoortObjectId,
@@ -803,10 +935,11 @@ const findPartijIdentificator = async (
     .then(enforceOneOrZero);
 
 async function createPartij(
+  systeemId: string,
   partijIdentificatie: { naam: string } | { contactnaam: Contactnaam | null },
   soortPartij: PartijTypes,
 ) {
-  return fetchLoggedIn(klantinteractiesBaseUrl + "/partijen", {
+  return fetchWithSysteemId(systeemId, klantinteractiesBaseUrl + "/partijen", {
     body: JSON.stringify({
       digitaleAdressen: [],
       betrokkenen: [],
@@ -831,12 +964,13 @@ async function createPartij(
 }
 
 async function mapPartijToKlant(
+  systeemId: string,
   partij: Partij,
   identificatoren?: PartijIdentificator[],
 ): Promise<Klant> {
   if (!identificatoren?.length) {
     const promises = partij.partijIdentificatoren.map(({ uuid }) =>
-      getPartijIdentificator(uuid),
+      getPartijIdentificator(systeemId, uuid),
     );
     identificatoren = await Promise.all(promises);
   }
@@ -862,7 +996,7 @@ async function mapPartijToKlant(
     )?.subIdentificatorVan?.uuid;
 
     return kvkIdentificatorUuid
-      ? (await getPartijIdentificator(kvkIdentificatorUuid))
+      ? (await getPartijIdentificator(systeemId, kvkIdentificatorUuid))
           ?.partijIdentificator.objectId
       : getIdentificator(identificatorTypes.nietNatuurlijkPersoonKvkNummer);
   };
@@ -884,71 +1018,72 @@ async function mapPartijToKlant(
   return ret;
 }
 
-export function searchKlantenByDigitaalAdres(
-  query:
-    | {
-        telefoonnummer: string;
-        partijType: PartijTypes;
-      }
-    | {
-        email: string;
-        partijType: PartijTypes;
-      },
-) {
-  let key: DigitaalAdresTypes, value: string;
+// export function searchKlantenByDigitaalAdres(
+//   systeemId: string,
+//   query:
+//     | {
+//         telefoonnummer: string;
+//         partijType: PartijTypes;
+//       }
+//     | {
+//         email: string;
+//         partijType: PartijTypes;
+//       },
+// ) {
+//   let key: DigitaalAdresTypes, value: string;
 
-  if ("telefoonnummer" in query) {
-    key = DigitaalAdresTypes.telefoonnummer;
-    value = query.telefoonnummer;
-  } else {
-    key = DigitaalAdresTypes.email;
-    value = query.email;
-  }
+//   if ("telefoonnummer" in query) {
+//     key = DigitaalAdresTypes.telefoonnummer;
+//     value = query.telefoonnummer;
+//   } else {
+//     key = DigitaalAdresTypes.email;
+//     value = query.email;
+//   }
 
-  const searchParams = new URLSearchParams();
-  searchParams.append("verstrektDoorPartij__soortPartij", query.partijType);
-  searchParams.append("soortDigitaalAdres", key);
-  searchParams.append("adres__icontains", value);
+//   const searchParams = new URLSearchParams();
+//   searchParams.append("verstrektDoorPartij__soortPartij", query.partijType);
+//   searchParams.append("soortDigitaalAdres", key);
+//   searchParams.append("adres__icontains", value);
 
-  const url = klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
+//   const url = klantinteractiesBaseUrl + "/digitaleadressen?" + searchParams;
 
-  return (
-    fetchLoggedIn(url)
-      .then(throwIfNotOk)
-      .then(parseJson)
-      .then(
-        ({
-          results,
-        }: {
-          results: { verstrektDoorPartij: { uuid: string } }[];
-        }) => {
-          const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
-          const uniquePartijIds = [...new Set(partijIds)];
-          const promises = uniquePartijIds.map(fetchKlantByIdOk2);
-          return Promise.all(promises);
-        },
-      )
-      // TIJDELIJK: de filters werken nog niet in OpenKlant 2.1, dat komt in een nieuwe release
-      // daarom filteren we hier handmatig
-      .then((klanten) =>
-        klanten.filter((klant) => {
-          const isBedrijf = !!klant.kvkNummer || !!klant.vestigingsnummer;
-          if (!isBedrijf) return false;
-          const matchesEmail =
-            key === DigitaalAdresTypes.email &&
-            klant.emailadressen.some((adres: string | string[]) =>
-              adres.includes(value),
-            );
-          const matchesTelefoon =
-            key === DigitaalAdresTypes.telefoonnummer &&
-            klant.telefoonnummers.some((adres: string | string[]) =>
-              adres.includes(value),
-            );
-          return matchesEmail || matchesTelefoon;
-        }),
-      )
-  );
-}
+//   return (
+//     fetchWithSysteemId(systeemId,url)
+//       .then(throwIfNotOk)
+//       .then(parseJson)
+//       .then(
+//         ({
+//           results,
+//         }: {
+//           results: { verstrektDoorPartij: { uuid: string } }[];
+//         }) => {
+//           const partijIds = results.map((x) => x.verstrektDoorPartij.uuid);
+//           const uniquePartijIds = [...new Set(partijIds)];
+//           const promises = uniquePartijIds.map(fetchKlantByIdOk2);
+//           return Promise.all(promises);
+//         },
+//       )
+//       // TIJDELIJK: de filters werken nog niet in OpenKlant 2.1, dat komt in een nieuwe release
+//       // daarom filteren we hier handmatig
+//       .then((klanten) =>
+//         klanten.filter((klant) => {
+//           const isBedrijf = !!klant.kvkNummer || !!klant.vestigingsnummer;
+//           if (!isBedrijf) return false;
+//           const matchesEmail =
+//             key === DigitaalAdresTypes.email &&
+//             klant.emailadressen.some((adres: string | string[]) =>
+//               adres.includes(value),
+//             );
+//           const matchesTelefoon =
+//             key === DigitaalAdresTypes.telefoonnummer &&
+//             klant.telefoonnummers.some((adres: string | string[]) =>
+//               adres.includes(value),
+//             );
+//           return matchesEmail || matchesTelefoon;
+//         }),
+//       )
+//   );
+// }
 
 export async function useOpenKlant2() {
   // bepaal of de openklant api of de klantinteracties api gebruikt moet worden voor verwerken van contactmomenten en contactverzoeken
@@ -958,8 +1093,12 @@ export async function useOpenKlant2() {
   return useKlantInteracties as boolean;
 }
 
-export const postOnderwerpobject = async (data: OnderwerpObjectPostModel) => {
-  const response = await fetchLoggedIn(
+export const postOnderwerpobject = async (
+  systeemId: string,
+  data: OnderwerpObjectPostModel,
+) => {
+  const response = await fetchWithSysteemId(
+    systeemId,
     `${klantinteractiesBaseUrl}/onderwerpobjecten`,
     {
       method: "POST",
@@ -982,16 +1121,21 @@ export enum KlantContactExpand {
 }
 
 export function fetchKlantcontact({
+  systeemId,
   expand,
   uuid,
 }: {
+  systeemId: string;
   uuid: string;
   expand?: KlantContactExpand[];
 }) {
   const query = new URLSearchParams();
   expand && query.append("expand", expand.join(","));
 
-  return fetchLoggedIn(`${klantinteractiesKlantcontacten}/${uuid}?${query}`)
+  return fetchWithSysteemId(
+    systeemId,
+    `${klantinteractiesKlantcontacten}/${uuid}?${query}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) => r as ExpandedKlantContactApiViewmodel);
@@ -999,18 +1143,23 @@ export function fetchKlantcontact({
 
 export function fetchKlantcontacten({
   expand,
+  systeemIdentifier,
   ...params
 }: {
   onderwerpobject__onderwerpobjectidentificatorObjectId?: string;
   hadBetrokkene__uuid?: string;
+  systeemIdentifier: string;
   expand?: KlantContactExpand[];
-} = {}) {
+}) {
   const query = new URLSearchParams(
     Object.entries(params).filter(([, value]) => value),
   );
   expand && query.append("expand", expand.join(","));
 
-  return fetchLoggedIn(`${klantinteractiesKlantcontacten}?${query}`)
+  return fetchWithSysteemId(
+    systeemIdentifier,
+    `${klantinteractiesKlantcontacten}?${query}`,
+  )
     .then(throwIfNotOk)
     .then(parseJson)
     .then((r) =>
