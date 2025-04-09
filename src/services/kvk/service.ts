@@ -42,6 +42,8 @@ export async function findBedrijfInHandelsRegister(query: BedrijfIdentifier) {
     }
 
     searchParams.set("type", "rechtspersoon");
+  } else if ("vestigingsnummer" in query && query.vestigingsnummer) {
+    searchParams.set("vestigingsnummer", query.vestigingsnummer);
   }
 
   return await searchInHandelsRegister(searchParams);
