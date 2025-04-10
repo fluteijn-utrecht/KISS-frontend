@@ -169,10 +169,20 @@ export function validateWith<T>(validator: Validator<T>): ValidatorSetup<T> {
   };
 }
 
-const setupValidation: FunctionDirective<HTMLInputElement, ValidatorSetup> = (
-  el,
-  { value },
-) => {
+type InputElementWithSetupRemoval = HTMLInputElement & {
+  removeValidatorSetup?: () => void;
+};
+
+type ValidatorSetupWithElement = ValidatorSetup & {
+  el?: InputElementWithSetupRemoval;
+};
+
+const setupValidation: FunctionDirective<
+  InputElementWithSetupRemoval,
+  ValidatorSetupWithElement
+> = (el, { value, oldValue }) => {
+  el.removeValidatorSetup?.();
+  oldValue?.el?.removeValidatorSetup?.();
   const unwatch = watch(
     () => value.current,
     (i) => {
@@ -192,10 +202,12 @@ const setupValidation: FunctionDirective<HTMLInputElement, ValidatorSetup> = (
     value.current = el.value;
   }
   el.addEventListener("input", onInput);
-  (el as any).removeValidatorSetup = () => {
+  el.removeValidatorSetup = () => {
     el.removeEventListener("input", onInput);
     unwatch();
+    el.removeValidatorSetup = undefined;
   };
+  value.el = el;
 };
 
 export const vValidate: Directive<HTMLInputElement, ValidatorSetup> = {
