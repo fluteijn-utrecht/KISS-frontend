@@ -695,6 +695,11 @@ export async function findKlantByIdentifierOpenKlant2(
         vestigingsIdentificator,
         query.kvkNummer,
       );
+
+      if (!subIdentificatorMatch) {
+        //so this vestiging might exist already in the klat register, but it's not likened to the Kvk entity we are currently dealing with, so that doesn't count
+        return;
+      }
     } else {
       //toegeovegd om types te alignen.. is dee route wenselijk???
 
