@@ -154,7 +154,12 @@ async function navigate(bedrijf: Bedrijf, identifier: KlantBedrijfIdentifier) {
 }
 
 watchEffect(() => {
-  if (props.autoNavigate && bedrijf.value.data && bedrijfIdentifier.value) {
+  if (
+    props.autoNavigate &&
+    matchingKlant.success &&
+    bedrijf.value.data &&
+    bedrijfIdentifier.value
+  ) {
     navigate(bedrijf.value.data, bedrijfIdentifier.value);
   }
 });
