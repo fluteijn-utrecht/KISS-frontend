@@ -647,6 +647,22 @@ export function fetchKlantByKlantIdentificatorOk2(
     .then((r) =>
       parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
     )
+    .then((x) => {
+      //als er op kvk en vestiging gezocht is, moet de gevonden partij wel matchen
+      // we willen niet en vestiging reourneren die bij een andere onderneming hoort
+
+      if (
+        x.page &&
+        klantIdentificator.vestigingsnummer &&
+        klantIdentificator.kvkNummer
+      ) {
+        return x.page.filter(
+          (p) => p.kvkNummer == klantIdentificator.kvkNummer,
+        );
+      }
+
+      return x;
+    })
     .then(enforceOneOrZero);
 }
 
