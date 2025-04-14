@@ -723,7 +723,7 @@ export async function findKlantByIdentifierOpenKlant2(
       partijIdentificator__objectId,
     });
 
-    let partijen = await fetchWithSysteemId(
+    const partijen = await fetchWithSysteemId(
       systeemId,
       `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
     )
@@ -737,7 +737,7 @@ export async function findKlantByIdentifierOpenKlant2(
       return null;
     }
 
-    let matchingPartij = partijen.page?.find(
+    const matchingPartij = partijen.page?.find(
       (x) => x.kvkNummer === query.kvkNummer,
     );
     if (matchingPartij) {
