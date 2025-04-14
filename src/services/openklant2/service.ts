@@ -5,6 +5,8 @@ import {
   throwIfNotOk,
 } from "@/services";
 
+import { type PaginatedResult } from "@/services";
+
 import {
   type BetrokkeneMetKlantContact,
   type ExpandedKlantContactApiViewmodel,
@@ -648,7 +650,6 @@ export function fetchKlantByKlantIdentificatorOk2(
     .then(enforceOneOrZero);
 }
 
-//todo: verangen worden door fetchKlantByKlantIdentificatorOk2
 export async function findKlantByIdentifierOpenKlant2(
   systeemId: string,
   query:
@@ -675,78 +676,118 @@ export async function findKlantByIdentifierOpenKlant2(
     partijIdentificator__codeSoortObjectId =
       identificatorTypes.persoon.codeSoortObjectId;
     partijIdentificator__objectId = query.bsn;
-  } else {
+
+    const searchParams = new URLSearchParams({
+      expand,
+      soortPartij,
+      partijIdentificator__codeSoortObjectId,
+      partijIdentificator__objectId,
+    });
+
+    return fetchWithSysteemId(
+      systeemId,
+      `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
+    )
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((r) =>
+        parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+      )
+      .then(enforceOneOrZero);
+  } else if ("vestigingsnummer" in query) {
     soortPartij = PartijTypes.organisatie;
 
-    if ("vestigingsnummer" in query) {
-      partijIdentificator__codeSoortObjectId =
-        identificatorTypes.vestiging.codeSoortObjectId;
-      partijIdentificator__objectId = query.vestigingsnummer;
+    partijIdentificator__codeSoortObjectId =
+      identificatorTypes.vestiging.codeSoortObjectId;
+    partijIdentificator__objectId = query.vestigingsnummer;
 
-      // check if vestigingsIdentificator is linked to a kvkIdentificator by subIdentificatorVan
-      const vestigingsIdentificator = await findPartijIdentificator(
-        systeemId,
-        partijIdentificator__codeSoortObjectId,
-        partijIdentificator__objectId,
-      );
+    // check if vestigingsIdentificator is linked to a kvkIdentificator by subIdentificatorVan
+    const vestigingsIdentificatoren = await findPartijIdentificatoren(
+      systeemId,
+      partijIdentificator__codeSoortObjectId,
+      partijIdentificator__objectId,
+    );
 
-      subIdentificatorMatch = await matchSubIdentificator(
-        systeemId,
-        vestigingsIdentificator,
-        query.kvkNummer,
-      );
+    subIdentificatorMatch = await matchSubIdentificator(
+      systeemId,
+      vestigingsIdentificatoren,
+      query.kvkNummer,
+    );
 
-      if (!subIdentificatorMatch) {
-        //so this vestiging might exist already in the klat register, but it's not likened to the Kvk entity we are currently dealing with, so that doesn't count
-        return;
-      }
-    } else {
-      //toegeovegd om types te alignen.. is dee route wenselijk???
-
-      partijIdentificator__codeSoortObjectId =
-        identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId;
-      partijIdentificator__objectId = query.kvkNummer;
+    if (!subIdentificatorMatch) {
+      //so this vestiging might exist already in the klant register, but it's not linked to the Kvk entity we are currently dealing with, so that doesn't count
+      return null;
     }
-  }
 
-  const searchParams = new URLSearchParams({
-    expand,
-    soortPartij,
-    partijIdentificator__codeSoortObjectId,
-    partijIdentificator__objectId,
-  });
+    const searchParams = new URLSearchParams({
+      expand,
+      soortPartij,
+      partijIdentificator__codeSoortObjectId,
+      partijIdentificator__objectId,
+    });
 
-  return fetchWithSysteemId(
-    systeemId,
-    `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
-  )
-    .then(throwIfNotOk)
-    .then(parseJson)
-    .then((r) =>
-      parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+    let partijen = await fetchWithSysteemId(
+      systeemId,
+      `${klantinteractiesBaseUrl}/partijen?${searchParams}`,
     )
-    .then(enforceOneOrZero);
+      .then(throwIfNotOk)
+      .then(parseJson)
+      .then((r) =>
+        parsePagination(r, (x) => mapPartijToKlant(systeemId, x as Partij)),
+      );
+
+    if (!partijen || partijen.count === 0) {
+      return null;
+    }
+
+    let matchingPartij = partijen.page?.find(
+      (x) => x.kvkNummer === query.kvkNummer,
+    );
+    if (matchingPartij) {
+      return matchingPartij;
+    }
+
+    return null;
+  } else {
+    //toegeovegd om types te alignen.. is dee route wenselijk???
+
+    partijIdentificator__codeSoortObjectId =
+      identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId;
+    partijIdentificator__objectId = query.kvkNummer;
+
+    return null;
+  }
 }
 
+//checks whether any of the given PI have a parent PI with the given kvkNumber
 const matchSubIdentificator = async (
   systeemId: string,
-  subIdentificator: PartijIdentificator | null,
+  subIdentificators: PaginatedResult<PartijIdentificator> | null,
   kvkNummer?: string,
 ) => {
-  if (!subIdentificator?.subIdentificatorVan) return false;
+  if (!subIdentificators || subIdentificators.count === 0) {
+    return false;
+  }
 
-  const {
-    partijIdentificator: { codeSoortObjectId, objectId },
-  } = await getPartijIdentificator(
-    systeemId,
-    subIdentificator.subIdentificatorVan.uuid,
-  );
+  for (let subIdentificator of subIdentificators.page) {
+    if (subIdentificator.subIdentificatorVan?.uuid) {
+      const {
+        partijIdentificator: { codeSoortObjectId, objectId },
+      } = await getPartijIdentificator(
+        systeemId,
+        subIdentificator.subIdentificatorVan?.uuid,
+      );
 
-  return (
-    codeSoortObjectId ===
-      identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId &&
-    objectId === kvkNummer
-  );
+      if (
+        codeSoortObjectId ===
+          identificatorTypes.nietNatuurlijkPersoonKvkNummer.codeSoortObjectId &&
+        objectId === kvkNummer
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
 };
 
 export async function createKlant(
@@ -920,6 +961,23 @@ const updatePartijIdentificator = (
   )
     .then(throwIfNotOk)
     .then(parseJson);
+
+const findPartijIdentificatoren = async (
+  systeemId: string,
+  partijIdentificatorCodeSoortObjectId: string,
+  partijIdentificatorObjectId: string,
+): Promise<PaginatedResult<PartijIdentificator> | null> =>
+  fetchWithSysteemId(
+    systeemId,
+    klantinteractiesBaseUrl +
+      `/partij-identificatoren?${new URLSearchParams({
+        partijIdentificatorCodeSoortObjectId,
+        partijIdentificatorObjectId,
+      })}`,
+  )
+    .then(throwIfNotOk)
+    .then(parseJson)
+    .then((r) => parsePagination(r, (x) => x as PartijIdentificator));
 
 const findPartijIdentificator = async (
   systeemId: string,
