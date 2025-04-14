@@ -769,6 +769,8 @@ export async function findKlantByIdentifierOpenKlant2(
       )
       .then(enforceOneOrZero);
   }
+
+  return null;
 }
 
 export async function createKlant(
