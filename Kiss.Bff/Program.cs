@@ -24,6 +24,10 @@ Log.Information("Starting up");
 
 try
 {
+
+
+ 
+
     builder.WebHost.ConfigureKestrel(x =>
     {
         x.AddServerHeader = false;
@@ -33,7 +37,7 @@ try
     builder.Services.AddControllers();
 
     const string AuthorityKey = "OIDC_AUTHORITY";
-
+    
     var authority = builder.Configuration[AuthorityKey];
 
     if (string.IsNullOrWhiteSpace(authority))
